@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <!--Unfortunately we can't use .NET Standard due to CSSharp being hardcoded to .NET 7-->
+        <TargetFramework>net7.0</TargetFramework>
+
+        <!--Compiler Options-->
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>EdgeGamers.Jailbreak</PackageId>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+        <!--CI Configurations-->
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!--Publish Configuration-->
+        <PublishDir>$(MSBuildThisFileDirectory)/../../build/Jailbreak</PublishDir>
+        <PublishRelease>false</PublishRelease>
+        <PublishSelfContained>false</PublishSelfContained>
+        <PublishDocumentationFile>true</PublishDocumentationFile>
+
+        <!--Host Options-->
+        <RollForward>Major</RollForward>
+        <UseAppHost>false</UseAppHost>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\mod\Jailbreak.Teams\Jailbreak.Teams.csproj" />
+      <ProjectReference Include="..\..\mod\Jailbreak.Warden\Jailbreak.Warden.csproj" />
+      <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj" />
+      <ProjectReference Include="..\Jailbreak.Generic\Jailbreak.Generic.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,53 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{177DA48D-8306-4102-918D-992569878581}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jailbreak", "src\Jailbreak\Jailbreak.csproj", "{9135CCC9-66C5-4A9C-AE3C-91475B5F0437}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "public", "public", "{59311734-3648-43C2-B43C-385718B0D103}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jailbreak.Public", "public\Jailbreak.Public\Jailbreak.Public.csproj", "{51AF228F-27F2-4225-A387-FDEAD123FAC2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mod", "mod", "{36BA84C0-291C-4930-A7C6-97CDF8F7F0D7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jailbreak.Warden", "mod\Jailbreak.Warden\Jailbreak.Warden.csproj", "{E73417E7-D397-415B-B96F-BF43DAC511B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jailbreak.Generic", "src\Jailbreak.Generic\Jailbreak.Generic.csproj", "{1D9CC1AC-4ABC-41A3-8CC7-6FB17E864C3F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jailbreak.Teams", "mod\Jailbreak.Teams\Jailbreak.Teams.csproj", "{28EE05E4-8FE3-4CC6-AA03-0C533EFBFBF2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9135CCC9-66C5-4A9C-AE3C-91475B5F0437}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9135CCC9-66C5-4A9C-AE3C-91475B5F0437}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9135CCC9-66C5-4A9C-AE3C-91475B5F0437}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9135CCC9-66C5-4A9C-AE3C-91475B5F0437}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51AF228F-27F2-4225-A387-FDEAD123FAC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51AF228F-27F2-4225-A387-FDEAD123FAC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51AF228F-27F2-4225-A387-FDEAD123FAC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51AF228F-27F2-4225-A387-FDEAD123FAC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E73417E7-D397-415B-B96F-BF43DAC511B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E73417E7-D397-415B-B96F-BF43DAC511B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E73417E7-D397-415B-B96F-BF43DAC511B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E73417E7-D397-415B-B96F-BF43DAC511B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D9CC1AC-4ABC-41A3-8CC7-6FB17E864C3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D9CC1AC-4ABC-41A3-8CC7-6FB17E864C3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D9CC1AC-4ABC-41A3-8CC7-6FB17E864C3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D9CC1AC-4ABC-41A3-8CC7-6FB17E864C3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28EE05E4-8FE3-4CC6-AA03-0C533EFBFBF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28EE05E4-8FE3-4CC6-AA03-0C533EFBFBF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28EE05E4-8FE3-4CC6-AA03-0C533EFBFBF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28EE05E4-8FE3-4CC6-AA03-0C533EFBFBF2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9135CCC9-66C5-4A9C-AE3C-91475B5F0437} = {177DA48D-8306-4102-918D-992569878581}
+		{51AF228F-27F2-4225-A387-FDEAD123FAC2} = {59311734-3648-43C2-B43C-385718B0D103}
+		{E73417E7-D397-415B-B96F-BF43DAC511B8} = {36BA84C0-291C-4930-A7C6-97CDF8F7F0D7}
+		{1D9CC1AC-4ABC-41A3-8CC7-6FB17E864C3F} = {177DA48D-8306-4102-918D-992569878581}
+		{28EE05E4-8FE3-4CC6-AA03-0C533EFBFBF2} = {36BA84C0-291C-4930-A7C6-97CDF8F7F0D7}
+	EndGlobalSection
+EndGlobal

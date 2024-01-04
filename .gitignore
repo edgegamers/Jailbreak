@@ -1,0 +1,12 @@
+﻿
+# Repository build files
+build/
+bin/
+obj/
+
+Debug/
+Release/
+
+# IDE files
+.idea/
+.vs/
