@@ -27,7 +27,7 @@ jobs:
     
     - uses: actions/upload-artifact@v4.0.0
       with:
-        name: Nightly
+        name: jailbreak-nightly-${{ github.run_id }}
         path: build
         # If build didn't put any artifacts in the build folder, consider it an error
         if-no-files-found: error
