@@ -8,6 +8,7 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Generic;
 using Jailbreak.Public.Mod.Teams;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic.CompilerServices;
 
 using Serilog;
@@ -18,9 +19,11 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 {
 	private int _counter;
 	private IPlayerState<QueueState> _state;
+	private ILogger<QueueBehavior> _logger;
 
-	public QueueBehavior(IPlayerStateFactory factory)
+	public QueueBehavior(IPlayerStateFactory factory, ILogger<QueueBehavior> logger)
 	{
+		_logger = logger;
 		_counter = 0;
 		_state = factory.Global<QueueState>();
 	}
@@ -55,13 +58,14 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 		{
 			Server.PrintToChatAll("[Jail] Not enough guards are in the queue!");
 			Server.PrintToChatAll("[Jail] Type !guard in chat to join the queue");
-			ServerExtensions.PrintToCenterAll("Type !guard to become a guard!");
+			ServerExtensions.PrintToCenterAll("Not enough players in guard queue!\nType !guard to become a guard.");
 		}
 
-		Log.Information($"[Queue] {count}/{queue.Count}");
+		_logger.LogInformation("[Queue] Pop requested {@Count} out of {@InQueue}", count, queue.Count);
+
 		for (int i = 0; i < Math.Min(queue.Count, count); i++)
 		{
-			Log.Information($"[Queue] Popping { queue[i].PlayerName }");
+			_logger.LogInformation("[Queue] Popping player {@Name}", queue[i].PlayerName);
 
 			ForceGuard( queue[i] );
 		}
@@ -77,12 +81,12 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 			.Where(player => player.GetTeam() == CsTeam.CounterTerrorist)
 			.Shuffle(Random.Shared)
 			.ToList();
-		Log.Information($"[Queue] {count}/{players.Count}");
+		_logger.LogInformation("[Queue] Push requested {@Count} out of {@GuardCount}", count, players.Count);
 
 		for (int i = 0; i < Math.Min(count, players.Count); i++)
 		{
 			var toSwap = players[i];
-			Log.Information($"[Queue] Pushing {toSwap.PlayerName}");
+			_logger.LogInformation("[Queue] Pushing {@Name}", toSwap.PlayerName);
 			var state = _state.Get(toSwap);
 
 			state.IsGuard = false;

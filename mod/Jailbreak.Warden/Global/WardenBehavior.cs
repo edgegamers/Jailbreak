@@ -9,17 +9,23 @@ using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Warden;
 
+using Microsoft.Extensions.Logging;
+
+using Serilog;
+
 namespace Jailbreak.Warden.Global;
 
 public class WardenBehavior : IPluginBehavior, IWardenService
 {
-
-	public void Dispose()
-	{
-	}
+	private ILogger<WardenBehavior> _logger;
 
 	private bool _hasWarden;
 	private CCSPlayerController? _warden;
+
+	public WardenBehavior(ILogger<WardenBehavior> logger)
+	{
+		_logger = logger;
+	}
 
 	/// <summary>
 	/// Get the current warden, if there is one.
@@ -73,7 +79,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		if (ev.Userid.UserId == _warden.UserId)
 		{
 			if (!this.TryRemoveWarden())
-				Server.PrintToConsole("[Warden] BUG: Problem removing current warden :^(");
+				_logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
 			//	Warden died!
 			Server.PrintToChatAll("[Warden] The current warden has died!");
@@ -101,7 +107,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		if (ev.Userid.UserId == _warden.UserId)
 		{
 			if (!this.TryRemoveWarden())
-				Server.PrintToConsole("[Warden] BUG: Problem removing current warden :^(");
+				_logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
 			//	Warden died!
 			Server.PrintToChatAll("[Warden] The current warden has left the game!");

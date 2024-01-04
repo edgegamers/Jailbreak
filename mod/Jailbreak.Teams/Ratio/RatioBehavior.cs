@@ -8,11 +8,16 @@ using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Teams;
 
+using Microsoft.Extensions.Logging;
+
+using Serilog;
+
 namespace Jailbreak.Teams.Ratio;
 
 public class RatioBehavior : IPluginBehavior
 {
 	private IGuardQueue _guardQueue;
+	private ILogger<RatioBehavior> _logger;
 
 	public enum RatioActionType
 	{
@@ -35,10 +40,11 @@ public class RatioBehavior : IPluginBehavior
 
 	private RatioConfig _config;
 
-	public RatioBehavior(RatioConfig config, IGuardQueue guardQueue)
+	public RatioBehavior(RatioConfig config, IGuardQueue guardQueue, ILogger<RatioBehavior> logger)
 	{
 		_config = config;
 		_guardQueue = guardQueue;
+		_logger = logger;
 	}
 
 	/// <summary>
@@ -56,24 +62,24 @@ public class RatioBehavior : IPluginBehavior
 		double ts_per_ct = t / (double)normalized_ct;
 		int target = (int)( (ct + t) / _config.Target ) + 1;
 
-		Server.PrintToConsole($"[Ratio] Evaluating ratio of {ct}ct to {t}t: {ts_per_ct}t/ct ratio, {target} target.");
+		_logger.LogTrace("[Ratio] Evaluating ratio of {@Ct}ct to {@T}t: {@TsPerCt}t/ct ratio, {@Target} target.", ct ,t ,ts_per_ct, target);
 
 		if (_config.Maximum <= ts_per_ct)
 		{
 			//	There are too many Ts per CT!
 			//	Get more guards on the team
-			Server.PrintToConsole($"[Ratio] Decision: Not enough CTs: {_config.Maximum} <= {ts_per_ct}");
+			_logger.LogTrace("[Ratio] Decision: Not enough CTs: {@Maximum} <= {@TsPerCt}", _config.Maximum, ts_per_ct);
 			return new(target - ct, RatioActionType.Add);
 		}
 
 		if (ts_per_ct <= _config.Minimum)
 		{
 			//	There are too many guards per T!
-			Server.PrintToConsole($"[Ratio] Decision: Too many CTs: {ts_per_ct} <= {_config.Minimum}");
+			_logger.LogTrace("[Ratio] Decision: Too many CTs: {@TsPerCt} <= {@Minimum}", ts_per_ct, _config.Minimum);
 			return new(ct - target, RatioActionType.Remove);
 		}
 
-		Server.PrintToConsole($"[Ratio] Decision: Goldilocks: {_config.Maximum} (max) <= {ts_per_ct} (t/ct) <= {_config.Minimum} (min)");
+		_logger.LogTrace("[Ratio] Decision: Goldilocks: {@Maximum} (max) <= {@TsPerCt} (t/ct) <= {@Minimum} (min)", _config.Maximum, ts_per_ct, _config.Minimum);
 		//	Take no action
 		return new();
 	}
