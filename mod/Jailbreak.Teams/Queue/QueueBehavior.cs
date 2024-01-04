@@ -9,17 +9,14 @@ using Jailbreak.Public.Generic;
 using Jailbreak.Public.Mod.Teams;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic.CompilerServices;
-
-using Serilog;
 
 namespace Jailbreak.Teams.Queue;
 
 public class QueueBehavior : IGuardQueue, IPluginBehavior
 {
 	private int _counter;
-	private IPlayerState<QueueState> _state;
-	private ILogger<QueueBehavior> _logger;
+	private readonly ILogger<QueueBehavior> _logger;
+	private readonly IPlayerState<QueueState> _state;
 
 	public QueueBehavior(IPlayerStateFactory factory, ILogger<QueueBehavior> logger)
 	{
@@ -63,11 +60,11 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
 		_logger.LogInformation("[Queue] Pop requested {@Count} out of {@InQueue}", count, queue.Count);
 
-		for (int i = 0; i < Math.Min(queue.Count, count); i++)
+		for (var i = 0; i < Math.Min(queue.Count, count); i++)
 		{
 			_logger.LogInformation("[Queue] Popping player {@Name}", queue[i].PlayerName);
 
-			ForceGuard( queue[i] );
+			ForceGuard(queue[i]);
 		}
 
 		return true;
@@ -83,7 +80,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 			.ToList();
 		_logger.LogInformation("[Queue] Push requested {@Count} out of {@GuardCount}", count, players.Count);
 
-		for (int i = 0; i < Math.Min(count, players.Count); i++)
+		for (var i = 0; i < Math.Min(count, players.Count); i++)
 		{
 			var toSwap = players[i];
 			_logger.LogInformation("[Queue] Pushing {@Name}", toSwap.PlayerName);
@@ -109,6 +106,21 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 		player.ChangeTeam(CsTeam.CounterTerrorist);
 	}
 
+
+	public int GetQueuePosition(CCSPlayerController player)
+	{
+		return Queue.ToList()
+			.FindIndex(controller => controller.Slot == player.Slot);
+	}
+
+	public IEnumerable<CCSPlayerController> Queue
+		=> Utilities.GetPlayers()
+			.Select(player => (Player: player, State: _state.Get(player)))
+			.Where(tuple => tuple.State.InQueue) //	Exclude not in queue
+			.Where(tuple => !tuple.State.IsGuard) //	Exclude current guards
+			.OrderBy(tuple => tuple.State.Position) //	Order by counter value when joined queue
+			.Select(tuple => tuple.Player);
+
 	[GameEventHandler]
 	public HookResult OnPlayerTeam(EventPlayerTeam ev, GameEventInfo info)
 	{
@@ -124,27 +136,9 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 		}
 
 		if (player.GetTeam() == CsTeam.Terrorist && state.IsGuard)
-		{
-			if (this.TryExitQueue(player))
+			if (TryExitQueue(player))
 				player.PrintToCenter("You were removed from the guard queue for switching to T.\nUse !guard to rejoin the queue!");
-		}
 
 		return HookResult.Continue;
 	}
-
-
-
-	public int GetQueuePosition(CCSPlayerController player)
-	{
-		return Queue.ToList()
-			.FindIndex(controller => controller.Slot == player.Slot);
-	}
-
-	public IEnumerable<CCSPlayerController> Queue
-		=> Utilities.GetPlayers()
-			.Select(player => (Player: player, State: _state.Get(player)))
-			.Where(tuple => tuple.State.InQueue)	//	Exclude not in queue
-			.Where(tuple => !tuple.State.IsGuard)	//	Exclude current guards
-			.OrderBy(tuple => tuple.State.Position) //	Order by counter value when joined queue
-			.Select(tuple => tuple.Player);
 }

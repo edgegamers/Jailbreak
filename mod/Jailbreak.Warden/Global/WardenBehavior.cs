@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-using CounterStrikeSharp.API;
+﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -11,16 +9,11 @@ using Jailbreak.Public.Mod.Warden;
 
 using Microsoft.Extensions.Logging;
 
-using Serilog;
-
 namespace Jailbreak.Warden.Global;
 
 public class WardenBehavior : IPluginBehavior, IWardenService
 {
-	private ILogger<WardenBehavior> _logger;
-
-	private bool _hasWarden;
-	private CCSPlayerController? _warden;
+	private readonly ILogger<WardenBehavior> _logger;
 
 	public WardenBehavior(ILogger<WardenBehavior> logger)
 	{
@@ -28,44 +21,44 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 	}
 
 	/// <summary>
-	/// Get the current warden, if there is one.
+	///     Get the current warden, if there is one.
 	/// </summary>
-	public CCSPlayerController? Warden => _warden;
+	public CCSPlayerController? Warden { get; private set; }
 
 	/// <summary>
-	/// Whether or not a warden is currently assigned
+	///     Whether or not a warden is currently assigned
 	/// </summary>
-	public bool HasWarden => _hasWarden;
+	public bool HasWarden { get; private set; }
 
 	public bool TrySetWarden(CCSPlayerController controller)
 	{
-		if (_hasWarden)
+		if (HasWarden)
 			return false;
 
 		//	Verify player is a CT
 		if (controller.GetTeam() != CsTeam.CounterTerrorist)
 			return false;
 
-		_hasWarden = true;
-		_warden = controller;
+		HasWarden = true;
+		Warden = controller;
 
-		Server.PrintToChatAll($"[Warden] {_warden.PlayerName.Sanitize()} is now the warden!");
-		ServerExtensions.PrintToCenterAll($"{_warden.PlayerName.Sanitize()} is now the warden!");
-		_warden.ClanName = "[WARDEN]";
+		Server.PrintToChatAll($"[Warden] {Warden.PlayerName.Sanitize()} is now the warden!");
+		ServerExtensions.PrintToCenterAll($"{Warden.PlayerName.Sanitize()} is now the warden!");
+		Warden.ClanName = "[WARDEN]";
 
 		return true;
 	}
 
 	public bool TryRemoveWarden()
 	{
-		if (!_hasWarden)
+		if (!HasWarden)
 			return false;
 
-		if (_warden != null)
-			_warden.ClanName = "";
+		if (Warden != null)
+			Warden.ClanName = "";
 
-		_hasWarden = false;
-		_warden = null;
+		HasWarden = false;
+		Warden = null;
 
 		return true;
 	}
@@ -73,12 +66,12 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 	[GameEventHandler]
 	public HookResult OnDeath(EventPlayerDeath ev, GameEventInfo info)
 	{
-		if (!_hasWarden)
+		if (!HasWarden)
 			return HookResult.Continue;
 
-		if (ev.Userid.UserId == _warden.UserId)
+		if (ev.Userid.UserId == Warden.UserId)
 		{
-			if (!this.TryRemoveWarden())
+			if (!TryRemoveWarden())
 				_logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
 			//	Warden died!
@@ -93,7 +86,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 	[GameEventHandler]
 	public HookResult OnRoundEnd(EventRoundEnd ev, GameEventInfo info)
 	{
-		this.TryRemoveWarden();
+		TryRemoveWarden();
 
 		return HookResult.Continue;
 	}
@@ -101,12 +94,12 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 	[GameEventHandler]
 	public HookResult OnPlayerDisconnect(EventPlayerDisconnect ev, GameEventInfo info)
 	{
-		if (!_hasWarden)
+		if (!HasWarden)
 			return HookResult.Continue;
 
-		if (ev.Userid.UserId == _warden.UserId)
+		if (ev.Userid.UserId == Warden.UserId)
 		{
-			if (!this.TryRemoveWarden())
+			if (!TryRemoveWarden())
 				_logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
 			//	Warden died!

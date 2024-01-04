@@ -1,7 +1,5 @@
 ﻿using System.Collections.Immutable;
-using System.Reflection;
 
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 
 using Jailbreak.Public.Behaviors;
@@ -9,24 +7,25 @@ using Jailbreak.Public.Behaviors;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-using Serilog;
-
 namespace Jailbreak;
 
 public class Jailbreak : BasePlugin
 {
-	public override string ModuleName => "Jailbreak";
-	public override string ModuleVersion => "0.1.0";
-	public override string ModuleAuthor => "EdgeGamers Development";
-
-	private IServiceProvider _provider;
-	private IServiceScope _scope;
 	private IReadOnlyList<IPluginBehavior> _extensions;
+
+	private readonly IServiceProvider _provider;
+	private IServiceScope _scope;
 
 	public Jailbreak(IServiceProvider provider)
 	{
 		_provider = provider;
 	}
+
+	public override string ModuleName => "Jailbreak";
+
+	public override string ModuleVersion => "0.1.0";
+
+	public override string ModuleAuthor => "EdgeGamers Development";
 
 	public override void Load(bool hotReload)
 	{
@@ -38,7 +37,7 @@ public class Jailbreak : BasePlugin
 
 		Logger.LogInformation("[Jailbreak] Found {@BehaviorCount} behaviors.", _extensions.Count);
 
-		foreach (IPluginBehavior extension in _extensions)
+		foreach (var extension in _extensions)
 		{
 			//	Register all event handlers on the extension object
 			RegisterAllAttributes(extension);
@@ -56,10 +55,8 @@ public class Jailbreak : BasePlugin
 	{
 		Logger.LogInformation("[Jailbreak] Shutting down...");
 
-		foreach (IPluginBehavior extension in _extensions)
-		{
+		foreach (var extension in _extensions)
 			extension.Dispose();
-		}
 
 		//	Dispose of original extensions scope
 		//	When loading again we will get a new scope to avoid leaking state.

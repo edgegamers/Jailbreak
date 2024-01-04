@@ -2,9 +2,8 @@
 
 public interface IPlayerStateFactory
 {
-
 	/// <summary>
-	/// This state lasts from when the player connect to until the player disconnects.
+	///     This state lasts from when the player connect to until the player disconnects.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	/// <returns></returns>
@@ -12,7 +11,7 @@ public interface IPlayerStateFactory
 		where T : class, new();
 
 	/// <summary>
-	/// This state resets when the player dies
+	///     This state resets when the player dies
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	/// <returns></returns>
@@ -20,11 +19,10 @@ public interface IPlayerStateFactory
 		where T : class, new();
 
 	/// <summary>
-	/// This state resets when the round ends or begins.
+	///     This state resets when the round ends or begins.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	/// <returns></returns>
 	IPlayerState<T> Round<T>()
 		where T : class, new();
-
 }

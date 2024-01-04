@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
@@ -14,34 +13,31 @@ using Jailbreak.Public.Mod.Warden;
 
 using Microsoft.Extensions.Logging;
 
-using Serilog;
-
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
-namespace Jailbreak.Warden.Queue;
+namespace Jailbreak.Warden.Selection;
 
 /// <summary>
-/// Behavior responsible for choosing the next warden
+///     Behavior responsible for choosing the next warden
 /// </summary>
 public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
 {
+	private readonly IPlayerState<QueueFavorState> _favor;
+
+	private readonly ILogger<WardenSelectionBehavior> _logger;
 	/// <summary>
-	/// A state dict that handles the player's current queue
-	/// enrollment and favor. Uses the Round reset mode.
+	///     A state dict that handles the player's current queue
+	///     enrollment and favor. Uses the Round reset mode.
 	/// </summary>
-	private IPlayerState<QueueState> _queue;
-
-	private IPlayerState<QueueFavorState> _favor;
-
-	private ILogger<WardenSelectionBehavior> _logger;
+	private readonly IPlayerState<QueueState> _queue;
 
 	/// <summary>
-	/// Whether or not to use the queue.
-	/// When true, the queue should be skipped and turn to first-come-first-serve.
+	///     Whether or not to use the queue.
+	///     When true, the queue should be skipped and turn to first-come-first-serve.
 	/// </summary>
 	private bool _queueInactive;
 
-	private IWardenService _warden;
+	private readonly IWardenService _warden;
 
 	public WardenSelectionBehavior(IPlayerStateFactory factory, IWardenService warden, ILogger<WardenSelectionBehavior> logger)
 	{
@@ -55,13 +51,36 @@ public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
 
 	public void Start(BasePlugin parent)
 	{
-
 	}
 
 	public void Dispose()
 	{
-
 	}
+
+	public bool TryEnter(CCSPlayerController player)
+	{
+		if (!CanEnterQueue(player))
+			return false;
+
+		_queue.Get(player).InQueue = true;
+		return true;
+	}
+
+	public bool TryExit(CCSPlayerController player)
+	{
+		if (!CanEnterQueue(player))
+			return false;
+
+		_queue.Get(player).InQueue = false;
+		return true;
+	}
+
+	public bool InQueue(CCSPlayerController player)
+	{
+		return _queue.Get(player).InQueue;
+	}
+
+	public bool Active => !_queueInactive;
 
 	[GameEventHandler]
 	public HookResult OnRoundStart(EventRoundStart ev, GameEventInfo info)
@@ -85,7 +104,7 @@ public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
 	}
 
 	/// <summary>
-	/// Timer callback that states it's time to choose the warden.
+	///     Timer callback that states it's time to choose the warden.
 	/// </summary>
 	protected void OnChooseWarden()
 	{
@@ -107,19 +126,19 @@ public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
 
 		var favors = eligible
 			.ToDictionary(player => player, player => _favor.Get(player));
-		int tickets = favors.Sum(favor => favor.Value.GetTickets());
-		int chosen = Random.Shared.Next(tickets);
+		var tickets = favors.Sum(favor => favor.Value.GetTickets());
+		var chosen = Random.Shared.Next(tickets);
 
 		_logger.LogTrace("[Warden Raffle] Picking {@Chosen} out of {@Tickets}", chosen, tickets);
 
-		int pointer = 0;
+		var pointer = 0;
 		foreach (var (player, favor) in favors)
 		{
-			int thisTickets = favor.GetTickets();
+			var thisTickets = favor.GetTickets();
 			_logger.LogTrace("[Warden Raffle] {@Pointer} -> {@End}: #{@Slot} {@Name}", pointer, pointer + thisTickets, player.Slot, player.PlayerName);
 
 			//	If winning ticket belongs to this player, assign them as warden.
-			if (pointer <= chosen && chosen < (pointer + thisTickets))
+			if (pointer <= chosen && chosen < pointer + thisTickets)
 			{
 				_warden.TrySetWarden(player);
 				favor.RoundsWithoutWarden = 0;
@@ -155,29 +174,4 @@ public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
 
 		return true;
 	}
-
-	public bool TryEnter(CCSPlayerController player)
-	{
-		if (!CanEnterQueue(player))
-			return false;
-
-		_queue.Get(player).InQueue = true;
-		return true;
-	}
-
-	public bool TryExit(CCSPlayerController player)
-	{
-		if (!CanEnterQueue(player))
-			return false;
-
-		_queue.Get(player).InQueue = false;
-		return true;
-	}
-
-	public bool InQueue(CCSPlayerController player)
-		=>  _queue.Get(player).InQueue;
-
-	public bool Active => !_queueInactive;
-
-
 }

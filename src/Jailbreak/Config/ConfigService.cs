@@ -7,33 +7,18 @@ using Jailbreak.Public.Configuration;
 
 using Microsoft.Extensions.Logging;
 
-
 namespace Jailbreak.Config;
 
 public class ConfigService : IConfigService
 {
-	private ILogger<ConfigService> _logger;
+	private readonly ILogger<ConfigService> _logger;
 
 	public ConfigService(ILogger<ConfigService> logger)
 	{
 		_logger = logger;
 	}
 
-	private T Fail<T>(bool fail, string message)
-		where T: class, new()
-	{
-		//	We would be returning default.
-		//	Check if caller wants us to cry and scream instead.
-		if (fail)
-			throw new InvalidOperationException(message);
-
-		_logger.LogWarning("[Config] Tripped load fail state with message: {@Message}", message);
-
-		return new T();
-	}
-
 	/// <summary>
-	///
 	/// </summary>
 	/// <param name="path"></param>
 	/// <param name="fail"></param>
@@ -49,7 +34,7 @@ public class ConfigService : IConfigService
 
 		var jsonText = File.ReadAllText(jsonPath);
 
-		var jsonObject = JsonObject.Parse(jsonText);
+		var jsonObject = JsonNode.Parse(jsonText);
 		if (jsonObject == null)
 			return Fail<T>(fail, $"Unable to parse configuration file at {jsonPath}");
 
@@ -62,5 +47,18 @@ public class ConfigService : IConfigService
 			return Fail<T>(fail, $"Unable to deserialize ({configObject.ToJsonString()}) into {typeof(T).FullName}.");
 
 		return config;
+	}
+
+	private T Fail<T>(bool fail, string message)
+		where T : class, new()
+	{
+		//	We would be returning default.
+		//	Check if caller wants us to cry and scream instead.
+		if (fail)
+			throw new InvalidOperationException(message);
+
+		_logger.LogWarning("[Config] Tripped load fail state with message: {@Message}", message);
+
+		return new T();
 	}
 }

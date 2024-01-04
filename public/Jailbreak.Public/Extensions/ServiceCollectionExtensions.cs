@@ -8,12 +8,12 @@ namespace Jailbreak.Public.Extensions;
 public static class ServiceCollectionExtensions
 {
 	/// <summary>
-	/// Add a <see cref="IPluginBehavior"/> to the global service collection
+	///     Add a <see cref="IPluginBehavior" /> to the global service collection
 	/// </summary>
 	/// <param name="collection"></param>
 	/// <typeparam name="TExtension"></typeparam>
 	public static void AddPluginBehavior<TExtension>(this IServiceCollection collection)
-		where TExtension: class, IPluginBehavior
+		where TExtension : class, IPluginBehavior
 	{
 		//	Add the root extension itself as a scoped service.
 		//	This means every time Load is called in the main Jailbreak loader,
@@ -25,13 +25,13 @@ public static class ServiceCollectionExtensions
 	}
 
 	/// <summary>
-	/// Add a <see cref="IPluginBehavior"/> to the global service collection
+	///     Add a <see cref="IPluginBehavior" /> to the global service collection
 	/// </summary>
 	/// <param name="collection"></param>
 	/// <typeparam name="TExtension"></typeparam>
 	/// <typeparam name="TInterface"></typeparam>
 	public static void AddPluginBehavior<TInterface, TExtension>(this IServiceCollection collection)
-		where TExtension: class, IPluginBehavior, TInterface
+		where TExtension : class, IPluginBehavior, TInterface
 		where TInterface : class
 	{
 		//	Add the root extension itself as a scoped service.
@@ -45,7 +45,7 @@ public static class ServiceCollectionExtensions
 	}
 
 	/// <summary>
-	/// Add an object to be loaded from the configuration file
+	///     Add an object to be loaded from the configuration file
 	/// </summary>
 	/// <param name="collection"></param>
 	/// <param name="sectionName">The section where the configuration object will be loaded from</param>
@@ -59,6 +59,6 @@ public static class ServiceCollectionExtensions
 		//	Not *really* important... but do we want to fail here or return default if section
 		//	isn't available?
 		collection.AddTransient<TConfig>(provider => provider.GetRequiredService<IConfigService>()
-			.Get<TConfig>(sectionName, /*failOnDefault*/ false));
+			.Get<TConfig>(sectionName));
 	}
 }

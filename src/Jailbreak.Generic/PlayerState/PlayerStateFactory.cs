@@ -1,13 +1,13 @@
-﻿using Jailbreak.Generic.Behaviors;
+﻿using Jailbreak.Generic.PlayerState.Behaviors;
 using Jailbreak.Public.Generic;
 
-namespace Jailbreak.Generic;
+namespace Jailbreak.Generic.PlayerState;
 
 public class PlayerStateFactory : IPlayerStateFactory
 {
-	private GlobalStateTracker _global;
-	private AliveStateTracker _alive;
-	private RoundStateTracker _round;
+	private readonly AliveStateTracker _alive;
+	private readonly GlobalStateTracker _global;
+	private readonly RoundStateTracker _round;
 
 	public PlayerStateFactory(GlobalStateTracker global, AliveStateTracker alive, RoundStateTracker round)
 	{
@@ -32,7 +32,8 @@ public class PlayerStateFactory : IPlayerStateFactory
 		_global.Track(state);
 		_alive.Track(state);
 
-		return state;	}
+		return state;
+	}
 
 	public IPlayerState<T> Round<T>() where T : class, new()
 	{

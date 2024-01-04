@@ -1,8 +1,7 @@
-﻿namespace Jailbreak.Warden.Queue;
+﻿namespace Jailbreak.Warden.Selection;
 
 public class QueueFavorState
 {
-
 	public const int BASE_TICKETS = 2;
 
 	public int RoundsWithoutWarden { get; set; } = 0;
@@ -15,5 +14,4 @@ public class QueueFavorState
 		       + Favor
 		       + RoundsWithoutWarden;
 	}
-
 }

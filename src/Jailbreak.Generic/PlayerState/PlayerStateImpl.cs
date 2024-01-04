@@ -2,12 +2,12 @@
 
 using Jailbreak.Public.Generic;
 
-namespace Jailbreak.Generic;
+namespace Jailbreak.Generic.PlayerState;
 
 public class PlayerStateImpl<TState> : IPlayerState<TState>, ITrackedPlayerState
 	where TState : class, new()
 {
-	private Dictionary<int, TState> _states = new();
+	private readonly Dictionary<int, TState> _states = new();
 
 	public TState Get(CCSPlayerController controller)
 	{
@@ -18,8 +18,12 @@ public class PlayerStateImpl<TState> : IPlayerState<TState>, ITrackedPlayerState
 	}
 
 	public void Reset(CCSPlayerController controller)
-		=> _states.Remove(controller.Slot);
+	{
+		_states.Remove(controller.Slot);
+	}
 
 	public void Drop()
-		=> _states.Clear();
+	{
+		_states.Clear();
+	}
 }

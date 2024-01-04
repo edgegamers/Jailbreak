@@ -1,7 +1,6 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
-using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Utils;
 
 using Jailbreak.Public.Behaviors;
@@ -10,35 +9,20 @@ using Jailbreak.Public.Mod.Teams;
 
 using Microsoft.Extensions.Logging;
 
-using Serilog;
-
 namespace Jailbreak.Teams.Ratio;
 
 public class RatioBehavior : IPluginBehavior
 {
-	private IGuardQueue _guardQueue;
-	private ILogger<RatioBehavior> _logger;
-
 	public enum RatioActionType
 	{
 		Add,
 		Remove,
-		None,
+		None
 	}
 
-	public struct RatioAction
-	{
-		public RatioActionType Type { get; init; }
-		public int Count { get; init; }
-
-		public RatioAction(int count = 0, RatioActionType type = RatioActionType.None)
-		{
-			Count = count;
-			Type = type;
-		}
-	}
-
-	private RatioConfig _config;
+	private readonly RatioConfig _config;
+	private readonly IGuardQueue _guardQueue;
+	private readonly ILogger<RatioBehavior> _logger;
 
 	public RatioBehavior(RatioConfig config, IGuardQueue guardQueue, ILogger<RatioBehavior> logger)
 	{
@@ -47,8 +31,12 @@ public class RatioBehavior : IPluginBehavior
 		_logger = logger;
 	}
 
+	public void Dispose()
+	{
+	}
+
 	/// <summary>
-	/// Evaluate whether the provided CT/T ratio needs
+	///     Evaluate whether the provided CT/T ratio needs
 	/// </summary>
 	/// <param name="ct"></param>
 	/// <param name="t"></param>
@@ -58,34 +46,34 @@ public class RatioBehavior : IPluginBehavior
 		//	No divide by zero errors today...
 		//	Make value 0.01 so the decision will always be to add Ts
 		//	1 / 0.01 = 100, etc...
-		var normalized_ct = (ct == 0 ? 0.01 : (double)ct);
-		double ts_per_ct = t / (double)normalized_ct;
-		int target = (int)( (ct + t) / _config.Target ) + 1;
+		var normalized_ct = ct == 0 ? 0.01 : ct;
+		var ts_per_ct = t / normalized_ct;
+		var target = (int)((ct + t) / _config.Target) + 1;
 
-		_logger.LogTrace("[Ratio] Evaluating ratio of {@Ct}ct to {@T}t: {@TsPerCt}t/ct ratio, {@Target} target.", ct ,t ,ts_per_ct, target);
+		_logger.LogTrace("[Ratio] Evaluating ratio of {@Ct}ct to {@T}t: {@TsPerCt}t/ct ratio, {@Target} target.", ct, t, ts_per_ct, target);
 
 		if (_config.Maximum <= ts_per_ct)
 		{
 			//	There are too many Ts per CT!
 			//	Get more guards on the team
 			_logger.LogTrace("[Ratio] Decision: Not enough CTs: {@Maximum} <= {@TsPerCt}", _config.Maximum, ts_per_ct);
-			return new(target - ct, RatioActionType.Add);
+			return new RatioAction(target - ct, RatioActionType.Add);
 		}
 
 		if (ts_per_ct <= _config.Minimum)
 		{
 			//	There are too many guards per T!
 			_logger.LogTrace("[Ratio] Decision: Too many CTs: {@TsPerCt} <= {@Minimum}", ts_per_ct, _config.Minimum);
-			return new(ct - target, RatioActionType.Remove);
+			return new RatioAction(ct - target, RatioActionType.Remove);
 		}
 
 		_logger.LogTrace("[Ratio] Decision: Goldilocks: {@Maximum} (max) <= {@TsPerCt} (t/ct) <= {@Minimum} (min)", _config.Maximum, ts_per_ct, _config.Minimum);
 		//	Take no action
-		return new();
+		return new RatioAction();
 	}
 
 	/// <summary>
-	/// When a round starts, balance out the teams
+	///     When a round starts, balance out the teams
 	/// </summary>
 	[GameEventHandler(HookMode.Pre)]
 	public HookResult OnRoundStart(EventRoundStart ev, GameEventInfo info)
@@ -108,8 +96,16 @@ public class RatioBehavior : IPluginBehavior
 		return HookResult.Continue;
 	}
 
-	public void Dispose()
+	public struct RatioAction
 	{
+		public RatioActionType Type { get; init; }
 
+		public int Count { get; init; }
+
+		public RatioAction(int count = 0, RatioActionType type = RatioActionType.None)
+		{
+			Count = count;
+			Type = type;
+		}
 	}
 }

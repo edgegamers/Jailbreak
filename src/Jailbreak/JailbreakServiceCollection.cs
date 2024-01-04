@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API.Core;
 
 using Jailbreak.Config;
 using Jailbreak.Generic;
@@ -9,12 +7,11 @@ using Jailbreak.Teams;
 using Jailbreak.Warden;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Jailbreak;
 
 /// <summary>
-/// Class that auto-registers all jailbreak services and classes.
+///     Class that auto-registers all jailbreak services and classes.
 /// </summary>
 public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
 {

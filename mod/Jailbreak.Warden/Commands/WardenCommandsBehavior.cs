@@ -11,13 +11,17 @@ namespace Jailbreak.Warden.Commands;
 
 public class WardenCommandsBehavior : IPluginBehavior
 {
-	private IWardenSelectionService _queue;
-	private IWardenService _warden;
+	private readonly IWardenSelectionService _queue;
+	private readonly IWardenService _warden;
 
 	public WardenCommandsBehavior(IWardenSelectionService queue, IWardenService warden)
 	{
 		_queue = queue;
 		_warden = warden;
+	}
+
+	public void Dispose()
+	{
 	}
 
 	public HookResult HandleWarden(CCSPlayerController sender)
@@ -86,9 +90,5 @@ public class WardenCommandsBehavior : IPluginBehavior
 			return HandlePass(sender);
 
 		return HookResult.Continue;
-	}
-
-	public void Dispose()
-	{
 	}
 }

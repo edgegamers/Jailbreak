@@ -4,11 +4,10 @@ namespace Jailbreak.Public.Mod.Warden;
 
 public interface IWardenService
 {
-
 	CCSPlayerController? Warden { get; }
 
 	/// <summary>
-	/// Whether or not a warden is currently assigned
+	///     Whether or not a warden is currently assigned
 	/// </summary>
 	bool HasWarden { get; }
 
@@ -16,5 +15,4 @@ public interface IWardenService
 	bool TrySetWarden(CCSPlayerController warden);
 
 	bool TryRemoveWarden();
-
 }

@@ -1,17 +1,14 @@
-﻿using System.Reflection;
-
-using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 
 using Jailbreak.Public.Behaviors;
 
-namespace Jailbreak.Generic.Behaviors;
+namespace Jailbreak.Generic.PlayerState.Behaviors;
 
 public class AliveStateTracker : BaseStateTracker, IPluginBehavior
 {
 	public void Start(BasePlugin parent)
 	{
-
 	}
 
 	[GameEventHandler]
