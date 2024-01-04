@@ -1,0 +1,33 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: Nightlies
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+        
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build src/Jailbreak/Jailbreak.csproj --no-restore
+    - name: Publish
+      run: dotnet publish src/Jailbreak/Jailbreak.csproj --no-build --no-restore
+    
+    - uses: actions/upload-artifact@v4.0.0
+      with:
+        name: Nightly
+        path: build
+        # If build didn't put any artifacts in the build folder, consider it an error
+        if-no-files-found: error
