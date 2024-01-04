@@ -7,9 +7,14 @@ using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
+using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Generic;
 using Jailbreak.Public.Mod.Teams;
+
+using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic.CompilerServices;
 
 using Serilog;
 
@@ -19,11 +24,14 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 {
 	private int _counter;
 	private IPlayerState<QueueState> _state;
+	private ILogger<QueueBehavior> _logger;
 
 	private IRatioNotifications _notifications;
 
-	public QueueBehavior(IPlayerStateFactory factory, IRatioNotifications notifications)
+
+	public QueueBehavior(IPlayerStateFactory factory, IRatioNotifications notifications, ILogger<QueueBehavior> logger)
 	{
+		_logger = logger;
 		_notifications = notifications;
 		_counter = 0;
 		_state = factory.Global<QueueState>();
@@ -60,10 +68,11 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 			_notifications.JOIN_GUARD_QUEUE.ToAllChat().ToAllCenter();
 		}
 
-		Log.Information($"[Queue] {count}/{queue.Count}");
+		_logger.LogInformation("[Queue] Pop requested {@Count} out of {@InQueue}", count, queue.Count);
+
 		for (int i = 0; i < Math.Min(queue.Count, count); i++)
 		{
-			Log.Information($"[Queue] Popping { queue[i].PlayerName }");
+			_logger.LogInformation("[Queue] Popping player {@Name}", queue[i].PlayerName);
 
 			ForceGuard( queue[i] );
 		}
@@ -77,12 +86,12 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 			.Where(player => player.GetTeam() == CsTeam.CounterTerrorist)
 			.Shuffle(Random.Shared)
 			.ToList();
-		Log.Information($"[Queue] {count}/{players.Count}");
+		_logger.LogInformation("[Queue] Push requested {@Count} out of {@GuardCount}", count, players.Count);
 
 		for (int i = 0; i < Math.Min(count, players.Count); i++)
 		{
 			var toSwap = players[i];
-			Log.Information($"[Queue] Pushing {toSwap.PlayerName}");
+			_logger.LogInformation("[Queue] Pushing {@Name}", toSwap.PlayerName);
 			var state = _state.Get(toSwap);
 
 			state.IsGuard = false;
@@ -151,7 +160,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
             player.PrintToCenter("An error occured removing you from the queue.");
     }
 
-    public int GetQueuePosition(CCSPlayerController player)
+	public int GetQueuePosition(CCSPlayerController player)
 	{
 		return Queue.ToList()
 			.FindIndex(controller => controller.Slot == player.Slot);

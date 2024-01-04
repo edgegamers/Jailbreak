@@ -17,7 +17,6 @@ public class RoundStateTracker : BaseStateTracker, IPluginBehavior
 	[GameEventHandler]
 	public HookResult OnRoundEnd(EventRoundEnd ev, GameEventInfo info)
 	{
-		Log.Debug("[RoundStateTracker] Resetting all tracked states");
 		ResetAll();
 
 		return HookResult.Continue;

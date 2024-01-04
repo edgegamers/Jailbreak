@@ -12,22 +12,24 @@ using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 
+using Microsoft.Extensions.Logging;
+
+using Serilog;
+
 namespace Jailbreak.Warden.Global;
 
 public class WardenBehavior : IPluginBehavior, IWardenService
 {
-
-	public void Dispose()
-	{
-	}
+	private ILogger<WardenBehavior> _logger;
 
 	private IWardenNotifications _notifications;
 
 	private bool _hasWarden;
 	private CCSPlayerController? _warden;
 
-	public WardenBehavior(IWardenNotifications notifications)
+	public WardenBehavior(ILogger<WardenBehavior> logger, IWardenNotifications notifications)
 	{
+		_logger = logger;
 		_notifications = notifications;
 	}
 
@@ -85,7 +87,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		if (ev.Userid.UserId == _warden.UserId)
 		{
 			if (!this.TryRemoveWarden())
-				Server.PrintToConsole("[Warden] BUG: Problem removing current warden :^(");
+				_logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
 			//	Warden died!
 			_notifications.WARDEN_DIED
@@ -115,7 +117,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		if (ev.Userid.UserId == _warden.UserId)
 		{
 			if (!this.TryRemoveWarden())
-				Server.PrintToConsole("[Warden] BUG: Problem removing current warden :^(");
+				_logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
 
 			_notifications.WARDEN_LEFT

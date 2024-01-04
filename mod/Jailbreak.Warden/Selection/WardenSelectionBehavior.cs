@@ -15,6 +15,8 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Generic;
 using Jailbreak.Public.Mod.Warden;
 
+using Microsoft.Extensions.Logging;
+
 using Serilog;
 
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
@@ -34,6 +36,8 @@ public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
 
 	private IPlayerState<QueueFavorState> _favor;
 
+	private ILogger<WardenSelectionBehavior> _logger;
+
 	/// <summary>
 	/// Whether or not to use the queue.
 	/// When true, the queue should be skipped and turn to first-come-first-serve.
@@ -44,10 +48,11 @@ public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
 
 	private IWardenNotifications _notifications;
 
-	public WardenSelectionBehavior(IPlayerStateFactory factory, IWardenService warden, IWardenNotifications notifications)
+	public WardenSelectionBehavior(IPlayerStateFactory factory, IWardenService warden, IWardenNotifications notifications, ILogger<WardenSelectionBehavior> logger)
 	{
 		_warden = warden;
 		_notifications = notifications;
+		_logger = logger;
 		_queue = factory.Round<QueueState>();
 		_favor = factory.Global<QueueFavorState>();
 
@@ -95,7 +100,7 @@ public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
 			.Where(player => _queue.Get(player).InQueue)
 			.ToList();
 
-		Log.Information("[WardenSelectionBehavior] Picking warden from {@Eligible}", eligible);
+		_logger.LogTrace("[WardenSelectionBehavior] Picking warden from {@Eligible}", eligible);
 
 		if (eligible.Count == 0)
 		{
@@ -110,13 +115,13 @@ public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
 		int tickets = favors.Sum(favor => favor.Value.GetTickets());
 		int chosen = Random.Shared.Next(tickets);
 
-		Server.PrintToConsole($"[Warden Raffle] Picking {chosen} out of {tickets}");
+		_logger.LogTrace("[Warden Raffle] Picking {@Chosen} out of {@Tickets}", chosen, tickets);
 
 		int pointer = 0;
 		foreach (var (player, favor) in favors)
 		{
 			int thisTickets = favor.GetTickets();
-			Server.PrintToConsole($"[Warden Raffle] {pointer} -> {pointer + thisTickets}: #{player.Slot} {player.PlayerName}");
+			_logger.LogTrace("[Warden Raffle] {@Pointer} -> {@End}: #{@Slot} {@Name}", pointer, pointer + thisTickets, player.Slot, player.PlayerName);
 
 			//	If winning ticket belongs to this player, assign them as warden.
 			if (pointer <= chosen && chosen < (pointer + thisTickets))
