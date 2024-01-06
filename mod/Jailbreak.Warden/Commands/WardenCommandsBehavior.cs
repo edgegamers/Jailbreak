@@ -17,7 +17,7 @@ public class WardenCommandsBehavior : IPluginBehavior
 	public WardenCommandsBehavior(IWardenSelectionService queue, IWardenService warden)
 	{
 		_queue = queue;
-		_warden = warden;
+		_warden = warden; 
 	}
 
 	public HookResult HandleWarden(CCSPlayerController sender)

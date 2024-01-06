@@ -1,14 +1,13 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Generic;
 using Jailbreak.Public.Mod.Teams;
-
-using Microsoft.VisualBasic.CompilerServices;
 
 using Serilog;
 
@@ -112,31 +111,61 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 		var player = ev.Userid;
 
 		if (ev.Team == (int)CsTeam.CounterTerrorist && !state.IsGuard)
-		{
-			player.SwitchTeam(CsTeam.Terrorist);
-			player.PrintToCenter("You were swapped to T!\nUse !guard to join the queue.");
-
+		{            
 			return HookResult.Handled;
 		}
 
 		if (player.GetTeam() == CsTeam.Terrorist && state.IsGuard)
 		{
-			if (this.TryExitQueue(player))
-				player.PrintToCenter("You were removed from the guard queue for switching to T.\nUse !guard to rejoin the queue!");
+            HandleLeaveRequest(player);
 		}
 
 		return HookResult.Continue;
 	}
 
+    private void HandleQueueRequest(CCSPlayerController player) {
+        if (TryEnterQueue(player))
+            player.PrintToCenter("You were added to the CT queue!");
+        else
+            player.PrintToCenter("An error occured adding you to the queue.");
+        
+    }
 
+    private void HandleLeaveRequest(CCSPlayerController player)
+    {
+        if (TryExitQueue(player)) 
+            player.PrintToCenter("You were removed from the guard queue for switching to T.\nUse !guard to rejoin the queue!");
+        else
+            player.PrintToCenter("An error occured removing you from the queue.");
+    }
 
-	public int GetQueuePosition(CCSPlayerController player)
+    public int GetQueuePosition(CCSPlayerController player)
 	{
 		return Queue.ToList()
 			.FindIndex(controller => controller.Slot == player.Slot);
 	}
 
-	public IEnumerable<CCSPlayerController> Queue
+    [ConsoleCommand("css_guard", "Joins the guard queue")]
+    [ConsoleCommand("css_g", "Joins the guard queue")]
+    [CommandHelper(0, "", CommandUsage.CLIENT_ONLY)]
+    public void Command_Guard(CCSPlayerController? player, CommandInfo command)
+    {
+        if (player == null)
+            return;
+        HandleQueueRequest(player);
+    }
+
+    [ConsoleCommand("css_leave", "Leaves the guard queue")]
+    [CommandHelper(0, "", CommandUsage.CLIENT_ONLY)]
+    public void Command_Leave(CCSPlayerController? player, CommandInfo command)
+    {
+        if (player == null)
+            return;
+        HandleLeaveRequest(player);
+    }
+
+
+    public IEnumerable<CCSPlayerController> Queue
 		=> Utilities.GetPlayers()
 			.Select(player => (Player: player, State: _state.Get(player)))
 			.Where(tuple => tuple.State.InQueue)	//	Exclude not in queue
