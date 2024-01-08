@@ -2,8 +2,9 @@
 using CounterStrikeSharp.API.Core;
 
 using Jailbreak.Formatting.Base;
+using Jailbreak.Formatting.Core;
 
-namespace Jailbreak.Formatting.Formatting;
+namespace Jailbreak.Formatting.Extensions;
 
 public static class ViewExtensions
 {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using CounterStrikeSharp.API;
@@ -9,7 +8,7 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 
-using Jailbreak.Formatting.Formatting;
+using Jailbreak.Formatting.Extensions;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Generic;
@@ -20,7 +19,7 @@ using Serilog;
 
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
-namespace Jailbreak.Warden.Queue;
+namespace Jailbreak.Warden.Selection;
 
 /// <summary>
 /// Behavior responsible for choosing the next warden
@@ -97,7 +96,7 @@ public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
 
 		if (eligible.Count == 0)
 		{
-			Server.PrintToChatAll("[Warden] No Wardens in queue!");
+			WardenNotifications.NO_WARDENS.ToAllChat();
 			_queueInactive = true;
 
 			return;

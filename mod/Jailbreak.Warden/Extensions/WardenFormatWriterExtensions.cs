@@ -1,4 +1,4 @@
-﻿namespace Jailbreak.Warden.Views;
+﻿namespace Jailbreak.Warden.Extensions;
 
 public class WardenFormatWriterExtensions
 {

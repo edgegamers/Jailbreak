@@ -5,11 +5,12 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
 
-using Jailbreak.Formatting.Formatting;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Warden;
 using Jailbreak.Warden.Views;
+using Jailbreak.Formatting.Core;
+using Jailbreak.Formatting.Extensions;
 
 namespace Jailbreak.Warden.Global;
 

@@ -1,4 +1,4 @@
-﻿using Jailbreak.Formatting.Formatting;
+﻿using Jailbreak.Formatting.Core;
 
 namespace Jailbreak.Formatting.Base;
 

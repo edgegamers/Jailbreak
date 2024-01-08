@@ -1,4 +1,4 @@
-﻿namespace Jailbreak.Formatting.Formatting;
+﻿namespace Jailbreak.Formatting.Core;
 
 public class FormatWriter
 {

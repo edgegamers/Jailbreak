@@ -1,4 +1,6 @@
-﻿namespace Jailbreak.Formatting.Formatting;
+﻿using Jailbreak.Formatting.Core;
+
+namespace Jailbreak.Formatting.Objects;
 
 public class HiddenFormatObject : FormatObject
 {

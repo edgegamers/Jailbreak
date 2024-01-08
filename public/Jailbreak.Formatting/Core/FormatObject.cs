@@ -1,6 +1,8 @@
 ﻿using CounterStrikeSharp.API.Core;
 
-namespace Jailbreak.Formatting.Formatting;
+using Jailbreak.Formatting.Objects;
+
+namespace Jailbreak.Formatting.Core;
 
 public abstract class FormatObject
 {

@@ -1,7 +1,7 @@
 ﻿using CounterStrikeSharp.API.Core;
 
 using Jailbreak.Formatting.Base;
-using Jailbreak.Formatting.Formatting;
+using Jailbreak.Formatting.Core;
 
 namespace Jailbreak.Warden.Views;
 
