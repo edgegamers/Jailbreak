@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using CounterStrikeSharp.API;
@@ -7,10 +9,12 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 
+using Jailbreak.Formatting.Formatting;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Generic;
 using Jailbreak.Public.Mod.Warden;
+using Jailbreak.Warden.Views;
 
 using Serilog;
 
@@ -64,8 +68,7 @@ public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
 		//	Enable the warden queue
 		_queueInactive = false;
 
-		Server.PrintToChatAll("[Warden] Picking a warden shortly.");
-		Server.PrintToChatAll("[Warden] To enter the warden queue, type !WARDEN in chat.");
+		WardenNotifications.PICKING_SHORTLY.ToAllChat();
 
 		//	Start a timer to pick the warden in 7 seconds
 		ScheduleChooseWarden(7.0f);

@@ -5,9 +5,11 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
 
+using Jailbreak.Formatting.Formatting;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Warden;
+using Jailbreak.Warden.Views;
 
 namespace Jailbreak.Warden.Global;
 
@@ -43,8 +45,10 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		_hasWarden = true;
 		_warden = controller;
 
-		Server.PrintToChatAll($"[Warden] {_warden.PlayerName.Sanitize()} is now the warden!");
-		ServerExtensions.PrintToCenterAll($"{_warden.PlayerName.Sanitize()} is now the warden!");
+		new NewWardenView(_warden)
+			.ToAllChat()
+			.ToAllCenter();
+
 		_warden.ClanName = "[WARDEN]";
 
 		return true;
@@ -76,9 +80,11 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 				Server.PrintToConsole("[Warden] BUG: Problem removing current warden :^(");
 
 			//	Warden died!
-			Server.PrintToChatAll("[Warden] The current warden has died!");
-			Server.PrintToChatAll("[Warden] Type !warden to become the next warden");
-			ServerExtensions.PrintToCenterAll("The warden has died!");
+			WardenNotifications.WARDEN_DIED
+				.ToAllChat()
+				.ToAllCenter();
+
+			WardenNotifications.BECOME_NEXT_WARDEN.ToAllChat();
 		}
 
 		return HookResult.Continue;
@@ -103,10 +109,12 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 			if (!this.TryRemoveWarden())
 				Server.PrintToConsole("[Warden] BUG: Problem removing current warden :^(");
 
-			//	Warden died!
-			Server.PrintToChatAll("[Warden] The current warden has left the game!");
-			Server.PrintToChatAll("[Warden] Type !warden to become the next warden");
-			ServerExtensions.PrintToCenterAll("The warden has left!");
+
+			WardenNotifications.WARDEN_LEFT
+				.ToAllChat()
+				.ToAllCenter();
+
+			WardenNotifications.BECOME_NEXT_WARDEN.ToAllChat();
 		}
 
 		return HookResult.Continue;
