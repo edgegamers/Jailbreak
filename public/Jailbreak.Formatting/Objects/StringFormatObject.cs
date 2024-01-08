@@ -7,16 +7,18 @@ namespace Jailbreak.Formatting.Objects;
 public class StringFormatObject : FormatObject
 {
 	private string _value;
+	private char _chatColor;
 
-	public StringFormatObject(string value)
+	public StringFormatObject(string value, char chatColor = '\x01')
 	{
 		_value = value;
+		_chatColor = chatColor;
 	}
 
 	public string Value => _value;
 
 	public override string ToChat()
-		=> $"{ChatColors.White}{Value}";
+		=> $"{_chatColor}{Value}";
 
 	public override string ToPanorama()
 		=> Value;

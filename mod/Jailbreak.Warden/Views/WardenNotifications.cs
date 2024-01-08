@@ -8,7 +8,7 @@ namespace Jailbreak.Warden.Views;
 
 public static class WardenNotifications
 {
-	public static FormatObject PREFIX = new HiddenFormatObject( $"{ChatColors.Lime}[{ChatColors.Green}WARDEN{ChatColors.Lime}]{ChatColors.White}" )
+	public static FormatObject PREFIX = new HiddenFormatObject( $" {ChatColors.Lime}[{ChatColors.Green}WARDEN{ChatColors.Lime}]" )
 	{
 		//	Hide in panorama and center text
 		Plain = false,
@@ -33,5 +33,11 @@ public static class WardenNotifications
 
 	public static IView BECOME_NEXT_WARDEN => new SimpleView(writer =>
 		writer.Line(PREFIX, "Type !warden to become the next warden"));
+
+	public static IView JOIN_RAFFLE => new SimpleView(writer =>
+		writer.Line(PREFIX, "You've joined the warden raffle!"));
+
+	public static IView LEAVE_RAFFLE => new SimpleView(writer =>
+		writer.Line(PREFIX, "You've left the warden raffle!"));
 
 }
