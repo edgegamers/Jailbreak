@@ -1,6 +1,6 @@
 ﻿using CounterStrikeSharp.API.Core;
 
-namespace Jailbreak.Generic;
+namespace Jailbreak.Generic.PlayerState;
 
 public interface ITrackedPlayerState
 {
