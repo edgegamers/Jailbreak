@@ -3,10 +3,12 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
 
+using Jailbreak.Formatting.Extensions;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Generic;
 using Jailbreak.Public.Mod.Teams;
+using Jailbreak.Teams.Views;
 
 using Microsoft.VisualBasic.CompilerServices;
 
@@ -53,9 +55,8 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
 		if (queue.Count <= count)
 		{
-			Server.PrintToChatAll("[Jail] Not enough guards are in the queue!");
-			Server.PrintToChatAll("[Jail] Type !guard in chat to join the queue");
-			ServerExtensions.PrintToCenterAll("Type !guard to become a guard!");
+			TeamsNotifications.NOT_ENOUGH_GUARDS.ToAllChat();
+			TeamsNotifications.JOIN_GUARD_QUEUE.ToAllChat().ToAllCenter();
 		}
 
 		Log.Information($"[Queue] {count}/{queue.Count}");
@@ -90,7 +91,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
 			TryEnterQueue(toSwap);
 
-			toSwap.PrintToCenter("You were autobalanced to the prisoner team!");
+			TeamsNotifications.YOU_WERE_AUTOBALANCED_PRISONER.ToPlayerCenter(toSwap);
 		}
 
 		return true;
@@ -101,7 +102,10 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 		//	Set IsGuard so they won't be swapped back.
 		_state.Get(player).IsGuard = true;
 
-		player.PrintToCenter("You are now a guard!");
+		TeamsNotifications.YOU_WERE_AUTOBALANCED_GUARD
+			.ToPlayerChat(player)
+			.ToPlayerCenter(player);
+
 		player.ChangeTeam(CsTeam.CounterTerrorist);
 	}
 
@@ -114,7 +118,10 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 		if (ev.Team == (int)CsTeam.CounterTerrorist && !state.IsGuard)
 		{
 			player.SwitchTeam(CsTeam.Terrorist);
-			player.PrintToCenter("You were swapped to T!\nUse !guard to join the queue.");
+
+			TeamsNotifications.ATTEMPT_TO_JOIN_FROM_TEAM_MENU
+				.ToPlayerCenter(player)
+				.ToPlayerChat(player);
 
 			return HookResult.Handled;
 		}
@@ -122,7 +129,9 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 		if (player.GetTeam() == CsTeam.Terrorist && state.IsGuard)
 		{
 			if (this.TryExitQueue(player))
-				player.PrintToCenter("You were removed from the guard queue for switching to T.\nUse !guard to rejoin the queue!");
+				TeamsNotifications.LEFT_GUARD
+					.ToPlayerCenter(player)
+					.ToPlayerChat(player);
 		}
 
 		return HookResult.Continue;
