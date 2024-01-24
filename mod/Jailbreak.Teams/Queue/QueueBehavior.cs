@@ -115,7 +115,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 		var player = ev.Userid;
 
 		if (ev.Team == (int)CsTeam.CounterTerrorist && !state.IsGuard)
-		{            
+		{
 			return HookResult.Handled;
 		}
 
@@ -130,18 +130,23 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 		return HookResult.Continue;
 	}
 
-    private void HandleQueueRequest(CCSPlayerController player) {
-        if (TryEnterQueue(player))
-            player.PrintToCenter("You were added to the CT queue!");
-        else
-            player.PrintToCenter("An error occured adding you to the queue.");
-        
+    private void HandleQueueRequest(CCSPlayerController player)
+    {
+	    if (TryEnterQueue(player))
+		    _notifications.JOIN_GUARD_QUEUE
+			    .ToPlayerCenter(player)
+			    .ToPlayerChat(player);
+	    else
+		    player.PrintToCenter("An error occured adding you to the queue.");
+
     }
 
     private void HandleLeaveRequest(CCSPlayerController player)
     {
-        if (TryExitQueue(player)) 
-            player.PrintToCenter("You were removed from the guard queue for switching to T.\nUse !guard to rejoin the queue!");
+        if (TryExitQueue(player))
+	        _notifications.LEFT_GUARD
+		        .ToPlayerCenter(player)
+		        .ToPlayerChat(player);
         else
             player.PrintToCenter("An error occured removing you from the queue.");
     }
