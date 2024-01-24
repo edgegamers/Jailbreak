@@ -13,13 +13,12 @@ The classic Jail gamemode, ported to Counter-Strike 2.
 - **⚙️ Server**
   - [ ] Stats/Analytics Sinks
   - [ ] Error reporting
-  - [ ] Configuration system
+  - [x] Configuration system
       - Note: Passable, but in a terrible state. Needs TLC.
 - **👮 Guards**
   - [x] Warden Selection
   - [ ] Special Days
-  - [ ] Ratio Enforcement
-      - Note: Mostly there, needs debug.
+  - [x] Ratio Enforcement
   - [ ] Bans/Punishments
 - **🎃 Prisoners**
   - [ ] Last Request
@@ -49,6 +48,33 @@ have their event handlers automatically registered.
 
 Code style should follow .NET conventions
 (if you need help, make sure to check "enable edits from maintainers" and ask for a format)
+
+## Modding
+
+Want to fork Jailbreak and add in your own custom behavior? No sweat!
+The jailbreak repository is designed to act as a submodule.
+
+```shell
+git submodule add https://github.com/edgegamers/Jailbreak 
+```
+
+Once you have a dependency to `Jailbreak.Public`, you can add in whatever functionality
+you want from the current plugin, and choose to add in your own handlers if you wish.
+Don't forget to register them with the service container!
+
+To boot your plugin, simply iterate over all services that inherit from `IPluginBehavior`,
+as demonstrated in `src/Jailbreak/Jailbreak.cs`:
+
+```cs
+foreach (IPluginBehavior extension in _extensions)
+{
+    //	Register all event handlers on the extension object
+    RegisterAllAttributes(extension);
+
+    //	Tell the extension to start it's magic
+    extension.Start(this);
+}
+```
 
 ## Building
 
