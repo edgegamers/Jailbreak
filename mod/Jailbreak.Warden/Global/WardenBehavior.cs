@@ -8,6 +8,9 @@ using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Warden;
+using Jailbreak.Formatting.Core;
+using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views;
 
 namespace Jailbreak.Warden.Global;
 
@@ -18,8 +21,15 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 	{
 	}
 
+	private IWardenNotifications _notifications;
+
 	private bool _hasWarden;
 	private CCSPlayerController? _warden;
+
+	public WardenBehavior(IWardenNotifications notifications)
+	{
+		_notifications = notifications;
+	}
 
 	/// <summary>
 	/// Get the current warden, if there is one.
@@ -43,8 +53,10 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		_hasWarden = true;
 		_warden = controller;
 
-		Server.PrintToChatAll($"[Warden] {_warden.PlayerName.Sanitize()} is now the warden!");
-		ServerExtensions.PrintToCenterAll($"{_warden.PlayerName.Sanitize()} is now the warden!");
+		_notifications.NEW_WARDEN(_warden)
+			.ToAllChat()
+			.ToAllCenter();
+
 		_warden.ClanName = "[WARDEN]";
 
 		return true;
@@ -76,9 +88,11 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 				Server.PrintToConsole("[Warden] BUG: Problem removing current warden :^(");
 
 			//	Warden died!
-			Server.PrintToChatAll("[Warden] The current warden has died!");
-			Server.PrintToChatAll("[Warden] Type !warden to become the next warden");
-			ServerExtensions.PrintToCenterAll("The warden has died!");
+			_notifications.WARDEN_DIED
+				.ToAllChat()
+				.ToAllCenter();
+
+			_notifications.BECOME_NEXT_WARDEN.ToAllChat();
 		}
 
 		return HookResult.Continue;
@@ -103,10 +117,12 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 			if (!this.TryRemoveWarden())
 				Server.PrintToConsole("[Warden] BUG: Problem removing current warden :^(");
 
-			//	Warden died!
-			Server.PrintToChatAll("[Warden] The current warden has left the game!");
-			Server.PrintToChatAll("[Warden] Type !warden to become the next warden");
-			ServerExtensions.PrintToCenterAll("The warden has left!");
+
+			_notifications.WARDEN_LEFT
+				.ToAllChat()
+				.ToAllCenter();
+
+			_notifications.BECOME_NEXT_WARDEN.ToAllChat();
 		}
 
 		return HookResult.Continue;

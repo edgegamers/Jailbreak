@@ -1,6 +1,6 @@
 ﻿using CounterStrikeSharp.API.Core;
 
-namespace Jailbreak.Generic.Behaviors;
+namespace Jailbreak.Generic.PlayerState.Behaviors;
 
 public class BaseStateTracker : IDisposable
 {

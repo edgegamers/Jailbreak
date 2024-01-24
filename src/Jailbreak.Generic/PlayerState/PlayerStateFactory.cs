@@ -1,7 +1,7 @@
-﻿using Jailbreak.Generic.Behaviors;
+﻿using Jailbreak.Generic.PlayerState.Behaviors;
 using Jailbreak.Public.Generic;
 
-namespace Jailbreak.Generic;
+namespace Jailbreak.Generic.PlayerState;
 
 public class PlayerStateFactory : IPlayerStateFactory
 {

@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 using CounterStrikeSharp.API;
@@ -7,6 +8,8 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 
+using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Generic;
@@ -16,7 +19,7 @@ using Serilog;
 
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
-namespace Jailbreak.Warden.Queue;
+namespace Jailbreak.Warden.Selection;
 
 /// <summary>
 /// Behavior responsible for choosing the next warden
@@ -39,9 +42,12 @@ public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
 
 	private IWardenService _warden;
 
-	public WardenSelectionBehavior(IPlayerStateFactory factory, IWardenService warden)
+	private IWardenNotifications _notifications;
+
+	public WardenSelectionBehavior(IPlayerStateFactory factory, IWardenService warden, IWardenNotifications notifications)
 	{
 		_warden = warden;
+		_notifications = notifications;
 		_queue = factory.Round<QueueState>();
 		_favor = factory.Global<QueueFavorState>();
 
@@ -64,8 +70,7 @@ public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
 		//	Enable the warden queue
 		_queueInactive = false;
 
-		Server.PrintToChatAll("[Warden] Picking a warden shortly.");
-		Server.PrintToChatAll("[Warden] To enter the warden queue, type !WARDEN in chat.");
+		_notifications.PICKING_SHORTLY.ToAllChat();
 
 		//	Start a timer to pick the warden in 7 seconds
 		ScheduleChooseWarden(7.0f);
@@ -94,7 +99,7 @@ public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
 
 		if (eligible.Count == 0)
 		{
-			Server.PrintToChatAll("[Warden] No Wardens in queue!");
+			_notifications.NO_WARDENS.ToAllChat();
 			_queueInactive = true;
 
 			return;

@@ -2,7 +2,7 @@
 
 using Jailbreak.Public.Generic;
 
-namespace Jailbreak.Generic;
+namespace Jailbreak.Generic.PlayerState;
 
 public class PlayerStateImpl<TState> : IPlayerState<TState>, ITrackedPlayerState
 	where TState : class, new()

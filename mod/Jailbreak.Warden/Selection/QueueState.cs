@@ -1,4 +1,4 @@
-﻿namespace Jailbreak.Warden.Queue;
+﻿namespace Jailbreak.Warden.Selection;
 
 public class QueueState
 {
