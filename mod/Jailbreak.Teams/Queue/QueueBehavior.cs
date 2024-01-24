@@ -1,8 +1,11 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 
+using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Generic;
@@ -18,9 +21,12 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 	private readonly ILogger<QueueBehavior> _logger;
 	private readonly IPlayerState<QueueState> _state;
 
-	public QueueBehavior(IPlayerStateFactory factory, ILogger<QueueBehavior> logger)
+	private IRatioNotifications _notifications;
+
+	public QueueBehavior(IPlayerStateFactory factory,  ILogger<QueueBehavior> logger, IRatioNotifications notifications)
 	{
-		_logger = logger;
+  	_logger = logger;
+		_notifications = notifications;
 		_counter = 0;
 		_state = factory.Global<QueueState>();
 	}
@@ -48,14 +54,12 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
 	public bool TryPop(int count)
 	{
-		Server.PrintToChatAll($"[Jail] Autobalancing is adding {count} guards.");
 		var queue = Queue.ToList();
 
 		if (queue.Count <= count)
 		{
-			Server.PrintToChatAll("[Jail] Not enough guards are in the queue!");
-			Server.PrintToChatAll("[Jail] Type !guard in chat to join the queue");
-			ServerExtensions.PrintToCenterAll("Not enough players in guard queue!\nType !guard to become a guard.");
+			_notifications.NOT_ENOUGH_GUARDS.ToAllChat();
+			_notifications.JOIN_GUARD_QUEUE.ToAllChat().ToAllCenter();
 		}
 
 		_logger.LogInformation("[Queue] Pop requested {@Count} out of {@InQueue}", count, queue.Count);
@@ -72,8 +76,6 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
 	public bool TryPush(int count)
 	{
-		Server.PrintToChatAll($"[Jail] Autobalancing is removing {count} guards.");
-
 		var players = Utilities.GetPlayers()
 			.Where(player => player.GetTeam() == CsTeam.CounterTerrorist)
 			.Shuffle(Random.Shared)
@@ -91,7 +93,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
 			TryEnterQueue(toSwap);
 
-			toSwap.PrintToCenter("You were autobalanced to the prisoner team!");
+			_notifications.YOU_WERE_AUTOBALANCED_PRISONER.ToPlayerCenter(toSwap);
 		}
 
 		return true;
@@ -102,7 +104,10 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 		//	Set IsGuard so they won't be swapped back.
 		_state.Get(player).IsGuard = true;
 
-		player.PrintToCenter("You are now a guard!");
+		_notifications.YOU_WERE_AUTOBALANCED_GUARD
+			.ToPlayerChat(player)
+			.ToPlayerCenter(player);
+
 		player.ChangeTeam(CsTeam.CounterTerrorist);
 	}
 
@@ -129,16 +134,72 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
 		if (ev.Team == (int)CsTeam.CounterTerrorist && !state.IsGuard)
 		{
-			player.SwitchTeam(CsTeam.Terrorist);
-			player.PrintToCenter("You were swapped to T!\nUse !guard to join the queue.");
-
 			return HookResult.Handled;
 		}
 
 		if (player.GetTeam() == CsTeam.Terrorist && state.IsGuard)
-			if (TryExitQueue(player))
-				player.PrintToCenter("You were removed from the guard queue for switching to T.\nUse !guard to rejoin the queue!");
+		{
+			if (this.TryExitQueue(player))
+				_notifications.LEFT_GUARD
+					.ToPlayerCenter(player)
+					.ToPlayerChat(player);
+		}
 
 		return HookResult.Continue;
 	}
+
+    private void HandleQueueRequest(CCSPlayerController player)
+    {
+	    if (TryEnterQueue(player))
+		    _notifications.JOIN_GUARD_QUEUE
+			    .ToPlayerCenter(player)
+			    .ToPlayerChat(player);
+	    else
+		    player.PrintToCenter("An error occured adding you to the queue.");
+
+    }
+
+    private void HandleLeaveRequest(CCSPlayerController player)
+    {
+        if (TryExitQueue(player))
+	        _notifications.LEFT_GUARD
+		        .ToPlayerCenter(player)
+		        .ToPlayerChat(player);
+        else
+            player.PrintToCenter("An error occured removing you from the queue.");
+    }
+
+    public int GetQueuePosition(CCSPlayerController player)
+	{
+		return Queue.ToList()
+			.FindIndex(controller => controller.Slot == player.Slot);
+	}
+
+    [ConsoleCommand("css_guard", "Joins the guard queue")]
+    [ConsoleCommand("css_g", "Joins the guard queue")]
+    [CommandHelper(0, "", CommandUsage.CLIENT_ONLY)]
+    public void Command_Guard(CCSPlayerController? player, CommandInfo command)
+    {
+        if (player == null)
+            return;
+        HandleQueueRequest(player);
+    }
+
+    [ConsoleCommand("css_leave", "Leaves the guard queue")]
+    [CommandHelper(0, "", CommandUsage.CLIENT_ONLY)]
+    public void Command_Leave(CCSPlayerController? player, CommandInfo command)
+    {
+        if (player == null)
+            return;
+        HandleLeaveRequest(player);
+    }
+
+
+    public IEnumerable<CCSPlayerController> Queue
+		=> Utilities.GetPlayers()
+			.Select(player => (Player: player, State: _state.Get(player)))
+			.Where(tuple => tuple.State.InQueue)	//	Exclude not in queue
+			.Where(tuple => !tuple.State.IsGuard)	//	Exclude current guards
+			.OrderBy(tuple => tuple.State.Position) //	Order by counter value when joined queue
+			.Select(tuple => tuple.Player);
 }

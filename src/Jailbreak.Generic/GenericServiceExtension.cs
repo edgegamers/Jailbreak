@@ -1,4 +1,6 @@
-﻿using Jailbreak.Generic.PlayerState;
+﻿using CounterStrikeSharp.API.Core;
+
+using Jailbreak.Generic.PlayerState;
 using Jailbreak.Generic.PlayerState.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Generic;

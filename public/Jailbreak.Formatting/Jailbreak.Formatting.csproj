@@ -7,8 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\public\Jailbreak.Formatting\Jailbreak.Formatting.csproj" />
-      <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj" />
+      <ProjectReference Include="..\Jailbreak.Public\Jailbreak.Public.csproj" />
     </ItemGroup>
-    
+
 </Project>

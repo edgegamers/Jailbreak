@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 
 using Jailbreak.Public.Behaviors;
 
+
 namespace Jailbreak.Generic.PlayerState.Behaviors;
 
 public class RoundStateTracker : BaseStateTracker, IPluginBehavior

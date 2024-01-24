@@ -3,6 +3,8 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
 
+using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Warden;
@@ -11,13 +13,15 @@ namespace Jailbreak.Warden.Commands;
 
 public class WardenCommandsBehavior : IPluginBehavior
 {
-	private readonly IWardenSelectionService _queue;
-	private readonly IWardenService _warden;
+	private IWardenSelectionService _queue;
+	private IWardenService _warden;
+	private IWardenNotifications _notifications;
 
-	public WardenCommandsBehavior(IWardenSelectionService queue, IWardenService warden)
+	public WardenCommandsBehavior(IWardenSelectionService queue, IWardenService warden, IWardenNotifications notifications)
 	{
 		_queue = queue;
 		_warden = warden;
+		_notifications = notifications;
 	}
 
 	public void Dispose()
@@ -33,11 +37,11 @@ public class WardenCommandsBehavior : IPluginBehavior
 		{
 			if (_queue.InQueue(sender))
 				if (_queue.TryEnter(sender))
-					sender.PrintToChat("[Warden] You've joined the queue!");
+					_notifications.JOIN_RAFFLE.ToPlayerChat(sender);
 
 			if (!_queue.InQueue(sender))
 				if (_queue.TryExit(sender))
-					sender.PrintToChat("[Warden] You've left the queue!");
+					_notifications.LEAVE_RAFFLE.ToPlayerChat(sender);
 
 			return HookResult.Handled;
 		}
@@ -46,11 +50,7 @@ public class WardenCommandsBehavior : IPluginBehavior
 		if (isCt && !_warden.HasWarden)
 			_warden.TrySetWarden(sender);
 
-		//	Respond to all other requests
-		if (_warden.HasWarden)
-			sender.PrintToChat($"[Warden] The current warden is {_warden.Warden.PlayerName}");
-		else
-			sender.PrintToChat("[Warden] There is currently no warden!");
+		_notifications.CURRENT_WARDEN(_warden.Warden).ToPlayerChat(sender);
 
 		return HookResult.Handled;
 	}
@@ -63,7 +63,12 @@ public class WardenCommandsBehavior : IPluginBehavior
 		if (isWarden)
 		{
 			//	Handle warden pass
-			Server.PrintToChatAll("[Warden] The warden has passed!");
+			_notifications.PASS_WARDEN(sender)
+				.ToAllChat()
+				.ToAllCenter();
+
+			_notifications.BECOME_NEXT_WARDEN.ToAllChat();
+
 			if (!_warden.TryRemoveWarden())
 				Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");
 

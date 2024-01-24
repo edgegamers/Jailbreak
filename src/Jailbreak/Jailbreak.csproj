@@ -32,10 +32,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\mod\Jailbreak.Teams\Jailbreak.Teams.csproj"/>
-        <ProjectReference Include="..\..\mod\Jailbreak.Warden\Jailbreak.Warden.csproj"/>
-        <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj"/>
-        <ProjectReference Include="..\Jailbreak.Generic\Jailbreak.Generic.csproj"/>
+      <ProjectReference Include="..\..\lang\Jailbreak.English\Jailbreak.English.csproj" />
+      <ProjectReference Include="..\..\mod\Jailbreak.Teams\Jailbreak.Teams.csproj" />
+      <ProjectReference Include="..\..\mod\Jailbreak.Warden\Jailbreak.Warden.csproj" />
+      <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj" />
+      <ProjectReference Include="..\Jailbreak.Generic\Jailbreak.Generic.csproj" />
     </ItemGroup>
 
 </Project>

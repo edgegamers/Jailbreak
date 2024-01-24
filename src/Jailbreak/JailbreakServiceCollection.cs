@@ -1,6 +1,10 @@
 ﻿using CounterStrikeSharp.API.Core;
 
 using Jailbreak.Config;
+using Jailbreak.English.Teams;
+using Jailbreak.English.Warden;
+using Jailbreak.Formatting.Languages;
+using Jailbreak.Formatting.Logistics;
 using Jailbreak.Generic;
 using Jailbreak.Public.Configuration;
 using Jailbreak.Teams;
@@ -25,5 +29,12 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
 		serviceCollection.AddJailbreakGeneric();
 		serviceCollection.AddJailbreakWarden();
 		serviceCollection.AddJailbreakTeams();
+
+		//	Add in english localization
+		serviceCollection.AddLanguage<Formatting.Languages.English>(config =>
+		{
+			config.WithRatio<RatioNotifications>();
+			config.WithWarden<WardenNotifications>();
+		});
 	}
 }
