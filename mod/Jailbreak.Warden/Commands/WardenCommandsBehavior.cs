@@ -4,10 +4,10 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
 
 using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Warden;
-using Jailbreak.Warden.Views;
 
 namespace Jailbreak.Warden.Commands;
 
@@ -15,11 +15,13 @@ public class WardenCommandsBehavior : IPluginBehavior
 {
 	private IWardenSelectionService _queue;
 	private IWardenService _warden;
+	private IWardenNotifications _notifications;
 
-	public WardenCommandsBehavior(IWardenSelectionService queue, IWardenService warden)
+	public WardenCommandsBehavior(IWardenSelectionService queue, IWardenService warden, IWardenNotifications notifications)
 	{
 		_queue = queue;
 		_warden = warden;
+		_notifications = notifications;
 	}
 
 	public HookResult HandleWarden(CCSPlayerController sender)
@@ -31,11 +33,11 @@ public class WardenCommandsBehavior : IPluginBehavior
 		{
 			if (_queue.InQueue(sender))
 				if (_queue.TryEnter(sender))
-					WardenNotifications.JOIN_RAFFLE.ToPlayerChat(sender);
+					_notifications.JOIN_RAFFLE.ToPlayerChat(sender);
 
 			if (!_queue.InQueue(sender))
 				if (_queue.TryExit(sender))
-					WardenNotifications.LEAVE_RAFFLE.ToPlayerChat(sender);
+					_notifications.LEAVE_RAFFLE.ToPlayerChat(sender);
 
 			return HookResult.Handled;
 		}
@@ -44,7 +46,7 @@ public class WardenCommandsBehavior : IPluginBehavior
 		if (isCt && !_warden.HasWarden)
 			_warden.TrySetWarden(sender);
 
-		new CurrentWardenView(_warden.Warden).ToPlayerChat(sender);
+		_notifications.CURRENT_WARDEN(_warden.Warden).ToPlayerChat(sender);
 
 		return HookResult.Handled;
 	}
@@ -57,9 +59,11 @@ public class WardenCommandsBehavior : IPluginBehavior
 		if (isWarden)
 		{
 			//	Handle warden pass
-			new PassWardenView(sender).ToAllCenter()
-				.ToAllChat();
-			WardenNotifications.BECOME_NEXT_WARDEN.ToAllChat();
+			_notifications.PASS_WARDEN(sender)
+				.ToAllChat()
+				.ToAllCenter();
+
+			_notifications.BECOME_NEXT_WARDEN.ToAllChat();
 
 			if (!_warden.TryRemoveWarden())
 				Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");

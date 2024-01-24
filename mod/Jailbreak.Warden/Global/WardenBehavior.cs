@@ -8,9 +8,9 @@ using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Warden;
-using Jailbreak.Warden.Views;
 using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views;
 
 namespace Jailbreak.Warden.Global;
 
@@ -21,8 +21,15 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 	{
 	}
 
+	private IWardenNotifications _notifications;
+
 	private bool _hasWarden;
 	private CCSPlayerController? _warden;
+
+	public WardenBehavior(IWardenNotifications notifications)
+	{
+		_notifications = notifications;
+	}
 
 	/// <summary>
 	/// Get the current warden, if there is one.
@@ -46,7 +53,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		_hasWarden = true;
 		_warden = controller;
 
-		new NewWardenView(_warden)
+		_notifications.NEW_WARDEN(_warden)
 			.ToAllChat()
 			.ToAllCenter();
 
@@ -81,11 +88,11 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 				Server.PrintToConsole("[Warden] BUG: Problem removing current warden :^(");
 
 			//	Warden died!
-			WardenNotifications.WARDEN_DIED
+			_notifications.WARDEN_DIED
 				.ToAllChat()
 				.ToAllCenter();
 
-			WardenNotifications.BECOME_NEXT_WARDEN.ToAllChat();
+			_notifications.BECOME_NEXT_WARDEN.ToAllChat();
 		}
 
 		return HookResult.Continue;
@@ -111,11 +118,11 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 				Server.PrintToConsole("[Warden] BUG: Problem removing current warden :^(");
 
 
-			WardenNotifications.WARDEN_LEFT
+			_notifications.WARDEN_LEFT
 				.ToAllChat()
 				.ToAllCenter();
 
-			WardenNotifications.BECOME_NEXT_WARDEN.ToAllChat();
+			_notifications.BECOME_NEXT_WARDEN.ToAllChat();
 		}
 
 		return HookResult.Continue;
