@@ -3,12 +3,13 @@ using CounterStrikeSharp.API.Modules.Utils;
 
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Core;
+using Jailbreak.Formatting.Logistics;
 using Jailbreak.Formatting.Objects;
 using Jailbreak.Formatting.Views;
 
-namespace Jailbreak.Warden.Views;
+namespace Jailbreak.English.Warden;
 
-public class WardenNotifications : IWardenNotifications
+public class WardenNotifications : IWardenNotifications, ILanguage<Formatting.Languages.English>
 {
 	public static FormatObject PREFIX = new HiddenFormatObject( $" {ChatColors.Lime}[{ChatColors.Green}WARDEN{ChatColors.Lime}]" )
 	{

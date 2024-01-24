@@ -11,8 +11,4 @@
       <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Views\" />
-    </ItemGroup>
-
 </Project>

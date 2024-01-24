@@ -4,11 +4,11 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
 
 using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Generic;
 using Jailbreak.Public.Mod.Teams;
-using Jailbreak.Teams.Views;
 
 using Microsoft.VisualBasic.CompilerServices;
 
@@ -21,8 +21,11 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 	private int _counter;
 	private IPlayerState<QueueState> _state;
 
-	public QueueBehavior(IPlayerStateFactory factory)
+	private IRatioNotifications _notifications;
+
+	public QueueBehavior(IPlayerStateFactory factory, IRatioNotifications notifications)
 	{
+		_notifications = notifications;
 		_counter = 0;
 		_state = factory.Global<QueueState>();
 	}
@@ -55,8 +58,8 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
 		if (queue.Count <= count)
 		{
-			TeamsNotifications.NOT_ENOUGH_GUARDS.ToAllChat();
-			TeamsNotifications.JOIN_GUARD_QUEUE.ToAllChat().ToAllCenter();
+			_notifications.NOT_ENOUGH_GUARDS.ToAllChat();
+			_notifications.JOIN_GUARD_QUEUE.ToAllChat().ToAllCenter();
 		}
 
 		Log.Information($"[Queue] {count}/{queue.Count}");
@@ -91,7 +94,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
 			TryEnterQueue(toSwap);
 
-			TeamsNotifications.YOU_WERE_AUTOBALANCED_PRISONER.ToPlayerCenter(toSwap);
+			_notifications.YOU_WERE_AUTOBALANCED_PRISONER.ToPlayerCenter(toSwap);
 		}
 
 		return true;
@@ -102,7 +105,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 		//	Set IsGuard so they won't be swapped back.
 		_state.Get(player).IsGuard = true;
 
-		TeamsNotifications.YOU_WERE_AUTOBALANCED_GUARD
+		_notifications.YOU_WERE_AUTOBALANCED_GUARD
 			.ToPlayerChat(player)
 			.ToPlayerCenter(player);
 
@@ -119,7 +122,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 		{
 			player.SwitchTeam(CsTeam.Terrorist);
 
-			TeamsNotifications.ATTEMPT_TO_JOIN_FROM_TEAM_MENU
+			_notifications.ATTEMPT_TO_JOIN_FROM_TEAM_MENU
 				.ToPlayerCenter(player)
 				.ToPlayerChat(player);
 
@@ -129,7 +132,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 		if (player.GetTeam() == CsTeam.Terrorist && state.IsGuard)
 		{
 			if (this.TryExitQueue(player))
-				TeamsNotifications.LEFT_GUARD
+				_notifications.LEFT_GUARD
 					.ToPlayerCenter(player)
 					.ToPlayerChat(player);
 		}
