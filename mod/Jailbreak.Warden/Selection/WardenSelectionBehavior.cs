@@ -48,11 +48,14 @@ public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
 
 	private IWardenNotifications _notifications;
 
-	public WardenSelectionBehavior(IPlayerStateFactory factory, IWardenService warden, IWardenNotifications notifications, ILogger<WardenSelectionBehavior> logger)
+	private ICoroutines _coroutines;
+
+	public WardenSelectionBehavior(IPlayerStateFactory factory, IWardenService warden, IWardenNotifications notifications, ILogger<WardenSelectionBehavior> logger, ICoroutines coroutines)
 	{
 		_warden = warden;
 		_notifications = notifications;
 		_logger = logger;
+		_coroutines = coroutines;
 		_queue = factory.Round<QueueState>();
 		_favor = factory.Global<QueueFavorState>();
 
@@ -84,9 +87,9 @@ public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
 	}
 
 	[MethodImpl(MethodImplOptions.NoOptimization)]
-	public void ScheduleChooseWarden(float time = 5.0f)
+	public void ScheduleChooseWarden(float time = 7.0f)
 	{
-		var timer = new Timer(time, OnChooseWarden, TimerFlags.STOP_ON_MAPCHANGE);
+		_coroutines.Round(OnChooseWarden, time);
 	}
 
 	/// <summary>

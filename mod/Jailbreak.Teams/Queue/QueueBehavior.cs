@@ -37,6 +37,13 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 		_state = factory.Global<QueueState>();
 	}
 
+	public void Start(BasePlugin parent)
+	{
+		//	Listen for the player requesting to join a team.
+		//	Thanks, destoer!
+		parent.AddCommandListener("jointeam", OnRequestToJoinTeam);
+	}
+
 	public bool TryEnterQueue(CCSPlayerController player)
 	{
 		if (player.GetTeam() == CsTeam.CounterTerrorist)
@@ -65,7 +72,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 		if (queue.Count <= count)
 		{
 			_notifications.NOT_ENOUGH_GUARDS.ToAllChat();
-			_notifications.JOIN_GUARD_QUEUE.ToAllChat().ToAllCenter();
+			_notifications.PLEASE_JOIN_GUARD_QUEUE.ToAllChat().ToAllCenter();
 		}
 
 		_logger.LogInformation("[Queue] Pop requested {@Count} out of {@InQueue}", count, queue.Count);
@@ -117,18 +124,78 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 		player.ChangeTeam(CsTeam.CounterTerrorist);
 	}
 
+	/// <summary>
+	/// Block players from joining the CT team using the "m" menu.
+	/// </summary>
+	/// <param name="invoked"></param>
+	/// <param name="command"></param>
+	/// <returns></returns>
+	public HookResult OnRequestToJoinTeam(CCSPlayerController? invoked, CommandInfo command)
+	{
+		if (invoked == null)
+			return HookResult.Continue;
+
+		var state = _state.Get(invoked);
+
+		//	Invalid command? Stop here to be safe.
+		if (command.ArgCount < 2)
+			return HookResult.Stop;
+
+		if (!int.TryParse(command.ArgByIndex(1), out int team))
+			return HookResult.Stop;
+
+		//	Player is attempting to join CT and is not a guard?
+		//	If so, stop them!!
+		if ((CsTeam)team == CsTeam.CounterTerrorist && !state.IsGuard)
+		{
+			_notifications.ATTEMPT_TO_JOIN_FROM_TEAM_MENU
+				.ToPlayerChat(invoked)
+				.ToPlayerCenter(invoked);
+
+			return HookResult.Stop;
+		}
+		//	All else: A-OK.
+		return HookResult.Continue;
+	}
+
+	/// <summary>
+	/// Remove guards from the team if they are not a guard in the queue state
+	/// </summary>
+	/// <param name="ev"></param>
+	/// <param name="info"></param>
+	/// <returns></returns>
+	[GameEventHandler]
+	public HookResult OnPlayerSpawn(EventPlayerSpawn ev, GameEventInfo info)
+	{
+		var state = _state.Get(ev.Userid);
+		var player = ev.Userid;
+
+		if (player.GetTeam() == CsTeam.CounterTerrorist && !state.IsGuard)
+		{
+			_notifications.ATTEMPT_TO_JOIN_FROM_TEAM_MENU
+				.ToPlayerChat(player)
+				.ToPlayerCenter(player);
+
+			player.ChangeTeam(CsTeam.Terrorist);
+			player.Respawn();
+		}
+
+		return HookResult.Continue;
+	}
+
+	/// <summary>
+	/// Remove guard state if they switch to the terrorist team.
+	/// </summary>
+	/// <param name="ev"></param>
+	/// <param name="info"></param>
+	/// <returns></returns>
 	[GameEventHandler]
 	public HookResult OnPlayerTeam(EventPlayerTeam ev, GameEventInfo info)
 	{
 		var state = _state.Get(ev.Userid);
 		var player = ev.Userid;
 
-		if (ev.Team == (int)CsTeam.CounterTerrorist && !state.IsGuard)
-		{
-			return HookResult.Handled;
-		}
-
-		if (player.GetTeam() == CsTeam.Terrorist && state.IsGuard)
+		if ((CsTeam)ev.Team != CsTeam.CounterTerrorist && state.IsGuard)
 		{
 			if (this.TryExitQueue(player))
 				_notifications.LEFT_GUARD
@@ -142,7 +209,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
     private void HandleQueueRequest(CCSPlayerController player)
     {
 	    if (TryEnterQueue(player))
-		    _notifications.JOIN_GUARD_QUEUE
+		    _notifications.JOINED_GUARD_QUEUE
 			    .ToPlayerCenter(player)
 			    .ToPlayerChat(player);
 	    else

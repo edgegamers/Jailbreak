@@ -22,9 +22,17 @@ public class RatioNotifications : IRatioNotifications, ILanguage<Formatting.Lang
 		writer
 			.Line(PREFIX, "There's not enough guards in the queue!"));
 
-	public IView JOIN_GUARD_QUEUE => new SimpleView(writer =>
+	public IView PLEASE_JOIN_GUARD_QUEUE => new SimpleView(writer =>
 		writer
 			.Line(PREFIX, "Type !guard to become a guard!"));
+
+	public IView JOINED_GUARD_QUEUE => new SimpleView(writer =>
+		writer
+			.Line(PREFIX, "You've joined the guard queue!"));
+
+	public IView ALREADY_A_GUARD => new SimpleView(writer =>
+		writer
+			.Line(PREFIX, "You're already a guard!"));
 
 	public IView YOU_WERE_AUTOBALANCED_PRISONER => new SimpleView(writer =>
 		writer

@@ -1,5 +1,6 @@
 ﻿using CounterStrikeSharp.API.Core;
 
+using Jailbreak.Generic.Coroutines;
 using Jailbreak.Generic.PlayerState;
 using Jailbreak.Generic.PlayerState.Behaviors;
 using Jailbreak.Public.Extensions;
@@ -18,5 +19,7 @@ public static class GenericServiceExtension
 		serviceCollection.AddPluginBehavior<RoundStateTracker>();
 
 		serviceCollection.AddTransient<IPlayerStateFactory, PlayerStateFactory>();
+
+		serviceCollection.AddPluginBehavior<ICoroutines, CoroutineManager>();
 	}
 }

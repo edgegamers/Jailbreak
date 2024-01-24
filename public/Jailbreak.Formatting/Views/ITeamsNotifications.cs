@@ -6,7 +6,12 @@ public interface IRatioNotifications
 {
 	public IView NOT_ENOUGH_GUARDS { get; }
 
-	public IView JOIN_GUARD_QUEUE { get; }
+	public IView PLEASE_JOIN_GUARD_QUEUE { get; }
+
+	public IView JOINED_GUARD_QUEUE { get; }
+
+	public IView ALREADY_A_GUARD { get; }
+
 
 	public IView YOU_WERE_AUTOBALANCED_PRISONER { get; }
 
