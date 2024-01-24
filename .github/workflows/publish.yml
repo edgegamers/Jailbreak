@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: mcr.microsoft.com/dotnet/nightly/sdk:7.0
+      image: mcr.microsoft.com/dotnet/nightly/sdk:8.0
 
     steps:
       - uses: actions/checkout@v3
