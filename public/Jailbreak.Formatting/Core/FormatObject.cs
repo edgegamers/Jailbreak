@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API.Core;
 
 using Jailbreak.Formatting.Objects;
+using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.Formatting.Core;
 
@@ -11,13 +12,15 @@ public abstract class FormatObject
 	/// Output this format object compatible with CS2 chat formatting.
 	/// </summary>
 	/// <returns></returns>
-	public abstract string ToChat();
+	public virtual string ToChat()
+		=> ToPlain();
 
 	/// <summary>
 	/// Output this format object in a panorama-compatible format.
 	/// </summary>
 	/// <returns></returns>
-	public abstract string ToPanorama();
+	public virtual string ToPanorama()
+		=> ToPlain().Sanitize();
 
 	/// <summary>
 	/// Output plaintext
