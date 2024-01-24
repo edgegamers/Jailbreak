@@ -20,7 +20,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jailbreak.Formatting", "pub
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lang", "lang", "{CDCDE44E-01D2-4B76-99DA-A57E1E956038}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jailbreak.English", "Jailbreak.English\Jailbreak.English.csproj", "{FC2D6F50-BCFF-41E6-A965-6C73CC01C3BF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jailbreak.English", "lang\Jailbreak.English\Jailbreak.English.csproj", "{FC2D6F50-BCFF-41E6-A965-6C73CC01C3BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

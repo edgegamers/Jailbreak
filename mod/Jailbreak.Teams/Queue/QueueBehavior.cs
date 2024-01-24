@@ -53,7 +53,6 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
 	public bool TryPop(int count)
 	{
-		Server.PrintToChatAll($"[Jail] Autobalancing is adding {count} guards.");
 		var queue = Queue.ToList();
 
 		if (queue.Count <= count)
@@ -75,8 +74,6 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
 	public bool TryPush(int count)
 	{
-		Server.PrintToChatAll($"[Jail] Autobalancing is removing {count} guards.");
-
 		var players = Utilities.GetPlayers()
 			.Where(player => player.GetTeam() == CsTeam.CounterTerrorist)
 			.Shuffle(Random.Shared)
