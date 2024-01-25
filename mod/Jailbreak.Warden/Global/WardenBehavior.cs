@@ -59,8 +59,6 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 			.ToAllChat()
 			.ToAllCenter();
 
-		_warden.ClanName = "[WARDEN]";
-
 		return true;
 	}
 
@@ -68,9 +66,6 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 	{
 		if (!_hasWarden)
 			return false;
-
-		if (_warden != null)
-			_warden.ClanName = "";
 
 		_hasWarden = false;
 		_warden = null;
