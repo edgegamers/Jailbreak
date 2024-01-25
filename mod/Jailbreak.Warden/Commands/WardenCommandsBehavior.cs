@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 
 using Jailbreak.Formatting.Extensions;
@@ -24,42 +25,22 @@ public class WardenCommandsBehavior : IPluginBehavior
 		_notifications = notifications;
 	}
 
-	public HookResult HandleWarden(CCSPlayerController sender)
+
+	[ConsoleCommand("css_pass", "Pass warden onto another player")]
+	[ConsoleCommand("css_uw", "Pass warden onto another player")]
+	[CommandHelper(0, "", CommandUsage.CLIENT_ONLY)]
+	public void Command_Pass(CCSPlayerController? player, CommandInfo command)
 	{
-		var isCt = sender.GetTeam() == CsTeam.CounterTerrorist;
+		if (player == null)
+			return;
 
-		//	Is a CT and queue is open
-		if (isCt && _queue.Active)
-		{
-			if (_queue.InQueue(sender))
-				if (_queue.TryEnter(sender))
-					_notifications.JOIN_RAFFLE.ToPlayerChat(sender);
-
-			if (!_queue.InQueue(sender))
-				if (_queue.TryExit(sender))
-					_notifications.LEAVE_RAFFLE.ToPlayerChat(sender);
-
-			return HookResult.Handled;
-		}
-
-		//	Is a CT and there is no warden
-		if (isCt && !_warden.HasWarden)
-			_warden.TrySetWarden(sender);
-
-		_notifications.CURRENT_WARDEN(_warden.Warden).ToPlayerChat(sender);
-
-		return HookResult.Handled;
-	}
-
-	public HookResult HandlePass(CCSPlayerController sender)
-	{
-		var isCt = sender.GetTeam() == CsTeam.CounterTerrorist;
-		var isWarden = _warden.HasWarden && _warden.Warden?.Slot == sender.Slot;
+		var isCt = player.GetTeam() == CsTeam.CounterTerrorist;
+		var isWarden = _warden.HasWarden && _warden.Warden?.Slot == player.Slot;
 
 		if (isWarden)
 		{
 			//	Handle warden pass
-			_notifications.PASS_WARDEN(sender)
+			_notifications.PASS_WARDEN(player)
 				.ToAllChat()
 				.ToAllCenter();
 
@@ -68,29 +49,41 @@ public class WardenCommandsBehavior : IPluginBehavior
 			if (!_warden.TryRemoveWarden())
 				Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");
 
-			return HookResult.Handled;
+			return;
 		}
 
-		return HookResult.Continue;
+		return;
 	}
 
-	[GameEventHandler(HookMode.Pre)]
-	public HookResult OnPlayerChat(EventPlayerChat chat, GameEventInfo info)
+	[ConsoleCommand("css_warden", "Become a warden, Join the warden queue, or see information about the current warden.")]
+	[ConsoleCommand("css_w", "Become a warden, Join the warden queue, or see information about the current warden.")]
+	[CommandHelper(0, "", CommandUsage.CLIENT_ONLY)]
+	public void Command_Warden(CCSPlayerController? player, CommandInfo command)
 	{
-		var sender = Utilities.GetPlayerFromUserid(chat.Userid);
-		var command = chat.Text.ToLowerInvariant();
+		if (player == null)
+			return;
 
-		if (!chat.Text.StartsWith("!"))
-			return HookResult.Continue;
+		var isCt = player.GetTeam() == CsTeam.CounterTerrorist;
 
-		//	Player is not sending a warden command
-		if (command == "!w" || command == "!warden")
-			return HandleWarden(sender);
+		//	Is a CT and queue is open
+		if (isCt && _queue.Active)
+		{
+			if (_queue.InQueue(player))
+				if (_queue.TryEnter(player))
+					_notifications.JOIN_RAFFLE.ToPlayerChat(player);
 
-		if (command == "!uw" || command == "!unwarden" || command == "!pass")
-			return HandlePass(sender);
+			if (!_queue.InQueue(player))
+				if (_queue.TryExit(player))
+					_notifications.LEAVE_RAFFLE.ToPlayerChat(player);
 
-		return HookResult.Continue;
+			return;
+		}
+
+		//	Is a CT and there is no warden
+		if (isCt && !_warden.HasWarden)
+			_warden.TrySetWarden(player);
+
+		_notifications.CURRENT_WARDEN(_warden.Warden).ToPlayerChat(player);
 	}
 
 	public void Dispose()
