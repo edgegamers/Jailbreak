@@ -26,6 +26,12 @@ public abstract class DrawableShape
     }
 
     public abstract void Draw();
+
+    public virtual void Update() {
+        Remove();
+        Draw();
+    }
+
     public virtual void Tick() { }
 
     public void Draw(float lifetime)

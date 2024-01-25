@@ -5,11 +5,13 @@ using CounterStrikeSharp.API.Modules.Utils;
 
 namespace Jailbreak.Public.Mod.Draw;
 
-public class BeamLine : BeamedShape
+public class BeamLine : DrawableShape, IColorable
 {
     private Vector end;
+    private Color color = Color.White;
+    private CEnvBeam? beam;
 
-    public BeamLine(BasePlugin plugin, Vector position, Vector end) : base(plugin, position, 1)
+    public BeamLine(BasePlugin plugin, Vector position, Vector end) : base(plugin, position)
     {
         this.end = end;
     }
@@ -31,14 +33,24 @@ public class BeamLine : BeamedShape
         beam.EndPos.X = end.X;
         beam.EndPos.Y = end.Y;
         beam.EndPos.Z = end.Z;
-        beams[0] = beam;
+        this.beam = beam;
 
         Utilities.SetStateChanged(beam, "CBeam", "m_vecEndPos");
     }
 
     public override void Remove()
     {
-        beams[0]?.Remove();
-        beams[0] = null;
+        beam?.Remove();
+        beam = null;
+    }
+
+    public void SetColor(Color color)
+    {
+        this.color = color;
+    }
+
+    public Color GetColor()
+    {
+        return color;
     }
 }
