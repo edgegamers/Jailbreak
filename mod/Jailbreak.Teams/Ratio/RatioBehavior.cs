@@ -97,7 +97,7 @@ public class RatioBehavior : IPluginBehavior
 		var action = Evaluate(counterTerrorists, terrorists);
 
 		//	Prevent the round from ending while we make ratio adjustments
-		using (var _ = new TemporaryConvar("mp_ignore_round_win_conditions", "true"))
+		using (var _ = new TemporaryConvar<bool>("mp_ignore_round_win_conditions", true))
 		{
 			var success = action.Type switch
 			{

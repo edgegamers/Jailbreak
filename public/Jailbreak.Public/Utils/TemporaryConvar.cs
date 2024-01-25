@@ -2,22 +2,22 @@
 
 namespace Jailbreak.Public.Utils;
 
-public class TemporaryConvar : IDisposable
+public class TemporaryConvar<T> : IDisposable
 {
-	private string _previousValue;
+	private T _previousValue;
 	private ConVar _handle;
-	public TemporaryConvar(string name, string value)
+	public TemporaryConvar(string name, T value)
 	{
 		_handle = ConVar.Find(name);
 		if (_handle == null)
 			throw new InvalidOperationException($"ConVar {name} does not exist!");
 
-		_previousValue = _handle.StringValue;
-		_handle.SetValue(value);
+		_previousValue = _handle.GetPrimitiveValue<T>();
+		_handle.SetValue<T>(value);
 	}
 
 	public void Dispose()
 	{
-		_handle.StringValue = _previousValue;
+		_handle.SetValue<T>(_previousValue);
 	}
 }
