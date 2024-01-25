@@ -19,20 +19,14 @@ public abstract class DrawableShape
 
     private Timer? killTimer; // Internal timer used to remove the shape after a certain amount of time
 
-    protected Color color = Color.White;
-
     public DrawableShape(BasePlugin plugin, Vector position)
     {
         this.plugin = plugin;
         this.position = position;
     }
 
-    public virtual void SetColor(Color color)
-    {
-        this.color = color;
-    }
-
     public abstract void Draw();
+    public virtual void Tick() { }
 
     public void Draw(float lifetime)
     {
