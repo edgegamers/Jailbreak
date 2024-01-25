@@ -102,7 +102,8 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 			var state = _state.Get(toSwap);
 
 			state.IsGuard = false;
-			toSwap.ChangeTeam(CsTeam.Terrorist);
+			toSwap.SwitchTeam(CsTeam.Terrorist);
+			toSwap.Respawn();
 
 			TryEnterQueue(toSwap);
 
@@ -121,7 +122,8 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 			.ToPlayerChat(player)
 			.ToPlayerCenter(player);
 
-		player.ChangeTeam(CsTeam.CounterTerrorist);
+		player.SwitchTeam(CsTeam.CounterTerrorist);
+		player.Respawn();
 	}
 
 	/// <summary>
@@ -176,7 +178,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 				.ToPlayerChat(player)
 				.ToPlayerCenter(player);
 
-			player.ChangeTeam(CsTeam.Terrorist);
+			player.SwitchTeam(CsTeam.Terrorist);
 			player.Respawn();
 		}
 
