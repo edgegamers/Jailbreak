@@ -7,6 +7,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Teams;
+using Jailbreak.Public.Utils;
 
 using Microsoft.Extensions.Logging;
 
@@ -95,15 +96,19 @@ public class RatioBehavior : IPluginBehavior
 
 		var action = Evaluate(counterTerrorists, terrorists);
 
-		var success = action.Type switch
+		//	Prevent the round from ending while we make ratio adjustments
+		using (var _ = new TemporaryConvar("mp_ignore_round_win_conditions", "true"))
 		{
-			RatioActionType.Add => _guardQueue.TryPop(action.Count),
-			RatioActionType.Remove => _guardQueue.TryPush(action.Count),
-			_ => true
-		};
+			var success = action.Type switch
+			{
+				RatioActionType.Add => _guardQueue.TryPop(action.Count),
+				RatioActionType.Remove => _guardQueue.TryPush(action.Count),
+				_ => true
+			};
 
-		if (!success)
-			Server.PrintToChatAll($"[BUG] Ratio enforcement failed :^( [RatioAction: {action.Type} @ {action.Count}]");
+			if (!success)
+				Server.PrintToChatAll($"[BUG] Ratio enforcement failed :^( [RatioAction: {action.Type} @ {action.Count}]");
+		}
 
 		return HookResult.Continue;
 	}
