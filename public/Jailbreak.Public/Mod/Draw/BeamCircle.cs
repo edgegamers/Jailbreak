@@ -43,8 +43,8 @@ public class BeamCircle : BeamedShape
         for (var i = 0; i < lines.Length; i++)
         {
             var line = lines[i];
-            var start = offsets[i];
-            var end = offsets[(i + 1) % offsets.Length];
+            var start = position + offsets[i];
+            var end = position + offsets[(i + 1) % offsets.Length];
             if (line == null)
             {
                 line = new BeamLine(plugin, start, end);

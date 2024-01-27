@@ -21,7 +21,7 @@ public class WardenMarkerBehavior : IPluginBehavior
 
     public void Start(BasePlugin plugin)
     {
-        _marker = new BeamCircle(plugin, new Vector(), 80f, (int)Math.PI * 80);
+        _marker = new BeamCircle(plugin, new Vector(), 60f, (int)Math.PI * 15);
         plugin.AddCommandListener("player_ping", CommandListener_PlayerPing);
     }
 
