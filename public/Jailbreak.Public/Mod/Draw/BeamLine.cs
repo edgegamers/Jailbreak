@@ -10,6 +10,7 @@ public class BeamLine : DrawableShape, IColorable
     private Vector end;
     private Color color = Color.White;
     private CEnvBeam? beam;
+    private float width = 1f;
 
     public BeamLine(BasePlugin plugin, Vector position, Vector end) : base(plugin, position)
     {
@@ -27,6 +28,7 @@ public class BeamLine : DrawableShape, IColorable
         var beam = Utilities.CreateEntityByName<CEnvBeam>("env_beam");
         if (beam == null) return;
         beam.RenderMode = RenderMode_t.kRenderTransColor;
+        beam.Width = width;
         beam.Render = GetColor();
 
         beam.Teleport(position, new QAngle(), new Vector());
@@ -52,5 +54,15 @@ public class BeamLine : DrawableShape, IColorable
     public Color GetColor()
     {
         return color;
+    }
+
+    public void SetWidth(float width)
+    {
+        this.width = width;
+    }
+
+    public float GetWidth()
+    {
+        return width;
     }
 }
