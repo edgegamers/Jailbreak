@@ -35,9 +35,8 @@ public class WardenCommandsBehavior : IPluginBehavior
 			return;
 
 		var isCt = player.GetTeam() == CsTeam.CounterTerrorist;
-		var isWarden = _warden.HasWarden && _warden.Warden?.Slot == player.Slot;
 
-		if (isWarden)
+		if (_warden.IsWarden(player))
 		{
 			//	Handle warden pass
 			_notifications.PASS_WARDEN(player)
@@ -48,11 +47,7 @@ public class WardenCommandsBehavior : IPluginBehavior
 
 			if (!_warden.TryRemoveWarden())
 				Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");
-
-			return;
 		}
-
-		return;
 	}
 
 	[ConsoleCommand("css_warden", "Become a warden, Join the warden queue, or see information about the current warden.")]
