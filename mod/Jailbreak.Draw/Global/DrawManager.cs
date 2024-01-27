@@ -9,7 +9,11 @@ public class DrawManager : IPluginBehavior, IDrawService
 {
     private List<DrawableShape> shapes = new List<DrawableShape>();
 
-    public DrawManager(BasePlugin plugin)
+    public DrawManager()
+    {
+    }
+
+    public void Start(BasePlugin plugin)
     {
         plugin.AddTimer(1f, Tick, TimerFlags.REPEAT);
     }
