@@ -30,10 +30,8 @@ public class WardenMarkerBehavior : IPluginBehavior
     {
         var player = @event.Userid;
 
-        player.PrintToChat("OnPing worked");
         if (!_warden.IsWarden(player))
             return HookResult.Handled;
-        player.PrintToChat("You are warden, drawing marker");
         Vector vec = new Vector(@event.X, @event.Y, @event.Z);
         _marker?.Move(vec);
         _marker?.Update();

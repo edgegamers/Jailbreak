@@ -45,7 +45,7 @@ public class BeamCircle : BeamedShape
             var line = lines[i];
             if (line == null)
             {
-                line = new BeamLine(plugin, position, position + offsets[i]);
+                line = new BeamLine(plugin, position + offsets[i + 1 % offsets.Length], position + offsets[i]);
                 line.SetColor(color);
                 line.Draw();
                 lines[i] = line;
