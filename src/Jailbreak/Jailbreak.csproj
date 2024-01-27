@@ -33,7 +33,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\lang\Jailbreak.English\Jailbreak.English.csproj" />
-      <ProjectReference Include="..\..\mod\Jailbreak.Draw\Jailbreak.Draw.csproj" />
       <ProjectReference Include="..\..\mod\Jailbreak.Teams\Jailbreak.Teams.csproj" />
       <ProjectReference Include="..\..\mod\Jailbreak.Warden\Jailbreak.Warden.csproj" />
       <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj" />

@@ -11,14 +11,12 @@ namespace Jailbreak.Warden.Markers;
 public class WardenMarkerBehavior : IPluginBehavior
 {
     private readonly IWardenService _warden;
-    private IDrawService _drawer;
 
     private DrawableShape? _marker;
 
-    public WardenMarkerBehavior(IWardenService warden, IDrawService drawer)
+    public WardenMarkerBehavior(IWardenService warden)
     {
         _warden = warden;
-        _drawer = drawer;
     }
 
     public void Start(BasePlugin plugin)
@@ -44,7 +42,6 @@ public class WardenMarkerBehavior : IPluginBehavior
 
     HookResult CommandListener_PlayerPing(CCSPlayerController? player, CommandInfo info)
     {
-        player.PrintToChat("CommandListener worked");
-        return HookResult.Handled;
+        return _warden.IsWarden(player) ? HookResult.Continue : HookResult.Handled;
     }
 }
