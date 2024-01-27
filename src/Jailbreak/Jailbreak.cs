@@ -16,7 +16,7 @@ namespace Jailbreak;
 public class Jailbreak : BasePlugin
 {
 	public override string ModuleName => "Jailbreak";
-	public override string ModuleVersion => "0.1.0";
+	public override string ModuleVersion => "0.1.0.{GIT_VERSION}";
 	public override string ModuleAuthor => "EdgeGamers Development";
 
 	private IServiceProvider _provider;

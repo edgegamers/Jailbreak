@@ -12,6 +12,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Insert Job Version
+      run: sed -i "s/{GIT_VERSION}/${{github.run_number}}/g" src/Jailbreak/Jailbreak.cs
     
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v3
