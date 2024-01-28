@@ -147,6 +147,9 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 		if (!int.TryParse(command.ArgByIndex(1), out int team))
 			return HookResult.Stop;
 
+		if (Utilities.GetPlayers().Find(c => c.GetTeam() == CsTeam.CounterTerrorist) == null)
+			return HookResult.Continue; // If no CTs, let anyone on CT team
+
 		//	Player is attempting to join CT and is not a guard?
 		//	If so, stop them!!
 		if ((CsTeam)team == CsTeam.CounterTerrorist && !state.IsGuard)

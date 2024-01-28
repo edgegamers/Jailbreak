@@ -63,11 +63,13 @@ public class WardenCommandsBehavior : IPluginBehavior
 		//	Is a CT and queue is open
 		if (isCt && _queue.Active)
 		{
-			if (_queue.InQueue(player))
+			if (!_queue.InQueue(player)) {
 				if (_queue.TryEnter(player))
 					_notifications.JOIN_RAFFLE.ToPlayerChat(player);
+				return;
+			}
 
-			if (!_queue.InQueue(player))
+			if (_queue.InQueue(player))
 				if (_queue.TryExit(player))
 					_notifications.LEAVE_RAFFLE.ToPlayerChat(player);
 
