@@ -3,6 +3,8 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Timers;
+using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.Rebel;
 
@@ -11,6 +13,12 @@ namespace Jailbreak.Teams;
 public class RebelManager : IPluginBehavior, IRebelService
 {
     private Dictionary<CCSPlayerController, long> rebelTimes = new();
+    private IRebelNotifications notifs;
+    
+    public RebelManager(IRebelNotifications notifs)
+    {
+        this.notifs = notifs;
+    }
 
     public void Start(BasePlugin parent)
     {
@@ -82,7 +90,8 @@ public class RebelManager : IPluginBehavior, IRebelService
 
     public void UnmarkRebel(CCSPlayerController player)
     {
-        player.PrintToChat("You are no longer a rebel");
+        notifs.NO_LONGER_REBEL.ToPlayerChat(player);
+        
         rebelTimes.Remove(player);
         ApplyRebelColor(player);
     }
@@ -102,14 +111,14 @@ public class RebelManager : IPluginBehavior, IRebelService
     {
         if (!player.IsValid || player.Pawn.Value == null)
             return;
-        var percentRGB = (int)Math.Round(GetRebelTimePercentage(player) * 255.0);
+        var percentRGB = 255 - (int)Math.Round(GetRebelTimePercentage(player) * 255.0);
         var color = Color.FromArgb(254, 255, percentRGB, percentRGB);
-        player.PrintToConsole("Color: " + color.ToString());
         if (percentRGB <= 0)
         {
             color = Color.FromArgb(254, 255, 255, 255);
         }
 
+        player.PrintToConsole("Color: " + color);
         player.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
         player.Pawn.Value.Render = color;
     }
