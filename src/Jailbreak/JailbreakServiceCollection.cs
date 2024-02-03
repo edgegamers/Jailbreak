@@ -32,6 +32,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
 		serviceCollection.AddJailbreakGeneric();
 		serviceCollection.AddJailbreakWarden();
 		serviceCollection.AddJailbreakTeams();
+		serviceCollection.AddJailbreakRebel();
 
 		//	Add in english localization
 		serviceCollection.AddLanguage<Formatting.Languages.English>(config =>
