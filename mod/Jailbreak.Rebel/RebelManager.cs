@@ -103,7 +103,7 @@ public class RebelManager : IPluginBehavior, IRebelService
         player.PrintToConsole("Rebel percentage: " + percentage);
         var inverse = 1 - percentage;
         var inverseInt = (int)(inverse * 255);
-        var color = Color.FromArgb(254, (int)percentage * 255, inverseInt, inverseInt);
+        var color = Color.FromArgb(254, (int) Math.Round(percentage * 255.0), inverseInt, inverseInt);
         player.PrintToConsole("Color: " + color.ToString());
         if (percentage <= 0)
         {
