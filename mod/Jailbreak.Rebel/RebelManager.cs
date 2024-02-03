@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Timers;
@@ -14,6 +15,7 @@ public class RebelManager : IPluginBehavior, IRebelService
     public void Start(BasePlugin parent)
     {
         parent.RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
+        parent.RegisterEventHandler<EventRoundStart>(OnRoundStart);
         
         parent.AddTimer(1f, () =>
         {
@@ -31,6 +33,16 @@ public class RebelManager : IPluginBehavior, IRebelService
                 ApplyRebelColor(player);
             }
         }, TimerFlags.REPEAT);
+    }
+
+    private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
+    {
+        rebelTimes.Clear();
+        foreach (var player in Utilities.GetPlayers())
+        {
+            ApplyRebelColor(player); 
+        }
+        return HookResult.Continue;
     }
 
     HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
@@ -92,11 +104,13 @@ public class RebelManager : IPluginBehavior, IRebelService
         var inverse = 1 - percentage;
         var inverseInt = (int)(inverse * 255);
         var color = Color.FromArgb(254, (int)percentage * 255, inverseInt, inverseInt);
+        player.PrintToConsole("Color: " + color.ToString());
         if (percentage <= 0)
         {
             color = Color.FromArgb(254, 255, 255, 255);
         }
 
+        player.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
         player.Pawn.Value.Render = color;
     }
 }
