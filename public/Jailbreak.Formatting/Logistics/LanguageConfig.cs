@@ -22,4 +22,8 @@ public class LanguageConfig<TDialect>
 	public void WithWarden<TWarden>()
 		where TWarden : class, ILanguage<TDialect>, IWardenNotifications
 		=> _collection.AddSingleton<IWardenNotifications, TWarden>();
+	
+	public void WithRebel<TRebel>()
+		where TRebel : class, ILanguage<TDialect>, IRebelNotifications
+		=> _collection.AddSingleton<IRebelNotifications, TRebel>();
 }

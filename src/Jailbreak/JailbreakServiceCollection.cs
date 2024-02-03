@@ -3,6 +3,7 @@
 using CounterStrikeSharp.API.Core;
 
 using Jailbreak.Config;
+using Jailbreak.English.Rebel;
 using Jailbreak.English.Teams;
 using Jailbreak.English.Warden;
 using Jailbreak.Formatting.Languages;
@@ -39,6 +40,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
 		{
 			config.WithRatio<RatioNotifications>();
 			config.WithWarden<WardenNotifications>();
+			config.WithRebel<RebelNotifications>();
 		});
 	}
 }
