@@ -51,6 +51,8 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		//	Verify player is a CT
 		if (controller.GetTeam() != CsTeam.CounterTerrorist)
 			return false;
+		if (!controller.PawnIsAlive)
+			return false;
 
 		_hasWarden = true;
 		_warden = controller;
