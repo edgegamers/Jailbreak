@@ -16,7 +16,7 @@ public class RebelManager : IPluginBehavior, IRebelService
     {
         parent.RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
         parent.RegisterEventHandler<EventRoundStart>(OnRoundStart);
-        
+
         parent.AddTimer(1f, () =>
         {
             foreach (var player in GetActiveRebels())
@@ -40,8 +40,11 @@ public class RebelManager : IPluginBehavior, IRebelService
         rebelTimes.Clear();
         foreach (var player in Utilities.GetPlayers())
         {
-            ApplyRebelColor(player); 
+            if (!player.IsValid)
+                continue;
+            ApplyRebelColor(player);
         }
+
         return HookResult.Continue;
     }
 
@@ -99,13 +102,10 @@ public class RebelManager : IPluginBehavior, IRebelService
     {
         if (!player.IsValid || player.Pawn.Value == null)
             return;
-        var percentage = GetRebelTimePercentage(player);
-        player.PrintToConsole("Rebel percentage: " + percentage);
-        var inverse = 1 - percentage;
-        var inverseInt = (int)(inverse * 255);
-        var color = Color.FromArgb(254, (int) Math.Round(percentage * 255.0), inverseInt, inverseInt);
+        var percentRGB = (int)Math.Round(GetRebelTimePercentage(player) * 255.0);
+        var color = Color.FromArgb(254, 255, percentRGB, percentRGB);
         player.PrintToConsole("Color: " + color.ToString());
-        if (percentage <= 0)
+        if (percentRGB <= 0)
         {
             color = Color.FromArgb(254, 255, 255, 255);
         }
