@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Drawing;
+using System.Reflection;
 
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
@@ -57,6 +58,12 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		_hasWarden = true;
 		_warden = controller;
 
+		if (_warden.Pawn.Value != null)
+		{
+			_warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
+		    _warden.Pawn.Value.Render = Color.Blue;
+		}
+
 		_notifications.NEW_WARDEN(_warden)
 			.ToAllChat()
 			.ToAllCenter();
@@ -70,6 +77,10 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 			return false;
 
 		_hasWarden = false;
+		
+		if (_warden != null && _warden.Pawn.Value != null)
+			_warden.Pawn.Value.Render = Color.FromArgb(254, 255, 255, 255);
+		
 		_warden = null;
 
 		return true;
