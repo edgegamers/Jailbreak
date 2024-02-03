@@ -111,9 +111,10 @@ public class RebelManager : IPluginBehavior, IRebelService
     {
         if (!player.IsValid || player.Pawn.Value == null)
             return;
-        var percentRGB = 255 - (int)Math.Round(GetRebelTimePercentage(player) * 255.0);
+        var percent = GetRebelTimePercentage(player);
+        var percentRGB = 255 - (int)Math.Round(percent * 255.0);
         var color = Color.FromArgb(254, 255, percentRGB, percentRGB);
-        if (percentRGB <= 0)
+        if (percent <= 0)
         {
             color = Color.FromArgb(254, 255, 255, 255);
         }
@@ -121,6 +122,6 @@ public class RebelManager : IPluginBehavior, IRebelService
         player.PrintToConsole("Color: " + color);
         player.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
         player.Pawn.Value.Render = color;
-        Utilities.SetStateChanged(player.Pawn.Value, "CBaseModelEntity", "m_clRender");
+        Utilities.SetStateChanged(player.Pawn.Value, "CBaseModelEntity", "m_clrRender");
     }
 }
