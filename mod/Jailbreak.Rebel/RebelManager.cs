@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Timers;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.Rebel;
 
@@ -29,7 +30,7 @@ public class RebelManager : IPluginBehavior, IRebelService
 
                 ApplyRebelColor(player);
             }
-        });
+        }, TimerFlags.REPEAT);
     }
 
     HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
@@ -59,7 +60,7 @@ public class RebelManager : IPluginBehavior, IRebelService
 
     public bool MarkRebel(CCSPlayerController player, float time)
     {
-        rebelTimes.Add(player, DateTime.Now.Ticks / 1000f + time);
+        rebelTimes[player] = DateTime.Now.Ticks / 1000f + time;
         ApplyRebelColor(player);
         return true;
     }
@@ -87,6 +88,7 @@ public class RebelManager : IPluginBehavior, IRebelService
         if (!player.IsValid || player.Pawn.Value == null)
             return;
         var percentage = GetRebelTimePercentage(player);
+        player.PrintToConsole("Rebel percentage: " + percentage);
         var inverse = 1 - percentage;
         var inverseInt = (int)(inverse * 255);
         var color = Color.FromArgb(254, (int)percentage * 255, inverseInt, inverseInt);
