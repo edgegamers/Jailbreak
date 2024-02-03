@@ -9,7 +9,7 @@ namespace Jailbreak.Teams;
 
 public class RebelManager : IPluginBehavior, IRebelService
 {
-    private Dictionary<CCSPlayerController, float> rebelTimes = new();
+    private Dictionary<CCSPlayerController, long> rebelTimes = new();
 
     public void Start(BasePlugin parent)
     {
@@ -48,19 +48,19 @@ public class RebelManager : IPluginBehavior, IRebelService
         return rebelTimes.Keys.ToHashSet();
     }
 
-    public float GetRebelTimeLeft(CCSPlayerController player)
+    public long GetRebelTimeLeft(CCSPlayerController player)
     {
-        if (rebelTimes.TryGetValue(player, out float time))
+        if (rebelTimes.TryGetValue(player, out long time))
         {
-            return time - DateTime.Now.Ticks / 1000f;
+            return time - DateTimeOffset.Now.ToUnixTimeSeconds();
         }
 
         return 0;
     }
 
-    public bool MarkRebel(CCSPlayerController player, float time)
+    public bool MarkRebel(CCSPlayerController player, long time)
     {
-        rebelTimes[player] = DateTime.Now.Ticks / 1000f + time;
+        rebelTimes[player] = DateTimeOffset.Now.ToUnixTimeSeconds() + time;
         ApplyRebelColor(player);
         return true;
     }
@@ -75,7 +75,7 @@ public class RebelManager : IPluginBehavior, IRebelService
     // https://www.desmos.com/calculator/g2v6vvg7ax 
     private float GetRebelTimePercentage(CCSPlayerController player)
     {
-        float x = GetRebelTimeLeft(player);
+        long x = GetRebelTimeLeft(player);
         if (x > 120)
             return 1;
         if (x <= 0)

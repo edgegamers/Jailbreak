@@ -11,9 +11,9 @@ public interface IRebelService
         return GetRebelTimeLeft(player) > 0;
     }
 
-    float GetRebelTimeLeft(CCSPlayerController player);
+    long GetRebelTimeLeft(CCSPlayerController player);
 
-    bool MarkRebel(CCSPlayerController player, float time);
+    bool MarkRebel(CCSPlayerController player, long time);
     
     void UnmarkRebel(CCSPlayerController player);
 }
