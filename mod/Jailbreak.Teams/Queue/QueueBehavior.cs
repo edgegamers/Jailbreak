@@ -135,7 +135,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 	/// <returns></returns>
 	public HookResult OnRequestToJoinTeam(CCSPlayerController? invoked, CommandInfo command)
 	{
-		if (invoked == null)
+		if (invoked == null || !invoked.IsValid)
 			return HookResult.Continue;
 
 		var state = _state.Get(invoked);
@@ -173,8 +173,11 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 	[GameEventHandler]
 	public HookResult OnPlayerSpawn(EventPlayerSpawn ev, GameEventInfo info)
 	{
-		var state = _state.Get(ev.Userid);
 		var player = ev.Userid;
+		if (!player.IsValid)
+			return HookResult.Continue;
+		
+		var state = _state.Get(ev.Userid);
 
 		if (player.GetTeam() == CsTeam.CounterTerrorist && !state.IsGuard)
 		{
