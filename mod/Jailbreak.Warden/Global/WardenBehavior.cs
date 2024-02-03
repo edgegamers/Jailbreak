@@ -62,6 +62,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		{
 			_warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
 		    _warden.Pawn.Value.Render = Color.Blue;
+			Utilities.SetStateChanged(_warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
 		}
 
 		_notifications.NEW_WARDEN(_warden)
@@ -77,9 +78,12 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 			return false;
 
 		_hasWarden = false;
-		
+
 		if (_warden != null && _warden.Pawn.Value != null)
+		{
 			_warden.Pawn.Value.Render = Color.FromArgb(254, 255, 255, 255);
+			Utilities.SetStateChanged(_warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
+		}
 		
 		_warden = null;
 
