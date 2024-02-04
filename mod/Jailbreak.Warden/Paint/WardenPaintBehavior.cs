@@ -54,7 +54,7 @@ public class WardenPaintBehavior : IPluginBehavior
         }
 
         _lastPosition = position;
-        if (start.DistanceSquared(position) > 150 * 150 || start.Z - position.Z > 0.001f)
+        if (start.DistanceSquared(position) > 150 * 150)
         {
             start = position;
         }
