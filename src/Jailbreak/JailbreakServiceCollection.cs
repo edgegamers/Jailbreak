@@ -33,10 +33,10 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
 		serviceCollection.AddTransient<IConfigService, ConfigService>();
 
 		serviceCollection.AddJailbreakGeneric();
+		serviceCollection.AddLogsService();
 		serviceCollection.AddJailbreakWarden();
 		serviceCollection.AddJailbreakTeams();
 		serviceCollection.AddJailbreakRebel();
-		serviceCollection.AddLogsService();
 
 		//	Add in english localization
 		serviceCollection.AddLanguage<Formatting.Languages.English>(config =>

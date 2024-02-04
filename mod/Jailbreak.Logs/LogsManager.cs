@@ -5,6 +5,7 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Logs;
 using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.Warden;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Logs;
 
@@ -15,15 +16,17 @@ public class LogsManager : IPluginBehavior, ILogService
     private IWardenService wardenService;
     private IRebelService rebelService;
 
-    public LogsManager(IWardenService wardenService, IRebelService rebelService)
+    private IServiceProvider _serviceProvider;
+    public LogsManager(IServiceProvider serviceProvider)
     {
-        this.wardenService = wardenService;
-        this.rebelService = rebelService;
+        _serviceProvider = serviceProvider;
     }
 
     public void Start(BasePlugin parent)
     {
         parent.RegisterEventHandler<EventRoundStart>(OnRoundStart);
+        wardenService = _serviceProvider.GetRequiredService<IWardenService>();
+        rebelService = _serviceProvider.GetRequiredService<IRebelService>();
     }
 
     private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
