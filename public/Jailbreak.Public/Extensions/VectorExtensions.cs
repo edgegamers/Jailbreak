@@ -14,7 +14,7 @@ public static class VectorExtensions
         };
         return vec;
     }
-    
+
     public static Vector Add(this Vector vector, Vector other)
     {
         vector.X += other.X;
@@ -22,7 +22,7 @@ public static class VectorExtensions
         vector.Z += other.Z;
         return vector;
     }
-    
+
     public static Vector Scale(this Vector vector, float scale)
     {
         vector.X *= scale;
@@ -30,7 +30,7 @@ public static class VectorExtensions
         vector.Z *= scale;
         return vector;
     }
-    
+
     public static Vector Normalize(this Vector vector)
     {
         var length = vector.Length();
@@ -38,5 +38,19 @@ public static class VectorExtensions
         vector.Y /= length;
         vector.Z /= length;
         return vector;
+    }
+
+    public static float Distance(this Vector vector, Vector other)
+    {
+        return (float)System.Math.Sqrt(vector.DistanceSquared(other));
+    }
+
+    public static float DistanceSquared(this Vector vector, Vector other)
+    {
+        return (float)(
+            System.Math.Pow(vector.X - other.X, 2) +
+            System.Math.Pow(vector.Y - other.Y, 2) +
+            System.Math.Pow(vector.Z - other.Z, 2)
+        );
     }
 }
