@@ -9,6 +9,7 @@ using Jailbreak.English.Warden;
 using Jailbreak.Formatting.Languages;
 using Jailbreak.Formatting.Logistics;
 using Jailbreak.Generic;
+using Jailbreak.Logs;
 using Jailbreak.Public.Configuration;
 using Jailbreak.Rebel;
 using Jailbreak.Teams;
@@ -35,6 +36,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
 		serviceCollection.AddJailbreakWarden();
 		serviceCollection.AddJailbreakTeams();
 		serviceCollection.AddJailbreakRebel();
+		serviceCollection.AddLogsService();
 
 		//	Add in english localization
 		serviceCollection.AddLanguage<Formatting.Languages.English>(config =>

@@ -16,6 +16,19 @@ public class LogsListeners : IPluginBehavior
     public void Start(BasePlugin parent)
     {
         parent.RegisterEventHandler<EventPlayerHurt>(OnPlayerHurt);
+        parent.RegisterEventHandler<EventGrenadeThrown>(OnGrenadeThrown);
+    }
+
+    private HookResult OnGrenadeThrown(EventGrenadeThrown @event, GameEventInfo info)
+    {
+        var player = @event.Userid;
+        if (!player.IsValid)
+            return HookResult.Continue;
+        var grenade = @event.Weapon;
+
+        logs.AddLogMessage($"{logs.FormatPlayer(player)} threw a {grenade}");
+
+        return HookResult.Continue;
     }
 
     private HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
