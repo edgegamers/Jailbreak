@@ -25,6 +25,7 @@ public class BeamLine : DrawableShape, IColorable
 
     public override void Draw()
     {
+        Remove(); 
         var beam = Utilities.CreateEntityByName<CEnvBeam>("env_beam");
         if (beam == null) return;
         beam.RenderMode = RenderMode_t.kRenderTransColor;
