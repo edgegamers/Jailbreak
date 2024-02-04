@@ -43,7 +43,7 @@ public class RebelManager : IPluginBehavior, IRebelService
         }, TimerFlags.REPEAT);
     }
 
-    private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
+    HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
         rebelTimes.Clear();
         foreach (var player in Utilities.GetPlayers())

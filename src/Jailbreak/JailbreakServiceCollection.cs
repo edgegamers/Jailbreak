@@ -10,6 +10,7 @@ using Jailbreak.Formatting.Languages;
 using Jailbreak.Formatting.Logistics;
 using Jailbreak.Generic;
 using Jailbreak.Public.Configuration;
+using Jailbreak.Rebel;
 using Jailbreak.Teams;
 using Jailbreak.Warden;
 
