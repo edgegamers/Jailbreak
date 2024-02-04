@@ -1,10 +1,10 @@
 ﻿using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.Teams;
-
+using Jailbreak.Teams;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Jailbreak.Teams;
+namespace Jailbreak.Rebel;
 
 public static class RebelServiceExtension
 {
