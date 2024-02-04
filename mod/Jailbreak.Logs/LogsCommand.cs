@@ -1,5 +1,6 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.Logs;
@@ -16,14 +17,9 @@ public class LogsCommand : IPluginBehavior
     }
 
     [ConsoleCommand("css_logs")]
+    [RequiresPermissionsOr("@css/ban", "@css/generic", "@css/kick")]
     public void Command_Logs(CCSPlayerController? executor, CommandInfo info)
     {
-        if (executor == null)
-            return;
-
-        foreach (var log in logs.GetLogMessages())
-        {
-            executor.PrintToConsole(log);
-        }
+        logs.PrintLogs(executor);
     }
 }

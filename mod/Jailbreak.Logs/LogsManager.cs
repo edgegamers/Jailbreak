@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
@@ -17,6 +18,7 @@ public class LogsManager : IPluginBehavior, ILogService
     private IRebelService rebelService;
 
     private IServiceProvider _serviceProvider;
+
     public LogsManager(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
@@ -25,8 +27,24 @@ public class LogsManager : IPluginBehavior, ILogService
     public void Start(BasePlugin parent)
     {
         parent.RegisterEventHandler<EventRoundStart>(OnRoundStart);
+        parent.RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
         wardenService = _serviceProvider.GetRequiredService<IWardenService>();
         rebelService = _serviceProvider.GetRequiredService<IRebelService>();
+    }
+
+    private HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
+    {
+        foreach (var player in Utilities.GetPlayers())
+        {
+            if (!player.IsValid || player.IsBot || player.IsHLTV)
+                continue;
+            foreach (var log in _logMessages)
+            {
+                player.PrintToConsole(log);
+            }
+        }
+
+        return HookResult.Continue;
     }
 
     private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
@@ -62,5 +80,39 @@ public class LogsManager : IPluginBehavior, ILogService
         if (rebelService.IsRebel(player))
             return $"{player.PlayerName} (REBEL)";
         return $"{player.PlayerName} (Prisoner)";
+    }
+
+
+    public void PrintLogs(CCSPlayerController? player)
+    {
+        if (player == null)
+        {
+            printLogs(Server.PrintToConsole);
+        }
+        else if (player.IsValid && !player.IsBot && !player.IsHLTV)
+        {
+            printLogs(player.PrintToConsole);
+        }
+    }
+
+    private void printLogs(Delegate printFunction)
+    {
+        if (!GetLogMessages().Any())
+        {
+            printFunction.DynamicInvoke("No logs to display.");
+            return;
+        }
+
+        printFunction.DynamicInvoke("********************************");
+        printFunction.DynamicInvoke("***** BEGIN JAILBREAK LOGS *****");
+        printFunction.DynamicInvoke("********************************");
+        foreach (string log in GetLogMessages())
+        {
+            printFunction.DynamicInvoke(log);
+        }
+
+        printFunction.DynamicInvoke("********************************");
+        printFunction.DynamicInvoke("****** END JAILBREAK LOGS ******");
+        printFunction.DynamicInvoke("********************************");
     }
 }
