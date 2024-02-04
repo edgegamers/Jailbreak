@@ -5,6 +5,7 @@ using Jailbreak.Public.Mod.Warden;
 using Jailbreak.Warden.Commands;
 using Jailbreak.Warden.Global;
 using Jailbreak.Warden.Markers;
+using Jailbreak.Warden.Paint;
 using Jailbreak.Warden.Selection;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -20,5 +21,6 @@ public static class WardenServiceExtension
 
 		serviceCollection.AddPluginBehavior<WardenCommandsBehavior>();
 		serviceCollection.AddPluginBehavior<WardenMarkerBehavior>();
+		serviceCollection.AddPluginBehavior<WardenPaintBehavior>();
 	}
 }
