@@ -59,4 +59,10 @@ public class BeamCircle : BeamedShape
             }
         }
     }
+    
+    public void SetRadius(float radius)
+    {
+        this.radius = radius;
+        offsets = generateOffsets();
+    }
 }
