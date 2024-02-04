@@ -14,7 +14,7 @@ public static class VectorExtensions
         };
         return vec;
     }
-
+    
     public static Vector Add(this Vector vector, Vector other)
     {
         vector.X += other.X;
