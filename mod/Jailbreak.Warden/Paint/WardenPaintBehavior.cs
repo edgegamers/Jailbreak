@@ -15,6 +15,7 @@ public class WardenPaintBehavior : IPluginBehavior
     private IWardenService _warden;
     private BasePlugin parent;
     private Vector? _lastPosition;
+    private BeamLine? _beamLine;
 
     public WardenPaintBehavior(IWardenService warden)
     {
@@ -31,22 +32,42 @@ public class WardenPaintBehavior : IPluginBehavior
     private void Paint()
     {
         if (!_warden.HasWarden)
+        {
+            _beamLine?.Remove();
+            _beamLine = null;
             return;
+        }
         var warden = _warden.Warden;
         if (warden == null || !warden.IsValid)
             return;
 
         if ((warden.Buttons & PlayerButtons.Use) == 0)
+        {
+            _beamLine?.Remove();
+            _beamLine = null;
             return;
+        }
 
         Vector? position = FindFloorIntersection(warden);
         if (position == null)
             return;
+
+        if (_beamLine == null)
+        {
+            _beamLine = new BeamLine(parent, position, position);
+            _beamLine.SetColor(Color.FromArgb(200, 150, 150, 255));
+            _beamLine.Draw();
+        }
+        
         var start = _lastPosition ?? position;
         start = start.Clone();
-        
-        if(_lastPosition != null && position.DistanceSquared(_lastPosition) < 25 * 25)
+
+        var eyeLocation = warden.Pawn.Value!.AbsOrigin!.Clone();
+        eyeLocation.Z += warden.Pawn.Value!.CameraServices!.OldPlayerViewOffsetZ;
+        if (_lastPosition != null && position.DistanceSquared(_lastPosition) < 25 * 25)
+        {
             return;
+        }
         
         _lastPosition = position;
         if (start.DistanceSquared(position) > 150 * 150 || start.Z - position.Z > 0.001f)
@@ -54,7 +75,9 @@ public class WardenPaintBehavior : IPluginBehavior
             start = position;
         }
 
-        new BeamLine(parent, start, position).Draw(10f);
+        new BeamLine(parent, start.Clone(), position.Clone()).Draw(10f);
+        _beamLine.Move(eyeLocation, position.Clone());
+        _beamLine.Update();
     }
 
     private Vector? FindFloorIntersection(CCSPlayerController player)
@@ -78,9 +101,8 @@ public class WardenPaintBehavior : IPluginBehavior
         Vector eye_vector = new Vector((float)(Math.Cos(yaw) * Math.Cos(pitch)),
             (float)(Math.Sin(yaw) * Math.Cos(pitch)), (float)(-Math.Sin(pitch)));
 
-        var start = FindFloorIntersection(cameraOrigin, eye_vector, new Vector(eye_angle.X, eye_angle.Y, eye_angle.Z),
+        return FindFloorIntersection(cameraOrigin, eye_vector, new Vector(eye_angle.X, eye_angle.Y, eye_angle.Z),
             pawn.AbsOrigin.Z);
-        return start;
     }
 
     private Vector? FindFloorIntersection(Vector start, Vector worldAngles, Vector rotationAngles, float z)
