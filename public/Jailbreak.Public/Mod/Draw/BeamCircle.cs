@@ -8,7 +8,7 @@ namespace Jailbreak.Public.Mod.Draw;
 public class BeamCircle : BeamedShape
 {
 
-    private BeamLine[] lines;
+    private BeamLine?[] lines;
     private Vector[] offsets;
     private float radius;
 
