@@ -81,6 +81,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 
 		if (_warden != null && _warden.Pawn.Value != null)
 		{
+			_warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
 			_warden.Pawn.Value.Render = Color.FromArgb(254, 255, 255, 255);
 			Utilities.SetStateChanged(_warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
 		}

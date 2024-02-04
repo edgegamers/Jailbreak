@@ -119,7 +119,6 @@ public class RebelManager : IPluginBehavior, IRebelService
             color = Color.FromArgb(254, 255, 255, 255);
         }
 
-        player.PrintToConsole("Color: " + color);
         player.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
         player.Pawn.Value.Render = color;
         Utilities.SetStateChanged(player.Pawn.Value, "CBaseModelEntity", "m_clrRender");
