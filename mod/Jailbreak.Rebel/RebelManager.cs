@@ -6,6 +6,7 @@ using CounterStrikeSharp.API.Modules.Timers;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
+using Jailbreak.Public.Mod.Logs;
 using Jailbreak.Public.Mod.Rebel;
 
 namespace Jailbreak.Teams;
@@ -14,10 +15,12 @@ public class RebelManager : IPluginBehavior, IRebelService
 {
     private Dictionary<CCSPlayerController, long> rebelTimes = new();
     private IRebelNotifications notifs;
-    
-    public RebelManager(IRebelNotifications notifs)
+    private ILogService logs;
+
+    public RebelManager(IRebelNotifications notifs, ILogService logs)
     {
         this.notifs = notifs;
+        this.logs = logs;
     }
 
     public void Start(BasePlugin parent)
@@ -83,6 +86,11 @@ public class RebelManager : IPluginBehavior, IRebelService
 
     public bool MarkRebel(CCSPlayerController player, long time)
     {
+        if (!rebelTimes.ContainsKey(player))
+        {
+            logs.AddLogMessage(player.PlayerName + " is now a rebel.");
+        }
+
         rebelTimes[player] = DateTimeOffset.Now.ToUnixTimeSeconds() + time;
         ApplyRebelColor(player);
         return true;
@@ -91,7 +99,8 @@ public class RebelManager : IPluginBehavior, IRebelService
     public void UnmarkRebel(CCSPlayerController player)
     {
         notifs.NO_LONGER_REBEL.ToPlayerChat(player);
-        
+        logs.AddLogMessage(player.PlayerName + " is no longer a rebel.");
+
         rebelTimes.Remove(player);
         ApplyRebelColor(player);
     }
