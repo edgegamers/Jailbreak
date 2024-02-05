@@ -1,5 +1,3 @@
-using System.Drawing;
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 
@@ -7,15 +5,15 @@ namespace Jailbreak.Public.Mod.Draw;
 
 public class BeamCircle : BeamedShape
 {
-
-    private BeamLine?[] lines;
+    private readonly BeamLine?[] lines;
     private Vector[] offsets;
     private float radius;
 
-    public BeamCircle(BasePlugin plugin, Vector position, float radius, int resolution) : base(plugin, position, resolution)
+    public BeamCircle(BasePlugin plugin, Vector position, float radius, int resolution) : base(plugin, position,
+        resolution)
     {
         this.radius = radius;
-        this.lines = new BeamLine[resolution];
+        lines = new BeamLine[resolution];
 
         offsets = generateOffsets();
     }
@@ -35,6 +33,7 @@ public class BeamCircle : BeamedShape
             var y = radius * MathF.Sin(degToRadian(angle * i));
             offsets[i] = new Vector(x, y, 0);
         }
+
         return offsets;
     }
 
@@ -59,7 +58,7 @@ public class BeamCircle : BeamedShape
             }
         }
     }
-    
+
     public void SetRadius(float radius)
     {
         this.radius = radius;

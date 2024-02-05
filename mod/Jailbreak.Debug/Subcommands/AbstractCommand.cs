@@ -10,15 +10,15 @@ namespace Jailbreak.Debug.Subcommands;
 
 public abstract class AbstractCommand
 {
+    private readonly IGenericCommandNotifications lang;
     protected IServiceProvider services;
-    private IGenericCommandNotifications lang;
-    
+
     protected AbstractCommand(IServiceProvider services)
     {
         this.services = services;
         lang = services.GetRequiredService<IGenericCommandNotifications>();
     }
-    
+
     public abstract void OnCommand(CCSPlayerController? executor, WrappedInfo info);
 
     protected TargetResult? GetTarget(WrappedInfo command, int argIndex = 1,
@@ -26,7 +26,7 @@ public abstract class AbstractCommand
     {
         return GetTarget(command.info, argIndex + 1, predicate);
     }
-    
+
     protected TargetResult? GetVulnerableTarget(WrappedInfo command, int argIndex = 1,
         Func<CCSPlayerController, bool>? predicate = null)
     {
@@ -65,8 +65,8 @@ public abstract class AbstractCommand
         Func<CCSPlayerController, bool>? predicate = null)
     {
         return GetTarget(command, argIndex,
-            (p) => command.CallingPlayer == null ||
-                   command.CallingPlayer.CanTarget(p) && (predicate == null || predicate(p)));
+            p => command.CallingPlayer == null ||
+                 (command.CallingPlayer.CanTarget(p) && (predicate == null || predicate(p))));
     }
 
     protected TargetResult? GetSingleTarget(CommandInfo command, int argIndex = 1)
@@ -94,6 +94,7 @@ public abstract class AbstractCommand
     {
         return GetTargetLabel(info.info, argIndex + 1);
     }
+
     protected string GetTargetLabel(CommandInfo info, int argIndex = 1)
     {
         switch (info.GetArg(argIndex))
@@ -130,9 +131,10 @@ public abstract class AbstractCommand
     {
         return GetTargetLabels(info.info, argIndex + 1);
     }
+
     protected string GetTargetLabels(CommandInfo info, int argIndex = 1)
     {
-        string label = GetTargetLabel(info, argIndex);
+        var label = GetTargetLabel(info, argIndex);
         if (label.ToLower().EndsWith("s"))
             return label + "'";
         return label + "'s";

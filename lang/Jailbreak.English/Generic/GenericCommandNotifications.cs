@@ -15,7 +15,7 @@ public class GenericCommandNotifications : IGenericCommandNotifications, ILangua
             //	Hide in panorama and center text
             Plain = false,
             Panorama = false,
-            Chat = true,
+            Chat = true
         };
 
     public IView PlayerNotFound(string query)

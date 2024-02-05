@@ -1,7 +1,4 @@
-﻿using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Commands;
-using Jailbreak.Formatting.Views;
+﻿using CounterStrikeSharp.API.Core;
 using Jailbreak.Public.Mod.Rebel;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -27,19 +24,14 @@ public class MarkRebel : AbstractCommand
             return;
 
         var duration = 120;
-        if(info.ArgCount == 3)
-        {
+        if (info.ArgCount == 3)
             if (!int.TryParse(info.GetArg(2), out duration))
             {
                 info.ReplyToCommand("Invalid duration");
                 return;
             }
-        } 
-        
-        foreach (var player in target.Players)
-        {
-            services.GetRequiredService<IRebelService>().MarkRebel(player, duration);
-        }
+
+        foreach (var player in target.Players) services.GetRequiredService<IRebelService>().MarkRebel(player, duration);
         info.ReplyToCommand($"Marked {GetTargetLabel(info)} as rebels for {duration} seconds.");
     }
 }

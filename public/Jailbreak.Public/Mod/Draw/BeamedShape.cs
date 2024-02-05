@@ -5,7 +5,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 namespace Jailbreak.Public.Mod.Draw;
 
 /// <summary>
-/// Represents a shape that is drawn using many beam segments
+///     Represents a shape that is drawn using many beam segments
 /// </summary>
 public abstract class BeamedShape : DrawableShape, IColorable
 {
@@ -32,7 +32,7 @@ public abstract class BeamedShape : DrawableShape, IColorable
 
     public override void Remove()
     {
-        for(int i = 0; i < beams.Length; i++)
+        for (var i = 0; i < beams.Length; i++)
         {
             beams[i]?.Remove();
             beams[i] = null;

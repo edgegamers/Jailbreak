@@ -9,7 +9,7 @@ namespace Jailbreak.Logs;
 
 public class LogsCommand : IPluginBehavior
 {
-    private ILogService logs;
+    private readonly ILogService logs;
 
     public LogsCommand(ILogService logs)
     {

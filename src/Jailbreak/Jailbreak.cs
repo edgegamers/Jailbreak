@@ -1,70 +1,77 @@
 ﻿using System.Collections.Immutable;
-using System.Reflection;
-
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-
 using Jailbreak.Public.Behaviors;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-using Serilog;
-
 namespace Jailbreak;
 
+/// <summary>
+///     The classic Jail gamemode, ported to Counter-Strike 2.
+/// </summary>
 public class Jailbreak : BasePlugin
 {
-	public override string ModuleName => "Jailbreak";
-	public override string ModuleVersion => "0.3.0.{GIT_VERSION}";
-	public override string ModuleAuthor => "EdgeGamers Development";
+    private IReadOnlyList<IPluginBehavior>? _extensions;
 
-	private IServiceProvider _provider;
-	private IServiceScope _scope;
-	private IReadOnlyList<IPluginBehavior> _extensions;
+    private readonly IServiceProvider _provider;
+    private IServiceScope? _scope;
 
-	public Jailbreak(IServiceProvider provider)
-	{
-		_provider = provider;
-	}
+    /// <summary>
+    /// The Jailbreak plugin.
+    /// </summary>
+    /// <param name="provider"></param>
+    public Jailbreak(IServiceProvider provider)
+    {
+        _provider = provider;
+    }
 
-	public override void Load(bool hotReload)
-	{
-		Logger.LogInformation("[Jailbreak] Loading...");
+    /// <inheritdoc />
+    public override string ModuleName => "Jailbreak";
 
-		_scope = _provider.CreateScope();
-		_extensions = _scope.ServiceProvider.GetServices<IPluginBehavior>()
-			.ToImmutableList();
+    /// <inheritdoc />
+    public override string ModuleVersion => "1.0.0.{GIT_VERSION}";
 
-		Logger.LogInformation("[Jailbreak] Found {@BehaviorCount} behaviors.", _extensions.Count);
+    /// <inheritdoc />
+    public override string ModuleAuthor => "EdgeGamers Development";
 
-		foreach (IPluginBehavior extension in _extensions)
-		{
-			//	Register all event handlers on the extension object
-			RegisterAllAttributes(extension);
+    /// <inheritdoc />
+    public override void Load(bool hotReload)
+    {
+        Logger.LogInformation("[Jailbreak] Loading...");
 
-			//	Tell the extension to start it's magic
-			extension.Start(this);
+        _scope = _provider.CreateScope();
+        _extensions = _scope.ServiceProvider.GetServices<IPluginBehavior>()
+            .ToImmutableList();
 
-			Logger.LogInformation("[Jailbreak] Loaded behavior {@Behavior}", extension.GetType().FullName);
-		}
+        Logger.LogInformation("[Jailbreak] Found {@BehaviorCount} behaviors.", _extensions.Count);
 
-		base.Load(hotReload);
-	}
+        foreach (var extension in _extensions)
+        {
+            //	Register all event handlers on the extension object
+            RegisterAllAttributes(extension);
 
-	public override void Unload(bool hotReload)
-	{
-		Logger.LogInformation("[Jailbreak] Shutting down...");
+            //	Tell the extension to start it's magic
+            extension.Start(this);
 
-		foreach (IPluginBehavior extension in _extensions)
-		{
-			extension.Dispose();
-		}
+            Logger.LogInformation("[Jailbreak] Loaded behavior {@Behavior}", extension.GetType().FullName);
+        }
 
-		//	Dispose of original extensions scope
-		//	When loading again we will get a new scope to avoid leaking state.
-		_scope.Dispose();
+        base.Load(hotReload);
+    }
 
-		base.Unload(hotReload);
-	}
+    /// <inheritdoc />
+    public override void Unload(bool hotReload)
+    {
+        Logger.LogInformation("[Jailbreak] Shutting down...");
+
+        if (_extensions != null)
+            foreach (var extension in _extensions)
+                extension.Dispose();
+
+        //	Dispose of original extensions scope
+        //	When loading again we will get a new scope to avoid leaking state.
+        _scope?.Dispose();
+
+        base.Unload(hotReload);
+    }
 }

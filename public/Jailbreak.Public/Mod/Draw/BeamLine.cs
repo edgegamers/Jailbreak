@@ -7,9 +7,9 @@ namespace Jailbreak.Public.Mod.Draw;
 
 public class BeamLine : DrawableShape, IColorable
 {
-    private Vector end;
-    private Color color = Color.White;
     private CEnvBeam? beam;
+    private Color color = Color.White;
+    private Vector end;
     private float width = 1f;
 
     public BeamLine(BasePlugin plugin, Vector position, Vector end) : base(plugin, position)
@@ -17,15 +17,25 @@ public class BeamLine : DrawableShape, IColorable
         this.end = end;
     }
 
+    public void SetColor(Color color)
+    {
+        this.color = color;
+    }
+
+    public Color GetColor()
+    {
+        return color;
+    }
+
     public void Move(Vector start, Vector end)
     {
-        this.position = start;
+        position = start;
         this.end = end;
     }
 
     public override void Draw()
     {
-        Remove(); 
+        Remove();
         var beam = Utilities.CreateEntityByName<CEnvBeam>("env_beam");
         if (beam == null) return;
         beam.RenderMode = RenderMode_t.kRenderTransColor;
@@ -45,16 +55,6 @@ public class BeamLine : DrawableShape, IColorable
     {
         beam?.Remove();
         beam = null;
-    }
-
-    public void SetColor(Color color)
-    {
-        this.color = color;
-    }
-
-    public Color GetColor()
-    {
-        return color;
     }
 
     public void SetWidth(float width)

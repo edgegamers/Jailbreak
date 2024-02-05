@@ -8,19 +8,19 @@ namespace Jailbreak.Teams;
 
 public class RebelListener : IPluginBehavior
 {
-    private IRebelService _rebelService;
-    
+    private readonly IRebelService _rebelService;
+
     public RebelListener(IRebelService rebelService)
     {
         _rebelService = rebelService;
     }
-    
+
     public void Start(BasePlugin parent)
     {
         parent.RegisterEventHandler<EventPlayerHurt>(OnPlayerHurt);
     }
 
-    HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
+    private HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
     {
         var player = @event.Userid;
         if (!player.IsReal())
@@ -35,7 +35,7 @@ public class RebelListener : IPluginBehavior
         if (attacker.GetTeam() != CsTeam.Terrorist)
             return HookResult.Continue;
 
-        _rebelService.MarkRebel(attacker, 120); 
+        _rebelService.MarkRebel(attacker);
         return HookResult.Continue;
     }
 }

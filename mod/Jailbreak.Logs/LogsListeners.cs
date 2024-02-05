@@ -8,7 +8,7 @@ namespace Jailbreak.Logs;
 
 public class LogsListeners : IPluginBehavior
 {
-    private ILogService logs;
+    private readonly ILogService logs;
 
     public LogsListeners(ILogService logs)
     {
@@ -27,13 +27,13 @@ public class LogsListeners : IPluginBehavior
     {
         if (!activator.IsValid)
             return HookResult.Continue;
-        int index = (int)activator.Index;
-        CCSPlayerPawn? pawn = Utilities.GetEntityFromIndex<CCSPlayerPawn>(index);
+        var index = (int)activator.Index;
+        var pawn = Utilities.GetEntityFromIndex<CCSPlayerPawn>(index);
         if (!pawn.IsValid)
             return HookResult.Continue;
         if (!pawn.OriginalController.IsValid)
             return HookResult.Continue;
-        CBaseEntity? ent = Utilities.GetEntityFromIndex<CBaseEntity>((int)caller.Index);
+        var ent = Utilities.GetEntityFromIndex<CBaseEntity>((int)caller.Index);
         if (!ent.IsValid)
             return HookResult.Continue;
         logs.AddLogMessage(
@@ -60,31 +60,23 @@ public class LogsListeners : IPluginBehavior
             return HookResult.Continue;
         var attacker = @event.Attacker;
 
-        bool isWorld = attacker == null || !attacker.IsReal();
-        int health = @event.DmgHealth;
+        var isWorld = attacker == null || !attacker.IsReal();
+        var health = @event.DmgHealth;
 
         if (isWorld)
         {
             if (health > 0)
-            {
                 logs.AddLogMessage($"The world hurt {logs.FormatPlayer(player)} for {health} damage");
-            }
             else
-            {
                 logs.AddLogMessage($"The world killed {logs.FormatPlayer(player)}");
-            }
         }
         else
         {
             if (health > 0)
-            {
                 logs.AddLogMessage(
                     $"{logs.FormatPlayer(attacker!)} hurt {logs.FormatPlayer(player)} for {health} damage");
-            }
             else
-            {
                 logs.AddLogMessage($"{logs.FormatPlayer(attacker!)} killed {logs.FormatPlayer(player)}");
-            }
         }
 
         return HookResult.Continue;

@@ -1,66 +1,61 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Nodes;
-
 using CounterStrikeSharp.API;
-
 using Jailbreak.Public.Configuration;
-
 using Microsoft.Extensions.Logging;
-
 
 namespace Jailbreak.Config;
 
 public class ConfigService : IConfigService
 {
-	private ILogger<ConfigService> _logger;
+    private readonly ILogger<ConfigService> _logger;
 
-	public ConfigService(ILogger<ConfigService> logger)
-	{
-		_logger = logger;
-	}
+    public ConfigService(ILogger<ConfigService> logger)
+    {
+        _logger = logger;
+    }
 
-	private T Fail<T>(bool fail, string message)
-		where T: class, new()
-	{
-		//	We would be returning default.
-		//	Check if caller wants us to cry and scream instead.
-		if (fail)
-			throw new InvalidOperationException(message);
+    /// <summary>
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="fail"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public T Get<T>(string path, bool fail = false)
+        where T : class, new()
+    {
+        var jsonPath = Path.Combine(Server.GameDirectory, IConfigService.CONFIG_PATH);
 
-		_logger.LogWarning("[Config] Tripped load fail state with message: {@Message}", message);
+        if (!File.Exists(jsonPath))
+            return Fail<T>(fail, "Config file does not exist");
 
-		return new T();
-	}
+        var jsonText = File.ReadAllText(jsonPath);
 
-	/// <summary>
-	///
-	/// </summary>
-	/// <param name="path"></param>
-	/// <param name="fail"></param>
-	/// <typeparam name="T"></typeparam>
-	/// <returns></returns>
-	public T Get<T>(string path, bool fail = false)
-		where T : class, new()
-	{
-		var jsonPath = Path.Combine(Server.GameDirectory, IConfigService.CONFIG_PATH);
+        var jsonObject = JsonNode.Parse(jsonText);
+        if (jsonObject == null)
+            return Fail<T>(fail, $"Unable to parse configuration file at {jsonPath}");
 
-		if (!File.Exists(jsonPath))
-			return Fail<T>(fail, "Config file does not exist");
+        var configObject = jsonObject[path];
+        if (configObject == null)
+            return Fail<T>(fail, $"Unable to navigate to config section {path}");
 
-		var jsonText = File.ReadAllText(jsonPath);
+        var config = configObject.Deserialize<T>();
+        if (config == null)
+            return Fail<T>(fail, $"Unable to deserialize ({configObject.ToJsonString()}) into {typeof(T).FullName}.");
 
-		var jsonObject = JsonObject.Parse(jsonText);
-		if (jsonObject == null)
-			return Fail<T>(fail, $"Unable to parse configuration file at {jsonPath}");
+        return config;
+    }
 
-		var configObject = jsonObject[path];
-		if (configObject == null)
-			return Fail<T>(fail, $"Unable to navigate to config section {path}");
+    private T Fail<T>(bool fail, string message)
+        where T : class, new()
+    {
+        //	We would be returning default.
+        //	Check if caller wants us to cry and scream instead.
+        if (fail)
+            throw new InvalidOperationException(message);
 
-		var config = configObject.Deserialize<T>();
-		if (config == null)
-			return Fail<T>(fail, $"Unable to deserialize ({configObject.ToJsonString()}) into {typeof(T).FullName}.");
+        _logger.LogWarning("[Config] Tripped load fail state with message: {@Message}", message);
 
-		return config;
-	}
+        return new T();
+    }
 }
