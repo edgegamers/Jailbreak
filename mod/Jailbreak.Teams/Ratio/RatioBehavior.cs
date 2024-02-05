@@ -45,30 +45,30 @@ public class RatioBehavior : IPluginBehavior
         //	No divide by zero errors today...
         //	Make value 0.01 so the decision will always be to add Ts
         //	1 / 0.01 = 100, etc...
-        var normalized_ct = ct == 0 ? 0.01 : ct;
-        var ts_per_ct = t / normalized_ct;
+        var normalizedCt = ct == 0 ? 0.01 : ct;
+        var tsPerCt = t / normalizedCt;
         var target = (int)((ct + t) / _config.Target) + 1;
 
         _logger.LogTrace("[Ratio] Evaluating ratio of {@Ct}ct to {@T}t: {@TsPerCt}t/ct ratio, {@Target} target.", ct, t,
-            ts_per_ct, target);
+            tsPerCt, target);
 
-        if (_config.Maximum <= ts_per_ct)
+        if (_config.Maximum <= tsPerCt)
         {
             //	There are too many Ts per CT!
             //	Get more guards on the team
-            _logger.LogTrace("[Ratio] Decision: Not enough CTs: {@Maximum} <= {@TsPerCt}", _config.Maximum, ts_per_ct);
+            _logger.LogTrace("[Ratio] Decision: Not enough CTs: {@Maximum} <= {@TsPerCt}", _config.Maximum, tsPerCt);
             return new RatioAction(target - ct, RatioActionType.Add);
         }
 
-        if (ts_per_ct <= _config.Minimum)
+        if (tsPerCt <= _config.Minimum)
         {
             //	There are too many guards per T!
-            _logger.LogTrace("[Ratio] Decision: Too many CTs: {@TsPerCt} <= {@Minimum}", ts_per_ct, _config.Minimum);
+            _logger.LogTrace("[Ratio] Decision: Too many CTs: {@TsPerCt} <= {@Minimum}", tsPerCt, _config.Minimum);
             return new RatioAction(ct - target, RatioActionType.Remove);
         }
 
         _logger.LogTrace("[Ratio] Decision: Goldilocks: {@Maximum} (max) <= {@TsPerCt} (t/ct) <= {@Minimum} (min)",
-            _config.Maximum, ts_per_ct, _config.Minimum);
+            _config.Maximum, tsPerCt, _config.Minimum);
         //	Take no action
         return new RatioAction();
     }

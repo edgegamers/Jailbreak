@@ -15,9 +15,9 @@ public class LogsManager : IPluginBehavior, ILogService
     private readonly List<string> _logMessages = new();
 
     private readonly IServiceProvider _serviceProvider;
-    private IRebelService rebelService;
-    private long startTime;
-    private IWardenService wardenService;
+    private IRebelService _rebelService;
+    private long _startTime;
+    private IWardenService _wardenService;
 
     public LogsManager(IServiceProvider serviceProvider)
     {
@@ -27,7 +27,7 @@ public class LogsManager : IPluginBehavior, ILogService
     public void AddLogMessage(string message)
     {
         // format to [MM:SS] message
-        var prefix = $"[{TimeSpan.FromSeconds(DateTimeOffset.Now.ToUnixTimeSeconds() - startTime):mm\\:ss}] ";
+        var prefix = $"[{TimeSpan.FromSeconds(DateTimeOffset.Now.ToUnixTimeSeconds() - _startTime):mm\\:ss}] ";
         _logMessages.Add(prefix + message);
     }
 
@@ -43,11 +43,11 @@ public class LogsManager : IPluginBehavior, ILogService
 
     public string FormatPlayer(CCSPlayerController player)
     {
-        if (wardenService.IsWarden(player))
+        if (_wardenService.IsWarden(player))
             return $"{player.PlayerName} (WARDEN)";
         if (player.GetTeam() == CsTeam.CounterTerrorist)
             return $"{player.PlayerName} (CT)";
-        if (rebelService.IsRebel(player))
+        if (_rebelService.IsRebel(player))
             return $"{player.PlayerName} (REBEL)";
         return $"{player.PlayerName} (Prisoner)";
     }
@@ -56,16 +56,16 @@ public class LogsManager : IPluginBehavior, ILogService
     public void PrintLogs(CCSPlayerController? player)
     {
         if (player == null)
-            printLogs(Server.PrintToConsole);
-        else if (player.IsReal()) printLogs(player.PrintToConsole);
+            PrintLogs(Server.PrintToConsole);
+        else if (player.IsReal()) PrintLogs(player.PrintToConsole);
     }
 
     public void Start(BasePlugin parent)
     {
         parent.RegisterEventHandler<EventRoundStart>(OnRoundStart);
         parent.RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
-        wardenService = _serviceProvider.GetRequiredService<IWardenService>();
-        rebelService = _serviceProvider.GetRequiredService<IRebelService>();
+        _wardenService = _serviceProvider.GetRequiredService<IWardenService>();
+        _rebelService = _serviceProvider.GetRequiredService<IRebelService>();
     }
 
     private HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
@@ -82,12 +82,12 @@ public class LogsManager : IPluginBehavior, ILogService
 
     private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
-        startTime = DateTimeOffset.Now.ToUnixTimeSeconds();
+        _startTime = DateTimeOffset.Now.ToUnixTimeSeconds();
         ClearLogMessages();
         return HookResult.Continue;
     }
 
-    private void printLogs(Delegate printFunction)
+    private void PrintLogs(Delegate printFunction)
     {
         if (!GetLogMessages().Any())
         {

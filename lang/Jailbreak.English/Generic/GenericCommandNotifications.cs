@@ -9,7 +9,7 @@ namespace Jailbreak.English.Generic;
 
 public class GenericCommandNotifications : IGenericCommandNotifications, ILanguage<Formatting.Languages.English>
 {
-    public static FormatObject PREFIX =
+    public static FormatObject Prefix =
         new HiddenFormatObject($" {ChatColors.Darkred}[{ChatColors.LightRed}JB{ChatColors.Darkred}]")
         {
             //	Hide in panorama and center text
@@ -22,13 +22,13 @@ public class GenericCommandNotifications : IGenericCommandNotifications, ILangua
     {
         return new SimpleView(writer =>
             writer
-                .Line(PREFIX, $"Player '{query}' not found!"));
+                .Line(Prefix, $"Player '{query}' not found!"));
     }
 
     public IView PlayerFoundMultiple(string query)
     {
         return new SimpleView(writer =>
             writer
-                .Line(PREFIX, $"Multiple players found for '{query}'!"));
+                .Line(Prefix, $"Multiple players found for '{query}'!"));
     }
 }

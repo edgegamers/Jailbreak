@@ -10,12 +10,12 @@ namespace Jailbreak.Debug;
 // css_debug [subcommand] [args] -> subcommand [args]
 public class DebugCommand : IPluginBehavior
 {
-    private readonly Dictionary<string, AbstractCommand> commands = new();
+    private readonly Dictionary<string, AbstractCommand> _commands = new();
 
     public DebugCommand(IServiceProvider serviceProvider)
     {
-        commands.Add("markrebel", new MarkRebel(serviceProvider));
-        commands.Add("pardon", new Pardon(serviceProvider));
+        _commands.Add("markrebel", new MarkRebel(serviceProvider));
+        _commands.Add("pardon", new Pardon(serviceProvider));
     }
 
     [RequiresPermissions("@css/root")]
@@ -26,12 +26,12 @@ public class DebugCommand : IPluginBehavior
 
         if (info.ArgCount == 1)
         {
-            foreach (var command in commands) info.ReplyToCommand(command.Key);
+            foreach (var command in _commands) info.ReplyToCommand(command.Key);
 
             return;
         }
 
-        if (!commands.TryGetValue(info.GetArg(1), out var subcommand))
+        if (!_commands.TryGetValue(info.GetArg(1), out var subcommand))
         {
             info.ReplyToCommand("Invalid subcommand");
             return;

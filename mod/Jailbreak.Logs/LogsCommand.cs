@@ -9,17 +9,17 @@ namespace Jailbreak.Logs;
 
 public class LogsCommand : IPluginBehavior
 {
-    private readonly ILogService logs;
+    private readonly ILogService _logs;
 
     public LogsCommand(ILogService logs)
     {
-        this.logs = logs;
+        this._logs = logs;
     }
 
     [ConsoleCommand("css_logs")]
     [RequiresPermissionsOr("@css/ban", "@css/generic", "@css/kick")]
     public void Command_Logs(CCSPlayerController? executor, CommandInfo info)
     {
-        logs.PrintLogs(executor);
+        _logs.PrintLogs(executor);
     }
 }

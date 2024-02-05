@@ -5,35 +5,35 @@ namespace Jailbreak.Debug.Subcommands;
 
 public class WrappedInfo
 {
-    public readonly CommandInfo info;
+    public readonly CommandInfo Info;
 
     public WrappedInfo(CommandInfo info)
     {
-        this.info = info;
+        this.Info = info;
     }
 
-    public CCSPlayerController? CallingPlayer => info.CallingPlayer;
+    public CCSPlayerController? CallingPlayer => Info.CallingPlayer;
 
-    public IntPtr Handle => info.Handle;
+    public IntPtr Handle => Info.Handle;
 
-    public int ArgCount => info.ArgCount - 1;
+    public int ArgCount => Info.ArgCount - 1;
 
-    public string ArgString => info.ArgString[(info.ArgString.IndexOf(' ') + 1)..];
+    public string ArgString => Info.ArgString[(Info.ArgString.IndexOf(' ') + 1)..];
 
-    public string GetCommandString => info.GetCommandString[(info.GetCommandString.IndexOf(' ') + 1)..];
+    public string GetCommandString => Info.GetCommandString[(Info.GetCommandString.IndexOf(' ') + 1)..];
 
     public string ArgByIndex(int index)
     {
-        return info.ArgByIndex(index + 1);
+        return Info.ArgByIndex(index + 1);
     }
 
     public string GetArg(int index)
     {
-        return info.GetArg(index + 1);
+        return Info.GetArg(index + 1);
     }
 
     public void ReplyToCommand(string message, bool console = false)
     {
-        info.ReplyToCommand(message, console);
+        Info.ReplyToCommand(message, console);
     }
 }

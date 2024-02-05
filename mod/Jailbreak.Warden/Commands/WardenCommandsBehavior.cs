@@ -43,11 +43,11 @@ public class WardenCommandsBehavior : IPluginBehavior
         if (_warden.IsWarden(player))
         {
             //	Handle warden pass
-            _notifications.PASS_WARDEN(player)
+            _notifications.PassWarden(player)
                 .ToAllChat()
                 .ToAllCenter();
 
-            _notifications.BECOME_NEXT_WARDEN.ToAllChat();
+            _notifications.BecomeNextWarden.ToAllChat();
 
             if (!_warden.TryRemoveWarden())
                 Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");
@@ -71,13 +71,13 @@ public class WardenCommandsBehavior : IPluginBehavior
             if (!_queue.InQueue(player))
             {
                 if (_queue.TryEnter(player))
-                    _notifications.JOIN_RAFFLE.ToPlayerChat(player);
+                    _notifications.JoinRaffle.ToPlayerChat(player);
                 return;
             }
 
             if (_queue.InQueue(player))
                 if (_queue.TryExit(player))
-                    _notifications.LEAVE_RAFFLE.ToPlayerChat(player);
+                    _notifications.LeaveRaffle.ToPlayerChat(player);
 
             return;
         }
@@ -86,6 +86,6 @@ public class WardenCommandsBehavior : IPluginBehavior
         if (isCt && !_warden.HasWarden)
             _warden.TrySetWarden(player);
 
-        _notifications.CURRENT_WARDEN(_warden.Warden).ToPlayerChat(player);
+        _notifications.CurrentWarden(_warden.Warden).ToPlayerChat(player);
     }
 }

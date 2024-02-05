@@ -18,13 +18,13 @@ public class WardenBehavior : IPluginBehavior, IWardenService
     private readonly ILogger<WardenBehavior> _logger;
 
     private readonly IWardenNotifications _notifications;
-    private readonly ILogService logs;
+    private readonly ILogService _logs;
 
     public WardenBehavior(ILogger<WardenBehavior> logger, IWardenNotifications notifications, ILogService logs)
     {
         _logger = logger;
         _notifications = notifications;
-        this.logs = logs;
+        this._logs = logs;
     }
 
     /// <summary>
@@ -58,11 +58,11 @@ public class WardenBehavior : IPluginBehavior, IWardenService
             Utilities.SetStateChanged(Warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
         }
 
-        _notifications.NEW_WARDEN(Warden)
+        _notifications.NewWarden(Warden)
             .ToAllChat()
             .ToAllCenter();
 
-        logs.AddLogMessage($"{Warden.PlayerName} is now the warden.");
+        _logs.AddLogMessage($"{Warden.PlayerName} is now the warden.");
         return true;
     }
 
@@ -78,7 +78,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
             Warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
             Warden.Pawn.Value.Render = Color.FromArgb(254, 255, 255, 255);
             Utilities.SetStateChanged(Warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
-            logs.AddLogMessage($"{Warden.PlayerName} is no longer the warden.");
+            _logs.AddLogMessage($"{Warden.PlayerName} is no longer the warden.");
         }
 
         Warden = null;
@@ -98,11 +98,11 @@ public class WardenBehavior : IPluginBehavior, IWardenService
                 _logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
             //	Warden died!
-            _notifications.WARDEN_DIED
+            _notifications.WardenDied
                 .ToAllChat()
                 .ToAllCenter();
 
-            _notifications.BECOME_NEXT_WARDEN.ToAllChat();
+            _notifications.BecomeNextWarden.ToAllChat();
         }
 
         return HookResult.Continue;
@@ -128,11 +128,11 @@ public class WardenBehavior : IPluginBehavior, IWardenService
                 _logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
 
-            _notifications.WARDEN_LEFT
+            _notifications.WardenLeft
                 .ToAllChat()
                 .ToAllCenter();
 
-            _notifications.BECOME_NEXT_WARDEN.ToAllChat();
+            _notifications.BecomeNextWarden.ToAllChat();
         }
 
         return HookResult.Continue;

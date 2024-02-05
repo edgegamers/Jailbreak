@@ -92,7 +92,7 @@ public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
         //	Enable the warden queue
         _queueInactive = false;
 
-        _notifications.PICKING_SHORTLY.ToAllChat();
+        _notifications.PickingShortly.ToAllChat();
 
         //	Start a timer to pick the warden in 7 seconds
         ScheduleChooseWarden();
@@ -121,7 +121,7 @@ public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
 
         if (eligible.Count == 0)
         {
-            _notifications.NO_WARDENS.ToAllChat();
+            _notifications.NoWardens.ToAllChat();
             _queueInactive = true;
 
             return;

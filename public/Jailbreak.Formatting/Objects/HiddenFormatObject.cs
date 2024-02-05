@@ -4,11 +4,11 @@ namespace Jailbreak.Formatting.Objects;
 
 public class HiddenFormatObject : FormatObject
 {
-    public FormatObject _value;
+    public FormatObject Value;
 
     public HiddenFormatObject(FormatObject value)
     {
-        _value = value;
+        Value = value;
     }
 
     public bool Plain { get; set; } = true;
@@ -20,21 +20,21 @@ public class HiddenFormatObject : FormatObject
     public override string ToChat()
     {
         if (Chat)
-            return _value.ToChat();
+            return Value.ToChat();
         return string.Empty;
     }
 
     public override string ToPanorama()
     {
         if (Panorama)
-            return _value.ToPanorama();
+            return Value.ToPanorama();
         return string.Empty;
     }
 
     public override string ToPlain()
     {
         if (Plain)
-            return _value.ToPlain();
+            return Value.ToPlain();
         return string.Empty;
     }
 }

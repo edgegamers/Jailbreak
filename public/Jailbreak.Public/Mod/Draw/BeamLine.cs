@@ -7,30 +7,30 @@ namespace Jailbreak.Public.Mod.Draw;
 
 public class BeamLine : DrawableShape, IColorable
 {
-    private CEnvBeam? beam;
-    private Color color = Color.White;
-    private Vector end;
-    private float width = 1f;
+    private CEnvBeam? _beam;
+    private Color _color = Color.White;
+    private Vector _end;
+    private float _width = 1f;
 
     public BeamLine(BasePlugin plugin, Vector position, Vector end) : base(plugin, position)
     {
-        this.end = end;
+        this._end = end;
     }
 
     public void SetColor(Color color)
     {
-        this.color = color;
+        this._color = color;
     }
 
     public Color GetColor()
     {
-        return color;
+        return _color;
     }
 
     public void Move(Vector start, Vector end)
     {
-        position = start;
-        this.end = end;
+        Position = start;
+        this._end = end;
     }
 
     public override void Draw()
@@ -39,31 +39,31 @@ public class BeamLine : DrawableShape, IColorable
         var beam = Utilities.CreateEntityByName<CEnvBeam>("env_beam");
         if (beam == null) return;
         beam.RenderMode = RenderMode_t.kRenderTransColor;
-        beam.Width = width;
+        beam.Width = _width;
         beam.Render = GetColor();
 
-        beam.Teleport(position, new QAngle(), new Vector());
-        beam.EndPos.X = end.X;
-        beam.EndPos.Y = end.Y;
-        beam.EndPos.Z = end.Z;
-        this.beam = beam;
+        beam.Teleport(Position, new QAngle(), new Vector());
+        beam.EndPos.X = _end.X;
+        beam.EndPos.Y = _end.Y;
+        beam.EndPos.Z = _end.Z;
+        this._beam = beam;
 
         Utilities.SetStateChanged(beam, "CBeam", "m_vecEndPos");
     }
 
     public override void Remove()
     {
-        beam?.Remove();
-        beam = null;
+        _beam?.Remove();
+        _beam = null;
     }
 
     public void SetWidth(float width)
     {
-        this.width = width;
+        this._width = width;
     }
 
     public float GetWidth()
     {
-        return width;
+        return _width;
     }
 }

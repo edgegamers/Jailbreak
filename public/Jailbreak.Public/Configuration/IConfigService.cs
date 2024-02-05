@@ -2,7 +2,7 @@
 
 public interface IConfigService
 {
-    public const string CONFIG_PATH = "jailbreak.json";
+    public const string ConfigPath = "jailbreak.json";
 
     /// <summary>
     ///     Get the configuration object with the provided name

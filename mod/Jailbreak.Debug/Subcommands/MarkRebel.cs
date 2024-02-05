@@ -31,7 +31,7 @@ public class MarkRebel : AbstractCommand
                 return;
             }
 
-        foreach (var player in target.Players) services.GetRequiredService<IRebelService>().MarkRebel(player, duration);
+        foreach (var player in target.Players) Services.GetRequiredService<IRebelService>().MarkRebel(player, duration);
         info.ReplyToCommand($"Marked {GetTargetLabel(info)} as rebels for {duration} seconds.");
     }
 }

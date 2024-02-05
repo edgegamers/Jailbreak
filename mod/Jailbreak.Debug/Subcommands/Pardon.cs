@@ -23,7 +23,7 @@ public class Pardon : AbstractCommand
         if (target == null)
             return;
 
-        foreach (var player in target.Players) services.GetRequiredService<IRebelService>().UnmarkRebel(player);
+        foreach (var player in target.Players) Services.GetRequiredService<IRebelService>().UnmarkRebel(player);
 
         info.ReplyToCommand($"Pardoned {GetTargetLabel(info)}");
     }

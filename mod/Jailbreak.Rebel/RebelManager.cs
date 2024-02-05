@@ -13,14 +13,14 @@ namespace Jailbreak.Teams;
 
 public class RebelManager : IPluginBehavior, IRebelService
 {
-    private readonly ILogService logs;
-    private readonly IRebelNotifications notifs;
-    private readonly Dictionary<CCSPlayerController, long> rebelTimes = new();
+    private readonly ILogService _logs;
+    private readonly IRebelNotifications _notifs;
+    private readonly Dictionary<CCSPlayerController, long> _rebelTimes = new();
 
     public RebelManager(IRebelNotifications notifs, ILogService logs)
     {
-        this.notifs = notifs;
-        this.logs = logs;
+        this._notifs = notifs;
+        this._logs = logs;
     }
 
     public void Start(BasePlugin parent)
@@ -51,31 +51,31 @@ public class RebelManager : IPluginBehavior, IRebelService
 
     public ISet<CCSPlayerController> GetActiveRebels()
     {
-        return rebelTimes.Keys.ToHashSet();
+        return _rebelTimes.Keys.ToHashSet();
     }
 
     public long GetRebelTimeLeft(CCSPlayerController player)
     {
-        if (rebelTimes.TryGetValue(player, out var time)) return time - DateTimeOffset.Now.ToUnixTimeSeconds();
+        if (_rebelTimes.TryGetValue(player, out var time)) return time - DateTimeOffset.Now.ToUnixTimeSeconds();
 
         return 0;
     }
 
     public bool MarkRebel(CCSPlayerController player, long time = 120)
     {
-        if (!rebelTimes.ContainsKey(player)) logs.AddLogMessage(player.PlayerName + " is now a rebel.");
+        if (!_rebelTimes.ContainsKey(player)) _logs.AddLogMessage(player.PlayerName + " is now a rebel.");
 
-        rebelTimes[player] = DateTimeOffset.Now.ToUnixTimeSeconds() + time;
+        _rebelTimes[player] = DateTimeOffset.Now.ToUnixTimeSeconds() + time;
         ApplyRebelColor(player);
         return true;
     }
 
     public void UnmarkRebel(CCSPlayerController player)
     {
-        notifs.NO_LONGER_REBEL.ToPlayerChat(player);
-        logs.AddLogMessage(player.PlayerName + " is no longer a rebel.");
+        _notifs.NoLongerRebel.ToPlayerChat(player);
+        _logs.AddLogMessage(player.PlayerName + " is no longer a rebel.");
 
-        rebelTimes.Remove(player);
+        _rebelTimes.Remove(player);
         ApplyRebelColor(player);
     }
 
@@ -94,7 +94,7 @@ public class RebelManager : IPluginBehavior, IRebelService
 
     private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
-        rebelTimes.Clear();
+        _rebelTimes.Clear();
         foreach (var player in Utilities.GetPlayers())
         {
             if (!player.IsReal())
@@ -107,7 +107,7 @@ public class RebelManager : IPluginBehavior, IRebelService
 
     private HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
     {
-        if (rebelTimes.ContainsKey(@event.Userid)) rebelTimes.Remove(@event.Userid);
+        if (_rebelTimes.ContainsKey(@event.Userid)) _rebelTimes.Remove(@event.Userid);
 
         return HookResult.Continue;
     }
@@ -117,7 +117,7 @@ public class RebelManager : IPluginBehavior, IRebelService
         var player = @event.Userid;
         if (!player.IsReal())
             return HookResult.Continue;
-        rebelTimes.Remove(player);
+        _rebelTimes.Remove(player);
         return HookResult.Continue;
     }
 
@@ -135,8 +135,8 @@ public class RebelManager : IPluginBehavior, IRebelService
     private Color GetRebelColor(CCSPlayerController player)
     {
         var percent = GetRebelTimePercentage(player);
-        var percentRGB = 255 - (int)Math.Round(percent * 255.0);
-        var color = Color.FromArgb(254, 255, percentRGB, percentRGB);
+        var percentRgb = 255 - (int)Math.Round(percent * 255.0);
+        var color = Color.FromArgb(254, 255, percentRgb, percentRgb);
         if (percent <= 0) color = Color.FromArgb(254, 255, 255, 255);
 
         return color;

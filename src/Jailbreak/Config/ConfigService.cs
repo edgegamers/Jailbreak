@@ -24,7 +24,7 @@ public class ConfigService : IConfigService
     public T Get<T>(string path, bool fail = false)
         where T : class, new()
     {
-        var jsonPath = Path.Combine(Server.GameDirectory, IConfigService.CONFIG_PATH);
+        var jsonPath = Path.Combine(Server.GameDirectory, IConfigService.ConfigPath);
 
         if (!File.Exists(jsonPath))
             return Fail<T>(fail, "Config file does not exist");

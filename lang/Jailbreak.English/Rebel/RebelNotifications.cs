@@ -9,7 +9,7 @@ namespace Jailbreak.English.Rebel;
 
 public class RebelNotifications : IRebelNotifications, ILanguage<Formatting.Languages.English>
 {
-    public static FormatObject PREFIX =
+    public static FormatObject Prefix =
         new HiddenFormatObject($" {ChatColors.Darkred}[{ChatColors.LightRed}Rebel{ChatColors.Darkred}]")
         {
             //	Hide in panorama and center text
@@ -18,7 +18,7 @@ public class RebelNotifications : IRebelNotifications, ILanguage<Formatting.Lang
             Chat = true
         };
 
-    public IView NO_LONGER_REBEL => new SimpleView(writer =>
+    public IView NoLongerRebel => new SimpleView(writer =>
         writer
-            .Line(PREFIX, "You are no longer a rebel."));
+            .Line(Prefix, "You are no longer a rebel."));
 }

@@ -9,7 +9,6 @@ public class FormatWriter
     public IEnumerable<string> Chat
         => Lines.Select(array => string.Join(' ', array.Select(obj => obj.ToChat())));
 
-
     public IEnumerable<string> Panorama
         => Lines.Select(array => string.Join(' ', array.Select(obj => obj.ToPanorama())));
 

@@ -9,33 +9,33 @@ namespace Jailbreak.Public.Mod.Draw;
 /// </summary>
 public abstract class BeamedShape : DrawableShape, IColorable
 {
-    protected BeamLine?[] beams;
-    protected Color color = Color.White;
-    protected int resolution;
+    protected BeamLine?[] Beams;
+    protected Color Color = Color.White;
+    protected int Resolution;
 
     protected BeamedShape(BasePlugin plugin, Vector position, int resolution) : base(plugin, position)
     {
-        beams = new BeamLine[resolution];
+        Beams = new BeamLine[resolution];
     }
 
     // TODO: Add support for rotation across arbitrary axis
 
     public Color GetColor()
     {
-        return color;
+        return Color;
     }
 
     public void SetColor(Color color)
     {
-        this.color = color;
+        this.Color = color;
     }
 
     public override void Remove()
     {
-        for (var i = 0; i < beams.Length; i++)
+        for (var i = 0; i < Beams.Length; i++)
         {
-            beams[i]?.Remove();
-            beams[i] = null;
+            Beams[i]?.Remove();
+            Beams[i] = null;
         }
     }
 }
