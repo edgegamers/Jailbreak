@@ -69,7 +69,7 @@ public abstract class AbstractCommand
                    command.CallingPlayer.CanTarget(p) && (predicate == null || predicate(p)));
     }
 
-    internal TargetResult? GetSingleTarget(CommandInfo command, int argIndex = 1)
+    protected TargetResult? GetSingleTarget(CommandInfo command, int argIndex = 1)
     {
         var matches = command.GetArgTargetResult(argIndex);
 
@@ -90,7 +90,11 @@ public abstract class AbstractCommand
         return matches;
     }
 
-    internal string GetTargetLabel(CommandInfo info, int argIndex = 1)
+    protected string GetTargetLabel(WrappedInfo info, int argIndex = 1)
+    {
+        return GetTargetLabel(info.info, argIndex + 1);
+    }
+    protected string GetTargetLabel(CommandInfo info, int argIndex = 1)
     {
         switch (info.GetArg(argIndex))
         {
@@ -122,8 +126,11 @@ public abstract class AbstractCommand
         }
     }
 
-
-    internal string GetTargetLabels(CommandInfo info, int argIndex = 1)
+    protected string GetTargetLabels(WrappedInfo info, int argIndex = 1)
+    {
+        return GetTargetLabels(info.info, argIndex + 1);
+    }
+    protected string GetTargetLabels(CommandInfo info, int argIndex = 1)
     {
         string label = GetTargetLabel(info, argIndex);
         if (label.ToLower().EndsWith("s"))

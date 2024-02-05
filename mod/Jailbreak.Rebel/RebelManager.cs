@@ -29,6 +29,7 @@ public class RebelManager : IPluginBehavior, IRebelService
         parent.RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
         parent.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
         parent.RegisterEventHandler<EventRoundStart>(OnRoundStart);
+        parent.RegisterListener<Listeners.OnTick>(OnTick);
 
         parent.AddTimer(1f, () =>
         {
@@ -47,6 +48,22 @@ public class RebelManager : IPluginBehavior, IRebelService
                 SendTimeLeft(player);
             }
         }, TimerFlags.REPEAT);
+    }
+
+    private void OnTick()
+    {
+        foreach (var player in GetActiveRebels())
+        {
+            if (!player.IsReal())
+                continue;
+
+            if (GetRebelTimeLeft(player) <= 0)
+            {
+                continue;
+            }
+
+            SendTimeLeft(player);
+        }
     }
 
     HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
@@ -127,7 +144,7 @@ public class RebelManager : IPluginBehavior, IRebelService
             return 0;
         return (float)(100 - (120 - x) * (Math.Sqrt(120 - x)) / 13f) / 100;
     }
-    
+
     private Color GetRebelColor(CCSPlayerController player)
     {
         var percent = GetRebelTimePercentage(player);
@@ -158,7 +175,7 @@ public class RebelManager : IPluginBehavior, IRebelService
         var formattedTime = TimeSpan.FromSeconds(timeLeft).ToString(@"mm\:ss");
         var color = GetRebelColor(player);
         var formattedColor = $"<font color=\"#{color.R:X2}{color.G:X2}{color.B:X2}\">";
-        
-        player.PrintToCenterHtml($"You are a rebel for {formattedColor}{formattedTime}</font> more seconds.");
+
+        player.PrintToCenterHtml($"You are {formattedColor}<b>rebelling</b></font>");
     }
 }
