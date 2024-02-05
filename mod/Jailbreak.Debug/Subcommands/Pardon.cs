@@ -8,9 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jailbreak.Debug.Subcommands;
 
 // css_markrebel [player] <duration>
-public class MarkRebel : AbstractCommand
+public class Pardon : AbstractCommand
 {
-    public MarkRebel(IServiceProvider services) : base(services)
+    public Pardon(IServiceProvider services) : base(services)
     {
     }
 
@@ -25,21 +25,12 @@ public class MarkRebel : AbstractCommand
         var target = GetVulnerableTarget(info);
         if (target == null)
             return;
-
-        var duration = 120;
-        if(info.ArgCount == 3)
-        {
-            if (!int.TryParse(info.GetArg(2), out duration))
-            {
-                info.ReplyToCommand("Invalid duration");
-                return;
-            }
-        } 
         
         foreach (var player in target.Players)
         {
-            services.GetRequiredService<IRebelService>().MarkRebel(player, duration);
+            services.GetRequiredService<IRebelService>().UnmarkRebel(player);
         }
-        info.ReplyToCommand($"Marked {GetTargetLabel(info)} as rebels for {duration} seconds.");
+
+        info.ReplyToCommand($"Pardoned {GetTargetLabel(info)}");
     }
 }
