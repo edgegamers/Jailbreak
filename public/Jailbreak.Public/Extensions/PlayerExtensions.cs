@@ -14,7 +14,7 @@ public static class PlayerExtensions
 	{
 		//  Do nothing else before this:
 		//  Verifies the handle points to an entity within the global entity list.
-		if (!player.IsReal())
+		if (!player.IsValid)
 			return false;
         
 		if(player.Connected != PlayerConnectedState.PlayerConnected)
