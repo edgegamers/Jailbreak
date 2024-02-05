@@ -96,7 +96,7 @@ public class RebelManager : IPluginBehavior, IRebelService
         return 0;
     }
 
-    public bool MarkRebel(CCSPlayerController player, long time)
+    public bool MarkRebel(CCSPlayerController player, long time = 120)
     {
         if (!rebelTimes.ContainsKey(player))
         {

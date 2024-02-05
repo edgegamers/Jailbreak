@@ -5,7 +5,7 @@ namespace Jailbreak.Debug.Subcommands;
 
 public class WrappedInfo 
 {
-    private readonly CommandInfo info;
+    public readonly CommandInfo info;
     
     public WrappedInfo(CommandInfo info)
     {
@@ -22,8 +22,8 @@ public class WrappedInfo
     
     public string GetCommandString => info.GetCommandString[(info.GetCommandString.IndexOf(' ') + 1)..];
     
-    public string ArgByIndex(int index) => info.ArgByIndex(index - 1);
-    public string GetArg(int index) => info.GetArg(index - 1);
+    public string ArgByIndex(int index) => info.ArgByIndex(index + 1);
+    public string GetArg(int index) => info.GetArg(index + 1);
     
     public void ReplyToCommand(string message, bool console = false) => info.ReplyToCommand(message, console);
 }
