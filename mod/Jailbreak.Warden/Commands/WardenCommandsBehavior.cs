@@ -38,8 +38,6 @@ public class WardenCommandsBehavior : IPluginBehavior
         if (player == null)
             return;
 
-        var isCt = player.GetTeam() == CsTeam.CounterTerrorist;
-
         if (_warden.IsWarden(player))
         {
             //	Handle warden pass

@@ -9,7 +9,7 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Logs;
 using Jailbreak.Public.Mod.Rebel;
 
-namespace Jailbreak.Teams;
+namespace Jailbreak.Rebel;
 
 public class RebelManager : IPluginBehavior, IRebelService
 {
@@ -155,8 +155,8 @@ public class RebelManager : IPluginBehavior, IRebelService
 
     private void SendTimeLeft(CCSPlayerController player)
     {
-        var timeLeft = GetRebelTimeLeft(player);
-        var formattedTime = TimeSpan.FromSeconds(timeLeft).ToString(@"mm\:ss");
+        // var timeLeft = GetRebelTimeLeft(player);
+        // var formattedTime = TimeSpan.FromSeconds(timeLeft).ToString(@"mm\:ss");
         var color = GetRebelColor(player);
         var formattedColor = $"<font color=\"#{color.R:X2}{color.G:X2}{color.B:X2}\">";
 

@@ -37,7 +37,7 @@ public class LogsListeners : IPluginBehavior
         if (!ent.IsValid)
             return HookResult.Continue;
         _logs.AddLogMessage(
-            $"{_logs.FormatPlayer(pawn.OriginalController.Value!)} pressed a button {ent.Entity?.Name ?? "Unlabeled"} -> {output?.Connections?.TargetDesc ?? "None"}");
+            $"{_logs.FormatPlayer(pawn.OriginalController.Value!)} pressed a button {ent.Entity?.Name ?? "Unlabeled"} -> {output.Connections?.TargetDesc ?? "None"}");
         return HookResult.Continue;
     }
 

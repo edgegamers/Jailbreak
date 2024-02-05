@@ -4,7 +4,7 @@ using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rebel;
 
-namespace Jailbreak.Teams;
+namespace Jailbreak.Rebel;
 
 public class RebelListener : IPluginBehavior
 {

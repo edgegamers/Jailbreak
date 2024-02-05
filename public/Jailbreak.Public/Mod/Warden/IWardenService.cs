@@ -5,21 +5,21 @@ namespace Jailbreak.Public.Mod.Warden;
 
 public interface IWardenService
 {
-    CCSPlayerController? Warden { get; }
+    public CCSPlayerController? Warden { get; }
 
     /// <summary>
     ///     Whether or not a warden is currently assigned
     /// </summary>
-    bool HasWarden { get; }
+    public bool HasWarden { get; }
 
-    bool IsWarden(CCSPlayerController? player)
+    public bool IsWarden(CCSPlayerController? player)
     {
         if (player == null || !player.IsReal())
             return false;
         return HasWarden && Warden != null && Warden.Slot == player.Slot;
     }
 
-    bool TrySetWarden(CCSPlayerController warden);
+    public bool TrySetWarden(CCSPlayerController warden);
 
-    bool TryRemoveWarden();
+    public bool TryRemoveWarden();
 }

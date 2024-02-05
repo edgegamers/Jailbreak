@@ -15,9 +15,9 @@ public class LogsManager : IPluginBehavior, ILogService
     private readonly List<string> _logMessages = new();
 
     private readonly IServiceProvider _serviceProvider;
-    private IRebelService _rebelService;
+    private IRebelService? _rebelService;
     private long _startTime;
-    private IWardenService _wardenService;
+    private IWardenService? _wardenService;
 
     public LogsManager(IServiceProvider serviceProvider)
     {
@@ -43,6 +43,8 @@ public class LogsManager : IPluginBehavior, ILogService
 
     public string FormatPlayer(CCSPlayerController player)
     {
+        if(_rebelService == null || _wardenService == null)
+            throw new InvalidOperationException("Services not initialized");
         if (_wardenService.IsWarden(player))
             return $"{player.PlayerName} (WARDEN)";
         if (player.GetTeam() == CsTeam.CounterTerrorist)

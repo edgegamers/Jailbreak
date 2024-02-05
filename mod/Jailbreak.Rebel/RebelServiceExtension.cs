@@ -1,6 +1,5 @@
 ﻿using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rebel;
-using Jailbreak.Teams;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Rebel;
