@@ -37,11 +37,12 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/dev'
+    
     steps:
       - name: POST Webhook
       run: |
-      curl -X POST \
-        --fail \
-        -F token=${{ secrets.GITLAB_SECRET_TOKEN }} \
-        -F ref=dev \
-        https://gitlab.edgegamers.io/api/v4/projects/2594/trigger/pipeline
+        curl -X POST \
+          --fail \
+          -F token=${{ secrets.GITLAB_SECRET_TOKEN }} \
+          -F ref=dev \
+          https://gitlab.edgegamers.io/api/v4/projects/2594/trigger/pipeline
