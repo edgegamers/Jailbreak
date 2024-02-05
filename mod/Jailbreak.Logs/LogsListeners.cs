@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Jailbreak.Public.Behaviors;
+using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Logs;
 
 namespace Jailbreak.Logs;
@@ -43,7 +44,7 @@ public class LogsListeners : IPluginBehavior
     private HookResult OnGrenadeThrown(EventGrenadeThrown @event, GameEventInfo info)
     {
         var player = @event.Userid;
-        if (!player.IsValid)
+        if (!player.IsReal())
             return HookResult.Continue;
         var grenade = @event.Weapon;
 
@@ -55,11 +56,11 @@ public class LogsListeners : IPluginBehavior
     private HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
     {
         var player = @event.Userid;
-        if (!player.IsValid)
+        if (!player.IsReal())
             return HookResult.Continue;
         var attacker = @event.Attacker;
 
-        bool isWorld = attacker == null || !attacker.IsValid;
+        bool isWorld = attacker == null || !attacker.IsReal();
         int health = @event.Health;
 
         if (isWorld)

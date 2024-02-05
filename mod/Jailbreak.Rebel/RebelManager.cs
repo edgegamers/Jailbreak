@@ -6,6 +6,7 @@ using CounterStrikeSharp.API.Modules.Timers;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
+using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Logs;
 using Jailbreak.Public.Mod.Rebel;
 
@@ -32,7 +33,7 @@ public class RebelManager : IPluginBehavior, IRebelService
         {
             foreach (var player in GetActiveRebels())
             {
-                if (!player.IsValid)
+                if (!player.IsReal())
                     continue;
 
                 if (GetRebelTimeLeft(player) <= 0)
@@ -51,7 +52,7 @@ public class RebelManager : IPluginBehavior, IRebelService
         rebelTimes.Clear();
         foreach (var player in Utilities.GetPlayers())
         {
-            if (!player.IsValid)
+            if (!player.IsReal())
                 continue;
             ApplyRebelColor(player);
         }
@@ -118,7 +119,7 @@ public class RebelManager : IPluginBehavior, IRebelService
 
     private void ApplyRebelColor(CCSPlayerController player)
     {
-        if (!player.IsValid || player.Pawn.Value == null)
+        if (!player.IsReal() || player.Pawn.Value == null)
             return;
         var percent = GetRebelTimePercentage(player);
         var percentRGB = 255 - (int)Math.Round(percent * 255.0);

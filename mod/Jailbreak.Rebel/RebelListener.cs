@@ -23,13 +23,13 @@ public class RebelListener : IPluginBehavior
     HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
     {
         var player = @event.Userid;
-        if (!player.IsValid)
+        if (!player.IsReal())
             return HookResult.Continue;
         if (player.GetTeam() != CsTeam.CounterTerrorist)
             return HookResult.Continue;
 
         var attacker = @event.Attacker;
-        if (!attacker.IsValid)
+        if (!attacker.IsReal())
             return HookResult.Continue;
 
         if (attacker.GetTeam() != CsTeam.Terrorist)

@@ -36,7 +36,7 @@ public class LogsManager : IPluginBehavior, ILogService
     {
         foreach (var player in Utilities.GetPlayers())
         {
-            if (!player.IsValid || player.IsBot || player.IsHLTV)
+            if(!player.IsReal())
                 continue;
             foreach (var log in _logMessages)
             {
@@ -89,7 +89,7 @@ public class LogsManager : IPluginBehavior, ILogService
         {
             printLogs(Server.PrintToConsole);
         }
-        else if (player.IsValid && !player.IsBot && !player.IsHLTV)
+        else if (player.IsReal())
         {
             printLogs(player.PrintToConsole);
         }
