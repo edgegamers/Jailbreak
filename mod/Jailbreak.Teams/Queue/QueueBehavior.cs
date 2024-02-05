@@ -46,6 +46,9 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
 	public bool TryEnterQueue(CCSPlayerController player)
 	{
+		if (!player.IsReal())
+			return false;
+
 		if (player.GetTeam() == CsTeam.CounterTerrorist)
 			return false;
 
@@ -59,6 +62,9 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
 	public bool TryExitQueue(CCSPlayerController player)
 	{
+		if (!player.IsReal())
+			return false;
+
 		var state = _state.Get(player);
 		state.InQueue = false;
 		state.IsGuard = false;
@@ -68,7 +74,9 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
 	public bool TryPop(int count)
 	{
-		var queue = Queue.ToList();
+		var queue = Queue
+			.Where(player => player.IsReal())
+			.ToList();
 
 		if (queue.Count <= count)
 		{
@@ -91,9 +99,11 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 	public bool TryPush(int count)
 	{
 		var players = Utilities.GetPlayers()
+			.Where(player => player.IsReal())
 			.Where(player => player.GetTeam() == CsTeam.CounterTerrorist)
 			.Shuffle(Random.Shared)
 			.ToList();
+
 		_logger.LogInformation("[Queue] Push requested {@Count} out of {@GuardCount}", count, players.Count);
 
 		for (int i = 0; i < Math.Min(count, players.Count); i++)
@@ -176,7 +186,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 		var player = ev.Userid;
 		if (!player.IsReal())
 			return HookResult.Continue;
-		
+
 		var state = _state.Get(ev.Userid);
 
 		if (player.GetTeam() == CsTeam.CounterTerrorist && !state.IsGuard)

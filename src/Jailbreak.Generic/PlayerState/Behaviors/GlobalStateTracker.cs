@@ -23,4 +23,16 @@ public class GlobalStateTracker : BaseStateTracker, IPluginBehavior
 		Reset(ev.Userid);
 		return HookResult.Continue;
 	}
+
+	/// <summary>
+	/// Reset all global states when a new game starts
+	/// </summary>
+	/// <param name="ev"></param>
+	/// <param name="info"></param>
+	/// <returns></returns>
+	public HookResult OnGameEnd(EventGameEnd ev, GameEventInfo info)
+	{
+		ResetAll();
+		return HookResult.Continue;
+	}
 }

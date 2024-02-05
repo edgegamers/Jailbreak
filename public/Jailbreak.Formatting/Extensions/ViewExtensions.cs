@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Core;
 
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Core;
+using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.Formatting.Extensions;
 
@@ -22,40 +23,52 @@ public static class ViewExtensions
 
 	public static IView ToPlayerConsole(this IView view, CCSPlayerController player)
 	{
-		var writer = view.ToWriter();
+		if (player.IsReal())
+		{
+			var writer = view.ToWriter();
 
-		foreach (string writerLine in writer.Plain)
-			player.PrintToConsole(writerLine);
+			foreach (string writerLine in writer.Plain)
+				player.PrintToConsole(writerLine);
+		}
 
 		return view;
 	}
 
 	public static IView ToPlayerChat(this IView view, CCSPlayerController player)
 	{
-		var writer = view.ToWriter();
+		if (player.IsReal())
+		{
+			var writer = view.ToWriter();
 
-		foreach (string writerLine in writer.Chat)
-			player.PrintToChat(writerLine);
+			foreach (string writerLine in writer.Chat)
+				player.PrintToChat(writerLine);
+		}
 
 		return view;
 	}
 
 	public static IView ToPlayerCenter(this IView view, CCSPlayerController player)
 	{
-		var writer = view.ToWriter();
-		var merged = string.Join('\n', writer.Plain);
+		if (player.IsReal())
+		{
+			var writer = view.ToWriter();
+			var merged = string.Join('\n', writer.Plain);
 
-		player.PrintToCenter(merged);
+			player.PrintToCenter(merged);
+		}
 
 		return view;
 	}
 
 	public static IView ToPlayerCenterHtml(this IView view, CCSPlayerController player)
 	{
-		var writer = view.ToWriter();
-		var merged = string.Join('\n', writer.Panorama);
+		if (player.IsReal())
+		{
+			var writer = view.ToWriter();
+			var merged = string.Join('\n', writer.Panorama);
 
-		player.PrintToCenterHtml(merged);
+			player.PrintToCenterHtml(merged);
+		}
 
 		return view;
 	}
