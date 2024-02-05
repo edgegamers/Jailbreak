@@ -33,7 +33,7 @@ public class WardenPaintBehavior : IPluginBehavior
             return;
 
         var warden = _warden.Warden;
-        if (warden == null || !warden.IsValid)
+        if (warden == null || !warden.IsReal())
             return;
 
         if ((warden.Buttons & PlayerButtons.Use) == 0)
