@@ -3,9 +3,16 @@ using CounterStrikeSharp.API.Modules.Commands;
 
 namespace Jailbreak.Debug.Subcommands;
 
-public class MarkRebel
+// css_markrebel [player] <duration>
+public class MarkRebel : Executor
 {
-    public void Command_MarkRebel(CCSPlayerController? executor, CommandInfo info)
+
+    public MarkRebel()
+    {
+        
+    }
+
+    public void HandleExecution(CCSPlayerController? executor, WrappedInfo info)
     {
         if (executor == null)
         {
