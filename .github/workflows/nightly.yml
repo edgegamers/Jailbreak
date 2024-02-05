@@ -39,7 +39,7 @@ jobs:
     if: github.ref == 'refs/heads/dev'
     
     steps:
-      - name: POST Webhook
+    - name: POST Webhook
       run: |
         curl -X POST \
           --fail \
