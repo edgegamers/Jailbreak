@@ -6,7 +6,7 @@ namespace Jailbreak.Logs;
 
 public static class LogsServiceExtension
 {
-   public static void AddLogsService(this IServiceCollection services)
+   public static void AddJailbreakLogs(this IServiceCollection services)
    {
       services.AddPluginBehavior<ILogService, LogsManager>();
       

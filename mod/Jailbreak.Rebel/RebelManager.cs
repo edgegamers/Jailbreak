@@ -27,7 +27,9 @@ public class RebelManager : IPluginBehavior, IRebelService
     public void Start(BasePlugin parent)
     {
         parent.RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
+        parent.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
         parent.RegisterEventHandler<EventRoundStart>(OnRoundStart);
+        parent.RegisterListener<Listeners.OnTick>(OnTick);
 
         parent.AddTimer(1f, () =>
         {
@@ -43,8 +45,25 @@ public class RebelManager : IPluginBehavior, IRebelService
                 }
 
                 ApplyRebelColor(player);
+                SendTimeLeft(player);
             }
         }, TimerFlags.REPEAT);
+    }
+
+    private void OnTick()
+    {
+        foreach (var player in GetActiveRebels())
+        {
+            if (!player.IsReal())
+                continue;
+
+            if (GetRebelTimeLeft(player) <= 0)
+            {
+                continue;
+            }
+
+            SendTimeLeft(player);
+        }
     }
 
     HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
@@ -70,6 +89,15 @@ public class RebelManager : IPluginBehavior, IRebelService
         return HookResult.Continue;
     }
 
+    HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
+    {
+        var player = @event.Userid;
+        if (!player.IsReal())
+            return HookResult.Continue;
+        rebelTimes.Remove(player);
+        return HookResult.Continue;
+    }
+
     public ISet<CCSPlayerController> GetActiveRebels()
     {
         return rebelTimes.Keys.ToHashSet();
@@ -85,7 +113,7 @@ public class RebelManager : IPluginBehavior, IRebelService
         return 0;
     }
 
-    public bool MarkRebel(CCSPlayerController player, long time)
+    public bool MarkRebel(CCSPlayerController player, long time = 120)
     {
         if (!rebelTimes.ContainsKey(player))
         {
@@ -117,10 +145,8 @@ public class RebelManager : IPluginBehavior, IRebelService
         return (float)(100 - (120 - x) * (Math.Sqrt(120 - x)) / 13f) / 100;
     }
 
-    private void ApplyRebelColor(CCSPlayerController player)
+    private Color GetRebelColor(CCSPlayerController player)
     {
-        if (!player.IsReal() || player.Pawn.Value == null)
-            return;
         var percent = GetRebelTimePercentage(player);
         var percentRGB = 255 - (int)Math.Round(percent * 255.0);
         var color = Color.FromArgb(254, 255, percentRGB, percentRGB);
@@ -129,8 +155,27 @@ public class RebelManager : IPluginBehavior, IRebelService
             color = Color.FromArgb(254, 255, 255, 255);
         }
 
+        return color;
+    }
+
+    private void ApplyRebelColor(CCSPlayerController player)
+    {
+        if (!player.IsReal() || player.Pawn.Value == null)
+            return;
+        var color = GetRebelColor(player);
+
         player.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
         player.Pawn.Value.Render = color;
         Utilities.SetStateChanged(player.Pawn.Value, "CBaseModelEntity", "m_clrRender");
+    }
+
+    private void SendTimeLeft(CCSPlayerController player)
+    {
+        var timeLeft = GetRebelTimeLeft(player);
+        var formattedTime = TimeSpan.FromSeconds(timeLeft).ToString(@"mm\:ss");
+        var color = GetRebelColor(player);
+        var formattedColor = $"<font color=\"#{color.R:X2}{color.G:X2}{color.B:X2}\">";
+
+        player.PrintToCenterHtml($"You are {formattedColor}<b>rebelling</b></font>");
     }
 }

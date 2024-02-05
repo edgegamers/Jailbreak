@@ -61,7 +61,7 @@ public class LogsListeners : IPluginBehavior
         var attacker = @event.Attacker;
 
         bool isWorld = attacker == null || !attacker.IsReal();
-        int health = @event.Health;
+        int health = @event.DmgHealth;
 
         if (isWorld)
         {
