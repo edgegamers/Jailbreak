@@ -1,6 +1,8 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Cvars;
+using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
@@ -12,105 +14,104 @@ namespace Jailbreak.Teams.Ratio;
 
 public class RatioBehavior : IPluginBehavior
 {
-    public enum RatioActionType
-    {
-        Add,
-        Remove,
-        None
-    }
+	private IGuardQueue _guardQueue;
+	private ILogger<RatioBehavior> _logger;
 
-    private readonly RatioConfig _config;
-    private readonly IGuardQueue _guardQueue;
-    private readonly ILogger<RatioBehavior> _logger;
+	public enum RatioActionType
+	{
+		Add,
+		Remove,
+		None,
+	}
 
-    public RatioBehavior(RatioConfig config, IGuardQueue guardQueue, ILogger<RatioBehavior> logger)
-    {
-        _config = config;
-        _guardQueue = guardQueue;
-        _logger = logger;
-    }
+	public struct RatioAction
+	{
+		public RatioActionType Type { get; init; }
+		public int Count { get; init; }
 
-    public void Dispose()
-    {
-    }
+		public RatioAction(int count = 0, RatioActionType type = RatioActionType.None)
+		{
+			Count = count;
+			Type = type;
+		}
+	}
 
-    /// <summary>
-    ///     Evaluate whether the provided CT/T ratio needs
-    /// </summary>
-    /// <param name="ct"></param>
-    /// <param name="t"></param>
-    /// <returns></returns>
-    public RatioAction Evaluate(int ct, int t)
-    {
-        //	No divide by zero errors today...
-        //	Make value 0.01 so the decision will always be to add Ts
-        //	1 / 0.01 = 100, etc...
-        var normalizedCt = ct == 0 ? 0.01 : ct;
-        var tsPerCt = t / normalizedCt;
-        var target = (int)((ct + t) / _config.Target) + 1;
+	private RatioConfig _config;
 
-        _logger.LogTrace("[Ratio] Evaluating ratio of {@Ct}ct to {@T}t: {@TsPerCt}t/ct ratio, {@Target} target.", ct, t,
-            tsPerCt, target);
+	public RatioBehavior(RatioConfig config, IGuardQueue guardQueue, ILogger<RatioBehavior> logger)
+	{
+		_config = config;
+		_guardQueue = guardQueue;
+		_logger = logger;
+	}
 
-        if (_config.Maximum <= tsPerCt)
-        {
-            //	There are too many Ts per CT!
-            //	Get more guards on the team
-            _logger.LogTrace("[Ratio] Decision: Not enough CTs: {@Maximum} <= {@TsPerCt}", _config.Maximum, tsPerCt);
-            return new RatioAction(target - ct, RatioActionType.Add);
-        }
+	/// <summary>
+	/// Evaluate whether the provided CT/T ratio needs
+	/// </summary>
+	/// <param name="ct"></param>
+	/// <param name="t"></param>
+	/// <returns></returns>
+	public RatioAction Evaluate(int ct, int t)
+	{
+		//	No divide by zero errors today...
+		//	Make value 0.01 so the decision will always be to add Ts
+		//	1 / 0.01 = 100, etc...
+		var normalized_ct = (ct == 0 ? 0.01 : (double)ct);
+		double ts_per_ct = t / (double)normalized_ct;
+		int target = (int)( (ct + t) / _config.Target ) + 1;
 
-        if (tsPerCt <= _config.Minimum)
-        {
-            //	There are too many guards per T!
-            _logger.LogTrace("[Ratio] Decision: Too many CTs: {@TsPerCt} <= {@Minimum}", tsPerCt, _config.Minimum);
-            return new RatioAction(ct - target, RatioActionType.Remove);
-        }
+		_logger.LogTrace("[Ratio] Evaluating ratio of {@Ct}ct to {@T}t: {@TsPerCt}t/ct ratio, {@Target} target.", ct ,t ,ts_per_ct, target);
 
-        _logger.LogTrace("[Ratio] Decision: Goldilocks: {@Maximum} (max) <= {@TsPerCt} (t/ct) <= {@Minimum} (min)",
-            _config.Maximum, tsPerCt, _config.Minimum);
-        //	Take no action
-        return new RatioAction();
-    }
+		if (_config.Maximum <= ts_per_ct)
+		{
+			//	There are too many Ts per CT!
+			//	Get more guards on the team
+			_logger.LogTrace("[Ratio] Decision: Not enough CTs: {@Maximum} <= {@TsPerCt}", _config.Maximum, ts_per_ct);
+			return new(target - ct, RatioActionType.Add);
+		}
 
-    /// <summary>
-    ///     When a round starts, balance out the teams
-    /// </summary>
-    [GameEventHandler(HookMode.Pre)]
-    public HookResult OnRoundStart(EventRoundStart ev, GameEventInfo info)
-    {
-        var counterTerrorists = Utilities.GetPlayers().Count(player => player.GetTeam() == CsTeam.CounterTerrorist);
-        var terrorists = Utilities.GetPlayers().Count(player => player.GetTeam() == CsTeam.Terrorist);
+		if (ts_per_ct <= _config.Minimum)
+		{
+			//	There are too many guards per T!
+			_logger.LogTrace("[Ratio] Decision: Too many CTs: {@TsPerCt} <= {@Minimum}", ts_per_ct, _config.Minimum);
+			return new(ct - target, RatioActionType.Remove);
+		}
 
-        var action = Evaluate(counterTerrorists, terrorists);
+		_logger.LogTrace("[Ratio] Decision: Goldilocks: {@Maximum} (max) <= {@TsPerCt} (t/ct) <= {@Minimum} (min)", _config.Maximum, ts_per_ct, _config.Minimum);
+		//	Take no action
+		return new();
+	}
 
-        //	Prevent the round from ending while we make ratio adjustments
-        using (var _ = new TemporaryConvar<bool>("mp_ignore_round_win_conditions", true))
-        {
-            var success = action.Type switch
-            {
-                RatioActionType.Add => _guardQueue.TryPop(action.Count),
-                RatioActionType.Remove => _guardQueue.TryPush(action.Count),
-                _ => true
-            };
+	/// <summary>
+	/// When a round starts, balance out the teams
+	/// </summary>
+	[GameEventHandler(HookMode.Pre)]
+	public HookResult OnRoundStart(EventRoundStart ev, GameEventInfo info)
+	{
+		var counterTerrorists = Utilities.GetPlayers().Count(player => player.GetTeam() == CsTeam.CounterTerrorist);
+		var terrorists = Utilities.GetPlayers().Count(player => player.GetTeam() == CsTeam.Terrorist);
 
-            if (!success)
-                Server.PrintToChatAll(
-                    $"[BUG] Ratio enforcement failed :^( [RatioAction: {action.Type} @ {action.Count}]");
-        }
+		var action = Evaluate(counterTerrorists, terrorists);
 
-        return HookResult.Continue;
-    }
+		//	Prevent the round from ending while we make ratio adjustments
+		using (var _ = new TemporaryConvar<bool>("mp_ignore_round_win_conditions", true))
+		{
+			var success = action.Type switch
+			{
+				RatioActionType.Add => _guardQueue.TryPop(action.Count),
+				RatioActionType.Remove => _guardQueue.TryPush(action.Count),
+				_ => true
+			};
 
-    public struct RatioAction
-    {
-        public RatioActionType Type { get; init; }
-        public int Count { get; init; }
+			if (!success)
+				Server.PrintToChatAll($"[BUG] Ratio enforcement failed :^( [RatioAction: {action.Type} @ {action.Count}]");
+		}
 
-        public RatioAction(int count = 0, RatioActionType type = RatioActionType.None)
-        {
-            Count = count;
-            Type = type;
-        }
-    }
+		return HookResult.Continue;
+	}
+
+	public void Dispose()
+	{
+
+	}
 }

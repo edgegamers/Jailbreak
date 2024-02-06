@@ -2,6 +2,7 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
@@ -41,11 +42,11 @@ public class WardenCommandsBehavior : IPluginBehavior
         if (_warden.IsWarden(player))
         {
             //	Handle warden pass
-            _notifications.PassWarden(player)
+            _notifications.PASS_WARDEN(player)
                 .ToAllChat()
                 .ToAllCenter();
 
-            _notifications.BecomeNextWarden.ToAllChat();
+            _notifications.BECOME_NEXT_WARDEN.ToAllChat();
 
             if (!_warden.TryRemoveWarden())
                 Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");
@@ -69,13 +70,13 @@ public class WardenCommandsBehavior : IPluginBehavior
             if (!_queue.InQueue(player))
             {
                 if (_queue.TryEnter(player))
-                    _notifications.JoinRaffle.ToPlayerChat(player);
+                    _notifications.JOIN_RAFFLE.ToPlayerChat(player);
                 return;
             }
 
             if (_queue.InQueue(player))
                 if (_queue.TryExit(player))
-                    _notifications.LeaveRaffle.ToPlayerChat(player);
+                    _notifications.LEAVE_RAFFLE.ToPlayerChat(player);
 
             return;
         }
@@ -84,6 +85,6 @@ public class WardenCommandsBehavior : IPluginBehavior
         if (isCt && !_warden.HasWarden)
             _warden.TrySetWarden(player);
 
-        _notifications.CurrentWarden(_warden.Warden).ToPlayerChat(player);
+        _notifications.CURRENT_WARDEN(_warden.Warden).ToPlayerChat(player);
     }
 }

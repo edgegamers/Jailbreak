@@ -13,11 +13,12 @@ namespace Jailbreak.Rebel;
 
 public class RebelManager : IPluginBehavior, IRebelService
 {
-    private readonly ILogService _logs;
+    private IRebelNotifications notifs;
+    private readonly IRichLogService _logs;
     private readonly IRebelNotifications _notifs;
     private readonly Dictionary<CCSPlayerController, long> _rebelTimes = new();
 
-    public RebelManager(IRebelNotifications notifs, ILogService logs)
+    public RebelManager(IRebelNotifications notifs, IRichLogService logs)
     {
         _notifs = notifs;
         _logs = logs;
@@ -47,36 +48,6 @@ public class RebelManager : IPluginBehavior, IRebelService
                 SendTimeLeft(player);
             }
         }, TimerFlags.REPEAT);
-    }
-
-    public ISet<CCSPlayerController> GetActiveRebels()
-    {
-        return _rebelTimes.Keys.ToHashSet();
-    }
-
-    public long GetRebelTimeLeft(CCSPlayerController player)
-    {
-        if (_rebelTimes.TryGetValue(player, out var time)) return time - DateTimeOffset.Now.ToUnixTimeSeconds();
-
-        return 0;
-    }
-
-    public bool MarkRebel(CCSPlayerController player, long time = 120)
-    {
-        if (!_rebelTimes.ContainsKey(player)) _logs.AddLogMessage(player.PlayerName + " is now a rebel.");
-
-        _rebelTimes[player] = DateTimeOffset.Now.ToUnixTimeSeconds() + time;
-        ApplyRebelColor(player);
-        return true;
-    }
-
-    public void UnmarkRebel(CCSPlayerController player)
-    {
-        _notifs.NoLongerRebel.ToPlayerChat(player);
-        _logs.AddLogMessage(player.PlayerName + " is no longer a rebel.");
-
-        _rebelTimes.Remove(player);
-        ApplyRebelColor(player);
     }
 
     private void OnTick()
@@ -121,7 +92,43 @@ public class RebelManager : IPluginBehavior, IRebelService
         return HookResult.Continue;
     }
 
-    // https://www.desmos.com/calculator/g2v6vvg7ax 
+    public ISet<CCSPlayerController> GetActiveRebels()
+    {
+        return _rebelTimes.Keys.ToHashSet();
+    }
+
+    public long GetRebelTimeLeft(CCSPlayerController player)
+    {
+        if (_rebelTimes.TryGetValue(player, out long time))
+        {
+            return time - DateTimeOffset.Now.ToUnixTimeSeconds();
+        }
+
+        return 0;
+    }
+
+    public bool MarkRebel(CCSPlayerController player, long time = 120)
+    {
+        if (!_rebelTimes.ContainsKey(player))
+        {
+            _logs.Append(_logs.Player(player), "is now a rebel.");
+        }
+
+        _rebelTimes[player] = DateTimeOffset.Now.ToUnixTimeSeconds() + time;
+        ApplyRebelColor(player);
+        return true;
+    }
+
+    public void UnmarkRebel(CCSPlayerController player)
+    {
+        notifs.NO_LONGER_REBEL.ToPlayerChat(player);
+        _logs.Append(_logs.Player(player), "is no longer a rebel.");
+
+        _rebelTimes.Remove(player);
+        ApplyRebelColor(player);
+    }
+
+    // https://www.desmos.com/calculator/g2v6vvg7ax
     private float GetRebelTimePercentage(CCSPlayerController player)
     {
         var x = GetRebelTimeLeft(player);
