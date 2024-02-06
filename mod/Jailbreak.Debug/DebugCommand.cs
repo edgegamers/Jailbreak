@@ -18,6 +18,7 @@ public class DebugCommand : IPluginBehavior
         _commands.Add("pardon", new Pardon(serviceProvider));
     }
 
+
     [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_debug", "Debug command for Jailbreak.")]
     public void Command_Debug(CCSPlayerController? executor, CommandInfo info)
