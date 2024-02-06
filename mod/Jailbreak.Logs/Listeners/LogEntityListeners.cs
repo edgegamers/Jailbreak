@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
+using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.Logs;
 
@@ -20,19 +21,29 @@ public class LogEntityListeners : IPluginBehavior
 	public HookResult OnButtonPressed(CEntityIOOutput output, string name, CEntityInstance activator,
 		CEntityInstance caller, CVariant value, float delay)
 	{
-		if (!activator.IsValid)
+		if (!activator.TryGetController(out var player))
 			return HookResult.Continue;
-		int index = (int)activator.Index;
-		CCSPlayerPawn? pawn = Utilities.GetEntityFromIndex<CCSPlayerPawn>(index);
-		if (!pawn.IsValid)
-			return HookResult.Continue;
-		if (!pawn.OriginalController.IsValid)
-			return HookResult.Continue;
+
 		CBaseEntity? ent = Utilities.GetEntityFromIndex<CBaseEntity>((int)caller.Index);
-		if (!ent.IsValid)
-			return HookResult.Continue;
+
+
 		_logs.Append(
-			$"{_logs.Player(pawn.OriginalController.Value!)} pressed a button {ent.Entity?.Name ?? "Unlabeled"} -> {output?.Connections?.TargetDesc ?? "None"}");
+			$"{_logs.Player(player)} pressed a button: {ent.Entity?.Name ?? "Unlabeled"} -> {output?.Connections?.TargetDesc ?? "None"}");
+		return HookResult.Continue;
+	}
+
+	[EntityOutputHook("func_breakable", "OnBreak")]
+	public HookResult OnBreakableBroken(CEntityIOOutput output, string name, CEntityInstance activator,
+		CEntityInstance caller, CVariant value, float delay)
+	{
+		if (!activator.TryGetController(out var player))
+			return HookResult.Continue;
+
+		CBaseEntity? ent = Utilities.GetEntityFromIndex<CBaseEntity>((int)caller.Index);
+
+
+		_logs.Append(
+			$"{_logs.Player(player)} broke an entity: {ent.Entity?.Name ?? "Unlabeled"} -> {output?.Connections?.TargetDesc ?? "None"}");
 		return HookResult.Continue;
 	}
 }
