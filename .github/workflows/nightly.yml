@@ -7,34 +7,35 @@ on: [push, pull_request]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
-    - name: Insert Job Version
-      run: sed -i "s/{GIT_VERSION}/${{github.run_number}}/g" src/Jailbreak/Jailbreak.cs
-    
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+        show-progress: true,
+
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+
     - run: |
         dotnet restore
         dotnet build src/Jailbreak/Jailbreak.csproj --no-restore
         dotnet publish src/Jailbreak/Jailbreak.csproj --no-build --no-restore
-    
+
     - uses: actions/upload-artifact@v4.0.0
       with:
         name: jailbreak-nightly
-        path: build
+        path: build/Jailbreak
         # If build didn't put any artifacts in the build folder, consider it an error
         if-no-files-found: error
   post_webhook:
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/dev'
-    
+
     steps:
     - name: POST Webhook
       run: |

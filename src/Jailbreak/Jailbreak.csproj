@@ -18,10 +18,34 @@
         <!--CI Configurations-->
         <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     </PropertyGroup>
+    
+    <PropertyGroup>
+        <!--GitVersion Configuration-->
+        <UpdateAssemblyInfo>true</UpdateAssemblyInfo>
+        <UpdateVersionProperties>true</UpdateVersionProperties>
+
+        <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+        <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+        <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+
+        <GitVersion_NoFetchEnabled>false</GitVersion_NoFetchEnabled>
+        <GitVersion_NoCacheEnabled>true</GitVersion_NoCacheEnabled>
+        
+        <GitVersion_ToolArgments>$(GitVersion_ToolArgments) /verbosity Normal</GitVersion_ToolArgments>
+        <GitVersion_ToolArgments>$(GitVersion_ToolArgments) /overrideconfig mode=ContinuousDelivery</GitVersion_ToolArgments>
+        <GitVersion_ToolArgments>$(GitVersion_ToolArgments) /overrideconfig assembly-file-versioning-format="{SemVer}"</GitVersion_ToolArgments>
+        <GitVersion_ToolArgments>$(GitVersion_ToolArgments) /overrideconfig assembly-versioning-format="{Major}.{Minor}.{Patch}.{CommitsSinceVersionSource}"</GitVersion_ToolArgments>
+        <GitVersion_ToolArgments>$(GitVersion_ToolArgments) /overrideconfig assembly-informational-format="{FullSemVer}{EscapedBranchName}"</GitVersion_ToolArgments>
+        <GitVersion_ToolArgments>$(GitVersion_ToolArgments) /overrideconfig commit-message-incrementing=Disabled</GitVersion_ToolArgments>
+        <GitVersion_ToolArgments>$(GitVersion_ToolArgments) /overrideconfig increment=Patch</GitVersion_ToolArgments>
+
+    </PropertyGroup>
 
     <PropertyGroup>
         <!--Publish Configuration-->
-        <PublishDir>$(MSBuildThisFileDirectory)/../../build/Jailbreak</PublishDir>
+        <PublishBaseDirectory>$(MSBuildThisFileDirectory)/../../build</PublishBaseDirectory>
+        <PublishDir>$(PublishBaseDirectory)/Jailbreak</PublishDir>
+        
         <PublishRelease>false</PublishRelease>
         <PublishSelfContained>false</PublishSelfContained>
         <PublishDocumentationFile>true</PublishDocumentationFile>
@@ -41,5 +65,19 @@
       <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj" />
       <ProjectReference Include="..\Jailbreak.Generic\Jailbreak.Generic.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="GitVersion.MsBuild" Version="6.0.0-beta.5">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+    </ItemGroup>
+
+    <Target Name="ZipOutputPath" AfterTargets="Publish">
+        <ZipDirectory
+                Overwrite="true"
+                SourceDirectory="$(PublishDir)\"
+                DestinationFile="$(PublishBaseDirectory)\Jailbreak.zip" />
+    </Target>
 
 </Project>
