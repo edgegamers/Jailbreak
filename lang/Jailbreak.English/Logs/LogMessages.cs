@@ -17,15 +17,15 @@ public class LogMessages : ILogMessages, ILanguage<Formatting.Languages.English>
 
 	public IView BEGIN_JAILBREAK_LOGS => new SimpleView()
 	{
-		{ "********************************" },
-		{ "***** BEGIN JAILBREAK LOGS *****" },
+		{ "********************************" }, SimpleView.NEWLINE,
+		{ "***** BEGIN JAILBREAK LOGS *****" }, SimpleView.NEWLINE,
 		{ "********************************" }
 	};
 
 	public IView END_JAILBREAK_LOGS => new SimpleView()
 	{
-		{ "********************************" },
-		{ "****** END JAILBREAK LOGS ******" },
+		{ "********************************" }, SimpleView.NEWLINE,
+		{ "****** END JAILBREAK LOGS ******" }, SimpleView.NEWLINE,
 		{ "********************************" }
 	};
 

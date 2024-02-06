@@ -33,7 +33,7 @@ public class RatioNotifications : IRatioNotifications, ILanguage<Formatting.Lang
 	public IView YOU_WERE_AUTOBALANCED_PRISONER =>
 		new SimpleView
 		{
-			{ PREFIX, "You were autobalanced to the prisoner team!" },
+			{ PREFIX, "You were autobalanced to the prisoner team!" }, SimpleView.NEWLINE,
 			{ PREFIX, "Please use !guard to join the guard team." }
 		};
 
@@ -43,7 +43,7 @@ public class RatioNotifications : IRatioNotifications, ILanguage<Formatting.Lang
 	public IView LEFT_GUARD =>
 		new SimpleView
 		{
-			{ PREFIX, "You are no longer a guard." },
+			{ PREFIX, "You are no longer a guard." }, SimpleView.NEWLINE,
 			{ PREFIX, "Please use !guard if you want to re-join the guard team." }
 		};
 

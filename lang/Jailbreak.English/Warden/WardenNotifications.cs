@@ -22,7 +22,7 @@ public class WardenNotifications : IWardenNotifications, ILanguage<Formatting.La
 	public IView PICKING_SHORTLY =>
 		new SimpleView
 		{
-			{ PREFIX, "Picking a warden shortly" },
+			{ PREFIX, "Picking a warden shortly" }, SimpleView.NEWLINE,
 			{ PREFIX, "To enter the warden queue, type !warden in chat." }
 		};
 

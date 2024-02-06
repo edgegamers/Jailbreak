@@ -22,14 +22,14 @@ namespace Jailbreak.Warden.Global;
 public class WardenBehavior : IPluginBehavior, IWardenService
 {
 	private ILogger<WardenBehavior> _logger;
-	private ILogService logs;
+	private IRichLogService logs;
 
 	private IWardenNotifications _notifications;
 
 	private bool _hasWarden;
 	private CCSPlayerController? _warden;
 
-	public WardenBehavior(ILogger<WardenBehavior> logger, IWardenNotifications notifications, ILogService logs)
+	public WardenBehavior(ILogger<WardenBehavior> logger, IWardenNotifications notifications, IRichLogService logs)
 	{
 		_logger = logger;
 		_notifications = notifications;
@@ -70,8 +70,8 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		_notifications.NEW_WARDEN(_warden)
 			.ToAllChat()
 			.ToAllCenter();
-		
-		logs.Append($"{_warden.PlayerName} is now the warden.");
+
+		logs.Append( logs.Player(_warden), "is now the warden.");
 		return true;
 	}
 
@@ -87,9 +87,9 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 			_warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
 			_warden.Pawn.Value.Render = Color.FromArgb(254, 255, 255, 255);
 			Utilities.SetStateChanged(_warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
-			logs.Append($"{_warden.PlayerName} is no longer the warden.");
+			logs.Append( logs.Player(_warden), "is no longer the warden.");
 		}
-		
+
 		_warden = null;
 
 		return true;

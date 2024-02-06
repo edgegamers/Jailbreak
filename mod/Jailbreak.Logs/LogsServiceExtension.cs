@@ -10,10 +10,13 @@ public static class LogsServiceExtension
 {
    public static void AddJailbreakLogs(this IServiceCollection services)
    {
-	   services.AddPluginBehavior<ILogService, LogsManager>();
+	   services.AddPluginBehavior<IRichLogService, LogsManager>();
+	   services.AddTransient<ILogService>(provider => provider.GetRequiredService<IRichLogService>());
 
 	   services.AddPluginBehavior<LogsCommand>();
-	   services.AddPluginBehavior<LogsListeners>();
+
+	   services.AddPluginBehavior<LogEntityListeners>();
+	   services.AddPluginBehavior<LogDamageListeners>();
 
 	   //	PlayerTagHelper is a lower-level class that avoids dependency loops.
 	   services.AddTransient<IRichPlayerTag, PlayerTagHelper>();

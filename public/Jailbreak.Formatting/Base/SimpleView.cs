@@ -7,6 +7,13 @@ namespace Jailbreak.Formatting.Base;
 
 public class SimpleView : IView, IEnumerable<IList<FormatObject>>
 {
+	public struct Newline
+	{
+
+	}
+
+	public static Newline NEWLINE = new Newline();
+
 	private List<List<FormatObject>> _lines = new();
 
 	public SimpleView()
@@ -28,13 +35,24 @@ public class SimpleView : IView, IEnumerable<IList<FormatObject>>
 	}
 
 	/// <summary>
-	/// Add a whole new row to this simpleview
-	/// Eg, { { 123 }, { abc }, { weeeeee } } are each their own lines.
+	/// Add multiple items at a time to this SimpleView
 	/// </summary>
 	/// <param name="line"></param>
 	public void Add(params FormatObject[] line)
 	{
-		_lines.Add(new List<FormatObject>(line));
+		if (_lines.Count == 0)
+			_lines.Add(new List<FormatObject>());
+
+		_lines[_lines.Count - 1].AddRange(line);
+	}
+
+	/// <summary>
+	/// Add a new line to this SimpleView
+	/// </summary>
+	/// <param name="newline"></param>
+	public void Add(Newline newline)
+	{
+		_lines.Add(new List<FormatObject>());
 	}
 
 	public void Render(FormatWriter writer)

@@ -17,20 +17,21 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Logs;
 
-public class LogsManager : IPluginBehavior, ILogService
+public class LogsManager : IPluginBehavior, ILogService, IRichLogService
 {
     private readonly List<IView> _logMessages = new();
 
+    private IRichPlayerTag _richPlayerTag;
     private ILogMessages _messages;
 
-    public LogsManager(IServiceProvider serviceProvider, ILogMessages messages)
+    public LogsManager(IServiceProvider serviceProvider, ILogMessages messages, IRichPlayerTag richPlayerTag)
     {
         _messages = messages;
-
+        _richPlayerTag = richPlayerTag;
     }
 
     [GameEventHandler]
-    private HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
+    public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
     {
         _messages.BEGIN_JAILBREAK_LOGS
             .ToServerConsole()
@@ -49,7 +50,7 @@ public class LogsManager : IPluginBehavior, ILogService
     }
 
     [GameEventHandler]
-    private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
+    public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
         Clear();
         return HookResult.Continue;
@@ -58,6 +59,16 @@ public class LogsManager : IPluginBehavior, ILogService
     public void Append(params FormatObject[] objects)
     {
         _logMessages.Add(_messages.CREATE_LOG(objects));
+    }
+
+    public FormatObject Player(CCSPlayerController playerController)
+    {
+        return new TreeFormatObject()
+        {
+            playerController,
+            $"[{playerController.UserId}]",
+            _richPlayerTag.Rich(playerController)
+        };
     }
 
     public void Append(string message)

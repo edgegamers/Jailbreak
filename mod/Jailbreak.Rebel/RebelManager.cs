@@ -16,12 +16,12 @@ public class RebelManager : IPluginBehavior, IRebelService
 {
     private Dictionary<CCSPlayerController, long> rebelTimes = new();
     private IRebelNotifications notifs;
-    private ILogService logs;
+    private readonly IRichLogService _logs;
 
-    public RebelManager(IRebelNotifications notifs, ILogService logs)
+    public RebelManager(IRebelNotifications notifs, IRichLogService logs)
     {
         this.notifs = notifs;
-        this.logs = logs;
+        this._logs = logs;
     }
 
     public void Start(BasePlugin parent)
@@ -117,7 +117,7 @@ public class RebelManager : IPluginBehavior, IRebelService
     {
         if (!rebelTimes.ContainsKey(player))
         {
-            logs.Append(player.PlayerName + " is now a rebel.");
+            _logs.Append(_logs.Player(player), "is now a rebel.");
         }
 
         rebelTimes[player] = DateTimeOffset.Now.ToUnixTimeSeconds() + time;
@@ -128,13 +128,13 @@ public class RebelManager : IPluginBehavior, IRebelService
     public void UnmarkRebel(CCSPlayerController player)
     {
         notifs.NO_LONGER_REBEL.ToPlayerChat(player);
-        logs.Append(player.PlayerName + " is no longer a rebel.");
+        _logs.Append(_logs.Player(player), "is no longer a rebel.");
 
         rebelTimes.Remove(player);
         ApplyRebelColor(player);
     }
 
-    // https://www.desmos.com/calculator/g2v6vvg7ax 
+    // https://www.desmos.com/calculator/g2v6vvg7ax
     private float GetRebelTimePercentage(CCSPlayerController player)
     {
         long x = GetRebelTimeLeft(player);
