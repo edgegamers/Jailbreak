@@ -4,25 +4,27 @@ namespace Jailbreak.Generic.PlayerState.Behaviors;
 
 public class BaseStateTracker : IDisposable
 {
-	private List<ITrackedPlayerState> _trackedPlayerStates = new();
+    private readonly List<ITrackedPlayerState> _trackedPlayerStates = new();
 
-	protected void Reset(CCSPlayerController controller)
-	{
-		foreach (ITrackedPlayerState trackedPlayerState in _trackedPlayerStates)
-			trackedPlayerState.Reset(controller);
-	}
+    public void Dispose()
+    {
+        ResetAll();
+    }
 
-	protected void ResetAll()
-	{
-		foreach (ITrackedPlayerState trackedPlayerState in _trackedPlayerStates)
-			trackedPlayerState.Drop();
-	}
+    protected void Reset(CCSPlayerController controller)
+    {
+        foreach (var trackedPlayerState in _trackedPlayerStates)
+            trackedPlayerState.Reset(controller);
+    }
 
-	public void Track(ITrackedPlayerState state)
-	{
-		_trackedPlayerStates.Add(state);
-	}
+    protected void ResetAll()
+    {
+        foreach (var trackedPlayerState in _trackedPlayerStates)
+            trackedPlayerState.Drop();
+    }
 
-	public void Dispose()
-		=> ResetAll();
+    public void Track(ITrackedPlayerState state)
+    {
+        _trackedPlayerStates.Add(state);
+    }
 }

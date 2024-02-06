@@ -1,21 +1,15 @@
 ﻿using System.Drawing;
-using System.Reflection;
-
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
-
-using Jailbreak.Public.Behaviors;
-using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.Warden;
-using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Public.Behaviors;
+using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Logs;
+using Jailbreak.Public.Mod.Warden;
 using Microsoft.Extensions.Logging;
-
-using Serilog;
 
 namespace Jailbreak.Warden.Global;
 
@@ -33,7 +27,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 	{
 		_logger = logger;
 		_notifications = notifications;
-		this.logs = logs;
+		logs = logs;
 	}
 
 	/// <summary>

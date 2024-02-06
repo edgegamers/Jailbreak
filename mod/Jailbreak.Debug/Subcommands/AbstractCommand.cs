@@ -10,27 +10,27 @@ namespace Jailbreak.Debug.Subcommands;
 
 public abstract class AbstractCommand
 {
-    protected IServiceProvider services;
-    private IGenericCommandNotifications lang;
-    
+    private readonly IGenericCommandNotifications _lang;
+    protected IServiceProvider Services;
+
     protected AbstractCommand(IServiceProvider services)
     {
-        this.services = services;
-        lang = services.GetRequiredService<IGenericCommandNotifications>();
+        Services = services;
+        _lang = services.GetRequiredService<IGenericCommandNotifications>();
     }
-    
+
     public abstract void OnCommand(CCSPlayerController? executor, WrappedInfo info);
 
     protected TargetResult? GetTarget(WrappedInfo command, int argIndex = 1,
         Func<CCSPlayerController, bool>? predicate = null)
     {
-        return GetTarget(command.info, argIndex + 1, predicate);
+        return GetTarget(command.Info, argIndex + 1, predicate);
     }
-    
+
     protected TargetResult? GetVulnerableTarget(WrappedInfo command, int argIndex = 1,
         Func<CCSPlayerController, bool>? predicate = null)
     {
-        return GetVulnerableTarget(command.info, argIndex + 1, predicate);
+        return GetVulnerableTarget(command.Info, argIndex + 1, predicate);
     }
 
     protected TargetResult? GetTarget(CommandInfo command, int argIndex = 1,
@@ -46,7 +46,7 @@ public abstract class AbstractCommand
         if (!matches.Any())
         {
             if (command.CallingPlayer != null)
-                lang.PlayerNotFound(command.GetArg(argIndex)).ToPlayerChat(command.CallingPlayer);
+                _lang.PlayerNotFound(command.GetArg(argIndex)).ToPlayerChat(command.CallingPlayer);
             return null;
         }
 
@@ -57,7 +57,7 @@ public abstract class AbstractCommand
             return matches;
 
         if (command.CallingPlayer != null)
-            lang.PlayerFoundMultiple(command.GetArg(argIndex)).ToPlayerChat(command.CallingPlayer);
+            _lang.PlayerFoundMultiple(command.GetArg(argIndex)).ToPlayerChat(command.CallingPlayer);
         return null;
     }
 
@@ -65,8 +65,8 @@ public abstract class AbstractCommand
         Func<CCSPlayerController, bool>? predicate = null)
     {
         return GetTarget(command, argIndex,
-            (p) => command.CallingPlayer == null ||
-                   command.CallingPlayer.CanTarget(p) && (predicate == null || predicate(p)));
+            p => command.CallingPlayer == null ||
+                 (command.CallingPlayer.CanTarget(p) && (predicate == null || predicate(p))));
     }
 
     protected TargetResult? GetSingleTarget(CommandInfo command, int argIndex = 1)
@@ -76,14 +76,14 @@ public abstract class AbstractCommand
         if (!matches.Any())
         {
             if (command.CallingPlayer != null)
-                lang.PlayerNotFound(command.GetArg(argIndex)).ToPlayerChat(command.CallingPlayer);
+                _lang.PlayerNotFound(command.GetArg(argIndex)).ToPlayerChat(command.CallingPlayer);
             return null;
         }
 
         if (matches.Count() > 1)
         {
             if (command.CallingPlayer != null)
-                lang.PlayerFoundMultiple(command.GetArg(argIndex)).ToPlayerChat(command.CallingPlayer);
+                _lang.PlayerFoundMultiple(command.GetArg(argIndex)).ToPlayerChat(command.CallingPlayer);
             return null;
         }
 
@@ -92,8 +92,9 @@ public abstract class AbstractCommand
 
     protected string GetTargetLabel(WrappedInfo info, int argIndex = 1)
     {
-        return GetTargetLabel(info.info, argIndex + 1);
+        return GetTargetLabel(info.Info, argIndex + 1);
     }
+
     protected string GetTargetLabel(CommandInfo info, int argIndex = 1)
     {
         switch (info.GetArg(argIndex))
@@ -128,11 +129,12 @@ public abstract class AbstractCommand
 
     protected string GetTargetLabels(WrappedInfo info, int argIndex = 1)
     {
-        return GetTargetLabels(info.info, argIndex + 1);
+        return GetTargetLabels(info.Info, argIndex + 1);
     }
+
     protected string GetTargetLabels(CommandInfo info, int argIndex = 1)
     {
-        string label = GetTargetLabel(info, argIndex);
+        var label = GetTargetLabel(info, argIndex);
         if (label.ToLower().EndsWith("s"))
             return label + "'";
         return label + "'s";

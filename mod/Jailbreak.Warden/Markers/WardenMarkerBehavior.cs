@@ -11,14 +11,14 @@ namespace Jailbreak.Warden.Markers;
 
 public class WardenMarkerBehavior : IPluginBehavior
 {
+    private const float MinRadius = 60f, MaxRadius = 360f;
     private readonly IWardenService _warden;
 
     private BeamCircle? _marker;
 
-    private Vector? currentPos;
-    private const float MIN_RADIUS = 60f, MAX_RADIUS = 360f;
-    private float radius = MIN_RADIUS;
-    private long placementTime = 0;
+    private Vector? _currentPos;
+    private long _placementTime;
+    private float _radius = MinRadius;
 
     public WardenMarkerBehavior(IWardenService warden)
     {
@@ -38,40 +38,40 @@ public class WardenMarkerBehavior : IPluginBehavior
 
         if (!_warden.IsWarden(player))
             return HookResult.Handled;
-        Vector vec = new Vector(@event.X, @event.Y, @event.Z);
+        var vec = new Vector(@event.X, @event.Y, @event.Z);
 
-        if (currentPos != null)
+        if (_currentPos != null)
         {
-            float distance = currentPos.Distance(vec);
-            long timeElapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - placementTime;
+            var distance = _currentPos.Distance(vec);
+            var timeElapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - _placementTime;
             if (timeElapsed < 500)
             {
-                if (distance <= MAX_RADIUS * 1.5)
+                if (distance <= MaxRadius * 1.5)
                 {
-                    distance = Math.Clamp(distance, MIN_RADIUS, MAX_RADIUS);
+                    distance = Math.Clamp(distance, MinRadius, MaxRadius);
                     _marker?.SetRadius(distance);
                     _marker?.Update();
-                    radius = distance;
+                    _radius = distance;
                     return HookResult.Handled;
                 }
             }
-            else if (distance <= radius)
+            else if (distance <= _radius)
             {
                 _marker?.Remove();
                 return HookResult.Handled;
             }
         }
 
-        radius = MIN_RADIUS;
-        currentPos = vec;
-        placementTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        _radius = MinRadius;
+        _currentPos = vec;
+        _placementTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         _marker?.Move(vec);
-        _marker?.SetRadius(radius);
+        _marker?.SetRadius(_radius);
         _marker?.Update();
         return HookResult.Handled;
     }
 
-    HookResult CommandListener_PlayerPing(CCSPlayerController? player, CommandInfo info)
+    private HookResult CommandListener_PlayerPing(CCSPlayerController? player, CommandInfo info)
     {
         return _warden.IsWarden(player) ? HookResult.Continue : HookResult.Handled;
     }

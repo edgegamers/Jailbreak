@@ -1,7 +1,4 @@
-﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Commands;
-using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Mod.Rebel;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,11 +22,8 @@ public class Pardon : AbstractCommand
         var target = GetVulnerableTarget(info);
         if (target == null)
             return;
-        
-        foreach (var player in target.Players)
-        {
-            services.GetRequiredService<IRebelService>().UnmarkRebel(player);
-        }
+
+        foreach (var player in target.Players) Services.GetRequiredService<IRebelService>().UnmarkRebel(player);
 
         info.ReplyToCommand($"Pardoned {GetTargetLabel(info)}");
     }

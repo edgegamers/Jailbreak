@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Core;
 
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Core;
+using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.Formatting.Extensions;
 
@@ -32,45 +33,57 @@ public static class ViewExtensions
 
 	#region Individual
 
-	public static IView ToPlayerConsole(this IView view, CCSPlayerController player)
-	{
-		var writer = view.ToWriter();
+    public static IView ToPlayerConsole(this IView view, CCSPlayerController player)
+    {
+        if(!player.IsReal())
+            return view;
 
-		foreach (string writerLine in writer.Plain)
-			player.PrintToConsole(writerLine);
+        var writer = view.ToWriter();
 
-		return view;
-	}
+        foreach (var writerLine in writer.Plain)
+            player.PrintToConsole(writerLine);
 
-	public static IView ToPlayerChat(this IView view, CCSPlayerController player)
-	{
-		var writer = view.ToWriter();
+        return view;
+    }
 
-		foreach (string writerLine in writer.Chat)
-			player.PrintToChat(writerLine);
+    public static IView ToPlayerChat(this IView view, CCSPlayerController player)
+    {
+        if(!player.IsReal())
+            return view;
 
-		return view;
-	}
+        var writer = view.ToWriter();
 
-	public static IView ToPlayerCenter(this IView view, CCSPlayerController player)
-	{
-		var writer = view.ToWriter();
-		var merged = string.Join('\n', writer.Plain);
+        foreach (var writerLine in writer.Chat)
+            player.PrintToChat(writerLine);
 
-		player.PrintToCenter(merged);
+        return view;
+    }
 
-		return view;
-	}
+    public static IView ToPlayerCenter(this IView view, CCSPlayerController player)
+    {
+        if(!player.IsReal())
+            return view;
 
-	public static IView ToPlayerCenterHtml(this IView view, CCSPlayerController player)
-	{
-		var writer = view.ToWriter();
-		var merged = string.Join('\n', writer.Panorama);
+        var writer = view.ToWriter();
+        var merged = string.Join('\n', writer.Plain);
 
-		player.PrintToCenterHtml(merged);
+        player.PrintToCenter(merged);
 
-		return view;
-	}
+        return view;
+    }
+
+    public static IView ToPlayerCenterHtml(this IView view, CCSPlayerController player)
+    {
+        if(!player.IsReal())
+            return view;
+
+        var writer = view.ToWriter();
+        var merged = string.Join('\n', writer.Panorama);
+
+        player.PrintToCenterHtml(merged);
+
+        return view;
+    }
 
 	#endregion
 

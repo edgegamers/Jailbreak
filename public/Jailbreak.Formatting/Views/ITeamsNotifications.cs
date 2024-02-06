@@ -4,21 +4,20 @@ namespace Jailbreak.Formatting.Views;
 
 public interface IRatioNotifications
 {
-	public IView NOT_ENOUGH_GUARDS { get; }
+    public IView NotEnoughGuards { get; }
 
-	public IView PLEASE_JOIN_GUARD_QUEUE { get; }
+    public IView PleaseJoinGuardQueue { get; }
 
-	public IView JOINED_GUARD_QUEUE { get; }
+    public IView JoinedGuardQueue { get; }
 
-	public IView ALREADY_A_GUARD { get; }
+    public IView AlreadyAGuard { get; }
 
 
-	public IView YOU_WERE_AUTOBALANCED_PRISONER { get; }
+    public IView YouWereAutobalancedPrisoner { get; }
 
-	public IView YOU_WERE_AUTOBALANCED_GUARD { get; }
+    public IView YouWereAutobalancedGuard { get; }
 
-	public IView ATTEMPT_TO_JOIN_FROM_TEAM_MENU { get; }
+    public IView AttemptToJoinFromTeamMenu { get; }
 
-	public IView LEFT_GUARD { get; }
-
+    public IView LeftGuard { get; }
 }

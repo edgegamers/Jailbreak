@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Text;
 
 using Jailbreak.Formatting.Core;
 

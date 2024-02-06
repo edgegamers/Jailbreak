@@ -4,15 +4,11 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
-
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Teams;
 using Jailbreak.Public.Utils;
-
 using Microsoft.Extensions.Logging;
-
-using Serilog;
 
 namespace Jailbreak.Teams.Ratio;
 

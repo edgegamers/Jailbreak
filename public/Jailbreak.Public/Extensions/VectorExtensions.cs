@@ -42,15 +42,15 @@ public static class VectorExtensions
 
     public static float Distance(this Vector vector, Vector other)
     {
-        return (float)System.Math.Sqrt(vector.DistanceSquared(other));
+        return (float)Math.Sqrt(vector.DistanceSquared(other));
     }
 
     public static float DistanceSquared(this Vector vector, Vector other)
     {
         return (float)(
-            System.Math.Pow(vector.X - other.X, 2) +
-            System.Math.Pow(vector.Y - other.Y, 2) +
-            System.Math.Pow(vector.Z - other.Z, 2)
+            Math.Pow(vector.X - other.X, 2) +
+            Math.Pow(vector.Y - other.Y, 2) +
+            Math.Pow(vector.Z - other.Z, 2)
         );
     }
 }
