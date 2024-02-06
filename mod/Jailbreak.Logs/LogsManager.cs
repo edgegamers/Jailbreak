@@ -1,10 +1,13 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
 
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Objects;
+using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Logs;
@@ -17,101 +20,81 @@ namespace Jailbreak.Logs;
 public class LogsManager : IPluginBehavior, ILogService
 {
     private readonly List<IView> _logMessages = new();
-    private long startTime;
-    private IWardenService _wardenService;
-    private IRebelService _rebelService;
 
-    private IServiceProvider _serviceProvider;
+    private ILogMessages _messages;
 
-    public LogsManager(IServiceProvider serviceProvider)
+    public LogsManager(IServiceProvider serviceProvider, ILogMessages messages)
     {
-        _serviceProvider = serviceProvider;
+        _messages = messages;
+
     }
 
-    public void Start(BasePlugin parent)
-    {
-        parent.RegisterEventHandler<EventRoundStart>(OnRoundStart);
-        parent.RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
-        _wardenService = _serviceProvider.GetRequiredService<IWardenService>();
-        _rebelService = _serviceProvider.GetRequiredService<IRebelService>();
-    }
-
+    [GameEventHandler]
     private HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
     {
+        _messages.BEGIN_JAILBREAK_LOGS
+            .ToServerConsole()
+            .ToAllConsole();
+
         //  By default, print all logs to player consoles at the end of the round.
         foreach (var log in _logMessages)
-            log.ToAllConsole();
+            log.ToServerConsole()
+                .ToAllConsole();
+
+        _messages.END_JAILBREAK_LOGS
+            .ToServerConsole()
+            .ToAllConsole();
 
         return HookResult.Continue;
     }
 
+    [GameEventHandler]
     private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
-        startTime = DateTimeOffset.Now.ToUnixTimeSeconds();
-        ClearLogMessages();
+        Clear();
         return HookResult.Continue;
     }
 
-    public void AddLogMessage(string message)
+    public void Append(params FormatObject[] objects)
     {
-
-        // format to [MM:SS] message
-        string prefix = $"[{TimeSpan.FromSeconds(DateTimeOffset.Now.ToUnixTimeSeconds() - startTime):mm\\:ss}] ";
-        _logMessages.Add(prefix + message);
+        _logMessages.Add(_messages.CREATE_LOG(objects));
     }
 
-    public ICollection<string> GetLogMessages()
+    public void Append(string message)
     {
-        return _logMessages;
+        _logMessages.Add(_messages.CREATE_LOG(message));
     }
 
-    public void ClearLogMessages()
+    public IEnumerable<string> GetMessages()
+    {
+        return _logMessages.SelectMany(view => view.ToWriter().Plain);
+    }
+
+    public void Clear()
     {
         _logMessages.Clear();
     }
 
-    public string FormatPlayer(CCSPlayerController player)
-    {
-        if (_wardenService.IsWarden(player))
-            return $"{player.PlayerName} (WARDEN)";
-        if (player.GetTeam() == CsTeam.CounterTerrorist)
-            return $"{player.PlayerName} (CT)";
-        if (_rebelService.IsRebel(player))
-            return $"{player.PlayerName} (REBEL)";
-        return $"{player.PlayerName} (Prisoner)";
-    }
-
-
     public void PrintLogs(CCSPlayerController? player)
     {
-        if (player == null)
+        if (player == null || !player.IsReal())
         {
-            printLogs(Server.PrintToConsole);
-        }
-        else if (player.IsReal())
-        {
-            printLogs(player.PrintToConsole);
-        }
-    }
+            _messages.BEGIN_JAILBREAK_LOGS
+                .ToServerConsole();
+            foreach (var log in _logMessages)
+                log.ToServerConsole();
+            _messages.END_JAILBREAK_LOGS
+                .ToServerConsole();
 
-    private void printLogs(Delegate printFunction)
-    {
-        if (!GetLogMessages().Any())
-        {
-            printFunction.DynamicInvoke("No logs to display.");
             return;
         }
 
-        printFunction.DynamicInvoke("********************************");
-        printFunction.DynamicInvoke("***** BEGIN JAILBREAK LOGS *****");
-        printFunction.DynamicInvoke("********************************");
-        foreach (string log in GetLogMessages())
-        {
-            printFunction.DynamicInvoke(log);
-        }
 
-        printFunction.DynamicInvoke("********************************");
-        printFunction.DynamicInvoke("****** END JAILBREAK LOGS ******");
-        printFunction.DynamicInvoke("********************************");
+        _messages.BEGIN_JAILBREAK_LOGS
+            .ToPlayerConsole(player);
+        foreach (var log in _logMessages)
+            log.ToPlayerConsole(player);
+        _messages.END_JAILBREAK_LOGS
+            .ToPlayerConsole(player);
     }
 }

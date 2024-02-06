@@ -36,7 +36,7 @@ public class LogsListeners : IPluginBehavior
         CBaseEntity? ent = Utilities.GetEntityFromIndex<CBaseEntity>((int)caller.Index);
         if (!ent.IsValid)
             return HookResult.Continue;
-        logs.AddLogMessage(
+        logs.Append(
             $"{logs.FormatPlayer(pawn.OriginalController.Value!)} pressed a button {ent.Entity?.Name ?? "Unlabeled"} -> {output?.Connections?.TargetDesc ?? "None"}");
         return HookResult.Continue;
     }
@@ -48,7 +48,7 @@ public class LogsListeners : IPluginBehavior
             return HookResult.Continue;
         var grenade = @event.Weapon;
 
-        logs.AddLogMessage($"{logs.FormatPlayer(player)} threw a {grenade}");
+        logs.Append($"{logs.FormatPlayer(player)} threw a {grenade}");
 
         return HookResult.Continue;
     }
@@ -67,23 +67,23 @@ public class LogsListeners : IPluginBehavior
         {
             if (health > 0)
             {
-                logs.AddLogMessage($"The world hurt {logs.FormatPlayer(player)} for {health} damage");
+                logs.Append($"The world hurt {logs.FormatPlayer(player)} for {health} damage");
             }
             else
             {
-                logs.AddLogMessage($"The world killed {logs.FormatPlayer(player)}");
+                logs.Append($"The world killed {logs.FormatPlayer(player)}");
             }
         }
         else
         {
             if (health > 0)
             {
-                logs.AddLogMessage(
+                logs.Append(
                     $"{logs.FormatPlayer(attacker!)} hurt {logs.FormatPlayer(player)} for {health} damage");
             }
             else
             {
-                logs.AddLogMessage($"{logs.FormatPlayer(attacker!)} killed {logs.FormatPlayer(player)}");
+                logs.Append($"{logs.FormatPlayer(attacker!)} killed {logs.FormatPlayer(player)}");
             }
         }
 

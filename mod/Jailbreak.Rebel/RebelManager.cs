@@ -117,7 +117,7 @@ public class RebelManager : IPluginBehavior, IRebelService
     {
         if (!rebelTimes.ContainsKey(player))
         {
-            logs.AddLogMessage(player.PlayerName + " is now a rebel.");
+            logs.Append(player.PlayerName + " is now a rebel.");
         }
 
         rebelTimes[player] = DateTimeOffset.Now.ToUnixTimeSeconds() + time;
@@ -128,7 +128,7 @@ public class RebelManager : IPluginBehavior, IRebelService
     public void UnmarkRebel(CCSPlayerController player)
     {
         notifs.NO_LONGER_REBEL.ToPlayerChat(player);
-        logs.AddLogMessage(player.PlayerName + " is no longer a rebel.");
+        logs.Append(player.PlayerName + " is no longer a rebel.");
 
         rebelTimes.Remove(player);
         ApplyRebelColor(player);

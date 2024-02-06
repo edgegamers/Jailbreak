@@ -18,6 +18,18 @@ public static class ViewExtensions
 		return writer;
 	}
 
+	public static IView ToServerConsole(this IView view)
+	{
+		var writer = view.ToWriter();
+
+		foreach (string s in writer.Plain)
+		{
+			Server.PrintToConsole(s);
+		}
+
+		return view;
+	}
+
 	#region Individual
 
 	public static IView ToPlayerConsole(this IView view, CCSPlayerController player)
