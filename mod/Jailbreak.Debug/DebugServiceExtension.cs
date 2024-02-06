@@ -5,8 +5,8 @@ namespace Jailbreak.Debug;
 
 public static class DebugServiceExtension
 {
-   public static void AddJailbreakDebug(this IServiceCollection services)
-   {
-      services.AddPluginBehavior<DebugCommand>();
-   } 
+    public static void AddJailbreakDebug(this IServiceCollection services)
+    {
+        services.AddPluginBehavior<DebugCommand>();
+    }
 }

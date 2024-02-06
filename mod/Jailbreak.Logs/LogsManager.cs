@@ -13,51 +13,21 @@ namespace Jailbreak.Logs;
 public class LogsManager : IPluginBehavior, ILogService
 {
     private readonly List<string> _logMessages = new();
-    private long startTime;
-    private IWardenService wardenService;
-    private IRebelService rebelService;
 
-    private IServiceProvider _serviceProvider;
+    private readonly IServiceProvider _serviceProvider;
+    private IRebelService? _rebelService;
+    private long _startTime;
+    private IWardenService? _wardenService;
 
     public LogsManager(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
 
-    public void Start(BasePlugin parent)
-    {
-        parent.RegisterEventHandler<EventRoundStart>(OnRoundStart);
-        parent.RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
-        wardenService = _serviceProvider.GetRequiredService<IWardenService>();
-        rebelService = _serviceProvider.GetRequiredService<IRebelService>();
-    }
-
-    private HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
-    {
-        foreach (var player in Utilities.GetPlayers())
-        {
-            if(!player.IsReal())
-                continue;
-            foreach (var log in _logMessages)
-            {
-                player.PrintToConsole(log);
-            }
-        }
-
-        return HookResult.Continue;
-    }
-
-    private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
-    {
-        startTime = DateTimeOffset.Now.ToUnixTimeSeconds();
-        ClearLogMessages();
-        return HookResult.Continue;
-    }
-
     public void AddLogMessage(string message)
     {
         // format to [MM:SS] message
-        string prefix = $"[{TimeSpan.FromSeconds(DateTimeOffset.Now.ToUnixTimeSeconds() - startTime):mm\\:ss}] ";
+        var prefix = $"[{TimeSpan.FromSeconds(DateTimeOffset.Now.ToUnixTimeSeconds() - _startTime):mm\\:ss}] ";
         _logMessages.Add(prefix + message);
     }
 
@@ -73,11 +43,13 @@ public class LogsManager : IPluginBehavior, ILogService
 
     public string FormatPlayer(CCSPlayerController player)
     {
-        if (wardenService.IsWarden(player))
+        if(_rebelService == null || _wardenService == null)
+            throw new InvalidOperationException("Services not initialized");
+        if (_wardenService.IsWarden(player))
             return $"{player.PlayerName} (WARDEN)";
         if (player.GetTeam() == CsTeam.CounterTerrorist)
             return $"{player.PlayerName} (CT)";
-        if (rebelService.IsRebel(player))
+        if (_rebelService.IsRebel(player))
             return $"{player.PlayerName} (REBEL)";
         return $"{player.PlayerName} (Prisoner)";
     }
@@ -86,16 +58,38 @@ public class LogsManager : IPluginBehavior, ILogService
     public void PrintLogs(CCSPlayerController? player)
     {
         if (player == null)
-        {
-            printLogs(Server.PrintToConsole);
-        }
-        else if (player.IsReal())
-        {
-            printLogs(player.PrintToConsole);
-        }
+            PrintLogs(Server.PrintToConsole);
+        else if (player.IsReal()) PrintLogs(player.PrintToConsole);
     }
 
-    private void printLogs(Delegate printFunction)
+    public void Start(BasePlugin parent)
+    {
+        parent.RegisterEventHandler<EventRoundStart>(OnRoundStart);
+        parent.RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
+        _wardenService = _serviceProvider.GetRequiredService<IWardenService>();
+        _rebelService = _serviceProvider.GetRequiredService<IRebelService>();
+    }
+
+    private HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
+    {
+        foreach (var player in Utilities.GetPlayers())
+        {
+            if (!player.IsReal())
+                continue;
+            foreach (var log in _logMessages) player.PrintToConsole(log);
+        }
+
+        return HookResult.Continue;
+    }
+
+    private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
+    {
+        _startTime = DateTimeOffset.Now.ToUnixTimeSeconds();
+        ClearLogMessages();
+        return HookResult.Continue;
+    }
+
+    private void PrintLogs(Delegate printFunction)
     {
         if (!GetLogMessages().Any())
         {
@@ -106,10 +100,7 @@ public class LogsManager : IPluginBehavior, ILogService
         printFunction.DynamicInvoke("********************************");
         printFunction.DynamicInvoke("***** BEGIN JAILBREAK LOGS *****");
         printFunction.DynamicInvoke("********************************");
-        foreach (string log in GetLogMessages())
-        {
-            printFunction.DynamicInvoke(log);
-        }
+        foreach (var log in GetLogMessages()) printFunction.DynamicInvoke(log);
 
         printFunction.DynamicInvoke("********************************");
         printFunction.DynamicInvoke("****** END JAILBREAK LOGS ******");

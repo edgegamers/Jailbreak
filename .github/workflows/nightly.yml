@@ -11,21 +11,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Insert Job Version
       run: sed -i "s/{GIT_VERSION}/${{github.run_number}}/g" src/Jailbreak/Jailbreak.cs
     
     - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
-        
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build src/Jailbreak/Jailbreak.csproj --no-restore
-    - name: Publish
-      run: dotnet publish src/Jailbreak/Jailbreak.csproj --no-build --no-restore
+    - run: |
+        dotnet restore
+        dotnet build src/Jailbreak/Jailbreak.csproj --no-restore
+        dotnet publish src/Jailbreak/Jailbreak.csproj --no-build --no-restore
     
     - uses: actions/upload-artifact@v4.0.0
       with:

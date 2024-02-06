@@ -1,191 +1,181 @@
-﻿using System;
-using System.Linq;
-using System.Runtime.CompilerServices;
-
+﻿using System.Runtime.CompilerServices;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
-using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
-
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Generic;
 using Jailbreak.Public.Mod.Warden;
-
 using Microsoft.Extensions.Logging;
-
-using Serilog;
-
-using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.Warden.Selection;
 
 /// <summary>
-/// Behavior responsible for choosing the next warden
+///     Behavior responsible for choosing the next warden
 /// </summary>
 public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
 {
-	/// <summary>
-	/// A state dict that handles the player's current queue
-	/// enrollment and favor. Uses the Round reset mode.
-	/// </summary>
-	private IPlayerState<QueueState> _queue;
+    private readonly ICoroutines _coroutines;
 
-	private IPlayerState<QueueFavorState> _favor;
+    private readonly IPlayerState<QueueFavorState> _favor;
 
-	private ILogger<WardenSelectionBehavior> _logger;
+    private readonly ILogger<WardenSelectionBehavior> _logger;
 
-	/// <summary>
-	/// Whether or not to use the queue.
-	/// When true, the queue should be skipped and turn to first-come-first-serve.
-	/// </summary>
-	private bool _queueInactive;
+    private readonly IWardenNotifications _notifications;
 
-	private IWardenService _warden;
+    /// <summary>
+    ///     A state dict that handles the player's current queue
+    ///     enrollment and favor. Uses the Round reset mode.
+    /// </summary>
+    private readonly IPlayerState<QueueState> _queue;
 
-	private IWardenNotifications _notifications;
+    /// <summary>
+    ///     Whether or not to use the queue.
+    ///     When true, the queue should be skipped and turn to first-come-first-serve.
+    /// </summary>
+    private bool _queueInactive;
 
-	private ICoroutines _coroutines;
+    private readonly IWardenService _warden;
 
-	public WardenSelectionBehavior(IPlayerStateFactory factory, IWardenService warden, IWardenNotifications notifications, ILogger<WardenSelectionBehavior> logger, ICoroutines coroutines)
-	{
-		_warden = warden;
-		_notifications = notifications;
-		_logger = logger;
-		_coroutines = coroutines;
-		_queue = factory.Round<QueueState>();
-		_favor = factory.Global<QueueFavorState>();
+    public WardenSelectionBehavior(IPlayerStateFactory factory, IWardenService warden,
+        IWardenNotifications notifications, ILogger<WardenSelectionBehavior> logger, ICoroutines coroutines)
+    {
+        _warden = warden;
+        _notifications = notifications;
+        _logger = logger;
+        _coroutines = coroutines;
+        _queue = factory.Round<QueueState>();
+        _favor = factory.Global<QueueFavorState>();
 
-		_queueInactive = true;
-	}
+        _queueInactive = true;
+    }
 
-	public void Start(BasePlugin parent)
-	{
+    public void Start(BasePlugin parent)
+    {
+    }
 
-	}
+    public void Dispose()
+    {
+    }
 
-	public void Dispose()
-	{
+    public bool TryEnter(CCSPlayerController player)
+    {
+        if (!CanEnterQueue(player))
+            return false;
 
-	}
+        _queue.Get(player).InQueue = true;
+        return true;
+    }
 
-	[GameEventHandler]
-	public HookResult OnRoundStart(EventRoundStart ev, GameEventInfo info)
-	{
-		//	Enable the warden queue
-		_queueInactive = false;
+    public bool TryExit(CCSPlayerController player)
+    {
+        if (!CanEnterQueue(player))
+            return false;
 
-		_notifications.PICKING_SHORTLY.ToAllChat();
+        _queue.Get(player).InQueue = false;
+        return true;
+    }
 
-		//	Start a timer to pick the warden in 7 seconds
-		ScheduleChooseWarden(7.0f);
+    public bool InQueue(CCSPlayerController player)
+    {
+        return _queue.Get(player).InQueue;
+    }
 
-		return HookResult.Continue;
-	}
+    public bool Active => !_queueInactive;
 
-	[MethodImpl(MethodImplOptions.NoOptimization)]
-	public void ScheduleChooseWarden(float time = 7.0f)
-	{
-		_coroutines.Round(OnChooseWarden, time);
-	}
+    [GameEventHandler]
+    public HookResult OnRoundStart(EventRoundStart ev, GameEventInfo info)
+    {
+        //	Enable the warden queue
+        _queueInactive = false;
 
-	/// <summary>
-	/// Timer callback that states it's time to choose the warden.
-	/// </summary>
-	protected void OnChooseWarden()
-	{
-		var eligible = Utilities.GetPlayers()
-			.Where(player => player.PawnIsAlive)
-			.Where(player => player.GetTeam() == CsTeam.CounterTerrorist)
-			.Where(player => _queue.Get(player).InQueue)
-			.ToList();
+        _notifications.PickingShortly.ToAllChat();
 
-		_logger.LogTrace("[WardenSelectionBehavior] Picking warden from {@Eligible}", eligible);
+        //	Start a timer to pick the warden in 7 seconds
+        ScheduleChooseWarden();
 
-		if (eligible.Count == 0)
-		{
-			_notifications.NO_WARDENS.ToAllChat();
-			_queueInactive = true;
+        return HookResult.Continue;
+    }
 
-			return;
-		}
+    [MethodImpl(MethodImplOptions.NoOptimization)]
+    public void ScheduleChooseWarden(float time = 7.0f)
+    {
+        _coroutines.Round(OnChooseWarden, time);
+    }
 
-		var favors = eligible
-			.ToDictionary(player => player, player => _favor.Get(player));
-		int tickets = favors.Sum(favor => favor.Value.GetTickets());
-		int chosen = Random.Shared.Next(tickets);
+    /// <summary>
+    ///     Timer callback that states it's time to choose the warden.
+    /// </summary>
+    protected void OnChooseWarden()
+    {
+        var eligible = Utilities.GetPlayers()
+            .Where(player => player.PawnIsAlive)
+            .Where(player => player.GetTeam() == CsTeam.CounterTerrorist)
+            .Where(player => _queue.Get(player).InQueue)
+            .ToList();
 
-		_logger.LogTrace("[Warden Raffle] Picking {@Chosen} out of {@Tickets}", chosen, tickets);
+        _logger.LogTrace("[WardenSelectionBehavior] Picking warden from {@Eligible}", eligible);
 
-		int pointer = 0;
-		foreach (var (player, favor) in favors)
-		{
-			int thisTickets = favor.GetTickets();
-			_logger.LogTrace("[Warden Raffle] {@Pointer} -> {@End}: #{@Slot} {@Name}", pointer, pointer + thisTickets, player.Slot, player.PlayerName);
+        if (eligible.Count == 0)
+        {
+            _notifications.NoWardens.ToAllChat();
+            _queueInactive = true;
 
-			//	If winning ticket belongs to this player, assign them as warden.
-			if (pointer <= chosen && chosen < (pointer + thisTickets))
-			{
-				_warden.TrySetWarden(player);
-				favor.RoundsWithoutWarden = 0;
-			}
-			else
-			{
-				favor.RoundsWithoutWarden++;
-			}
+            return;
+        }
 
-			pointer += thisTickets;
-		}
+        var favors = eligible
+            .ToDictionary(player => player, player => _favor.Get(player));
+        var tickets = favors.Sum(favor => favor.Value.GetTickets());
+        var chosen = Random.Shared.Next(tickets);
 
-		//	Disable the warden raffle for future wardens
-		//	(eg in the event of warden death)
-		_queueInactive = true;
-	}
+        _logger.LogTrace("[Warden Raffle] Picking {@Chosen} out of {@Tickets}", chosen, tickets);
 
-	private bool CanEnterQueue(CCSPlayerController player)
-	{
-		if (player.GetTeam() != CsTeam.CounterTerrorist)
-			return false;
+        var pointer = 0;
+        foreach (var (player, favor) in favors)
+        {
+            var thisTickets = favor.GetTickets();
+            _logger.LogTrace("[Warden Raffle] {@Pointer} -> {@End}: #{@Slot} {@Name}", pointer, pointer + thisTickets,
+                player.Slot, player.PlayerName);
 
-		if (!player.PawnIsAlive)
-			return false;
+            //	If winning ticket belongs to this player, assign them as warden.
+            if (pointer <= chosen && chosen < pointer + thisTickets)
+            {
+                _warden.TrySetWarden(player);
+                favor.RoundsWithoutWarden = 0;
+            }
+            else
+            {
+                favor.RoundsWithoutWarden++;
+            }
 
-		//	Cannot enter queue if queue is not running
-		if (_queueInactive)
-			return false;
+            pointer += thisTickets;
+        }
 
-		//	Edge case: Is there already a warden?
-		if (_warden.HasWarden)
-			return false;
+        //	Disable the warden raffle for future wardens
+        //	(eg in the event of warden death)
+        _queueInactive = true;
+    }
 
-		return true;
-	}
+    private bool CanEnterQueue(CCSPlayerController player)
+    {
+        if (player.GetTeam() != CsTeam.CounterTerrorist)
+            return false;
 
-	public bool TryEnter(CCSPlayerController player)
-	{
-		if (!CanEnterQueue(player))
-			return false;
+        if (!player.PawnIsAlive)
+            return false;
 
-		_queue.Get(player).InQueue = true;
-		return true;
-	}
+        //	Cannot enter queue if queue is not running
+        if (_queueInactive)
+            return false;
 
-	public bool TryExit(CCSPlayerController player)
-	{
-		if (!CanEnterQueue(player))
-			return false;
+        //	Edge case: Is there already a warden?
+        if (_warden.HasWarden)
+            return false;
 
-		_queue.Get(player).InQueue = false;
-		return true;
-	}
-
-	public bool InQueue(CCSPlayerController player)
-		=>  _queue.Get(player).InQueue;
-
-	public bool Active => !_queueInactive;
-
-
+        return true;
+    }
 }
