@@ -2,6 +2,7 @@
 using CounterStrikeSharp.API.Core;
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Core;
+using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.Formatting.Extensions;
 
@@ -41,6 +42,9 @@ public static class ViewExtensions
 
     public static IView ToPlayerConsole(this IView view, CCSPlayerController player)
     {
+        if(!player.IsReal())
+            return view;
+        
         var writer = view.ToWriter();
 
         foreach (var writerLine in writer.Plain)
@@ -51,6 +55,9 @@ public static class ViewExtensions
 
     public static IView ToPlayerChat(this IView view, CCSPlayerController player)
     {
+        if(!player.IsReal())
+            return view;
+        
         var writer = view.ToWriter();
 
         foreach (var writerLine in writer.Chat)
@@ -61,6 +68,9 @@ public static class ViewExtensions
 
     public static IView ToPlayerCenter(this IView view, CCSPlayerController player)
     {
+        if(!player.IsReal())
+            return view;
+        
         var writer = view.ToWriter();
         var merged = string.Join('\n', writer.Plain);
 
@@ -71,6 +81,9 @@ public static class ViewExtensions
 
     public static IView ToPlayerCenterHtml(this IView view, CCSPlayerController player)
     {
+        if(!player.IsReal())
+            return view;
+        
         var writer = view.ToWriter();
         var merged = string.Join('\n', writer.Panorama);
 
