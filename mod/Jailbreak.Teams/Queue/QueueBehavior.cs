@@ -34,7 +34,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
     {
         if (!player.IsReal())
             return false;
-        
+
         if (player.GetTeam() == CsTeam.CounterTerrorist)
             return false;
 
@@ -50,7 +50,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
     {
         if (!player.IsReal())
             return false;
-        
+
         var state = _state.Get(player);
         state.InQueue = false;
         state.IsGuard = false;
@@ -64,8 +64,8 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
         if (queue.Count <= count)
         {
-            _notifications.NotEnoughGuards.ToAllChat();
-            _notifications.PleaseJoinGuardQueue.ToAllChat().ToAllCenter();
+            _notifications.NOT_ENOUGH_GUARDS.ToAllChat();
+            _notifications.PLEASE_JOIN_GUARD_QUEUE.ToAllChat().ToAllCenter();
         }
 
         _logger.LogInformation("[Queue] Pop requested {@Count} out of {@InQueue}", count, queue.Count);
@@ -100,7 +100,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
             TryEnterQueue(toSwap);
 
-            _notifications.YouWereAutobalancedPrisoner.ToPlayerCenter(toSwap);
+            _notifications.YOU_WERE_AUTOBALANCED_PRISONER.ToPlayerCenter(toSwap);
         }
 
         return true;
@@ -111,7 +111,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
         //	Set IsGuard so they won't be swapped back.
         _state.Get(player).IsGuard = true;
 
-        _notifications.YouWereAutobalancedGuard
+        _notifications.YOU_WERE_AUTOBALANCED_GUARD
             .ToPlayerChat(player)
             .ToPlayerCenter(player);
 
@@ -168,7 +168,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
         //	If so, stop them!!
         if ((CsTeam)team == CsTeam.CounterTerrorist && !state.IsGuard)
         {
-            _notifications.AttemptToJoinFromTeamMenu
+            _notifications.ATTEMPT_TO_JOIN_FROM_TEAM_MENU
                 .ToPlayerChat(invoked)
                 .ToPlayerCenter(invoked);
 
@@ -196,7 +196,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
         if (player.GetTeam() == CsTeam.CounterTerrorist && !state.IsGuard)
         {
-            _notifications.AttemptToJoinFromTeamMenu
+            _notifications.ATTEMPT_TO_JOIN_FROM_TEAM_MENU
                 .ToPlayerChat(player)
                 .ToPlayerCenter(player);
 
@@ -221,7 +221,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
         if ((CsTeam)ev.Team != CsTeam.CounterTerrorist && state.IsGuard)
             if (TryExitQueue(player))
-                _notifications.LeftGuard
+                _notifications.LEFT_GUARD
                     .ToPlayerCenter(player)
                     .ToPlayerChat(player);
 
@@ -231,7 +231,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
     private void HandleQueueRequest(CCSPlayerController player)
     {
         if (TryEnterQueue(player))
-            _notifications.JoinedGuardQueue
+            _notifications.JOINED_GUARD_QUEUE
                 .ToPlayerCenter(player)
                 .ToPlayerChat(player);
         else
@@ -241,7 +241,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
     private void HandleLeaveRequest(CCSPlayerController player)
     {
         if (TryExitQueue(player))
-            _notifications.LeftGuard
+            _notifications.LEFT_GUARD
                 .ToPlayerCenter(player)
                 .ToPlayerChat(player);
         else
