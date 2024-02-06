@@ -31,12 +31,6 @@ public class LanguageConfig<TDialect>
         _collection.AddSingleton<IWardenNotifications, TWarden>();
     }
 
-    public void WithGenericCommand<TGenericCommand>()
-		    where TGenericCommand : class, ILanguage<TDialect>, IGenericCommandNotifications
-    {
-        _collection.AddSingleton<IGenericCommandNotifications, TGenericCommand>();
-    }
-
     public void WithRebel<TRebel>()
         where TRebel : class, ILanguage<TDialect>, IRebelNotifications
     {

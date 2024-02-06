@@ -49,23 +49,6 @@ public class RebelManager : IPluginBehavior, IRebelService
         }, TimerFlags.REPEAT);
     }
 
-
-    private void OnTick()
-    {
-        foreach (var player in GetActiveRebels())
-        {
-            if (!player.IsReal())
-                continue;
-
-            if (GetRebelTimeLeft(player) <= 0)
-            {
-                continue;
-            }
-
-            SendTimeLeft(player);
-        }
-    }
-
     public ISet<CCSPlayerController> GetActiveRebels()
     {
         return _rebelTimes.Keys.ToHashSet();
@@ -85,16 +68,6 @@ public class RebelManager : IPluginBehavior, IRebelService
         _rebelTimes[player] = DateTimeOffset.Now.ToUnixTimeSeconds() + time;
         ApplyRebelColor(player);
         return true;
-    }
-
-
-    HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
-    {
-        var player = @event.Userid;
-        if (!player.IsReal())
-            return HookResult.Continue;
-        rebelTimes.Remove(player);
-        return HookResult.Continue;
     }
 
     public void UnmarkRebel(CCSPlayerController player)
@@ -165,19 +138,6 @@ public class RebelManager : IPluginBehavior, IRebelService
         var percentRgb = 255 - (int)Math.Round(percent * 255.0);
         var color = Color.FromArgb(254, 255, percentRgb, percentRgb);
         if (percent <= 0) color = Color.FromArgb(254, 255, 255, 255);
-
-        return color;
-    }
-
-    private Color GetRebelColor(CCSPlayerController player)
-    {
-        var percent = GetRebelTimePercentage(player);
-        var percentRGB = 255 - (int)Math.Round(percent * 255.0);
-        var color = Color.FromArgb(254, 255, percentRGB, percentRGB);
-        if (percent <= 0)
-        {
-            color = Color.FromArgb(254, 255, 255, 255);
-        }
 
         return color;
     }
