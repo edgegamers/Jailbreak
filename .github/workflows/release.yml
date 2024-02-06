@@ -1,0 +1,43 @@
+﻿name: Release
+
+on:
+  push:
+    branches-ignore:
+      - "*"
+    tags:
+      - "*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          show-progress: true,
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - run: |
+          dotnet restore
+          dotnet build src/Jailbreak/Jailbreak.csproj --no-restore
+          dotnet publish src/Jailbreak/Jailbreak.csproj --no-build --no-restore
+
+      - uses: actions/upload-artifact@v4.0.0
+        with:
+          name: jailbreak
+          path: build/Jailbreak
+          # If build didn't put any artifacts in the build folder, consider it an error
+          if-no-files-found: error
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          fail_on_unmatched_files: true
+          files: build/Jailbreak.zip
+          body_path: .github/release_template.md
