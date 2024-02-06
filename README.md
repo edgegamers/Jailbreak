@@ -15,13 +15,16 @@ The classic Jail gamemode, ported to Counter-Strike 2.
   - [ ] Error reporting
   - [x] Configuration system
       - Note: Passable, but in a terrible state. Needs TLC.
+  - [x] Logging
 - **👮 Guards**
   - [x] Warden Selection
+  - [x] Warden Laser and Paint
   - [ ] Special Days
   - [x] Ratio Enforcement
   - [ ] Bans/Punishments
 - **🎃 Prisoners**
   - [ ] Last Request
+  - [x] Rebel System
 - **🛕 Maps**
   - [ ] Custom Entities
   - [ ] Custom I/O

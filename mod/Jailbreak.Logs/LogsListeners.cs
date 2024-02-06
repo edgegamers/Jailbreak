@@ -8,11 +8,11 @@ namespace Jailbreak.Logs;
 
 public class LogsListeners : IPluginBehavior
 {
-    private ILogService logs;
+    private readonly ILogService _logs;
 
     public LogsListeners(ILogService logs)
     {
-        this.logs = logs;
+        _logs = logs;
     }
 
     public void Start(BasePlugin parent)
@@ -27,17 +27,17 @@ public class LogsListeners : IPluginBehavior
     {
         if (!activator.IsValid)
             return HookResult.Continue;
-        int index = (int)activator.Index;
-        CCSPlayerPawn? pawn = Utilities.GetEntityFromIndex<CCSPlayerPawn>(index);
+        var index = (int)activator.Index;
+        var pawn = Utilities.GetEntityFromIndex<CCSPlayerPawn>(index);
         if (!pawn.IsValid)
             return HookResult.Continue;
         if (!pawn.OriginalController.IsValid)
             return HookResult.Continue;
-        CBaseEntity? ent = Utilities.GetEntityFromIndex<CBaseEntity>((int)caller.Index);
+        var ent = Utilities.GetEntityFromIndex<CBaseEntity>((int)caller.Index);
         if (!ent.IsValid)
             return HookResult.Continue;
-        logs.AddLogMessage(
-            $"{logs.FormatPlayer(pawn.OriginalController.Value!)} pressed a button {ent.Entity?.Name ?? "Unlabeled"} -> {output?.Connections?.TargetDesc ?? "None"}");
+        _logs.AddLogMessage(
+            $"{_logs.FormatPlayer(pawn.OriginalController.Value!)} pressed a button {ent.Entity?.Name ?? "Unlabeled"} -> {output.Connections?.TargetDesc ?? "None"}");
         return HookResult.Continue;
     }
 
@@ -48,7 +48,7 @@ public class LogsListeners : IPluginBehavior
             return HookResult.Continue;
         var grenade = @event.Weapon;
 
-        logs.AddLogMessage($"{logs.FormatPlayer(player)} threw a {grenade}");
+        _logs.AddLogMessage($"{_logs.FormatPlayer(player)} threw a {grenade}");
 
         return HookResult.Continue;
     }
@@ -60,31 +60,23 @@ public class LogsListeners : IPluginBehavior
             return HookResult.Continue;
         var attacker = @event.Attacker;
 
-        bool isWorld = attacker == null || !attacker.IsReal();
-        int health = @event.DmgHealth;
+        var isWorld = attacker == null || !attacker.IsReal();
+        var health = @event.DmgHealth;
 
         if (isWorld)
         {
             if (health > 0)
-            {
-                logs.AddLogMessage($"The world hurt {logs.FormatPlayer(player)} for {health} damage");
-            }
+                _logs.AddLogMessage($"The world hurt {_logs.FormatPlayer(player)} for {health} damage");
             else
-            {
-                logs.AddLogMessage($"The world killed {logs.FormatPlayer(player)}");
-            }
+                _logs.AddLogMessage($"The world killed {_logs.FormatPlayer(player)}");
         }
         else
         {
             if (health > 0)
-            {
-                logs.AddLogMessage(
-                    $"{logs.FormatPlayer(attacker!)} hurt {logs.FormatPlayer(player)} for {health} damage");
-            }
+                _logs.AddLogMessage(
+                    $"{_logs.FormatPlayer(attacker!)} hurt {_logs.FormatPlayer(player)} for {health} damage");
             else
-            {
-                logs.AddLogMessage($"{logs.FormatPlayer(attacker!)} killed {logs.FormatPlayer(player)}");
-            }
+                _logs.AddLogMessage($"{_logs.FormatPlayer(attacker!)} killed {_logs.FormatPlayer(player)}");
         }
 
         return HookResult.Continue;

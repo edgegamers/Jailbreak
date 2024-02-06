@@ -1,149 +1,149 @@
 ﻿using System.Drawing;
-using System.Reflection;
-
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
-
-using Jailbreak.Public.Behaviors;
-using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.Warden;
-using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Public.Behaviors;
+using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Logs;
+using Jailbreak.Public.Mod.Warden;
 using Microsoft.Extensions.Logging;
-
-using Serilog;
 
 namespace Jailbreak.Warden.Global;
 
 public class WardenBehavior : IPluginBehavior, IWardenService
 {
-	private ILogger<WardenBehavior> _logger;
-	private ILogService logs;
+    private readonly ILogger<WardenBehavior> _logger;
 
-	private IWardenNotifications _notifications;
+    private readonly IWardenNotifications _notifications;
+    private readonly ILogService _logs;
 
-	private bool _hasWarden;
-	private CCSPlayerController? _warden;
+    public WardenBehavior(ILogger<WardenBehavior> logger, IWardenNotifications notifications, ILogService logs)
+    {
+        _logger = logger;
+        _notifications = notifications;
+        _logs = logs;
+    }
 
-	public WardenBehavior(ILogger<WardenBehavior> logger, IWardenNotifications notifications, ILogService logs)
-	{
-		_logger = logger;
-		_notifications = notifications;
-		this.logs = logs;
-	}
+    /// <summary>
+    ///     Get the current warden, if there is one.
+    /// </summary>
+    public CCSPlayerController? Warden { get; private set; }
 
-	/// <summary>
-	/// Get the current warden, if there is one.
-	/// </summary>
-	public CCSPlayerController? Warden => _warden;
+    /// <summary>
+    ///     Whether or not a warden is currently assigned
+    /// </summary>
+    public bool HasWarden { get; private set; }
 
-	/// <summary>
-	/// Whether or not a warden is currently assigned
-	/// </summary>
-	public bool HasWarden => _hasWarden;
+    public bool TrySetWarden(CCSPlayerController controller)
+    {
+        if (HasWarden)
+            return false;
 
-	public bool TrySetWarden(CCSPlayerController controller)
-	{
-		if (_hasWarden)
-			return false;
+        //	Verify player is a CT
+        if (controller.GetTeam() != CsTeam.CounterTerrorist)
+            return false;
+        if (!controller.PawnIsAlive)
+            return false;
 
-		//	Verify player is a CT
-		if (controller.GetTeam() != CsTeam.CounterTerrorist)
-			return false;
-		if (!controller.PawnIsAlive)
-			return false;
+        HasWarden = true;
+        Warden = controller;
 
-		_hasWarden = true;
-		_warden = controller;
+        if (Warden.Pawn.Value != null)
+        {
+            Warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
+            Warden.Pawn.Value.Render = Color.Blue;
+            Utilities.SetStateChanged(Warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
+        }
 
-		if (_warden.Pawn.Value != null)
-		{
-			_warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
-		    _warden.Pawn.Value.Render = Color.Blue;
-			Utilities.SetStateChanged(_warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
-		}
+        _notifications.NewWarden(Warden)
+            .ToAllChat()
+            .ToAllCenter();
 
-		_notifications.NEW_WARDEN(_warden)
-			.ToAllChat()
-			.ToAllCenter();
-		
-		logs.AddLogMessage($"{_warden.PlayerName} is now the warden.");
-		return true;
-	}
+        _logs.AddLogMessage($"{Warden.PlayerName} is now the warden.");
+        return true;
+    }
 
-	public bool TryRemoveWarden()
-	{
-		if (!_hasWarden)
-			return false;
+    public bool TryRemoveWarden()
+    {
+        if (!HasWarden)
+            return false;
 
-		_hasWarden = false;
+        HasWarden = false;
 
-		if (_warden != null && _warden.Pawn.Value != null)
-		{
-			_warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
-			_warden.Pawn.Value.Render = Color.FromArgb(254, 255, 255, 255);
-			Utilities.SetStateChanged(_warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
-			logs.AddLogMessage($"{_warden.PlayerName} is no longer the warden.");
-		}
-		
-		_warden = null;
+        if (Warden != null && Warden.Pawn.Value != null)
+        {
+            Warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
+            Warden.Pawn.Value.Render = Color.FromArgb(254, 255, 255, 255);
+            Utilities.SetStateChanged(Warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
+            _logs.AddLogMessage($"{Warden.PlayerName} is no longer the warden.");
+        }
 
-		return true;
-	}
+        Warden = null;
 
-	[GameEventHandler]
-	public HookResult OnDeath(EventPlayerDeath ev, GameEventInfo info)
-	{
-		if (!_hasWarden)
-			return HookResult.Continue;
+        return true;
+    }
 
-		if (ev.Userid.UserId == _warden.UserId)
-		{
-			if (!this.TryRemoveWarden())
-				_logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
+    [GameEventHandler]
+    public HookResult OnDeath(EventPlayerDeath ev, GameEventInfo info)
+    {
+        if (!HasWarden)
+            return HookResult.Continue;
 
-			//	Warden died!
-			_notifications.WARDEN_DIED
-				.ToAllChat()
-				.ToAllCenter();
+        var player = ev.Userid;
+        if (!player.IsReal())
+            return HookResult.Continue;
 
-			_notifications.BECOME_NEXT_WARDEN.ToAllChat();
-		}
+        if (!((IWardenService)this).IsWarden(player))
+            return HookResult.Continue;
 
-		return HookResult.Continue;
-	}
+        if (!TryRemoveWarden())
+            _logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
-	[GameEventHandler]
-	public HookResult OnRoundEnd(EventRoundEnd ev, GameEventInfo info)
-	{
-		this.TryRemoveWarden();
+        //	Warden died!
+        _notifications.WardenDied
+            .ToAllChat()
+            .ToAllCenter();
 
-		return HookResult.Continue;
-	}
+        _notifications.BecomeNextWarden.ToAllChat();
 
-	[GameEventHandler]
-	public HookResult OnPlayerDisconnect(EventPlayerDisconnect ev, GameEventInfo info)
-	{
-		if (!_hasWarden)
-			return HookResult.Continue;
+        return HookResult.Continue;
+    }
 
-		if (ev.Userid.UserId == _warden.UserId)
-		{
-			if (!this.TryRemoveWarden())
-				_logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
+    [GameEventHandler]
+    public HookResult OnRoundEnd(EventRoundEnd ev, GameEventInfo info)
+    {
+        TryRemoveWarden();
+
+        return HookResult.Continue;
+    }
+
+    [GameEventHandler]
+    public HookResult OnPlayerDisconnect(EventPlayerDisconnect ev, GameEventInfo info)
+    {
+        if (!HasWarden)
+            return HookResult.Continue;
+
+        var player = ev.Userid;
+
+        if (!player.IsReal())
+            return HookResult.Continue;
+
+        if (!((IWardenService)this).IsWarden(ev.Userid))
+            return HookResult.Continue;
+
+        if (!TryRemoveWarden())
+            _logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
 
-			_notifications.WARDEN_LEFT
-				.ToAllChat()
-				.ToAllCenter();
+        _notifications.WardenLeft
+            .ToAllChat()
+            .ToAllCenter();
 
-			_notifications.BECOME_NEXT_WARDEN.ToAllChat();
-		}
+        _notifications.BecomeNextWarden.ToAllChat();
 
-		return HookResult.Continue;
-	}
+        return HookResult.Continue;
+    }
 }
