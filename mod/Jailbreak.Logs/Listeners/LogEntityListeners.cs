@@ -6,7 +6,7 @@ using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 
-namespace Jailbreak.Logs;
+namespace Jailbreak.Logs.Listeners;
 
 public class LogEntityListeners : IPluginBehavior
 {
@@ -27,7 +27,7 @@ public class LogEntityListeners : IPluginBehavior
 		CBaseEntity? ent = Utilities.GetEntityFromIndex<CBaseEntity>((int)caller.Index);
 
 
-		_logs.Append(_logs.Player(player) $"pressed a button: {ent.Entity?.Name ?? "Unlabeled"} -> {output?.Connections?.TargetDesc ?? "None"}");
+		_logs.Append(_logs.Player(player), $"pressed a button: {ent.Entity?.Name ?? "Unlabeled"} -> {output?.Connections?.TargetDesc ?? "None"}");
 		return HookResult.Continue;
 	}
 
