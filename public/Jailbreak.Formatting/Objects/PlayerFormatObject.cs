@@ -7,25 +7,25 @@ namespace Jailbreak.Formatting.Objects;
 
 public class PlayerFormatObject : FormatObject
 {
-    private readonly CCSPlayerController _player;
+    private readonly string _name;
 
     public PlayerFormatObject(CCSPlayerController player)
     {
-        _player = player;
+        _name = player.PlayerName;
     }
 
     public override string ToChat()
     {
-        return $"{ChatColors.Yellow}{_player.PlayerName}";
+        return $"{ChatColors.Yellow}{_name}";
     }
 
     public override string ToPanorama()
     {
-        return _player.PlayerName.Sanitize();
+        return _name.Sanitize();
     }
 
     public override string ToPlain()
     {
-        return _player.PlayerName;
+        return _name;
     }
 }

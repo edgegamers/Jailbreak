@@ -1,4 +1,5 @@
 ﻿using CounterStrikeSharp.API.Modules.Utils;
+
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Logistics;
@@ -9,16 +10,14 @@ namespace Jailbreak.English.Rebel;
 
 public class RebelNotifications : IRebelNotifications, ILanguage<Formatting.Languages.English>
 {
-    public static FormatObject Prefix =
-        new HiddenFormatObject($" {ChatColors.Darkred}[{ChatColors.LightRed}Rebel{ChatColors.Darkred}]")
-        {
-            //	Hide in panorama and center text
-            Plain = false,
-            Panorama = false,
-            Chat = true
-        };
+	public static FormatObject PREFIX = new HiddenFormatObject($" {ChatColors.Darkred}[{ChatColors.LightRed}Rebel{ChatColors.Darkred}]")
+	{
+		//	Hide in panorama and center text
+		Plain = false,
+		Panorama = false,
+		Chat = true
+	};
 
-    public IView NoLongerRebel => new SimpleView(writer =>
-        writer
-            .Line(Prefix, "You are no longer a rebel."));
+	public IView NO_LONGER_REBEL =>
+		new SimpleView() { PREFIX, "You are no longer a rebel." };
 }
