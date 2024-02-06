@@ -5,8 +5,17 @@
 
 The classic Jail gamemode, ported to Counter-Strike 2.
 
-> [!WARNING]
-> This plugin is in active development and may cause server crashes or stability issues.
+## Downloads
+
+[![Release](https://img.shields.io/badge/Release-mediumseagreen?style=for-the-badge&logo=onlyoffice
+)](https://github.com/edgegamers/Jailbreak/releases/)⠀⠀
+[![Stable](https://img.shields.io/badge/Stable-orangered?style=for-the-badge&logo=onlyoffice)](https://nightly.link/edgegamers/Jailbreak/workflows/nightly/main/jailbreak-nightly)⠀⠀
+[![Dev](https://img.shields.io/badge/Nightly-slateblue?style=for-the-badge&logo=onlyoffice
+)](https://nightly.link/edgegamers/Jailbreak/workflows/nightly/dev/jailbreak-nightly)
+
+**Release** builds are our full releases. We try to keep these high-quality and bug-free, when we can.
+Our **Stable** builds run on EdgeGamers' own Jailbreak servers. 
+Our **Nightly** builds are used exclusively for development and staging, and are likely to have problems.
 
 ## Status
 
