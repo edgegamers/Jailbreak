@@ -9,7 +9,7 @@ public class TemporaryConvar<T> : IDisposable
 
     public TemporaryConvar(string name, T value)
     {
-        _handle = ConVar.Find(name);
+        _handle = ConVar.Find(name) ?? throw new InvalidOperationException();
         if (_handle == null)
             throw new InvalidOperationException($"ConVar {name} does not exist!");
 

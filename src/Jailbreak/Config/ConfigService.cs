@@ -6,10 +6,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Jailbreak.Config;
 
+/// <summary>
+/// A service to load and parse configuration files.
+/// </summary>
 public class ConfigService : IConfigService
 {
     private readonly ILogger<ConfigService> _logger;
 
+    /// <summary>
+    ///   Constructor
+    /// </summary>
+    /// <param name="logger"></param>
     public ConfigService(ILogger<ConfigService> logger)
     {
         _logger = logger;

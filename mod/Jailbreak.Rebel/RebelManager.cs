@@ -19,8 +19,8 @@ public class RebelManager : IPluginBehavior, IRebelService
 
     public RebelManager(IRebelNotifications notifs, ILogService logs)
     {
-        this._notifs = notifs;
-        this._logs = logs;
+        _notifs = notifs;
+        _logs = logs;
     }
 
     public void Start(BasePlugin parent)

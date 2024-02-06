@@ -1,6 +1,5 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
-
 using Jailbreak.Public.Behaviors;
 
 namespace Jailbreak.Generic.PlayerState.Behaviors;

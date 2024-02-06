@@ -14,12 +14,12 @@ public class BeamLine : DrawableShape, IColorable
 
     public BeamLine(BasePlugin plugin, Vector position, Vector end) : base(plugin, position)
     {
-        this._end = end;
+        _end = end;
     }
 
     public void SetColor(Color color)
     {
-        this._color = color;
+        _color = color;
     }
 
     public Color GetColor()
@@ -30,7 +30,7 @@ public class BeamLine : DrawableShape, IColorable
     public void Move(Vector start, Vector end)
     {
         Position = start;
-        this._end = end;
+        _end = end;
     }
 
     public override void Draw()
@@ -46,20 +46,21 @@ public class BeamLine : DrawableShape, IColorable
         beam.EndPos.X = _end.X;
         beam.EndPos.Y = _end.Y;
         beam.EndPos.Z = _end.Z;
-        this._beam = beam;
+        _beam = beam;
 
         Utilities.SetStateChanged(beam, "CBeam", "m_vecEndPos");
     }
 
     public override void Remove()
     {
+        KillTimer?.Kill();
         _beam?.Remove();
         _beam = null;
     }
 
     public void SetWidth(float width)
     {
-        this._width = width;
+        _width = width;
     }
 
     public float GetWidth()

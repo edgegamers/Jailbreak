@@ -9,7 +9,7 @@ public class WrappedInfo
 
     public WrappedInfo(CommandInfo info)
     {
-        this.Info = info;
+        Info = info;
     }
 
     public CCSPlayerController? CallingPlayer => Info.CallingPlayer;

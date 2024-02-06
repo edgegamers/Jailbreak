@@ -43,6 +43,6 @@ public abstract class FormatObject
 
     public static FormatObject FromObject(object value)
     {
-        return new StringFormatObject(value.ToString());
+        return new StringFormatObject(value.ToString() ?? "null");
     }
 }

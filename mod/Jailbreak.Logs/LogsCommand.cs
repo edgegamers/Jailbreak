@@ -13,7 +13,7 @@ public class LogsCommand : IPluginBehavior
 
     public LogsCommand(ILogService logs)
     {
-        this._logs = logs;
+        _logs = logs;
     }
 
     [ConsoleCommand("css_logs")]

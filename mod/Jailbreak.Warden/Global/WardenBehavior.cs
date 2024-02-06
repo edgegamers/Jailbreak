@@ -24,7 +24,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
     {
         _logger = logger;
         _notifications = notifications;
-        this._logs = logs;
+        _logs = logs;
     }
 
     /// <summary>
@@ -92,18 +92,22 @@ public class WardenBehavior : IPluginBehavior, IWardenService
         if (!HasWarden)
             return HookResult.Continue;
 
-        if (ev.Userid.UserId == Warden.UserId)
-        {
-            if (!TryRemoveWarden())
-                _logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
+        var player = ev.Userid;
+        if (!player.IsReal())
+            return HookResult.Continue;
 
-            //	Warden died!
-            _notifications.WardenDied
-                .ToAllChat()
-                .ToAllCenter();
+        if (!((IWardenService)this).IsWarden(player))
+            return HookResult.Continue;
 
-            _notifications.BecomeNextWarden.ToAllChat();
-        }
+        if (!TryRemoveWarden())
+            _logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
+
+        //	Warden died!
+        _notifications.WardenDied
+            .ToAllChat()
+            .ToAllCenter();
+
+        _notifications.BecomeNextWarden.ToAllChat();
 
         return HookResult.Continue;
     }
@@ -122,18 +126,23 @@ public class WardenBehavior : IPluginBehavior, IWardenService
         if (!HasWarden)
             return HookResult.Continue;
 
-        if (ev.Userid.UserId == Warden.UserId)
-        {
-            if (!TryRemoveWarden())
-                _logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
+        var player = ev.Userid;
+
+        if (!player.IsReal())
+            return HookResult.Continue;
+
+        if (!((IWardenService)this).IsWarden(ev.Userid))
+            return HookResult.Continue;
+
+        if (!TryRemoveWarden())
+            _logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
 
-            _notifications.WardenLeft
-                .ToAllChat()
-                .ToAllCenter();
+        _notifications.WardenLeft
+            .ToAllChat()
+            .ToAllCenter();
 
-            _notifications.BecomeNextWarden.ToAllChat();
-        }
+        _notifications.BecomeNextWarden.ToAllChat();
 
         return HookResult.Continue;
     }

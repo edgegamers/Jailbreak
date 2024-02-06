@@ -15,7 +15,7 @@ public abstract class AbstractCommand
 
     protected AbstractCommand(IServiceProvider services)
     {
-        this.Services = services;
+        Services = services;
         _lang = services.GetRequiredService<IGenericCommandNotifications>();
     }
 

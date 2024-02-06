@@ -12,7 +12,7 @@ public class LogsListeners : IPluginBehavior
 
     public LogsListeners(ILogService logs)
     {
-        this._logs = logs;
+        _logs = logs;
     }
 
     public void Start(BasePlugin parent)

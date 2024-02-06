@@ -27,7 +27,7 @@ public abstract class BeamedShape : DrawableShape, IColorable
 
     public void SetColor(Color color)
     {
-        this.Color = color;
+        Color = color;
     }
 
     public override void Remove()

@@ -12,7 +12,7 @@ public class BeamCircle : BeamedShape
     public BeamCircle(BasePlugin plugin, Vector position, float radius, int resolution) : base(plugin, position,
         resolution)
     {
-        this._radius = radius;
+        _radius = radius;
         _lines = new BeamLine[resolution];
 
         _offsets = GenerateOffsets();
@@ -61,7 +61,7 @@ public class BeamCircle : BeamedShape
 
     public void SetRadius(float radius)
     {
-        this._radius = radius;
+        _radius = radius;
         _offsets = GenerateOffsets();
     }
 }

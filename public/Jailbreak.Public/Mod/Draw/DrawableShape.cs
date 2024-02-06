@@ -10,7 +10,7 @@ namespace Jailbreak.Public.Mod.Draw;
 /// </summary>
 public abstract class DrawableShape
 {
-    private Timer? _killTimer; // Internal timer used to remove the shape after a certain amount of time
+    protected Timer? KillTimer; // Internal timer used to remove the shape after a certain amount of time
 
     protected BasePlugin Plugin;
 
@@ -21,8 +21,8 @@ public abstract class DrawableShape
 
     public DrawableShape(BasePlugin plugin, Vector position)
     {
-        this.Plugin = plugin;
-        this.Position = position;
+        Plugin = plugin;
+        Position = position;
     }
 
     public abstract void Draw();
@@ -40,12 +40,12 @@ public abstract class DrawableShape
     public void Draw(float lifetime)
     {
         Draw();
-        _killTimer = Plugin.AddTimer(lifetime, Remove, TimerFlags.STOP_ON_MAPCHANGE);
+        KillTimer = Plugin.AddTimer(lifetime, Remove, TimerFlags.STOP_ON_MAPCHANGE);
     }
 
     public virtual void Move(Vector position)
     {
-        this.Position = position;
+        Position = position;
     }
 
     public abstract void Remove();

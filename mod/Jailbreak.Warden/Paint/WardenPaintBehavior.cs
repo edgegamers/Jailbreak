@@ -12,7 +12,7 @@ public class WardenPaintBehavior : IPluginBehavior
 {
     private Vector? _lastPosition;
     private readonly IWardenService _warden;
-    private BasePlugin _parent;
+    private BasePlugin? _parent;
 
     public WardenPaintBehavior(IWardenService warden)
     {
@@ -21,7 +21,7 @@ public class WardenPaintBehavior : IPluginBehavior
 
     public void Start(BasePlugin parent)
     {
-        this._parent = parent;
+        _parent = parent;
         parent.RegisterListener<Listeners.OnTick>(Paint);
     }
 
@@ -48,6 +48,9 @@ public class WardenPaintBehavior : IPluginBehavior
         _lastPosition = position;
         if (start.DistanceSquared(position) > 150 * 150) start = position;
 
+        if(_parent == null)
+            throw new NullReferenceException("Parent plugin is null");
+        
         new BeamLine(_parent, start.Clone(), position.Clone()).Draw(10f);
     }
 
@@ -57,12 +60,14 @@ public class WardenPaintBehavior : IPluginBehavior
             return null;
         var pawn = player.Pawn.Value;
         var playerPawn = player.PlayerPawn.Value;
-        if (!pawn.IsValid || !playerPawn.IsValid || pawn.CameraServices == null)
+        if (pawn == null || !pawn.IsValid || !playerPawn.IsValid || pawn.CameraServices == null)
+            return null;
+        if(pawn.AbsOrigin == null)
             return null;
 
         var camera = pawn.CameraServices;
-        var cameraOrigin = new Vector(pawn?.AbsOrigin?.X, pawn?.AbsOrigin?.Y,
-            pawn.AbsOrigin.Z + camera.OldPlayerViewOffsetZ);
+        var cameraOrigin = new Vector(pawn.AbsOrigin!.X, pawn.AbsOrigin!.Y,
+            pawn.AbsOrigin!.Z + camera.OldPlayerViewOffsetZ);
         var eyeAngle = player.PlayerPawn.Value.EyeAngles;
 
         var pitch = Math.PI / 180 * eyeAngle.X;
@@ -83,7 +88,8 @@ public class WardenPaintBehavior : IPluginBehavior
         pitch = 90 - pitch;
         if (pitch >= 90)
             return null;
-        var angleA = ToRadians(90);
+        
+        // var angleA = ToRadians(90);
         var sideB = start.Z - z;
         var angleC = ToRadians(pitch);
 
