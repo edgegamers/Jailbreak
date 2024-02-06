@@ -45,4 +45,7 @@ public abstract class FormatObject
     {
         return new StringFormatObject(value.ToString() ?? "null");
     }
+
+    public override string ToString()
+	    => ToPlain();
 }

@@ -27,8 +27,7 @@ public class LogEntityListeners : IPluginBehavior
 		CBaseEntity? ent = Utilities.GetEntityFromIndex<CBaseEntity>((int)caller.Index);
 
 
-		_logs.Append(
-			$"{_logs.Player(player)} pressed a button: {ent.Entity?.Name ?? "Unlabeled"} -> {output?.Connections?.TargetDesc ?? "None"}");
+		_logs.Append(_logs.Player(player) $"pressed a button: {ent.Entity?.Name ?? "Unlabeled"} -> {output?.Connections?.TargetDesc ?? "None"}");
 		return HookResult.Continue;
 	}
 
@@ -42,8 +41,7 @@ public class LogEntityListeners : IPluginBehavior
 		CBaseEntity? ent = Utilities.GetEntityFromIndex<CBaseEntity>((int)caller.Index);
 
 
-		_logs.Append(
-			$"{_logs.Player(player)} broke an entity: {ent.Entity?.Name ?? "Unlabeled"} -> {output?.Connections?.TargetDesc ?? "None"}");
+		_logs.Append(_logs.Player(player), $"broke an entity: {ent.Entity?.Name ?? "Unlabeled"} -> {output?.Connections?.TargetDesc ?? "None"}");
 		return HookResult.Continue;
 	}
 }
