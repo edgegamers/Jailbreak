@@ -1,20 +1,28 @@
 ---
-name: "⚡ Feature Requests & Ideas"
+name: Feature Request
 about: Describe this issue template's purpose here.
 title: "[Idea]"
-labels: enhancement, triage
+labels: status::1 Triage
 assignees: ''
 
 ---
 
-## Brief
+## Summary
 <!--
-//  Give us a quick overview of your feature idea, 3-4 sentences at most.
+//  Give us a quick summary of your feature idea, 2-4 sentences at most.
 //  Note that you should tell us WHAT you want the feature to DO, not HOW to do it.
 //  If another plugin has a similar feature, here is a good place to link that plugin.
 -->
 
 **(Your Brief Here)**
+
+## Details
+<!--
+// Generally the bigger a feature the more detailed this issue should be.
+// Make sure to include functionality, intended scope, interactions, and commands.
+-->
+
+**(Your Details Here)**
 
 ## Impact
 <!--

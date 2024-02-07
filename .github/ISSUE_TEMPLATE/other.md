@@ -1,8 +1,8 @@
 ---
-name: "\U0001F465 Other"
+name: Other
 about: Create a plain issue, without using a template.
 title: ''
-labels: triage
+labels: status::1 Triage
 assignees: ''
 
 ---

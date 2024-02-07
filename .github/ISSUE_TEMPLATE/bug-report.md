@@ -1,8 +1,8 @@
 ---
-name: "\U0001F41E Report a Bug"
+name: Bug Report
 about: Experienced an issue with the plugin? Let us know here!
-title: "[Bug] Your fancy title here!"
-labels: triage
+title: "[Bug]"
+labels: status::1 Triage, type::1 Bug
 assignees: ''
 
 ---
@@ -31,8 +31,8 @@ assignees: ''
 2. Steps...
 3. Here...
 
-## Logs
+## Additional Information
 <!--
-//  If you have any logs or extra data, put it here for others to look at.
+//  If you have any logs, videos, screenshots, or extra data, put it here for others to look at.
 //  Censor any personal information--this is a public issue tracker!
 -->
