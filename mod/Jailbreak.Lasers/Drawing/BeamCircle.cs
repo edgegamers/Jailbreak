@@ -3,7 +3,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 
 namespace Jailbreak.Public.Mod.Draw;
 
-public class BeamCircle : BeamedShape
+public class BeamCircle : BeamedShape, IMarker
 {
     private readonly BeamLine?[] _lines;
     private Vector[] _offsets;
@@ -37,7 +37,8 @@ public class BeamCircle : BeamedShape
         return offsets;
     }
 
-    public override void Draw()
+
+    protected override void DrawInternal()
     {
         for (var i = 0; i < _lines.Length; i++)
         {
@@ -53,11 +54,12 @@ public class BeamCircle : BeamedShape
             }
             else
             {
-                line.Move(start, end);
-                line.Update();
+                line.SetPoints(start, end);
             }
         }
     }
+
+    public float Radius => _radius;
 
     public void SetRadius(float radius)
     {
