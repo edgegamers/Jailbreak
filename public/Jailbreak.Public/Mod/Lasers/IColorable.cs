@@ -5,5 +5,6 @@ namespace Jailbreak.Public.Mod.Draw;
 public interface IColorable
 {
     void SetColor(Color color);
-    Color GetColor();
+
+    Color Color { get; }
 }

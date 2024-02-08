@@ -8,6 +8,7 @@ using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Generic;
+using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.Warden;
 using Microsoft.Extensions.Logging;
 

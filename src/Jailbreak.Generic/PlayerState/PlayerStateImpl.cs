@@ -18,11 +18,24 @@ public class PlayerStateImpl<TState> : IPlayerState<TState>, ITrackedPlayerState
 
     public void Reset(CCSPlayerController controller)
     {
-        _states.Remove(controller.Slot);
+        ResetInternal(controller.Slot);
     }
 
     public void Drop()
     {
-        _states.Clear();
+        foreach (var (key, _) in _states)
+            ResetInternal(key);
+    }
+
+    private void ResetInternal(int slot)
+    {
+        var entry = _states[slot];
+
+        //  If the state is disposable,
+        //  give the plugin a nice clean place to cleanup the state here.
+        if (entry is IDisposable disposable)
+            disposable.Dispose();
+
+        _states.Remove(slot);
     }
 }

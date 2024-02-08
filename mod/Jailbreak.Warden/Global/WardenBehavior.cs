@@ -7,6 +7,7 @@ using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.Logs;
 using Jailbreak.Public.Mod.Warden;
 using Microsoft.Extensions.Logging;
@@ -16,18 +17,20 @@ namespace Jailbreak.Warden.Global;
 public class WardenBehavior : IPluginBehavior, IWardenService
 {
 	private ILogger<WardenBehavior> _logger;
-	private IRichLogService logs;
+	private IRichLogService _logs;
+	private IMarkerService _markers;
 
 	private IWardenNotifications _notifications;
 
 	private bool _hasWarden;
 	private CCSPlayerController? _warden;
 
-	public WardenBehavior(ILogger<WardenBehavior> logger, IWardenNotifications notifications, IRichLogService logs)
+	public WardenBehavior(ILogger<WardenBehavior> logger, IWardenNotifications notifications, IRichLogService logs, IMarkerService markers)
 	{
 		_logger = logger;
 		_notifications = notifications;
-		logs = logs;
+		_logs = logs;
+		_markers = markers;
 	}
 
 	/// <summary>
@@ -61,11 +64,14 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 			Utilities.SetStateChanged(_warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
 		}
 
+		//	Grant marker perms
+		_markers.TryEnable(_warden);
+
 		_notifications.NEW_WARDEN(_warden)
 			.ToAllChat()
 			.ToAllCenter();
 
-		logs.Append( logs.Player(_warden), "is now the warden.");
+		_logs.Append( _logs.Player(_warden), "is now the warden.");
 		return true;
 	}
 
@@ -81,7 +87,10 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 			_warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
 			_warden.Pawn.Value.Render = Color.FromArgb(254, 255, 255, 255);
 			Utilities.SetStateChanged(_warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
-			logs.Append( logs.Player(_warden), "is no longer the warden.");
+			_logs.Append( _logs.Player(_warden), "is no longer the warden.");
+
+			//	Remove marker privileges.
+			_markers.TryDisable(_warden!);
 		}
 
 		_warden = null;

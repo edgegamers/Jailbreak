@@ -5,7 +5,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 
 namespace Jailbreak.Public.Mod.Draw;
 
-public class BeamLine : DrawableShape, IColorable
+public class BeamLine : DrawableShape, ILine
 {
     private CEnvBeam? _beam;
     private Color _color = Color.White;
@@ -17,30 +17,20 @@ public class BeamLine : DrawableShape, IColorable
         _end = end;
     }
 
-    public void SetColor(Color color)
-    {
-        _color = color;
-    }
-
-    public Color GetColor()
-    {
-        return _color;
-    }
-
-    public void Move(Vector start, Vector end)
+    public void SetPoints(Vector start, Vector end)
     {
         Position = start;
         _end = end;
     }
 
-    public override void Draw()
+    protected override void DrawInternal()
     {
         Remove();
         var beam = Utilities.CreateEntityByName<CEnvBeam>("env_beam");
         if (beam == null) return;
         beam.RenderMode = RenderMode_t.kRenderTransColor;
         beam.Width = _width;
-        beam.Render = GetColor();
+        beam.Render = _color;
 
         beam.Teleport(Position, new QAngle(), new Vector());
         beam.EndPos.X = _end.X;
@@ -51,9 +41,8 @@ public class BeamLine : DrawableShape, IColorable
         Utilities.SetStateChanged(beam, "CBeam", "m_vecEndPos");
     }
 
-    public override void Remove()
+    protected override void RemoveInternal()
     {
-        KillTimer?.Kill();
         _beam?.Remove();
         _beam = null;
     }
@@ -67,4 +56,6 @@ public class BeamLine : DrawableShape, IColorable
     {
         return _width;
     }
+
+    public Vector EndPosition => _end;
 }

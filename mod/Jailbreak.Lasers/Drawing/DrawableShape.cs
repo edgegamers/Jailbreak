@@ -1,3 +1,5 @@
+using System.Drawing;
+
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -8,13 +10,12 @@ namespace Jailbreak.Public.Mod.Draw;
 /// <summary>
 ///     Represents a drawable shape
 /// </summary>
-public abstract class DrawableShape
+public abstract class DrawableShape : IDrawable, IColorable
 {
     protected Timer? KillTimer; // Internal timer used to remove the shape after a certain amount of time
 
     protected BasePlugin Plugin;
 
-    protected Vector Position; // Represents the origin of the shape
 
     // Note that this can mean different things for different shapes
     protected DateTime StartTime = DateTime.Now;
@@ -25,28 +26,41 @@ public abstract class DrawableShape
         Position = position;
     }
 
-    public abstract void Draw();
+    public Vector Position { get; protected set; }
 
-    public virtual void Update()
-    {
-        Remove();
-        Draw();
-    }
-
-    public virtual void Tick()
-    {
-    }
-
-    public void Draw(float lifetime)
-    {
-        Draw();
-        KillTimer = Plugin.AddTimer(lifetime, Remove, TimerFlags.STOP_ON_MAPCHANGE);
-    }
-
-    public virtual void Move(Vector position)
+    public void SetPosition(Vector position)
     {
         Position = position;
     }
 
-    public abstract void Remove();
+    public Color Color { get; protected set; }
+
+    public void SetColor(Color color)
+    {
+        Color = color;
+    }
+
+    public bool Drawn { get; protected set;  }
+
+    protected abstract void DrawInternal();
+
+    public void Draw()
+    {
+        if (Drawn)
+            Remove();
+
+        DrawInternal();
+        Drawn = true;
+    }
+
+    protected abstract void RemoveInternal();
+
+    public void Remove()
+    {
+        if (!Drawn)
+            return;
+
+        RemoveInternal();
+        Drawn = false;
+    }
 }
