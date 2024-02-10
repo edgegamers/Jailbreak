@@ -10,7 +10,6 @@ using Jailbreak.English.Teams;
 using Jailbreak.English.Warden;
 using Jailbreak.Formatting.Logistics;
 using Jailbreak.Generic;
-using Jailbreak.LastRequest;
 using Jailbreak.Logs;
 using Jailbreak.Public.Configuration;
 using Jailbreak.Rebel;
@@ -34,7 +33,6 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
 
         serviceCollection.AddJailbreakGeneric();
         serviceCollection.AddJailbreakLogs();
-        serviceCollection.AddJailbreakLastRequest();
         serviceCollection.AddJailbreakWarden();
         serviceCollection.AddJailbreakTeams();
         serviceCollection.AddJailbreakRebel();
