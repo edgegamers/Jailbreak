@@ -16,7 +16,7 @@ namespace Jailbreak.Warden.Global;
 public class WardenBehavior : IPluginBehavior, IWardenService
 {
 	private ILogger<WardenBehavior> _logger;
-	private IRichLogService logs;
+	private IRichLogService _logs;
 
 	private IWardenNotifications _notifications;
 
@@ -27,7 +27,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 	{
 		_logger = logger;
 		_notifications = notifications;
-		logs = logs;
+		_logs = logs;
 	}
 
 	/// <summary>
@@ -65,7 +65,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 			.ToAllChat()
 			.ToAllCenter();
 
-		logs.Append( logs.Player(_warden), "is now the warden.");
+		_logs.Append( _logs.Player(_warden), "is now the warden.");
 		return true;
 	}
 
@@ -81,7 +81,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 			_warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
 			_warden.Pawn.Value.Render = Color.FromArgb(254, 255, 255, 255);
 			Utilities.SetStateChanged(_warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
-			logs.Append( logs.Player(_warden), "is no longer the warden.");
+			_logs.Append( _logs.Player(_warden), "is no longer the warden.");
 		}
 
 		_warden = null;
@@ -92,23 +92,35 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 	[GameEventHandler]
 	public HookResult OnDeath(EventPlayerDeath ev, GameEventInfo info)
 	{
-		if (!_hasWarden)
+		if(!((IWardenService)this).IsWarden(ev.Userid))
 			return HookResult.Continue;
-
-		if (ev.Userid.UserId == _warden.UserId)
-		{
-			if (!this.TryRemoveWarden())
-				_logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
-
-			//	Warden died!
-			_notifications.WARDEN_DIED
-				.ToAllChat()
-				.ToAllCenter();
-
-			_notifications.BECOME_NEXT_WARDEN.ToAllChat();
-		}
-
+		
+		ProcessWardenDeath();
 		return HookResult.Continue;
+	}
+
+	[GameEventHandler]
+	public HookResult OnChangeTeam(EventPlayerTeam @event, GameEventInfo info)
+	{
+		var player = @event.Userid;
+		if (!((IWardenService)this).IsWarden(player))
+			return HookResult.Continue;
+		
+		ProcessWardenDeath();	
+		return HookResult.Continue;
+	}
+
+	private void ProcessWardenDeath()
+	{
+		if (!this.TryRemoveWarden())
+			_logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
+
+		//	Warden died!
+		_notifications.WARDEN_DIED
+			.ToAllChat()
+			.ToAllCenter();
+
+		_notifications.BECOME_NEXT_WARDEN.ToAllChat();
 	}
 
 	[GameEventHandler]
@@ -122,21 +134,18 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 	[GameEventHandler]
 	public HookResult OnPlayerDisconnect(EventPlayerDisconnect ev, GameEventInfo info)
 	{
-		if (!_hasWarden)
+		if(!((IWardenService) this).IsWarden(ev.Userid))
 			return HookResult.Continue;
-
-		if (ev.Userid.UserId == _warden.UserId)
-		{
-			if (!this.TryRemoveWarden())
-				_logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
+		
+		if (!this.TryRemoveWarden())
+			_logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
 
-			_notifications.WARDEN_LEFT
-				.ToAllChat()
-				.ToAllCenter();
+		_notifications.WARDEN_LEFT
+			.ToAllChat()
+			.ToAllCenter();
 
-			_notifications.BECOME_NEXT_WARDEN.ToAllChat();
-		}
+		_notifications.BECOME_NEXT_WARDEN.ToAllChat();
 
 		return HookResult.Continue;
 	}
