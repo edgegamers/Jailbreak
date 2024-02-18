@@ -7,6 +7,7 @@ using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
+using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest;
 
@@ -15,17 +16,35 @@ public class LastRequestManager : IPluginBehavior, ILastRequestManager
     private BasePlugin _parent;
     private LastRequestConfig config;
     private ILastRequestMessages messages;
+    private ILastRequestFactory factory;
 
-    public LastRequestManager(LastRequestConfig config, ILastRequestMessages messages)
+    public LastRequestManager(LastRequestConfig config, ILastRequestMessages messages, ILastRequestFactory factory)
     {
         this.config = config;
         this.messages = messages;
+        this.factory = factory;
     }
 
     public void Start(BasePlugin parent)
     {
         _parent = parent;
         _parent.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
+    }
+
+    [GameEventHandler]
+    public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
+    {
+        IsLREnabled = false;
+        return HookResult.Continue;
+    }
+
+    [GameEventHandler]
+    public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
+    {
+        if (CountAlivePrisoners() > config.PrisonersToActiveLR)
+            return HookResult.Continue;
+        this.IsLREnabled = true;
+        return HookResult.Continue;
     }
 
     [GameEventHandler(HookMode.Post)]
@@ -38,13 +57,17 @@ public class LastRequestManager : IPluginBehavior, ILastRequestManager
         if (player.GetTeam() != CsTeam.Terrorist)
             return HookResult.Continue;
 
-        int remainingPrisoners = Utilities.GetPlayers().Count(CountsToLR);
-        if (remainingPrisoners > config.PrisonersToActiveLR)
+        if (CountAlivePrisoners() > config.PrisonersToActiveLR)
             return HookResult.Continue;
 
         IsLREnabled = true;
         messages.LastRequestEnabled().ToAllChat();
         return HookResult.Continue;
+    }
+
+    private int CountAlivePrisoners()
+    {
+        return Utilities.GetPlayers().Count(CountsToLR);
     }
 
     private bool CountsToLR(CCSPlayerController player)
@@ -59,9 +82,10 @@ public class LastRequestManager : IPluginBehavior, ILastRequestManager
     public bool IsLREnabled { get; set; }
     public IList<AbstractLastRequest> ActiveLRs { get; } = new List<AbstractLastRequest>();
 
-    public void InitiateLastRequest(AbstractLastRequest lastRequest)
+    public void InitiateLastRequest(CCSPlayerController prisoner, CCSPlayerController guard, LRType type)
     {
-        lastRequest.Setup();
-        ActiveLRs.Add(lastRequest);
+        AbstractLastRequest lr = factory.CreateLastRequest(prisoner, guard, type);
+        lr.Setup();
+        ActiveLRs.Add(lr);
     }
 }
