@@ -31,6 +31,8 @@ public class KnifeFight : AbstractLastRequest
         prisoner.RemoveWeapons();
         guard.RemoveWeapons();
         this.state = LRState.Pending;
+
+        plugin.AddTimer(3, Execute);
     }
 
     public override void Execute()
