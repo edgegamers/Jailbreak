@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Core;
 using Jailbreak.Config;
 using Jailbreak.Debug;
 using Jailbreak.English.Generic;
+using Jailbreak.English.LastRequest;
 using Jailbreak.English.Logs;
 using Jailbreak.English.Rebel;
 using Jailbreak.English.Teams;
@@ -48,6 +49,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
 			config.WithWarden<WardenNotifications>();
 			config.WithRebel<RebelNotifications>();
 			config.WithLogging<LogMessages>();
+			config.WithLastRequest<LastRequestMessages>();
 		});
 	}
 }

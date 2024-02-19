@@ -1,9 +1,10 @@
 using Jailbreak.Formatting.Base;
+using Jailbreak.Formatting.Logistics;
 using Jailbreak.Formatting.Views;
 
 namespace Jailbreak.English.LastRequest;
 
-public class LastRequestMessages : ILastRequestMessages
+public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.Languages.English>
 {
     public IView LastRequestEnabled() => new SimpleView()
     {
