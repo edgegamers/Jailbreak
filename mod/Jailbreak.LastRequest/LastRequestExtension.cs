@@ -10,6 +10,8 @@ public static class LastRequestExtension
     {
         collection.AddConfig<LastRequestConfig>("lastrequest");
         
+        collection.AddPluginBehavior<ILastRequestFactory, LastRequestFactory>();
         collection.AddPluginBehavior<ILastRequestManager, LastRequestManager>();
+        collection.AddPluginBehavior<LastRequestCommand>();
     }
 }
