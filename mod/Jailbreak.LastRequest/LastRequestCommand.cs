@@ -65,7 +65,7 @@ public class LastRequestCommand : IPluginBehavior
         }
 
         // Validate LR
-        LRType? type = LRTypeExtensions.FromString(info.GetArg(1));
+        var type = LRTypeExtensions.FromString(info.GetArg(1));
         if (type == null)
         {
             info.ReplyToCommand("Invalid LR");
@@ -78,6 +78,7 @@ public class LastRequestCommand : IPluginBehavior
         }
 
         var target = info.GetArgTargetResult(2);
+        new Target(info.GetArg(2)).GetTarget(executor);
         if (!target.Players.Any())
         {
             info.ReplyToCommand($"Could not find valid player using {info.GetArg(2)}");

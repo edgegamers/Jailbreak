@@ -11,7 +11,7 @@ public class LastRequestFactory : ILastRequestFactory
 
     public void Start(BasePlugin parent)
     {
-        this.plugin = plugin;
+        plugin = parent;
     }
 
     public AbstractLastRequest CreateLastRequest(CCSPlayerController prisoner, CCSPlayerController guard, LRType type)

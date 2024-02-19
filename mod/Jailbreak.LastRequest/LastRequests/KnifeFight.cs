@@ -15,10 +15,10 @@ public class KnifeFight : AbstractLastRequest
 
     public HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
     {
-        if (@event.Userid != prisoner && @event.Userid != guard)
+        if (@event.Userid.Slot != prisoner.Slot && @event.Userid.Slot != guard.Slot)
             return HookResult.Continue;
 
-        if (@event.Userid == prisoner)
+        if (@event.Userid.Slot == prisoner.Slot)
             End(LRResult.GuardWin);
         else
             End(LRResult.PrisonerWin);

@@ -38,6 +38,6 @@ public class LastRequestPlayerSelector
 
     private void OnSelect(CCSPlayerController player, ChatMenuOption option, LRType lr, CCSPlayerController target)
     {
-        player.ExecuteClientCommandFromServer("css_lr " + ((int) lr) + " #" + target.Index);
+        player.ExecuteClientCommandFromServer("css_lr " + ((int) lr) + " #" + target.UserId);
     }
 }
