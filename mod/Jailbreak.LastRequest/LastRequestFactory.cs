@@ -9,7 +9,7 @@ public class LastRequestFactory : ILastRequestFactory
 {
     private BasePlugin plugin;
 
-    public LastRequestFactory(BasePlugin plugin)
+    public void Start(BasePlugin parent)
     {
         this.plugin = plugin;
     }
