@@ -80,11 +80,11 @@ public class LastRequestCommand : IPluginBehavior
         var target = info.GetArgTargetResult(2);
         if (!target.Players.Any())
         {
-            info.ReplyToCommand("Invalid player");
+            info.ReplyToCommand($"Could not find valid player using {info.GetArg(2)}");
             return;
         }
 
-        if (target.Players.Count() > 1)
+        if (target.Players.Count > 1)
         {
             info.ReplyToCommand("Too many players");
             return;
