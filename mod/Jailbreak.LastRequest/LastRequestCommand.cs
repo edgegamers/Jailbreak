@@ -93,7 +93,13 @@ public class LastRequestCommand : IPluginBehavior
         var player = target.Players.First();
         if (player.Team != CsTeam.CounterTerrorist)
         {
-            info.ReplyToCommand("Invalid player");
+            info.ReplyToCommand("They're not on CT!");
+            return;
+        }
+
+        if (!player.PawnIsAlive)
+        {
+            info.ReplyToCommand("They're not alive!");
             return;
         }
 

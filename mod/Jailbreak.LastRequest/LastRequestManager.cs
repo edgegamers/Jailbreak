@@ -44,6 +44,7 @@ public class LastRequestManager : IPluginBehavior, ILastRequestManager
         if (CountAlivePrisoners() > config.PrisonersToActiveLR)
             return HookResult.Continue;
         this.IsLREnabled = true;
+        messages.LastRequestEnabled().ToAllChat();
         return HookResult.Continue;
     }
 
@@ -57,7 +58,7 @@ public class LastRequestManager : IPluginBehavior, ILastRequestManager
         if (player.GetTeam() != CsTeam.Terrorist)
             return HookResult.Continue;
 
-        if (CountAlivePrisoners() > config.PrisonersToActiveLR)
+        if (CountAlivePrisoners() - 1> config.PrisonersToActiveLR)
             return HookResult.Continue;
 
         IsLREnabled = true;

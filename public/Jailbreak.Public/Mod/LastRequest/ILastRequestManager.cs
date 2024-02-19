@@ -9,7 +9,7 @@ public interface ILastRequestManager : IPluginBehavior
     public bool IsLREnabled { get; set; }
     public IList<AbstractLastRequest> ActiveLRs { get; }
     
-    void InitiateLastRequest(CCSPlayerController guard, CCSPlayerController prisoner, LRType lrType);
+    void InitiateLastRequest(CCSPlayerController prisoner, CCSPlayerController guard, LRType lrType);
 
     public bool IsInLR(CCSPlayerController player)
     {
