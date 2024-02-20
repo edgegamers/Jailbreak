@@ -1,5 +1,7 @@
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 
@@ -10,19 +12,6 @@ public class KnifeFight : AbstractLastRequest
     public KnifeFight(BasePlugin plugin, CCSPlayerController prisoner, CCSPlayerController guard) : base(plugin,
         prisoner, guard)
     {
-        plugin.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
-    }
-
-    public HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
-    {
-        if (@event.Userid.Slot != prisoner.Slot && @event.Userid.Slot != guard.Slot)
-            return HookResult.Continue;
-
-        if (@event.Userid.Slot == prisoner.Slot)
-            End(LRResult.GuardWin);
-        else
-            End(LRResult.PrisonerWin);
-        return HookResult.Continue;
     }
 
     public override void Setup()
@@ -30,13 +19,19 @@ public class KnifeFight : AbstractLastRequest
         // Strip weapons, teleport T to CT
         prisoner.RemoveWeapons();
         guard.RemoveWeapons();
+        guard.Teleport(prisoner.Pawn.Value!.AbsOrigin!, prisoner.Pawn.Value.AbsRotation!, new Vector());
+        prisoner.Pawn.Value.MoveType = MoveType_t.MOVETYPE_NONE;
+        guard.Pawn.Value!.MoveType = MoveType_t.MOVETYPE_NONE;
         this.state = LRState.Pending;
-
+        plugin.AddTimer(0.5f, () => guard.Pawn.Value.MoveType = MoveType_t.MOVETYPE_WALK);
+        plugin.AddTimer(0.8f, () => guard.Pawn.Value.MoveType = MoveType_t.MOVETYPE_WALK);
         plugin.AddTimer(3, Execute);
     }
 
     public override void Execute()
     {
+        prisoner.PrintToChat("Begin!");
+        guard.PrintToChat("Begin!");
         prisoner.GiveNamedItem("weapon_knife");
         guard.GiveNamedItem("weapon_knife");
         this.state = LRState.Active;

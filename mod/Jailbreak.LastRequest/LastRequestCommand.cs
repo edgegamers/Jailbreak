@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Commands.Targeting;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
+using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
@@ -14,16 +15,20 @@ namespace Jailbreak.LastRequest;
 
 public class LastRequestCommand : IPluginBehavior
 {
-
     private ILastRequestManager _lrManager;
     private LastRequestMenuSelector menuSelector;
     private LastRequestPlayerSelector playerSelector;
     private BasePlugin plugin;
+    private ILastRequestMessages _messages;
+    private IGenericCommandNotifications _generic;
 
     // css_lr <player> <LRType>
-    public LastRequestCommand(ILastRequestManager manager, ILastRequestFactory factory)
+    public LastRequestCommand(ILastRequestManager manager, ILastRequestMessages messages,
+        IGenericCommandNotifications generic)
     {
         _lrManager = manager;
+        _messages = messages;
+        _generic = generic;
     }
 
     public void Start(BasePlugin plugin)
@@ -65,12 +70,12 @@ public class LastRequestCommand : IPluginBehavior
         }
 
         // Validate LR
-        var type = LRTypeExtensions.FromString(info.GetArg(1));
-        if (type == null)
+        if (!Enum.TryParse<LRType>(info.GetArg(1), true, out var type))
         {
             info.ReplyToCommand("Invalid LR");
             return;
         }
+
         if (info.ArgCount == 2)
         {
             MenuManager.OpenCenterHtmlMenu(plugin, executor, playerSelector.CreateMenu(executor, (LRType)type));
@@ -78,32 +83,35 @@ public class LastRequestCommand : IPluginBehavior
         }
 
         var target = info.GetArgTargetResult(2);
-        new Target(info.GetArg(2)).GetTarget(executor);
         if (!target.Players.Any())
         {
-            info.ReplyToCommand($"Could not find valid player using {info.GetArg(2)}");
+            _generic.PlayerNotFound(info.GetArg(2));
             return;
         }
 
         if (target.Players.Count > 1)
         {
-            info.ReplyToCommand("Too many players");
+            _generic.PlayerFoundMultiple(info.GetArg(2));
             return;
         }
 
         var player = target.Players.First();
         if (player.Team != CsTeam.CounterTerrorist)
         {
-            info.ReplyToCommand("They're not on CT!");
+            _messages.InvalidPlayerChoice(player, "They're not on CT!");
             return;
         }
 
         if (!player.PawnIsAlive)
         {
-            info.ReplyToCommand("They're not alive!");
+            _messages.InvalidPlayerChoice(player, "They're not alive!");
             return;
         }
 
-        _lrManager.InitiateLastRequest(executor, player, (LRType)type);
+        if (!_lrManager.InitiateLastRequest(executor, player, (LRType)type))
+        {
+            info.ReplyToCommand("An error occurred while initiating the last request. Please try again later.");
+            return;
+        }
     }
 }
