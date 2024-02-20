@@ -100,6 +100,9 @@ public class LastRequestManager : IPluginBehavior, ILastRequestManager
             var lr = factory.CreateLastRequest(prisoner, guard, type);
             lr.Setup();
             ActiveLRs.Add(lr);
+
+            messages.InformLastRequest(lr).ToPlayerChat(prisoner);
+            messages.InformLastRequest(lr).ToPlayerChat(guard);
             return true;
         }
         catch (ArgumentException e)
@@ -111,6 +114,8 @@ public class LastRequestManager : IPluginBehavior, ILastRequestManager
 
     public bool EndLastRequest(AbstractLastRequest lr, LRResult result)
     {
+        if (result == LRResult.GuardWin || result == LRResult.PrisonerWin)
+            messages.LastRequestDecided(lr, result).ToAllChat();
         lr.End(result);
         ActiveLRs.Remove(lr);
         return true;
