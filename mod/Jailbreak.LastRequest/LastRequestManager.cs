@@ -55,10 +55,20 @@ public class LastRequestManager : IPluginBehavior, ILastRequestManager
         if (!player.IsReal())
             return HookResult.Continue;
 
+        if (IsLREnabled)
+        {
+            var activeLr = ((ILastRequestManager)this).GetActiveLR(player);
+            if (activeLr != null)
+            {
+                var isPrisoner = activeLr.prisoner.Slot == player.Slot;
+                EndLastRequest(activeLr, isPrisoner ? LRResult.PrisonerWin : LRResult.GuardWin);
+            }
+        }
+
         if (player.GetTeam() != CsTeam.Terrorist)
             return HookResult.Continue;
 
-        if (CountAlivePrisoners() - 1> config.PrisonersToActiveLR)
+        if (CountAlivePrisoners() - 1 > config.PrisonersToActiveLR)
             return HookResult.Continue;
 
         IsLREnabled = true;
@@ -83,10 +93,26 @@ public class LastRequestManager : IPluginBehavior, ILastRequestManager
     public bool IsLREnabled { get; set; }
     public IList<AbstractLastRequest> ActiveLRs { get; } = new List<AbstractLastRequest>();
 
-    public void InitiateLastRequest(CCSPlayerController prisoner, CCSPlayerController guard, LRType type)
+    public bool InitiateLastRequest(CCSPlayerController prisoner, CCSPlayerController guard, LRType type)
     {
-        AbstractLastRequest lr = factory.CreateLastRequest(prisoner, guard, type);
-        lr.Setup();
-        ActiveLRs.Add(lr);
+        try
+        {
+            var lr = factory.CreateLastRequest(prisoner, guard, type);
+            lr.Setup();
+            ActiveLRs.Add(lr);
+            return true;
+        }
+        catch (ArgumentException e)
+        {
+            Console.WriteLine(e);
+            return false;
+        }
+    }
+
+    public bool EndLastRequest(AbstractLastRequest lr, LRResult result)
+    {
+        lr.End(result);
+        ActiveLRs.Remove(lr);
+        return true;
     }
 }

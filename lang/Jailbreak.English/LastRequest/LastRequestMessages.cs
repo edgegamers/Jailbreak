@@ -1,3 +1,5 @@
+using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Logistics;
 using Jailbreak.Formatting.Views;
@@ -15,4 +17,24 @@ public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.La
     {
         { "Last Request has been disabled." }
     };
+
+    public IView InvalidLastRequest(string query)
+    {
+        return new SimpleView()
+        {
+            "Invalid Last Request: ",
+            query
+        };
+    }
+
+    public IView InvalidPlayerChoice(CCSPlayerController player, string reason)
+    {
+        return new SimpleView()
+        {
+            "Invalid player choice: ",
+            player,
+            " Reason: ",
+            reason
+        };
+    }
 }
