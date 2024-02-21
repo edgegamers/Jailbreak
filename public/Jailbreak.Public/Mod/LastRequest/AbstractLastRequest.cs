@@ -11,7 +11,6 @@ public abstract class AbstractLastRequest
 
     public LRState state { get; protected set; }
     protected BasePlugin plugin;
-    protected DateTimeOffset startTime;
 
     protected AbstractLastRequest(BasePlugin plugin, CCSPlayerController prisoner, CCSPlayerController guard)
     {
@@ -20,6 +19,11 @@ public abstract class AbstractLastRequest
         this.guard = guard;
     }
 
+    public void PrintToParticipants(string message)
+    {
+        prisoner.PrintToChat(message);
+        guard.PrintToChat(message);
+    }
 
     public abstract void Setup();
     public abstract void Execute();

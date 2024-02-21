@@ -23,13 +23,18 @@ public class KnifeFight : AbstractLastRequest
         guard.RemoveWeapons();
         guard.Teleport(prisoner.Pawn.Value!.AbsOrigin!, prisoner.Pawn.Value.AbsRotation!, new Vector());
         state = LRState.Pending;
-        plugin.AddTimer(3, Execute);
+        for (var i = 3; i >= 1; i--)
+        {
+            var copy = i;
+            plugin.AddTimer(3 - i, () => { PrintToParticipants($"{copy}..."); });
+        }
+
+        plugin.AddTimer(4, Execute);
     }
 
     public override void Execute()
     {
-        prisoner.PrintToChat("Begin!");
-        guard.PrintToChat("Begin!");
+        PrintToParticipants("Go!");
         prisoner.GiveNamedItem("weapon_knife");
         guard.GiveNamedItem("weapon_knife");
         this.state = LRState.Active;
@@ -37,6 +42,6 @@ public class KnifeFight : AbstractLastRequest
 
     public override void End(LRResult result)
     {
-        this.state = LRState.Completed;
+        state = LRState.Completed;
     }
 }
