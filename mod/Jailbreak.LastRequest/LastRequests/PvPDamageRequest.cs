@@ -5,6 +5,12 @@ using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
+/// <summary>
+/// Represents a Last Request that involves PvP damage, meaning the two
+/// involved players (and only those two) are allowed to deal damage to each other.
+///
+/// Automatically strips weapons, counts down, and calls Execute after 4 seconds.
+/// </summary>
 public abstract class PvPDamageRequest : AbstractLastRequest
 {
     public PvPDamageRequest(BasePlugin plugin, CCSPlayerController prisoner, CCSPlayerController guard) : base(plugin,
