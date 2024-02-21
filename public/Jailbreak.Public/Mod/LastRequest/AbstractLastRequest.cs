@@ -7,7 +7,8 @@ public abstract class AbstractLastRequest
 {
     public CCSPlayerController prisoner { get; protected set; }
     public CCSPlayerController guard { get; protected set; }
-    public LRType type { get; protected set; }
+    public abstract LRType type { get; }
+
     public LRState state { get; protected set; }
     protected BasePlugin plugin;
     protected DateTimeOffset startTime;

@@ -61,8 +61,10 @@ public class LastRequestManager : IPluginBehavior, ILastRequestManager
             if (activeLr != null)
             {
                 var isPrisoner = activeLr.prisoner.Slot == player.Slot;
-                EndLastRequest(activeLr, isPrisoner ? LRResult.PrisonerWin : LRResult.GuardWin);
+                EndLastRequest(activeLr, isPrisoner ? LRResult.GuardWin : LRResult.PrisonerWin);
             }
+
+            return HookResult.Continue;
         }
 
         if (player.GetTeam() != CsTeam.Terrorist)

@@ -14,6 +14,8 @@ public class KnifeFight : AbstractLastRequest
     {
     }
 
+    public override LRType type => LRType.KnifeFight;
+
     public override void Setup()
     {
         // Strip weapons, teleport T to CT
