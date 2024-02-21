@@ -22,11 +22,7 @@ public class KnifeFight : AbstractLastRequest
         prisoner.RemoveWeapons();
         guard.RemoveWeapons();
         guard.Teleport(prisoner.Pawn.Value!.AbsOrigin!, prisoner.Pawn.Value.AbsRotation!, new Vector());
-        prisoner.Pawn.Value.MoveType = MoveType_t.MOVETYPE_NONE;
-        guard.Pawn.Value!.MoveType = MoveType_t.MOVETYPE_NONE;
-        this.state = LRState.Pending;
-        plugin.AddTimer(0.5f, () => guard.Pawn.Value.MoveType = MoveType_t.MOVETYPE_WALK);
-        plugin.AddTimer(0.8f, () => guard.Pawn.Value.MoveType = MoveType_t.MOVETYPE_WALK);
+        state = LRState.Pending;
         plugin.AddTimer(3, Execute);
     }
 
