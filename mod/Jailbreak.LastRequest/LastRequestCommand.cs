@@ -64,6 +64,12 @@ public class LastRequestCommand : IPluginBehavior
             return;
         }
 
+        if (!playerSelector.WouldHavePlayers())
+        {
+            info.ReplyToCommand("There are no players available to LR.");
+            return;
+        }
+
         if (info.ArgCount == 1)
         {
             MenuManager.OpenCenterHtmlMenu(plugin, executor, menuSelector.GetMenu());
@@ -112,7 +118,6 @@ public class LastRequestCommand : IPluginBehavior
         if (!_lrManager.InitiateLastRequest(executor, player, (LRType)type))
         {
             info.ReplyToCommand("An error occurred while initiating the last request. Please try again later.");
-            return;
         }
     }
 }

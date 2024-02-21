@@ -36,6 +36,8 @@ public class LastRequestPlayerSelector
         return menu;
     }
 
+    public bool WouldHavePlayers() => Utilities.GetPlayers().Any(p => p.IsReal() && p is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist });
+
     private void OnSelect(CCSPlayerController player, ChatMenuOption option, LRType lr, CCSPlayerController target)
     {
         player.ExecuteClientCommandFromServer("css_lr " + ((int) lr) + " #" + target.UserId);
