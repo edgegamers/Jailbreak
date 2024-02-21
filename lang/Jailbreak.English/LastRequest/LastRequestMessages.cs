@@ -19,6 +19,11 @@ public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.La
     {
         { "Last Request has been disabled." }
     };
+    
+    public IView LastRequestNotEnabled() => new SimpleView()
+    {
+        { "Last Request is not enabled." }
+    };
 
     public IView InvalidLastRequest(string query)
     {

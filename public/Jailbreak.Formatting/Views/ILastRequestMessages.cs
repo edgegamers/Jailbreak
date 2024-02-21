@@ -9,6 +9,7 @@ public interface ILastRequestMessages
 {
     public IView LastRequestEnabled();
     public IView LastRequestDisabled();
+    public IView LastRequestNotEnabled();
     public IView InvalidLastRequest(string query);
     public IView InvalidPlayerChoice(CCSPlayerController player, string reason);
     public IView InformLastRequest(AbstractLastRequest lr);

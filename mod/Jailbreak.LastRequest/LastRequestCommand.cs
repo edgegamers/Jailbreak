@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Commands.Targeting;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
+using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
@@ -59,7 +60,7 @@ public class LastRequestCommand : IPluginBehavior
 
         if (!_lrManager.IsLREnabled)
         {
-            info.ReplyToCommand("LR is not yet enabled!");
+            _messages.LastRequestNotEnabled().ToPlayerChat(executor);
             return;
         }
 
@@ -72,13 +73,13 @@ public class LastRequestCommand : IPluginBehavior
         // Validate LR
         if (!Enum.TryParse<LRType>(info.GetArg(1), true, out var type))
         {
-            info.ReplyToCommand("Invalid LR");
+            _messages.InvalidLastRequest(info.GetArg(1)).ToPlayerChat(executor);
             return;
         }
 
         if (info.ArgCount == 2)
         {
-            MenuManager.OpenCenterHtmlMenu(plugin, executor, playerSelector.CreateMenu(executor, (LRType)type));
+            MenuManager.OpenCenterHtmlMenu(plugin, executor, playerSelector.CreateMenu(executor, type));
             return;
         }
 
