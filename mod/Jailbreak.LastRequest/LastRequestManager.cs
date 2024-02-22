@@ -11,12 +11,15 @@ using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestManager : IPluginBehavior, ILastRequestManager
+public class LastRequestManager : ILastRequestManager
 {
     private BasePlugin _parent;
     private LastRequestConfig config;
     private ILastRequestMessages messages;
     private ILastRequestFactory factory;
+
+    public bool IsLREnabled { get; set; }
+    public IList<AbstractLastRequest> ActiveLRs { get; } = new List<AbstractLastRequest>();
 
     public LastRequestManager(LastRequestConfig config, ILastRequestMessages messages, ILastRequestFactory factory)
     {
@@ -55,16 +58,16 @@ public class LastRequestManager : IPluginBehavior, ILastRequestManager
         if (!player.IsReal())
             return HookResult.Continue;
 
-        if (IsLREnabled)
+        if (IsLREnabled && ((ILastRequestManager)this).IsInLR(player))
         {
+            // Handle active LRs
             var activeLr = ((ILastRequestManager)this).GetActiveLR(player);
             if (activeLr != null)
             {
                 var isPrisoner = activeLr.prisoner.Slot == player.Slot;
                 EndLastRequest(activeLr, isPrisoner ? LRResult.GuardWin : LRResult.PrisonerWin);
+                return HookResult.Continue;
             }
-
-            return HookResult.Continue;
         }
 
         if (player.GetTeam() != CsTeam.Terrorist)
@@ -92,9 +95,6 @@ public class LastRequestManager : IPluginBehavior, ILastRequestManager
         return player.GetTeam() == CsTeam.Terrorist;
     }
 
-    public bool IsLREnabled { get; set; }
-    public IList<AbstractLastRequest> ActiveLRs { get; } = new List<AbstractLastRequest>();
-
     public bool InitiateLastRequest(CCSPlayerController prisoner, CCSPlayerController guard, LRType type)
     {
         try
@@ -116,9 +116,9 @@ public class LastRequestManager : IPluginBehavior, ILastRequestManager
 
     public bool EndLastRequest(AbstractLastRequest lr, LRResult result)
     {
-        if (result == LRResult.GuardWin || result == LRResult.PrisonerWin)
+        if (result is LRResult.GuardWin or LRResult.PrisonerWin)
             messages.LastRequestDecided(lr, result).ToAllChat();
-        lr.End(result);
+        lr.OnEnd(result);
         ActiveLRs.Remove(lr);
         return true;
     }
