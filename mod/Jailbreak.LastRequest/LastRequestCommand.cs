@@ -83,7 +83,8 @@ public class LastRequestCommand : IPluginBehavior
         }
 
         // Validate LR
-        if (!Enum.TryParse<LRType>(info.GetArg(1), true, out var type))
+        var type = LRTypeExtensions.FromString(info.GetArg(1));
+        if (type is null) 
         {
             _messages.InvalidLastRequest(info.GetArg(1)).ToPlayerChat(executor);
             return;
@@ -91,7 +92,7 @@ public class LastRequestCommand : IPluginBehavior
 
         if (info.ArgCount == 2)
         {
-            MenuManager.OpenCenterHtmlMenu(plugin, executor, playerSelector.CreateMenu(executor, type));
+            MenuManager.OpenCenterHtmlMenu(plugin, executor, playerSelector.CreateMenu(executor, type.Value));
             return;
         }
 

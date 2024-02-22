@@ -33,21 +33,6 @@ public static class LRTypeExtensions
         };
     }
 
-    public static LRType? FromFriendlyString(string type)
-    {
-        foreach (var value in Enum.GetValues(typeof(LRType)))
-        {
-            if (ToFriendlyString((LRType)value).Equals(type))
-                return (LRType)value;
-            if (ToFriendlyString((LRType)value).ToLower().Replace(" ", "").Equals(type.ToLower().Replace(" ", "")))
-                return (LRType)value;
-            if (((LRType)value).ToString().ToLower().Replace(" ", "").Equals(type.ToLower().Replace(" ", "")))
-                return (LRType)value;
-        }
-
-        return null;
-    }
-
     public static LRType FromIndex(int index)
     {
         return (LRType)index;
@@ -57,7 +42,27 @@ public static class LRTypeExtensions
     {
         if (Enum.TryParse<LRType>(type, true, out var result))
             return result;
+        type = type.ToLower().Replace(" ", "");
+        switch (type)
+        {
+            case "rps":
+                return LRType.RockPaperScissors;
+            case "s4s":
+            case "sfs":
+                return LRType.ShotForShot;
+            case "m4m":
+            case "mfm":
+                return LRType.MagForMag;
+        }
+
+        if (type.Contains("knife"))
+            return LRType.KnifeFight;
+        if (type.Contains("scope"))
+            return LRType.NoScope;
+        if (type.Contains("gun"))
+            return LRType.GunToss;
+        if (type.Contains("coin") || type.Contains("fifty"))
+            return LRType.FiftyFifty;
         return null;
     }
-
 }

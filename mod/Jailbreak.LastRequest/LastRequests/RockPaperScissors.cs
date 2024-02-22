@@ -21,6 +21,7 @@ public class RockPaperScissors : AbstractLastRequest
 
     public override void Setup()
     {
+        chatMenu.Title = $"Rock Paper Scissors - {prisoner.PlayerName} vs {guard.PlayerName}";
         prisonerChoice = -1;
         guardChoice = -1;
         plugin.AddTimer(3, Execute);
