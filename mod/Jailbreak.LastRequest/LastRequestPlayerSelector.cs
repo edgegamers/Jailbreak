@@ -19,7 +19,7 @@ public class LastRequestPlayerSelector
 
     public CenterHtmlMenu CreateMenu(CCSPlayerController player, LRType lrType)
     {
-        CenterHtmlMenu menu = new CenterHtmlMenu("Player?");
+        CenterHtmlMenu menu = new CenterHtmlMenu("css_lr " + ((int) lrType) + " [Player]");
 
         foreach (var target in Utilities.GetPlayers())
         {
