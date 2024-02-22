@@ -1,13 +1,15 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
 public class NoScope : PvPDamageRequest
 {
-    public NoScope(BasePlugin plugin, CCSPlayerController prisoner, CCSPlayerController guard) : base(plugin,
+    public NoScope(BasePlugin plugin, ILastRequestManager manager, CCSPlayerController prisoner,
+        CCSPlayerController guard) : base(plugin, manager,
         prisoner, guard)
     {
     }
@@ -36,7 +38,8 @@ public class NoScope : PvPDamageRequest
             return;
         try
         {
-            player.PlayerPawn.Value!.WeaponServices!.ActiveWeapon.Value!.NextSecondaryAttackTick = Server.TickCount + 500;
+            player.PlayerPawn.Value!.WeaponServices!.ActiveWeapon.Value!.NextSecondaryAttackTick =
+                Server.TickCount + 500;
         }
         catch (NullReferenceException e)
         {

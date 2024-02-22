@@ -11,9 +11,11 @@ public abstract class AbstractLastRequest
 
     public LRState state { get; protected set; }
     protected BasePlugin plugin;
+    protected ILastRequestManager manager;
 
-    protected AbstractLastRequest(BasePlugin plugin, CCSPlayerController prisoner, CCSPlayerController guard)
+    protected AbstractLastRequest(BasePlugin plugin, ILastRequestManager manager, CCSPlayerController prisoner, CCSPlayerController guard)
     {
+        this.manager = manager;
         this.plugin = plugin;
         this.prisoner = prisoner;
         this.guard = guard;
@@ -27,5 +29,5 @@ public abstract class AbstractLastRequest
 
     public abstract void Setup();
     public abstract void Execute();
-    public abstract void End(LRResult result);
+    public abstract void OnEnd(LRResult result);
 }

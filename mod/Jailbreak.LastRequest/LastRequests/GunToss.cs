@@ -9,8 +9,8 @@ namespace Jailbreak.LastRequest.LastRequests;
 
 public class GunToss : AbstractLastRequest
 {
-    public GunToss(BasePlugin plugin, CCSPlayerController prisoner, CCSPlayerController guard) : base(plugin,
-        prisoner, guard)
+    public GunToss(BasePlugin plugin, ILastRequestManager manager, CCSPlayerController prisoner,
+        CCSPlayerController guard) : base(plugin, manager, prisoner, guard)
     {
     }
 
@@ -35,7 +35,7 @@ public class GunToss : AbstractLastRequest
         this.state = LRState.Active;
     }
 
-    public override void End(LRResult result)
+    public override void OnEnd(LRResult result)
     {
         state = LRState.Completed;
     }

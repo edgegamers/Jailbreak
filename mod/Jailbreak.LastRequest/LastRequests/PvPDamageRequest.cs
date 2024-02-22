@@ -13,34 +13,37 @@ namespace Jailbreak.LastRequest.LastRequests;
 /// </summary>
 public abstract class PvPDamageRequest : AbstractLastRequest
 {
-    public PvPDamageRequest(BasePlugin plugin, CCSPlayerController prisoner, CCSPlayerController guard) : base(plugin,
-        prisoner, guard)
+    public PvPDamageRequest(BasePlugin plugin, ILastRequestManager manager, CCSPlayerController prisoner,
+        CCSPlayerController guard) : base(plugin, manager, prisoner, guard)
     {
-        plugin.RegisterEventHandler<EventPlayerHurt>(OnPlayerHurt);
     }
 
     public HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
     {
+        if(state != LRState.Active && state != LRState.Pending)
+            return HookResult.Continue;
         bool hurtInLR = @event.Userid.Slot == prisoner.Slot || @event.Userid.Slot == guard.Slot;
-        if(!hurtInLR) return HookResult.Continue;
+        if (!hurtInLR) return HookResult.Continue;
 
         if (@event.Attacker == null)
             return HookResult.Continue;
-        
+
         bool attackerInLR = @event.Attacker.Slot == prisoner.Slot || @event.Attacker.Slot == guard.Slot;
-        if(attackerInLR) return HookResult.Continue;
-        
+        if (attackerInLR) return HookResult.Continue;
+
         @event.DmgHealth = 0;
         return HookResult.Changed;
     }
 
     public override void Setup()
     {
+        state = LRState.Pending;
+        plugin.RegisterEventHandler<EventPlayerHurt>(OnPlayerHurt);
+        
         // Strip weapons, teleport T to CT
         prisoner.RemoveWeapons();
         guard.RemoveWeapons();
         guard.Teleport(prisoner.Pawn.Value!.AbsOrigin!, prisoner.Pawn.Value.AbsRotation!, new Vector());
-        state = LRState.Pending;
         for (var i = 3; i >= 1; i--)
         {
             var copy = i;
@@ -50,8 +53,9 @@ public abstract class PvPDamageRequest : AbstractLastRequest
         plugin.AddTimer(4, Execute);
     }
 
-    public override void End(LRResult result)
+    public override void OnEnd(LRResult result)
     {
         state = LRState.Completed;
+        plugin.DeregisterEventHandler("player_hurt", OnPlayerHurt, true);
     }
 }

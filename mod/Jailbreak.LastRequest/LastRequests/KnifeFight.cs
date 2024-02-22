@@ -9,7 +9,8 @@ namespace Jailbreak.LastRequest.LastRequests;
 
 public class KnifeFight : PvPDamageRequest
 {
-    public KnifeFight(BasePlugin plugin, CCSPlayerController prisoner, CCSPlayerController guard) : base(plugin,
+    public KnifeFight(BasePlugin plugin, ILastRequestManager manager, CCSPlayerController prisoner,
+        CCSPlayerController guard) : base(plugin, manager,
         prisoner, guard)
     {
     }
@@ -24,7 +25,7 @@ public class KnifeFight : PvPDamageRequest
         this.state = LRState.Active;
     }
 
-    public override void End(LRResult result)
+    public override void OnEnd(LRResult result)
     {
         state = LRState.Completed;
     }
