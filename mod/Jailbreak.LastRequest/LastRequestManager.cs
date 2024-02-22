@@ -8,6 +8,7 @@ using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.LastRequest;
 
@@ -17,19 +18,20 @@ public class LastRequestManager : ILastRequestManager
     private LastRequestConfig config;
     private ILastRequestMessages messages;
     private ILastRequestFactory factory;
+    private IServiceProvider provider;
 
     public bool IsLREnabled { get; set; }
     public IList<AbstractLastRequest> ActiveLRs { get; } = new List<AbstractLastRequest>();
 
-    public LastRequestManager(LastRequestConfig config, ILastRequestMessages messages, ILastRequestFactory factory)
+    public LastRequestManager(LastRequestConfig config, ILastRequestMessages messages, IServiceProvider provider)
     {
         this.config = config;
         this.messages = messages;
-        this.factory = factory;
     }
 
     public void Start(BasePlugin parent)
     {
+        this.factory = provider.GetRequiredService<ILastRequestFactory>();
         _parent = parent;
         _parent.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
     }
