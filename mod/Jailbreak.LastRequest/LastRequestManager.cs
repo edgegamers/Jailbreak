@@ -27,6 +27,7 @@ public class LastRequestManager : ILastRequestManager
     {
         this.config = config;
         this.messages = messages;
+        this.provider = provider;
     }
 
     public void Start(BasePlugin parent)
