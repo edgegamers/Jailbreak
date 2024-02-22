@@ -70,6 +70,12 @@ public class LastRequestCommand : IPluginBehavior
             return;
         }
 
+        if (_lrManager.IsInLR(executor))
+        {
+            info.ReplyToCommand("You are already in an LR!");
+            return;
+        }
+
         if (info.ArgCount == 1)
         {
             MenuManager.OpenCenterHtmlMenu(plugin, executor, menuSelector.GetMenu());
