@@ -7,7 +7,7 @@ using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
-public class KnifeFight : PvPDamageRequest
+public class KnifeFight : WeaponizedRequest
 {
     public KnifeFight(BasePlugin plugin, ILastRequestManager manager, CCSPlayerController prisoner,
         CCSPlayerController guard) : base(plugin, manager,

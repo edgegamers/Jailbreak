@@ -47,6 +47,8 @@ public class LastRequestManager : ILastRequestManager
     [GameEventHandler]
     public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
+        if (GetGameRules().WarmupPeriod)
+            return HookResult.Continue;
         if (CountAlivePrisoners() > config.PrisonersToActiveLR)
             return HookResult.Continue;
         this.IsLREnabled = true;
@@ -58,10 +60,10 @@ public class LastRequestManager : ILastRequestManager
     public HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
     {
         var player = @event.Userid;
-        if (!player.IsReal())
+        if (!player.IsReal() || GetGameRules().WarmupPeriod)
             return HookResult.Continue;
 
-        if (IsLREnabled && ((ILastRequestManager)this).IsInLR(player))
+        if (IsLREnabled)
         {
             // Handle active LRs
             var activeLr = ((ILastRequestManager)this).GetActiveLR(player);
@@ -69,8 +71,9 @@ public class LastRequestManager : ILastRequestManager
             {
                 var isPrisoner = activeLr.prisoner.Slot == player.Slot;
                 EndLastRequest(activeLr, isPrisoner ? LRResult.GuardWin : LRResult.PrisonerWin);
-                return HookResult.Continue;
             }
+
+            return HookResult.Continue;
         }
 
         if (player.GetTeam() != CsTeam.Terrorist)
@@ -82,6 +85,33 @@ public class LastRequestManager : ILastRequestManager
         IsLREnabled = true;
         messages.LastRequestEnabled().ToAllChat();
         return HookResult.Continue;
+    }
+
+    [GameEventHandler]
+    public HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
+    {
+        if (!IsLREnabled)
+            return HookResult.Continue;
+        var player = @event.Userid;
+        var lr = ((ILastRequestManager)this).GetActiveLR(player);
+        if (lr == null)
+            return HookResult.Continue;
+
+        var state = lr.state;
+
+        if (state != LRState.Active && state != LRState.Pending)
+            return HookResult.Continue;
+        bool hurtInLR = @event.Userid.Slot == lr.prisoner.Slot || @event.Userid.Slot == lr.guard.Slot;
+        if (!hurtInLR) return HookResult.Continue;
+
+        if (@event.Attacker == null)
+            return HookResult.Continue;
+
+        bool attackerInLR = @event.Attacker.Slot == lr.prisoner.Slot || @event.Attacker.Slot == lr.guard.Slot;
+        if (attackerInLR) return HookResult.Continue;
+
+        @event.DmgHealth = 0;
+        return HookResult.Changed;
     }
 
     private int CountAlivePrisoners()
@@ -124,5 +154,10 @@ public class LastRequestManager : ILastRequestManager
         lr.OnEnd(result);
         ActiveLRs.Remove(lr);
         return true;
+    }
+
+    public static CCSGameRules GetGameRules()
+    {
+        return Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules").First().GameRules!;
     }
 }

@@ -1,12 +1,13 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Timers;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
-public class NoScope : PvPDamageRequest
+public class NoScope : WeaponizedRequest
 {
     public NoScope(BasePlugin plugin, ILastRequestManager manager, CCSPlayerController prisoner,
         CCSPlayerController guard) : base(plugin, manager,
@@ -53,5 +54,19 @@ public class NoScope : PvPDamageRequest
         prisoner.GiveNamedItem("weapon_ssg08");
         guard.GiveNamedItem("weapon_ssg08");
         this.state = LRState.Active;
+
+        plugin.AddTimer(30, () =>
+        {
+            if (state != LRState.Active) return;
+            prisoner.GiveNamedItem("weapon_knife");
+            guard.GiveNamedItem("weapon_knife");
+        }, TimerFlags.STOP_ON_MAPCHANGE);
+
+        plugin.AddTimer(60, () =>
+        {
+            if (state != LRState.Active) return;
+
+            manager.EndLastRequest(this, guard.Health > prisoner.Health ? LRResult.GuardWin : LRResult.PrisonerWin);
+        }, TimerFlags.STOP_ON_MAPCHANGE);
     }
 }
