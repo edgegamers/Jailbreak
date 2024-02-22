@@ -12,10 +12,10 @@ public class LastRequestMenuSelector
 
     public LastRequestMenuSelector()
     {
-        menu = new CenterHtmlMenu("LR?");
+        menu = new CenterHtmlMenu("css_lr [LR] [Player]");
         foreach (LRType lr in Enum.GetValues(typeof(LRType)))
         {
-            menu.AddMenuOption(lr.ToFriendlyString(), (p, o) => OnSelectLR(p, o, lr));
+            menu.AddMenuOption(lr.ToFriendlyString(), (p, o) => OnSelectLR(p, lr));
         }
     }
 
@@ -24,9 +24,7 @@ public class LastRequestMenuSelector
         return menu;
     }
 
-
-    private void OnSelectLR(CCSPlayerController player,
-        ChatMenuOption option, LRType lr)
+    private void OnSelectLR(CCSPlayerController player, LRType lr)
     {
         player.ExecuteClientCommandFromServer("css_lr " + (int)lr);
     }

@@ -1,7 +1,9 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
+using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Logistics;
+using Jailbreak.Formatting.Objects;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
@@ -10,25 +12,35 @@ namespace Jailbreak.English.LastRequest;
 
 public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.Languages.English>
 {
+    public static FormatObject PREFIX =
+        new HiddenFormatObject($" {ChatColors.Darkred}[{ChatColors.LightRed}LR{ChatColors.Darkred}]")
+        {
+            //	Hide in panorama and center text
+            Plain = false,
+            Panorama = false,
+            Chat = true
+        };
+
     public IView LastRequestEnabled() => new SimpleView()
     {
-        { "Last Request has been enabled." }
+        { PREFIX, "Last Request has been enabled." }
     };
 
     public IView LastRequestDisabled() => new SimpleView()
     {
-        { "Last Request has been disabled." }
+        { PREFIX, "Last Request has been disabled." }
     };
-    
+
     public IView LastRequestNotEnabled() => new SimpleView()
     {
-        { "Last Request is not enabled." }
+        { PREFIX, "Last Request is not enabled." }
     };
 
     public IView InvalidLastRequest(string query)
     {
         return new SimpleView()
         {
+            PREFIX,
             "Invalid Last Request: ",
             query
         };
@@ -38,6 +50,7 @@ public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.La
     {
         return new SimpleView()
         {
+            PREFIX,
             "Invalid player choice: ",
             player,
             " Reason: ",
@@ -49,11 +62,12 @@ public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.La
     {
         return new SimpleView()
         {
+            PREFIX,
             lr.prisoner, "is", lr.type.ToFriendlyString(),
             "against", lr.guard
         };
     }
-    
+
     public IView AnnounceLastRequest(AbstractLastRequest lr)
     {
         return new SimpleView()
@@ -67,8 +81,8 @@ public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.La
     {
         return new SimpleView()
         {
-            lr.prisoner, "'s LR has been decided: ",
-            result == LRResult.PrisonerWin ? lr.prisoner : lr.guard
+            PREFIX,
+            result == LRResult.PrisonerWin ? lr.prisoner : lr.guard, "won the LR."
         };
     }
 }
