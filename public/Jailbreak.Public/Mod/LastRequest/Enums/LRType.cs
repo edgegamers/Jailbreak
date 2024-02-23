@@ -9,7 +9,7 @@ public enum LRType
     RockPaperScissors,
     KnifeFight,
     NoScope,
-    FiftyFifty,
+    Coinflip,
     ShotForShot,
     MagForMag,
     Race
@@ -25,7 +25,7 @@ public static class LRTypeExtensions
             LRType.RockPaperScissors => "Rock Paper Scissors",
             LRType.KnifeFight => "Knife Fight",
             LRType.NoScope => "No Scope",
-            LRType.FiftyFifty => "Fifty Fifty",
+            LRType.Coinflip => "Coinflip",
             LRType.ShotForShot => "Shot For Shot",
             LRType.MagForMag => "Mag For Mag",
             LRType.Race => "Race",
@@ -62,7 +62,7 @@ public static class LRTypeExtensions
         if (type.Contains("gun"))
             return LRType.GunToss;
         if (type.Contains("coin") || type.Contains("fifty"))
-            return LRType.FiftyFifty;
+            return LRType.Coinflip;
         return null;
     }
 }
