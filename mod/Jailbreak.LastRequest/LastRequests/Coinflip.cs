@@ -40,19 +40,20 @@ public class Coinflip : AbstractLastRequest
             MenuManager.CloseActiveMenu(guard);
             bool choice = rnd.Next(2) == 1;
             guard.PrintToChat($"You failed to choose in time, defaulting to {(choice ? "Heads" : "Tails")}");
-            Decide(choice);
+            Decide(choice, true);
         });
     }
 
-    private void Decide(bool heads)
+    private void Decide(bool heads, bool print)
     {
-        PrintToParticipants($"{guard.PlayerName} chose {(heads ? "Heads" : "Tails")}... flipping...");
+        if(print)
+            PrintToParticipants($"{guard.PlayerName} chose {(heads ? "Heads" : "Tails")}... flipping...");
         plugin.AddTimer(2, () =>
         {
             if (rnd.Next(4) == 0)
             {
                 PrintToParticipants(events[rnd.Next(events.Length)]);
-                plugin.AddTimer(2, () => Decide(heads));
+                plugin.AddTimer(2, () => Decide(heads, false));
             }
             else
             {
