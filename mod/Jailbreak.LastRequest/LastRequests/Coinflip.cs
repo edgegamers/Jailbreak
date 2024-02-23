@@ -16,7 +16,7 @@ public class Coinflip : AbstractLastRequest
     {
         rnd = new Random();
         menu = new ChatMenu("Heads or Tails?");
-        menu.AddMenuOption("Heads", (_, option) => Decide(option.Text.Equals("Heads")));
+        menu.AddMenuOption("Heads", (_, option) => Decide(option.Text.Equals("Heads"), true));
     }
 
     public override LRType type => LRType.Coinflip;
