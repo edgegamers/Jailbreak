@@ -16,7 +16,8 @@ public class Coinflip : AbstractLastRequest
     {
         rnd = new Random();
         menu = new ChatMenu("Heads or Tails?");
-        menu.AddMenuOption("Heads", (_, option) => Decide(option.Text.Equals("Heads"), true));
+        menu.AddMenuOption("Heads", (_, _) => Decide(true, true));
+        menu.AddMenuOption("Tails", (_, _) => Decide(false, true));
     }
 
     public override LRType type => LRType.Coinflip;
@@ -30,7 +31,6 @@ public class Coinflip : AbstractLastRequest
 
     public override void Execute()
     {
-        state = LRState.Active;
         MenuManager.OpenChatMenu(guard, menu);
 
         plugin.AddTimer(10, () =>
@@ -46,8 +46,11 @@ public class Coinflip : AbstractLastRequest
 
     private void Decide(bool heads, bool print)
     {
-        if(print)
+        if (print)
+        {
             PrintToParticipants($"{guard.PlayerName} chose {(heads ? "Heads" : "Tails")}... flipping...");
+            state = LRState.Active;
+        }
         plugin.AddTimer(2, () =>
         {
             if (rnd.Next(4) == 0)
@@ -59,7 +62,7 @@ public class Coinflip : AbstractLastRequest
             {
                 var side = rnd.Next(2) == 1;
                 PrintToParticipants($"The coin lands on {(side ? "Heads" : "Tails")}!");
-                manager.EndLastRequest(this, side == heads ? LRResult.PrisonerWin : LRResult.GuardWin);
+                manager.EndLastRequest(this, side == heads ? LRResult.GuardWin : LRResult.PrisonerWin);
             }
         });
     }
