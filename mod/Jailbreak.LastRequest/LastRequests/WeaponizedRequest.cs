@@ -36,6 +36,13 @@ public abstract class WeaponizedRequest : AbstractLastRequest
 
     public override void OnEnd(LRResult result)
     {
+        if (result == LRResult.GuardWin)
+        {
+            prisoner.Pawn.Value?.CommitSuicide(false, true);
+        } else if (result == LRResult.PrisonerWin)
+        {
+            guard.Pawn.Value?.CommitSuicide(false, true);
+        }
         state = LRState.Completed;
     }
 }
