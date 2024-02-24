@@ -93,25 +93,39 @@ public class LastRequestManager : ILastRequestManager
         if (!IsLREnabled)
             return HookResult.Continue;
         var player = @event.Userid;
-        var lr = ((ILastRequestManager)this).GetActiveLR(player);
-        if (lr == null)
+        var attacker = @event.Attacker;
+
+        if (!player.IsReal() || !attacker.IsReal())
             return HookResult.Continue;
 
-        var state = lr.state;
+        var playerLR = ((ILastRequestManager)this).GetActiveLR(player);
+        var attackerLR = ((ILastRequestManager)this).GetActiveLR(attacker);
 
-        if (state != LRState.Active && state != LRState.Pending)
+        if ((playerLR == null) != (attackerLR == null))
+        {
+            // One of them is in an LR
+            @event.DmgHealth = 0;
+            return HookResult.Changed;
+        }
+
+        if (playerLR == null && attackerLR == null)
+        {
+            // Neither of them is in an LR
             return HookResult.Continue;
-        bool hurtInLR = @event.Userid.Slot == lr.prisoner.Slot || @event.Userid.Slot == lr.guard.Slot;
-        if (!hurtInLR) return HookResult.Continue;
-
-        if (@event.Attacker == null)
+        }
+        
+        // Both of them are in LR
+        // verify they're in same LR
+        if (playerLR == null)
             return HookResult.Continue;
-
-        bool attackerInLR = @event.Attacker.Slot == lr.prisoner.Slot || @event.Attacker.Slot == lr.guard.Slot;
-        if (attackerInLR) return HookResult.Continue;
-
-        @event.DmgHealth = 0;
-        return HookResult.Changed;
+        
+        if (playerLR.prisoner.Slot == attacker.Slot || playerLR.guard.Slot == attacker.Slot)
+        {
+            @event.DmgHealth = 0;
+            return HookResult.Changed;
+        }
+        
+        return HookResult.Continue;
     }
 
     private int CountAlivePrisoners()
