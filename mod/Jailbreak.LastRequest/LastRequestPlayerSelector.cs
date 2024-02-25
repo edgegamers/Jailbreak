@@ -11,35 +11,39 @@ namespace Jailbreak.LastRequest;
 public class LastRequestPlayerSelector
 {
     private ILastRequestManager _lrManager;
+    private bool debug;
 
-    public LastRequestPlayerSelector(ILastRequestManager manager)
+    public LastRequestPlayerSelector(ILastRequestManager manager, bool debug = false)
     {
         _lrManager = manager;
+        this.debug = debug;
     }
 
-    public CenterHtmlMenu CreateMenu(CCSPlayerController player, LRType lrType)
+    public CenterHtmlMenu CreateMenu(CCSPlayerController player, Func<string?, string> command)
     {
-        CenterHtmlMenu menu = new CenterHtmlMenu("css_lr " + ((int) lrType) + " [Player]");
+        CenterHtmlMenu menu = new CenterHtmlMenu(command.Invoke("[Player]"));
 
         foreach (var target in Utilities.GetPlayers())
         {
             if (!target.IsReal())
                 continue;
-            if (!target.PawnIsAlive || target.Team != CsTeam.CounterTerrorist)
+            if (!target.PawnIsAlive || target.Team != CsTeam.CounterTerrorist && !debug)
                 continue;
             menu.AddMenuOption(target.PlayerName,
-                (player, option) => OnSelect(player, option, lrType, target),
-                _lrManager.IsInLR(target)
+                (selector, _) =>
+                    OnSelect(player, command, target.UserId.ToString()),
+                !debug && _lrManager.IsInLR(target)
             );
         }
 
         return menu;
     }
 
-    public bool WouldHavePlayers() => Utilities.GetPlayers().Any(p => p.IsReal() && p is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist });
+    public bool WouldHavePlayers() => Utilities.GetPlayers()
+        .Any(p => p.IsReal() && p is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist });
 
-    private void OnSelect(CCSPlayerController player, ChatMenuOption option, LRType lr, CCSPlayerController target)
+    private void OnSelect(CCSPlayerController player, Func<string?, string> command, string? value)
     {
-        player.ExecuteClientCommandFromServer("css_lr " + ((int) lr) + " #" + target.UserId);
+        player.ExecuteClientCommandFromServer(command.Invoke(value));
     }
 }

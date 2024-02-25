@@ -13,7 +13,7 @@ namespace Jailbreak.English.LastRequest;
 public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.Languages.English>
 {
     public static FormatObject PREFIX =
-        new HiddenFormatObject($" {ChatColors.Darkred}[{ChatColors.LightRed}LR{ChatColors.Darkred}]")
+        new HiddenFormatObject($" {ChatColors.DarkRed}[{ChatColors.LightRed}LR{ChatColors.DarkRed}]")
         {
             //	Hide in panorama and center text
             Plain = false,

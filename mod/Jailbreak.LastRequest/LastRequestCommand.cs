@@ -84,7 +84,7 @@ public class LastRequestCommand : IPluginBehavior
 
         // Validate LR
         var type = LRTypeExtensions.FromString(info.GetArg(1));
-        if (type is null) 
+        if (type is null)
         {
             _messages.InvalidLastRequest(info.GetArg(1)).ToPlayerChat(executor);
             return;
@@ -92,7 +92,8 @@ public class LastRequestCommand : IPluginBehavior
 
         if (info.ArgCount == 2)
         {
-            MenuManager.OpenCenterHtmlMenu(plugin, executor, playerSelector.CreateMenu(executor, type.Value));
+            MenuManager.OpenCenterHtmlMenu(plugin, executor,
+                playerSelector.CreateMenu(executor, (str) => "css_lr " + type + " #" + str));
             return;
         }
 
