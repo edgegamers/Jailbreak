@@ -122,6 +122,12 @@ public class LastRequestCommand : IPluginBehavior
             return;
         }
 
+        if (_lrManager.IsInLR(player))
+        {
+            _messages.InvalidPlayerChoice(player, "They're already in an LR!");
+            return;
+        }
+
         if (!_lrManager.InitiateLastRequest(executor, player, (LRType)type))
         {
             info.ReplyToCommand("An error occurred while initiating the last request. Please try again later.");
