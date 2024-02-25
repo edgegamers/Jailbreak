@@ -11,6 +11,12 @@ namespace Jailbreak.Debug;
 public class DebugCommand : IPluginBehavior
 {
     private readonly Dictionary<string, AbstractCommand> _commands = new();
+    private BasePlugin plugin;
+
+    public void Start(BasePlugin parent)
+    {
+        plugin = parent;
+    }
 
     public DebugCommand(IServiceProvider serviceProvider)
     {

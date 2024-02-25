@@ -9,9 +9,15 @@ namespace Jailbreak.LastRequest;
 public class LastRequestMenuSelector
 {
     private readonly CenterHtmlMenu menu;
+    private Func<LRType, string> command;
 
-    public LastRequestMenuSelector()
+    public LastRequestMenuSelector() : this((lr) => "css_lr " + ((int)lr))
     {
+    }
+
+    public LastRequestMenuSelector(Func<LRType, string> command)
+    {
+        this.command = command;
         menu = new CenterHtmlMenu("css_lr [LR] [Player]");
         foreach (LRType lr in Enum.GetValues(typeof(LRType)))
         {
@@ -26,6 +32,6 @@ public class LastRequestMenuSelector
 
     private void OnSelectLR(CCSPlayerController player, LRType lr)
     {
-        player.ExecuteClientCommandFromServer("css_lr " + (int)lr);
+        player.ExecuteClientCommandFromServer(this.command.Invoke(lr));
     }
 }
