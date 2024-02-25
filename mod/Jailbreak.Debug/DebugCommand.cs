@@ -22,6 +22,7 @@ public class DebugCommand : IPluginBehavior
     {
         _commands.Add("markrebel", new MarkRebel(serviceProvider));
         _commands.Add("pardon", new Pardon(serviceProvider));
+        _commands.Add("lr", new Subcommands.LastRequest(serviceProvider, plugin));
     }
 
 
