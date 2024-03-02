@@ -121,10 +121,11 @@ public class LastRequestManager : ILastRequestManager
         
         if (playerLR.prisoner.Slot == attacker.Slot || playerLR.guard.Slot == attacker.Slot)
         {
-            @event.DmgHealth = 0;
+            // Same LR, allow damage
             return HookResult.Changed;
         }
         
+        @event.DmgHealth = 0;
         return HookResult.Continue;
     }
 

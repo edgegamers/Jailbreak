@@ -24,7 +24,7 @@ public class GunToss : AbstractLastRequest
         guard.Teleport(prisoner.Pawn.Value!.AbsOrigin!, prisoner.Pawn.Value.AbsRotation!, new Vector());
         state = LRState.Pending;
 
-        plugin.AddTimer(4, Execute);
+        plugin.AddTimer(3, Execute);
     }
 
     public override void Execute()
