@@ -104,6 +104,7 @@ public class LastRequestManager : ILastRequestManager
         if ((playerLR == null) != (attackerLR == null))
         {
             // One of them is in an LR
+            attacker.PrintToChat("You or they are in LR, damage blocked.");
             @event.DmgHealth = 0;
             return HookResult.Changed;
         }
@@ -124,7 +125,8 @@ public class LastRequestManager : ILastRequestManager
             // Same LR, allow damage
             return HookResult.Changed;
         }
-        
+
+        attacker.PrintToChat("You are not in the same LR as them, damage blocked.");
         @event.DmgHealth = 0;
         return HookResult.Continue;
     }
