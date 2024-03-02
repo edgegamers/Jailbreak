@@ -31,7 +31,7 @@ public abstract class WeaponizedRequest : AbstractLastRequest
             plugin.AddTimer(3 - i, () => { PrintToParticipants($"{copy}..."); });
         }
 
-        plugin.AddTimer(4, Execute);
+        plugin.AddTimer(3, Execute);
     }
 
     public override void OnEnd(LRResult result)
