@@ -16,7 +16,7 @@ public class ShotForShot : WeaponizedRequest
     {
     }
 
-    public override LRType type => LRType.GunToss;
+    public override LRType type => LRType.ShotForShot;
     private CCSPlayerController whosShot;
 
     public override void Setup()
