@@ -63,8 +63,8 @@ public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.La
         return new SimpleView()
         {
             PREFIX,
-            lr.prisoner, "is", lr.type.ToFriendlyString(),
-            "against", lr.guard
+            lr.prisoner, "is preparing a", lr.type.ToFriendlyString(),
+            "Last Request against", lr.guard
         };
     }
 
@@ -72,8 +72,9 @@ public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.La
     {
         return new SimpleView()
         {
-            lr.prisoner, "is", lr.type.ToFriendlyString(),
-            "against", lr.guard
+            PREFIX,
+            lr.prisoner, "is doing a", lr.type.ToFriendlyString(),
+            "Last Request against", lr.guard
         };
     }
 
