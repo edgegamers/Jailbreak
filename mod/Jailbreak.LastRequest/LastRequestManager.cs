@@ -1,6 +1,8 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Memory;
+using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
@@ -35,6 +37,66 @@ public class LastRequestManager : ILastRequestManager
         this.factory = provider.GetRequiredService<ILastRequestFactory>();
         _parent = parent;
         _parent.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
+        VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage, HookMode.Pre);
+    }
+
+    public void Dispose()
+    {
+        VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(OnTakeDamage, HookMode.Pre);
+    }
+
+    private HookResult OnTakeDamage(DynamicHook handle)
+    {
+        if (!IsLREnabled)
+            return HookResult.Continue;
+        CEntityInstance victim = handle.GetParam<CEntityInstance>(0);
+        CTakeDamageInfo damage_info = handle.GetParam<CTakeDamageInfo>(1);
+
+        CHandle<CBaseEntity> dealer = damage_info.Attacker;
+
+        if (dealer.Value == null)
+        {
+            return HookResult.Continue;
+        }
+
+        // get player and attacker
+        CCSPlayerController? player = new CCSPlayerController(new CBaseEntity(victim.Handle).Handle);
+        CCSPlayerController? attacker = new CCSPlayerController(dealer.Value.Handle);
+
+        if (!player.IsReal() || !attacker.IsReal())
+            return HookResult.Continue;
+
+        var playerLR = ((ILastRequestManager)this).GetActiveLR(player);
+        var attackerLR = ((ILastRequestManager)this).GetActiveLR(attacker);
+
+        if ((playerLR == null) != (attackerLR == null))
+        {
+            // One of them is in an LR
+            attacker.PrintToChat("You or they are in LR, damage blocked.");
+            damage_info.Damage = 0;
+            return HookResult.Changed;
+        }
+
+        if (playerLR == null && attackerLR == null)
+        {
+            // Neither of them is in an LR
+            return HookResult.Continue;
+        }
+
+        // Both of them are in LR
+        // verify they're in same LR
+        if (playerLR == null)
+            return HookResult.Continue;
+
+        if (playerLR.prisoner.Slot == attacker.Slot || playerLR.guard.Slot == attacker.Slot)
+        {
+            // Same LR, allow damage
+            return HookResult.Changed;
+        }
+
+        attacker.PrintToChat("You are not in the same LR as them, damage blocked.");
+        damage_info.Damage = 0;
+        return HookResult.Continue;
     }
 
     [GameEventHandler]
@@ -84,50 +146,6 @@ public class LastRequestManager : ILastRequestManager
 
         IsLREnabled = true;
         messages.LastRequestEnabled().ToAllChat();
-        return HookResult.Continue;
-    }
-
-    [GameEventHandler]
-    public HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
-    {
-        if (!IsLREnabled)
-            return HookResult.Continue;
-        var player = @event.Userid;
-        var attacker = @event.Attacker;
-
-        if (!player.IsReal() || !attacker.IsReal())
-            return HookResult.Continue;
-
-        var playerLR = ((ILastRequestManager)this).GetActiveLR(player);
-        var attackerLR = ((ILastRequestManager)this).GetActiveLR(attacker);
-
-        if ((playerLR == null) != (attackerLR == null))
-        {
-            // One of them is in an LR
-            attacker.PrintToChat("You or they are in LR, damage blocked.");
-            @event.DmgHealth = 0;
-            return HookResult.Changed;
-        }
-
-        if (playerLR == null && attackerLR == null)
-        {
-            // Neither of them is in an LR
-            return HookResult.Continue;
-        }
-        
-        // Both of them are in LR
-        // verify they're in same LR
-        if (playerLR == null)
-            return HookResult.Continue;
-        
-        if (playerLR.prisoner.Slot == attacker.Slot || playerLR.guard.Slot == attacker.Slot)
-        {
-            // Same LR, allow damage
-            return HookResult.Changed;
-        }
-
-        attacker.PrintToChat("You are not in the same LR as them, damage blocked.");
-        @event.DmgHealth = 0;
         return HookResult.Continue;
     }
 
