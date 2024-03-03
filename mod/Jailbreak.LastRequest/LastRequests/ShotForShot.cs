@@ -16,7 +16,7 @@ public class ShotForShot : WeaponizedRequest
     {
     }
 
-    public override LRType type => LRType.GunToss;
+    public override LRType type => LRType.ShotForShot;
     private CCSPlayerController whosShot;
 
     public override void Setup()
@@ -90,7 +90,6 @@ public class ShotForShot : WeaponizedRequest
                 PrintToParticipants("Health was the deciding factor. ");
             }
 
-            manager.EndLastRequest(this, result);
             if (result == LRResult.GuardWin)
                 prisoner.Pawn.Value?.CommitSuicide(false, true);
             else
@@ -109,6 +108,12 @@ public class ShotForShot : WeaponizedRequest
 
         if (player.Slot != prisoner.Slot && player.Slot != guard.Slot)
             return HookResult.Continue;
+        if (player.Slot != whosShot.Slot)
+        {
+            PrintToParticipants(player.PlayerName + " cheated.");
+            player.Pawn.Value?.CommitSuicide(false, true);
+            return HookResult.Handled;
+        }
 
         PrintToParticipants(player.PlayerName + " has shot.");
         var opponent = player.Slot == prisoner.Slot ? guard : prisoner;
