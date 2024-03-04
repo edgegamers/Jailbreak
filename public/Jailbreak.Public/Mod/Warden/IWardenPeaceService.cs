@@ -6,10 +6,9 @@ namespace Jailbreak.Public.Mod.Warden;
 public interface IWardenPeaceService
 {
 
-    public CCSPlayerController? GetWarden();
-
+    public bool IsWarden(CCSPlayerController? player);
     // todo document saying that by default all admins SHOULD bypass this mute
     // not implemented bypass yet
-    public void PeaceMute(float time, bool exemptWarden = false);
+    public void PeaceMute(float time);
 
 }

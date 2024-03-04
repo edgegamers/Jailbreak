@@ -23,8 +23,4 @@ public interface IWardenService
 
     public bool TryRemoveWarden();
 
-    public bool HasBeenFirstWarden();
-
-    public bool CurrentWardenIsFirst();
-
 }

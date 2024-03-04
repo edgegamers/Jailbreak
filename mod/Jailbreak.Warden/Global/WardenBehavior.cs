@@ -21,7 +21,6 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 	private readonly IEventsService _eventsService;
 
 	private bool _firstWarden = false;
-	private bool _currentWardenIsFirst = false;
 	private bool _hasWarden;
 	private CCSPlayerController? _warden;
 
@@ -71,17 +70,10 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 
 		_logs.Append( _logs.Player(_warden), "is now the warden.");
 
-		// makes sure the second person (and people thereafter) who claim warden are not labelled as "first warden"
-		if (_currentWardenIsFirst && _firstWarden) 
-		{
-			_currentWardenIsFirst = false;
-			return true;
-		}
 
         if (!_firstWarden)
 		{
 			_firstWarden = true;
-			_currentWardenIsFirst = true;
 			_eventsService.FireEvent("first_warden_event");
         }
 
@@ -109,23 +101,14 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		return true;
 	}
 
-	public bool HasBeenFirstWarden()
-	{
-		return _firstWarden;
-	}
-
-	public bool CurrentWardenIsFirst()
-	{
-		return _currentWardenIsFirst;
-	}
-
 	[GameEventHandler]
 	public HookResult OnDeath(EventPlayerDeath ev, GameEventInfo info)
 	{
-		if(!((IWardenService)this).IsWarden(ev.Userid))
+		if(!((IWardenService)this).IsWarden(ev.Userid)) 
 			return HookResult.Continue;
 		
 		ProcessWardenDeath();
+		_eventsService.FireEvent("warden_death_event");
 		return HookResult.Continue;
 	}
 
@@ -158,7 +141,6 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 	{
 		this.TryRemoveWarden();
 		_firstWarden = false;
-		_currentWardenIsFirst = false;
 
 		return HookResult.Continue;
 	}

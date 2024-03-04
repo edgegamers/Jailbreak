@@ -14,7 +14,7 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
     private readonly ICoroutines _coroutines;
     private readonly IEventsService _eventsService;
 
-    private readonly float _muteTime = 10.0f;
+    public static readonly float _muteTime = 10.0f;
 
     public WardenPeaceBehaviour(IWardenService wardenService, ICoroutines coroutines, IEventsService eventsService)
     {
@@ -24,7 +24,7 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
 
         Func<bool> firstWardenPeaceMuteCallback = () =>
         {
-            PeaceMute(_muteTime, true);
+            PeaceMute(_muteTime);
             return true;
         };
 
@@ -32,33 +32,32 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
     
     }
 
-    public CCSPlayerController? GetWarden()
+    public bool IsWarden(CCSPlayerController? player)
     {
-        return _wardenService.Warden;
+        return _wardenService.IsWarden(player);
     }
 
-    public void PeaceMute(float time, bool exemptWarden = false)
+    public void PeaceMute(float time)
     {
 
-        List<CCSPlayerController> alreadyMuted = new List<CCSPlayerController>();
         List<CCSPlayerController> prevUnmutedPlayers = new List<CCSPlayerController>();
 
         foreach (CCSPlayerController player in Utilities.GetPlayers())
         {
 
-            if (player.Equals(_wardenService.Warden) && exemptWarden)
+            if (_wardenService.IsWarden(player)) // always exempt warden
                 continue;
 
             if (player.VoiceFlags == VoiceFlags.Muted)
             {
-                player.PrintToChat("bro you already muted");
-                alreadyMuted.Add(player);
+                player.PrintToChat("bro you already muted"); // placeholder
+                continue;
             }
             else
             {
                 player.VoiceFlags |= VoiceFlags.Muted;
                 prevUnmutedPlayers.Add(player);
-                player.PrintToChat("we muted you");
+                player.PrintToChat("we muted you"); // placeholder
             }
 
         }
@@ -70,11 +69,10 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
             foreach (CCSPlayerController player in prevUnmutedPlayers)
             {
                 player.VoiceFlags &= ~VoiceFlags.Muted;
-                player.PrintToChat("we've unmuted you");
+                player.PrintToChat("we've unmuted you"); // placeholder
             }
 
         }, time);
     }
-
 
 }
