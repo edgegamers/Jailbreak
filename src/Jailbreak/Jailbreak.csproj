@@ -74,10 +74,7 @@
     </ItemGroup>
 
     <Target Name="ZipOutputPath" AfterTargets="Publish">
-        <ZipDirectory
-                Overwrite="true"
-                SourceDirectory="$(PublishDir)\"
-                DestinationFile="$(PublishBaseDirectory)\Jailbreak.zip" />
+        <ZipDirectory Overwrite="true" SourceDirectory="$(PublishDir)\" DestinationFile="$(PublishBaseDirectory)\Jailbreak.zip" />
     </Target>
 
 </Project>

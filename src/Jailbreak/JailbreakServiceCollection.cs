@@ -16,6 +16,7 @@ using Jailbreak.Rebel;
 using Jailbreak.Teams;
 using Jailbreak.Warden;
 using Microsoft.Extensions.DependencyInjection;
+using Jailbreak.Public.Mod.Plugin;
 
 namespace Jailbreak;
 
@@ -29,6 +30,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
     {
         //	Do we want to make this scoped?
         //	Not sure how this will behave with multiple rounds and whatnot.
+        serviceCollection.AddSingleton<IEventsService, EventsService>();
         serviceCollection.AddTransient<IConfigService, ConfigService>();
 
         serviceCollection.AddJailbreakGeneric();

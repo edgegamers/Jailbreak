@@ -7,7 +7,7 @@ using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.Logs;
+using Jailbreak.Public.Mod.Plugin;
 using Jailbreak.Public.Mod.Warden;
 using Microsoft.Extensions.Logging;
 
@@ -15,20 +15,24 @@ namespace Jailbreak.Warden.Global;
 
 public class WardenBehavior : IPluginBehavior, IWardenService
 {
-	private ILogger<WardenBehavior> _logger;
-	private IRichLogService _logs;
+	private readonly ILogger<WardenBehavior> _logger;
+	private readonly IRichLogService _logs;
+	private readonly IWardenNotifications _notifications;
+	private readonly IEventsService _eventsService;
 
-	private IWardenNotifications _notifications;
-
+	private bool _firstWarden = false;
+	private bool _currentWardenIsFirst = false;
 	private bool _hasWarden;
 	private CCSPlayerController? _warden;
 
-	public WardenBehavior(ILogger<WardenBehavior> logger, IWardenNotifications notifications, IRichLogService logs)
+	public WardenBehavior(ILogger<WardenBehavior> logger, IWardenNotifications notifications, IRichLogService logs, IEventsService eventsService)
 	{
 		_logger = logger;
 		_notifications = notifications;
 		_logs = logs;
-	}
+		_eventsService = eventsService;
+
+    }
 
 	/// <summary>
 	/// Get the current warden, if there is one.
@@ -66,7 +70,23 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 			.ToAllCenter();
 
 		_logs.Append( _logs.Player(_warden), "is now the warden.");
+
+		// makes sure the second person (and people thereafter) who claim warden are not labelled as "first warden"
+		if (_currentWardenIsFirst && _firstWarden) 
+		{
+			_currentWardenIsFirst = false;
+			return true;
+		}
+
+        if (!_firstWarden)
+		{
+			_firstWarden = true;
+			_currentWardenIsFirst = true;
+			_eventsService.FireEvent("first_warden_event");
+        }
+
 		return true;
+
 	}
 
 	public bool TryRemoveWarden()
@@ -87,6 +107,16 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		_warden = null;
 
 		return true;
+	}
+
+	public bool HasBeenFirstWarden()
+	{
+		return _firstWarden;
+	}
+
+	public bool CurrentWardenIsFirst()
+	{
+		return _currentWardenIsFirst;
 	}
 
 	[GameEventHandler]
@@ -127,6 +157,8 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 	public HookResult OnRoundEnd(EventRoundEnd ev, GameEventInfo info)
 	{
 		this.TryRemoveWarden();
+		_firstWarden = false;
+		_currentWardenIsFirst = false;
 
 		return HookResult.Continue;
 	}
