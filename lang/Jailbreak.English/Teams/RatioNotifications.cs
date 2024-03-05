@@ -10,7 +10,7 @@ namespace Jailbreak.English.Teams;
 
 public class RatioNotifications : IRatioNotifications, ILanguage<Formatting.Languages.English>
 {
-	public static FormatObject RATIO_PREFIX = new HiddenFormatObject($" {ChatColors.LightRed}[{ChatColors.Red}JB{ChatColors.LightRed}]")
+	public static readonly FormatObject RATIO_PREFIX = new HiddenFormatObject($" {ChatColors.LightRed}[{ChatColors.Red}JB{ChatColors.LightRed}]")
 	{
 		//	Hide in panorama and center text
 		Plain = false,

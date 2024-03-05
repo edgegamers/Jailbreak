@@ -9,7 +9,7 @@ namespace Jailbreak.English.Generic;
 
 public class GenericCommandNotifications : IGenericCommandNotifications, ILanguage<Formatting.Languages.English>
 {
-	public static FormatObject GENERIC_PREFIX =
+	public static readonly FormatObject GENERIC_PREFIX =
 		new HiddenFormatObject($" {ChatColors.Darkred}[{ChatColors.LightRed}JB{ChatColors.Darkred}]")
 		{
 			//	Hide in panorama and center text
