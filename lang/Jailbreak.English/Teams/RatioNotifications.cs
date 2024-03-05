@@ -39,7 +39,7 @@ public class RatioNotifications : IRatioNotifications, ILanguage<Formatting.Lang
 
 	public IView ATTEMPT_TO_JOIN_FROM_TEAM_MENU =>
 		new SimpleView { PREFIX, "You were swapped back to the prisoner team!" };
-
+	
 	public IView LEFT_GUARD =>
 		new SimpleView
 		{

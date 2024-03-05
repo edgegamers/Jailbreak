@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
@@ -20,7 +21,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
     private readonly IRatioNotifications _notifications;
     private readonly IPlayerState<QueueState> _state;
-
+    private BasePlugin _parent;
 
     public QueueBehavior(IPlayerStateFactory factory, IRatioNotifications notifications, ILogger<QueueBehavior> logger)
     {
@@ -60,7 +61,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
     public bool TryPop(int count)
     {
-        var queue = Queue.Where(p=>p.IsReal()).ToList();
+        var queue = Queue.Where(p => p.IsReal()).ToList();
 
         if (queue.Count <= count)
         {
@@ -136,6 +137,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
     public void Start(BasePlugin parent)
     {
+        _parent = parent;
         //	Listen for the player requesting to join a team.
         //	Thanks, destoer!
         parent.AddCommandListener("jointeam", OnRequestToJoinTeam);
@@ -158,6 +160,18 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
         if (command.ArgCount < 2)
             return HookResult.Stop;
 
+        if (!state.IsGuard)
+            _parent.AddTimer(0.1f, () =>
+            {
+                if (!invoked.IsReal())
+                    return;
+                if (invoked.GetTeam() != CsTeam.CounterTerrorist)
+                    return;
+                _notifications.ATTEMPT_TO_JOIN_FROM_TEAM_MENU
+                    .ToPlayerChat(invoked)
+                    .ToPlayerCenter(invoked);
+                invoked.ChangeTeam(CsTeam.Terrorist);
+            });
         if (!int.TryParse(command.ArgByIndex(1), out var team))
             return HookResult.Stop;
 
@@ -255,6 +269,20 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
     {
         if (player == null)
             return;
+        if (player.AuthorizedSteamID == null)
+        {
+            player.PrintToCenter("Steam has not yet authorized you. Please try again later.");
+            return;
+        }
+
+        AdminData? data = AdminManager.GetPlayerAdminData(player.AuthorizedSteamID!);
+
+        if (data == null || !data.Groups.Contains("#ego/e"))
+        {
+            player.PrintToCenter("You must be an =(e)= to join the guard queue.");
+            return;
+        }
+
         HandleQueueRequest(player);
     }
 
