@@ -275,13 +275,13 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
             return;
         }
 
-        AdminData? data = AdminManager.GetPlayerAdminData(player.AuthorizedSteamID!);
+        // AdminData? data = AdminManager.GetPlayerAdminData(player.AuthorizedSteamID!);
 
-        if (data == null || !data.Groups.Contains("#ego/e"))
-        {
-            player.PrintToCenter("You must be an =(e)= to join the guard queue. Apply at https://edgm.rs/join");
-            return;
-        }
+        // if (data == null || !data.Groups.Contains("#ego/e"))
+        // {
+        //     player.PrintToCenter("You must be an =(e)= to join the guard queue. Apply at https://edgm.rs/join");
+        //     return;
+        // }
 
         HandleQueueRequest(player);
     }
