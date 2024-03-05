@@ -10,6 +10,7 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Plugin;
 using Jailbreak.Public.Mod.Warden;
 using Microsoft.Extensions.Logging;
+using static Jailbreak.Public.Mod.Warden.PeaceMuteOptions;
 
 namespace Jailbreak.Warden.Global;
 
@@ -74,7 +75,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
         if (!_firstWarden)
 		{
 			_firstWarden = true;
-			_eventsService.FireEvent("first_warden_event");
+            _eventsService.FireEvent("first_warden_event");
         }
 
 		return true;

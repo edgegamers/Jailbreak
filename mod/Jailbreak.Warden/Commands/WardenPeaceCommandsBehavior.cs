@@ -20,7 +20,7 @@ public class WardenPeaceCommandsBehavior : IPluginBehavior
     private readonly IWardenPeaceNotifications _wardenPeaceNotifications;
     private readonly IEventsService _eventsService;
 
-    private DateTime _lastUsedTime = DateTime.Now;
+    private DateTime _lastUsedTime;
 
     public WardenPeaceCommandsBehavior(IWardenPeaceService peaceService, IEventsService eventsService, IWardenPeaceNotifications wardenPeaceNotifications)
     {
@@ -30,7 +30,6 @@ public class WardenPeaceCommandsBehavior : IPluginBehavior
 
         Func<bool> wardenDeathCallback = () =>
         {
-
             _peaceService.UnmutePrevMutedPlayers(MuteReason.WARDEN_DIED, CsTeam.Terrorist, CsTeam.CounterTerrorist);
             return true;
         };

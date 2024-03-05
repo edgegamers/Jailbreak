@@ -20,8 +20,13 @@ public class PeaceMuteOptions
     private readonly CsTeam[] teams;
     private readonly float timeSeconds;
 
-    // if no timeSeconds is set then no muting is gonna happen
-    // todo do this instead: PeaceMuteOptions(reason, timeSeconds, params CsTeam[])
+    /// <summary>
+    /// A class to specify the MuteReason and targets (teams) that should be affected by the IWardenPeaceService#PeaceMute function.
+    /// This object should be passed to the PeaceMute function.
+    /// </summary>
+    /// <param name="reason"></param>
+    /// <param name="timeSeconds"></param>
+    /// <param name="teams"></param>
     public PeaceMuteOptions(MuteReason reason, float timeSeconds = 0, params CsTeam[] teams)
     {
         this.reason = reason;
