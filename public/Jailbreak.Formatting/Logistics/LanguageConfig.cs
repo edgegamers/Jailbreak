@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jailbreak.Formatting.Logistics;
 
 public class LanguageConfig<TDialect>
-	where TDialect: IDialect
+	where TDialect : IDialect
 {
 
 	private IServiceCollection _collection;
@@ -27,11 +27,16 @@ public class LanguageConfig<TDialect>
 		where TWarden : class, ILanguage<TDialect>, IWardenNotifications
 		=> _collection.AddSingleton<IWardenNotifications, TWarden>();
 
-	public void WithRebel<TRebel>()
+    public void WithPeaceWarden<TPeaceWarden>()
+		where TPeaceWarden : class, ILanguage<TDialect>, IWardenPeaceNotifications
+		=> _collection.AddSingleton<IWardenPeaceNotifications, TPeaceWarden>();
+
+    public void WithRebel<TRebel>()
 		where TRebel : class, ILanguage<TDialect>, IRebelNotifications
 		=> _collection.AddSingleton<IRebelNotifications, TRebel>();
 
 	public void WithLogging<TLogging>()
 		where TLogging : class, ILanguage<TDialect>, ILogMessages
 		=> _collection.AddSingleton<ILogMessages, TLogging>();
+
 }

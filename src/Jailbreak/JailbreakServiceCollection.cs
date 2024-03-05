@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-
 using CounterStrikeSharp.API.Core;
 using Jailbreak.Config;
 using Jailbreak.Debug;
@@ -17,6 +16,7 @@ using Jailbreak.Teams;
 using Jailbreak.Warden;
 using Microsoft.Extensions.DependencyInjection;
 using Jailbreak.Public.Mod.Plugin;
+using Jailbreak.Formatting.Views;
 
 namespace Jailbreak;
 
@@ -46,7 +46,8 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
 			config.WithGenericCommand<GenericCommandNotifications>();
 			config.WithRatio<RatioNotifications>();
 			config.WithWarden<WardenNotifications>();
-			config.WithRebel<RebelNotifications>();
+            config.WithPeaceWarden<WardenPeaceNotifications>();
+            config.WithRebel<RebelNotifications>();
 			config.WithLogging<LogMessages>();
 		});
 	}

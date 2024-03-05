@@ -10,7 +10,7 @@ namespace Jailbreak.English.Rebel;
 
 public class RebelNotifications : IRebelNotifications, ILanguage<Formatting.Languages.English>
 {
-	public static FormatObject PREFIX = new HiddenFormatObject($" {ChatColors.Darkred}[{ChatColors.LightRed}Rebel{ChatColors.Darkred}]")
+	public static FormatObject REBEL_PREFIX = new HiddenFormatObject($" {ChatColors.Darkred}[{ChatColors.LightRed}Rebel{ChatColors.Darkred}]")
 	{
 		//	Hide in panorama and center text
 		Plain = false,
@@ -19,5 +19,5 @@ public class RebelNotifications : IRebelNotifications, ILanguage<Formatting.Lang
 	};
 
 	public IView NO_LONGER_REBEL =>
-		new SimpleView() { PREFIX, "You are no longer a rebel." };
+		new SimpleView() { REBEL_PREFIX, "You are no longer a rebel." };
 }

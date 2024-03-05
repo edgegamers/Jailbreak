@@ -6,14 +6,13 @@ using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.Logs;
 using Jailbreak.Public.Mod.Rebel;
 
 namespace Jailbreak.Rebel;
 
 public class RebelManager : IPluginBehavior, IRebelService
 {
-    private IRebelNotifications notifs;
+    //private IRebelNotifications notifs;
     private readonly IRichLogService _logs;
     private readonly IRebelNotifications _notifs;
     private readonly Dictionary<CCSPlayerController, long> _rebelTimes = new();
@@ -121,7 +120,7 @@ public class RebelManager : IPluginBehavior, IRebelService
 
     public void UnmarkRebel(CCSPlayerController player)
     {
-        notifs.NO_LONGER_REBEL.ToPlayerChat(player);
+        _notifs.NO_LONGER_REBEL.ToPlayerChat(player);
         _logs.Append(_logs.Player(player), "is no longer a rebel.");
 
         _rebelTimes.Remove(player);
