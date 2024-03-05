@@ -279,7 +279,7 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
         if (data == null || !data.Groups.Contains("#ego/e"))
         {
-            player.PrintToCenter("You must be an =(e)= to join the guard queue.");
+            player.PrintToCenter("You must be an =(e)= to join the guard queue. Apply at https://edgm.rs/join");
             return;
         }
 
