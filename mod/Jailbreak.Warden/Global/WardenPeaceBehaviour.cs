@@ -169,6 +169,7 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
         // I hope this means they are automatically either a Terrorist or a CounterTerrorist...
         if (@event.Userid.PawnIsAlive)
         {
+            _deadPlayersAndSpectators.Remove(@event.Userid); // just in case!
             // ignore muted players
             if (AdminManager.PlayerHasPermissions(@event.Userid, _mutedFlag)) { return HookResult.Continue; }
 
