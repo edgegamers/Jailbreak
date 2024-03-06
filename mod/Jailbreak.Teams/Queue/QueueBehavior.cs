@@ -177,6 +177,11 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
         if (Utilities.GetPlayers().Find(c => c.GetTeam() == CsTeam.CounterTerrorist) == null)
             return HookResult.Continue; // If no CTs, let anyone on CT team
+        
+        // Force player to prisoner if they attempt to join prisoners
+        // Allows for uncapped prisoners regardless of mapos
+        if((CsTeam)team == CsTeam.Terrorist)
+            invoked.ChangeTeam(CsTeam.Terrorist);
 
         //	Player is attempting to join CT and is not a guard?
         //	If so, stop them!!
