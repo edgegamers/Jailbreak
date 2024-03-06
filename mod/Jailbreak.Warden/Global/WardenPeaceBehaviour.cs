@@ -62,6 +62,7 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
         _wardenPeaceNotifications = wardenPeaceNotifications;
         _currentlyMutedAlivePlayers = new Dictionary<CsTeam, List<CCSPlayerController>>();
         _deadPlayersAndSpectators = new List<CCSPlayerController>();
+        
         _roundEnd = false;
 
         // makes it so we don't have to try key values that aren't in the dictionary
@@ -266,7 +267,7 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
                 if (!player.IsValid) { continue; }
                 player.VoiceFlags &= ~VoiceFlags.Muted;
             }
-        } 
+        }
 
         foreach (CsTeam target in targets)
         {

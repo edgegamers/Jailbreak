@@ -48,8 +48,8 @@ public class WardenPeaceCommandsBehavior : IPluginBehavior
         // we only want the warden to be able to run this!
         if (!_peaceService.IsWarden(invoker)) return;
 
-        // we still need if css_peace command mute is active because it may have ended because of css_unpeace, warden dying, round ending but the cooldown hasn't expired
-        if ((_peaceService.IsMuteActiveInTeam(CsTeam.Terrorist) && _peaceService.IsMuteActiveInTeam(CsTeam.CounterTerrorist)) && (DateTime.Now - _lastUsedTime).Seconds < WardenPeaceBehaviour._commandMuteTime)
+        // we still need if css_peace command mute is active because it may have ended because of css_unpeace, warden dying or round ending, but the cooldown wouldn't have expired
+        if (_peaceService.IsMuteActiveInTeam(CsTeam.CounterTerrorist) && (DateTime.Now - _lastUsedTime).Seconds < WardenPeaceBehaviour._commandMuteTime)
         {
             _wardenPeaceNotifications.CSS_PEACE_COOLDOWN(WardenPeaceBehaviour._commandMuteTime - (DateTime.Now - _lastUsedTime).Seconds).ToAllChat();
             return;
