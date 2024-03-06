@@ -70,7 +70,6 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
         _currentlyMutedAlivePlayers.Add(CsTeam.CounterTerrorist, new List<CCSPlayerController>());
         _currentlyMutedAlivePlayers.Add(CsTeam.Spectator, new List<CCSPlayerController>());
 
-
         Func<bool> firstWardenPeaceMuteCallback = () =>
         {
             PeaceMuteOptions options = new PeaceMuteOptions(MuteReason.FIRSTWARDEN, _commandMuteTime, CsTeam.Terrorist, CsTeam.CounterTerrorist);
@@ -132,10 +131,7 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
         // then unmute the people who weren't already muted after _muteTime seconds
         _coroutines.Round(() =>
         {
-
-            // so we don't trigger an unnecessary unmute reason
-            if (!IsMuteActiveInTeams(targets)) { return; }
-
+            // if there are no active mutes anymore this function will do nothing.
             UnmutePrevMutedPlayers(reason, targets);
 
         }, time);
