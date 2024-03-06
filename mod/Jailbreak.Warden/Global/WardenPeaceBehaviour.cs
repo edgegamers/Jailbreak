@@ -243,13 +243,15 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
     public HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
     {
         if (!@event.Userid.IsValid) { return HookResult.Continue; } // check player handle exists first
+
+        // so that dead players are not affected by other function calls
+        if (IsMuteActiveInTeam(@event.Userid.GetTeam())) { _currentlyMutedAlivePlayers[@event.Userid.GetTeam()].Remove(@event.Userid); }
+        
         _deadPlayersAndSpectators.Add(@event.Userid);
+        if (AdminManager.PlayerHasPermissions(@event.Userid, _mutedFlag)) { return HookResult.Continue; }
 
-        if (@event.Userid.VoiceFlags == VoiceFlags.Muted)
-            return HookResult.Continue;
+        @event.Userid.VoiceFlags |= VoiceFlags.Muted; return HookResult.Continue; // todo: do we want to mute dead players? 
 
-        // all players that the plugin sets with this flag in this piece of code should be in the _deadPlayersAndSpectators list...
-        @event.Userid.VoiceFlags |= VoiceFlags.Muted; return HookResult.Continue;
     }
 
     public void UnmutePrevMutedPlayers(MuteReason reason, params CsTeam[] targets)
