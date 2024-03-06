@@ -47,6 +47,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
 			config.WithRatio<RatioNotifications>();
 			config.WithWarden<WardenNotifications>();
             config.WithPeaceWarden<WardenPeaceNotifications>();
+            config.WithFireWarden<WardenFireNotifications>();
             config.WithRebel<RebelNotifications>();
 			config.WithLogging<LogMessages>();
 		});
