@@ -48,9 +48,8 @@ public class WardenPeaceCommandsBehavior : IPluginBehavior
         // we only want the warden to be able to run this!
         if (!_peaceService.IsWarden(invoker)) return;
 
-        // i.e. if the peace mute is active AND we have a cooldown. 
-        // we still need if css_peace command mute is active because it may have ended because of css_unpeace, warden dying, round ending...
-        if (_peaceService.GetPeaceMuteActive() && (DateTime.Now - _lastUsedTime).Seconds < WardenPeaceBehaviour._commandMuteTime)
+        // we still need if css_peace command mute is active because it may have ended because of css_unpeace, warden dying, round ending but the cooldown hasn't expired
+        if ((_peaceService.IsMuteActiveInTeam(CsTeam.Terrorist) && _peaceService.IsMuteActiveInTeam(CsTeam.CounterTerrorist)) && (DateTime.Now - _lastUsedTime).Seconds < WardenPeaceBehaviour._commandMuteTime)
         {
             _wardenPeaceNotifications.CSS_PEACE_COOLDOWN(WardenPeaceBehaviour._commandMuteTime - (DateTime.Now - _lastUsedTime).Seconds).ToAllChat();
             return;
@@ -68,10 +67,8 @@ public class WardenPeaceCommandsBehavior : IPluginBehavior
     public void Command_UnPeace(CCSPlayerController? invoker, CommandInfo command)
     {
         if (invoker == null) return;
-        if (!_peaceService.GetPeaceMuteActive()) { return; }
-        //if (_peaceService.IsWarden(invoker)) { return; } // todo please uncomment this, I was testing 
+        // this does nothing to teams that don't have any mutes, see the documentation for UnmutePrevMutedPlayers
         _peaceService.UnmutePrevMutedPlayers(MuteReason.ADMIN_REMOVED_PEACEMUTE, CsTeam.Terrorist, CsTeam.CounterTerrorist, CsTeam.Spectator, CsTeam.None);
-        
     }
 
 }

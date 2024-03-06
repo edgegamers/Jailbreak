@@ -2,7 +2,6 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
-using CounterStrikeSharp.API.Modules.Commands.Targeting;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
@@ -11,6 +10,7 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Generic;
 using Jailbreak.Public.Mod.Plugin;
 using Jailbreak.Public.Mod.Warden;
+using System.Timers;
 using static Jailbreak.Public.Mod.Warden.PeaceMuteOptions;
 
 
@@ -23,6 +23,8 @@ namespace Jailbreak.Warden.Global;
 /// Any unmute functions also try to respect this.
 /// There are a number of event listeners to handle edge cases, such as removing peace-mute when the round ends, or more general things such as 
 /// enabling peace-mute for Terrorists when the round begins.
+/// If a player is alive they should either be able to speak unless peace-mute is active or an admin-mute is active.
+/// If a player is dead they should never be able to speak to alive players, and their admin-mute status should be respected.
 /// </summary>
 public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
 {
@@ -37,22 +39,19 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
     /// This Dictionary should be empty when there are no players muted (i.e. peace-mute is not active)
     /// and non-empty otherwise. The _peaceMuteActive boolean field should reflect this.
     /// </summary>
-    private readonly Dictionary<CsTeam, List<CCSPlayerController>> _currentlyMutedTeams;
+    private readonly Dictionary<CsTeam, List<CCSPlayerController>> _currentlyMutedAlivePlayers;
     /// <summary>
     /// This list ensures the unmuting of players targetted by peace-mute at any point in the round
     /// are only alive.
     /// </summary>
     private readonly List<CCSPlayerController> _deadPlayersAndSpectators;
-    
-    /// <summary>
-    /// Defines if ANY peace-mute is active (start of round prisoner mute, css_peace command mute, and first-warden mute)
-    /// </summary>
-    private bool _peaceMuteActive;
+
+    private bool _roundEnd;
 
     // TODO move these to configs?
     public static readonly float _commandMuteTime = 10.0f;
     public static readonly float _startRoundPrisonerMuteTime = 45.0f;
-    public static readonly string _mutedFlag = "@css/muted";
+    public static readonly string _mutedFlag = "@css/muted"; // would it be better to make this a group rather than a permission ? 
 
     public WardenPeaceBehaviour(IWardenService wardenService, ICoroutines coroutines, IEventsService eventsService, IWardenPeaceNotifications wardenPeaceNotifications)
     {
@@ -61,9 +60,16 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
         _coroutines = coroutines;
         _eventsService = eventsService;
         _wardenPeaceNotifications = wardenPeaceNotifications;
-        _peaceMuteActive = false;
-        _currentlyMutedTeams = new Dictionary<CsTeam, List<CCSPlayerController>>();
+        _currentlyMutedAlivePlayers = new Dictionary<CsTeam, List<CCSPlayerController>>();
         _deadPlayersAndSpectators = new List<CCSPlayerController>();
+        _roundEnd = false;
+
+        // makes it so we don't have to try key values that aren't in the dictionary
+        _currentlyMutedAlivePlayers.Add(CsTeam.None, new List<CCSPlayerController>());
+        _currentlyMutedAlivePlayers.Add(CsTeam.Terrorist, new List<CCSPlayerController>());
+        _currentlyMutedAlivePlayers.Add(CsTeam.CounterTerrorist, new List<CCSPlayerController>());
+        _currentlyMutedAlivePlayers.Add(CsTeam.Spectator, new List<CCSPlayerController>());
+
 
         Func<bool> firstWardenPeaceMuteCallback = () =>
         {
@@ -84,24 +90,13 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
     public void PeaceMute(PeaceMuteOptions options)
     {
 
-        _peaceMuteActive = true;
-
         float time = options.GetTimeSeconds();
-        MuteReason reason = options.GetReason();
-        CsTeam[] targets = options.GetTargetTeams();
+        MuteReason reason = options.GetReason(); // startround
+        CsTeam[] targets = options.GetTargetTeams(); // terrorists
 
-        foreach (CsTeam target in targets)
-        { 
-
-            if (!_currentlyMutedTeams.Keys.Contains(target))
-            {
-                _currentlyMutedTeams[target] = new List<CCSPlayerController>();
-            }
-
-        // we need this for the unmute part below
-        List<CCSPlayerController> currentlyMutedPlayers = _currentlyMutedTeams[target];
-
-            foreach (CCSPlayerController player in Utilities.GetPlayers())
+        foreach (CCSPlayerController player in Utilities.GetPlayers())
+        {
+            foreach (CsTeam target in targets)
             {
 
                 if (_wardenService.IsWarden(player)) // always exempt warden
@@ -109,41 +104,39 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
 
 
                 // want to ignore already muted players...
-                if (player.VoiceFlags == VoiceFlags.Muted)
+                if (player.VoiceFlags == VoiceFlags.Muted || AdminManager.PlayerHasPermissions(player, _mutedFlag))
                     continue;
 
 
-                // i.e. if the current player is not in our range of targets, then continue!
-                if ((player.GetTeam() & target) == CsTeam.None)
+                if ((player.GetTeam() & target) != target)
                     continue;
 
 
                 player.VoiceFlags |= VoiceFlags.Muted;
-                currentlyMutedPlayers.Add(player);
+                _currentlyMutedAlivePlayers[target].Add(player);
 
             }
         }
 
-        ResolveMuteReason(reason);
+        // resolve the mute reason
+        switch (reason)
+        {
+            case MuteReason.CSS_PEACE:
+                _wardenPeaceNotifications.PLAYERS_MUTED_VIACMD.ToAllChat(); break;
+            case MuteReason.FIRSTWARDEN:
+                _wardenPeaceNotifications.PLAYERS_MUTED_FIRSTWARDEN.ToAllChat(); break;
+            case MuteReason.PRISONERS_STARTROUND:
+                _wardenPeaceNotifications.PRISONERS_MUTED_STARTROUND.ToAllChat(); break;
+        }
 
         // then unmute the people who weren't already muted after _muteTime seconds
         _coroutines.Round(() =>
         {
 
-            // this variable is always be up-to-date (should be..)
-            if (!_peaceMuteActive) return;
-           
-            _peaceMuteActive = false;
+            // so we don't trigger an unnecessary unmute reason
+            if (!IsMuteActiveInTeams(targets)) { return; }
 
-            foreach (CsTeam team in targets)
-            {
-                foreach (CCSPlayerController player in _currentlyMutedTeams[team])
-                {
-                    player.VoiceFlags &= ~VoiceFlags.Muted;
-                }
-            }
-
-            ResolveUnmuteReason(reason);
+            UnmutePrevMutedPlayers(reason, targets);
 
         }, time);
     }
@@ -157,10 +150,70 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
     [GameEventHandler]
     public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
+        _roundEnd = false;
         PeaceMuteOptions options = new PeaceMuteOptions(MuteReason.PRISONERS_STARTROUND, _startRoundPrisonerMuteTime, CsTeam.Terrorist);
         PeaceMute(options);
 
         return HookResult.Continue;
+    }
+
+    /// <summary>
+    /// Ensures that if peace-mute is active when the round starts then any players that join the Terrorist team
+    /// will still be muted!
+    /// </summary>
+    /// <param name="event"></param>
+    /// <param name="info"></param>
+    /// <returns></returns>
+    [GameEventHandler]
+    public HookResult OnPlayerJoinTeam(EventPlayerTeam @event, GameEventInfo info)
+    {
+
+        if (!@event.Userid.IsValid) { return HookResult.Continue; }
+
+        // I hope this means they are automatically either a Terrorist or a CounterTerrorist...
+        if (@event.Userid.PawnIsAlive)
+        {
+            // ignore muted players
+            if (AdminManager.PlayerHasPermissions(@event.Userid, _mutedFlag)) { return HookResult.Continue; }
+
+            CsTeam team = @event.Userid.GetTeam();
+            if (!IsMuteActiveInTeam(team)) { return HookResult.Continue; }
+
+            @event.Userid.VoiceFlags |= VoiceFlags.Muted; // actually set them muted!
+            _currentlyMutedAlivePlayers[team].Add(@event.Userid); // the list is automatically cleared after some conditions
+
+        }
+        else // they are dead and get added to dead/spectator list regardless
+        {
+            // todo mute dead/spec players?
+            _deadPlayersAndSpectators.Add(@event.Userid);
+        }
+
+        return HookResult.Continue;
+
+    }
+
+    /// <summary>
+    /// Ensures we clear-up if a player disconnects while in a peace-muted team.
+    /// If the player were to join back they should be automatically on the spectators/dead players list.
+    /// </summary>
+    /// <param name="event"></param>
+    /// <param name="info"></param>
+    /// <returns></returns>
+    [GameEventHandler]
+    public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
+    {
+
+        if (!@event.Userid.IsValid) { return HookResult.Continue; }
+        CsTeam playerTeam = @event.Userid.GetTeam();
+
+        if (!IsMuteActiveInTeam(playerTeam)) { return HookResult.Continue; }
+
+        _currentlyMutedAlivePlayers[playerTeam].Remove(@event.Userid);
+        _deadPlayersAndSpectators.Remove(@event.Userid);
+
+        return HookResult.Continue;
+
     }
 
     /// <summary>
@@ -173,6 +226,7 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
     [GameEventHandler]
     public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
     {
+        _roundEnd = true;
         UnmutePrevMutedPlayers(MuteReason.END_ROUND, CsTeam.Terrorist, CsTeam.CounterTerrorist, CsTeam.Spectator, CsTeam.None);
         _deadPlayersAndSpectators.Clear(); // important...
         return HookResult.Continue;
@@ -185,69 +239,57 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
     /// <param name="event"></param>
     /// <param name="info"></param>
     /// <returns></returns>
+    
+    // TODO WE DON'T WANT TO MUTE THE PLAYER WE WANT TO MAKE IT SO THAT ALIVE PLAYERS CAN'T HEAR DEAD ONES
+    // ALSO WE WANT TO HANDLE WHEN A PLAYER DIES
     [GameEventHandler]
     public HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
     {
-        if (!@event.Userid.IsValid) { return HookResult.Continue; }
+        if (!@event.Userid.IsValid) { return HookResult.Continue; } // check player handle exists first
         _deadPlayersAndSpectators.Add(@event.Userid);
 
-        return HookResult.Continue;
+        if (@event.Userid.VoiceFlags == VoiceFlags.Muted)
+            return HookResult.Continue;
+
+        // all players that the plugin sets with this flag in this piece of code should be in the _deadPlayersAndSpectators list...
+        @event.Userid.VoiceFlags |= VoiceFlags.Muted; return HookResult.Continue;
     }
 
     public void UnmutePrevMutedPlayers(MuteReason reason, params CsTeam[] targets)
     {
 
-        foreach (CsTeam target in targets) 
-        {
-            // ignore targets we're not interested in
-            if (!_currentlyMutedTeams.Keys.Contains(target)) { continue; }
+        if (!IsMuteActiveInTeams(targets)) { return; } // if a mute isn't active in at least one of these targets, we don't want to trigger an unmute message.
 
-            List<CCSPlayerController> playersToUnmute = _currentlyMutedTeams[target];
+        if (_roundEnd)
+        {
+            foreach (CCSPlayerController player in _deadPlayersAndSpectators)
+            {
+                if (!player.IsValid) { continue; }
+                player.VoiceFlags &= ~VoiceFlags.Muted;
+            }
+        } 
+
+        foreach (CsTeam target in targets)
+        {
+
+            List<CCSPlayerController> playersToUnmute = _currentlyMutedAlivePlayers[target];
             foreach (CCSPlayerController player in playersToUnmute)
             {
-                if (!player.IsValid) continue; // important
-                if (_deadPlayersAndSpectators.Contains(player)) continue; // we don't want to unmute dead players/spectators...
-                if (AdminManager.PlayerHasPermissions(player, "@css/muted")) continue; // we certainly don't want to unmute admin-muted players! 
+                if (!player.IsValid || !player.PawnIsAlive) continue; // handled by _roundEnd
+                if (_deadPlayersAndSpectators.Contains(player)) continue; // we don't want to unmute dead players/spectators... handled by _roundEnd
 
-                /* muted players should be ignored by my peace service anyway, but there are edge cases where players are admin-muted after my command is executed.
-                 * By having a flag set on them, we can ensure we never unmute admin-muted players.
-                 * If this flag isn't set, then the admin-muted players get unmuted anyway :( */
+                if (AdminManager.PlayerHasPermissions(player, _mutedFlag)) continue; // we certainly don't want to unmute admin-muted players! 
+                /* If this flag isn't set, then the admin-muted players get unmuted anyway :( */
 
                 player.VoiceFlags &= ~VoiceFlags.Muted;
 
             }
 
-            _currentlyMutedTeams.Remove(target); 
+            playersToUnmute.Clear();
 
         }
 
-        ResolveUnmuteReason(reason);
-        if (_currentlyMutedTeams.Keys.Count == 0) { _peaceMuteActive = false; } // makes sense hopefully ? 
-
-    }
-    /// <summary>
-    /// A list of peace-mute reasons that the IWardenPeaceService can "throw". Useful method that maps these reasons to INotifications.
-    /// </summary>
-    /// <param name="reason"></param>
-    private void ResolveMuteReason(MuteReason reason)
-    {
-        switch (reason)
-        {
-            case MuteReason.CSS_PEACE:
-                _wardenPeaceNotifications.PLAYERS_MUTED_VIACMD.ToAllChat(); break;
-            case MuteReason.FIRSTWARDEN:
-                _wardenPeaceNotifications.PLAYERS_MUTED_FIRSTWARDEN.ToAllChat(); break;
-            case MuteReason.PRISONERS_STARTROUND:
-                _wardenPeaceNotifications.PRISONERS_MUTED_STARTROUND.ToAllChat(); break;
-        }
-    }
-
-    /// <summary>
-    /// A list of peace-unmute reasons that the IWardenPeaceService can "throw". Useful method that maps these reasons to INotifications.
-    /// </summary>
-    /// <param name="reason"></param>
-    private void ResolveUnmuteReason(MuteReason reason)
-    {
+        // resolve the unmute reason 
         switch (reason)
         {
             case MuteReason.CSS_PEACE:
@@ -262,13 +304,24 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
                 _wardenPeaceNotifications.PLAYERS_UNMUTED_ADMINCMD.ToAllChat(); break;
             case MuteReason.END_ROUND:
                 _wardenPeaceNotifications.PLAYERS_UNMUTED_ROUNDEND.ToAllChat(); break;
-                
         }
+
     }
 
-    public bool GetPeaceMuteActive()
+    public bool IsMuteActiveInTeam(CsTeam team)
     {
-        return _peaceMuteActive;
+        return _currentlyMutedAlivePlayers[team].Count != 0;
+    }
+
+    public bool IsMuteActiveInTeams(params CsTeam[] teams)
+    {
+        foreach (CsTeam team in teams)
+        {
+            if (_currentlyMutedAlivePlayers[team].Count > 0) return true;
+        }
+
+        return false;
+
     }
 
 }
