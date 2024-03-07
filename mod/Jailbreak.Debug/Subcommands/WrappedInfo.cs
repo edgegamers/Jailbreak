@@ -32,8 +32,8 @@ public class WrappedInfo
         return Info.GetArg(index + 1);
     }
 
-    public void ReplyToCommand(string message, bool console = false)
+    public void ReplyToCommand(string message)
     {
-        Info.ReplyToCommand(message, console);
+        Info.ReplyToCommand(message);
     }
 }

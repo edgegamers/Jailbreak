@@ -12,7 +12,6 @@ namespace Jailbreak.Rebel;
 
 public class RebelManager : IPluginBehavior, IRebelService
 {
-    //private IRebelNotifications notifs;
     private readonly IRichLogService _logs;
     private readonly IRebelNotifications _notifs;
     private readonly Dictionary<CCSPlayerController, long> _rebelTimes = new();
