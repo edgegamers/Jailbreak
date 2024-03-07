@@ -10,6 +10,7 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Generic;
 using Jailbreak.Public.Mod.Plugin;
 using Jailbreak.Public.Mod.Warden;
+using System.Reflection.Metadata.Ecma335;
 using System.Timers;
 using static Jailbreak.Public.Mod.Warden.PeaceMuteOptions;
 
@@ -102,16 +103,19 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
                 if (_wardenService.IsWarden(player)) // always exempt warden
                     continue;
 
+                if (AdminManager.PlayerHasPermissions(player, "@css/generic")) // always exempt admins as well
+                    continue;
 
                 // want to ignore already muted players...
                 if (player.VoiceFlags == VoiceFlags.Muted || AdminManager.PlayerHasPermissions(player, _mutedFlag))
                     continue;
 
 
-                if ((player.GetTeam() & target) != target)
+                if ((player.GetTeam() & target) != target) // exclude any player not in the target team
                     continue;
 
-
+                // finally we know the player in question is not an admin or the warden, and does not already have an admin-mute 
+                // so we can safely mute them here
                 player.VoiceFlags |= VoiceFlags.Muted;
                 _currentlyMutedAlivePlayers[target].Add(player);
 
@@ -248,11 +252,12 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
 
         // so that dead players are not affected by other function calls
         if (IsMuteActiveInTeam(@event.Userid.GetTeam())) { _currentlyMutedAlivePlayers[@event.Userid.GetTeam()].Remove(@event.Userid); }
-        
         _deadPlayersAndSpectators.Add(@event.Userid);
+
         if (AdminManager.PlayerHasPermissions(@event.Userid, _mutedFlag)) { return HookResult.Continue; }
 
-        @event.Userid.VoiceFlags |= VoiceFlags.Muted; return HookResult.Continue; // todo: do we want to mute dead players? 
+        // mute dead players
+        @event.Userid.VoiceFlags |= VoiceFlags.Muted; return HookResult.Continue; 
 
     }
 
@@ -269,7 +274,7 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
                 if (!player.IsValid || !player.PawnIsAlive) continue; // handled by _roundEnd
                 if (_deadPlayersAndSpectators.Contains(player)) continue; // we don't want to unmute dead players/spectators... handled by _roundEnd
 
-                if (AdminManager.PlayerHasPermissions(player, _mutedFlag)) continue; // we certainly don't want to unmute admin-muted players! 
+                if (AdminManager.PlayerHasPermissions(player, _mutedFlag)) { continue; } // don't unmute admin-muted players!
                 /* If this flag isn't set, then the admin-muted players get unmuted anyway :( */
 
                 player.VoiceFlags &= ~VoiceFlags.Muted;
@@ -304,6 +309,7 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
             foreach (CCSPlayerController player in _deadPlayersAndSpectators)
             {
                 if (!player.IsValid) { continue; }
+                if (AdminManager.PlayerHasPermissions(player, _mutedFlag)) { continue; } // don't unmute admin-muted players!
                 player.VoiceFlags &= ~VoiceFlags.Muted;
             }
         }
