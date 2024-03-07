@@ -30,7 +30,7 @@ public class WardenPeaceCommandsBehavior : IPluginBehavior
 
         Func<bool> wardenDeathCallback = () =>
         {
-            _peaceService.UnmutePrevMutedPlayers(MuteReason.WARDEN_DIED, CsTeam.Terrorist, CsTeam.CounterTerrorist);
+            _peaceService.UnmutePrevMutedAlivePlayers(MuteReason.WARDEN_DIED, CsTeam.Terrorist, CsTeam.CounterTerrorist);
             return true;
         };
 
@@ -45,10 +45,10 @@ public class WardenPeaceCommandsBehavior : IPluginBehavior
 
         if (invoker == null) return;
 
-        // we only want the warden to be able to run this!
-        if (!_peaceService.IsWarden(invoker)) return;
+        // we only want the warden OR ADMIN to be able to run this!
+        if (!_peaceService.IsWarden(invoker) || !AdminManager.PlayerHasPermissions(invoker, "@css/generic")) return;
 
-        // we still need if css_peace command mute is active because it may have ended because of css_unpeace, warden dying or round ending, but the cooldown wouldn't have expired
+        // we still need if css_peace command mute is active in a team because it may have ended because of various things but the cooldown wouldn't have expired yet.
         if (_peaceService.IsMuteActiveInTeam(CsTeam.CounterTerrorist) && (DateTime.Now - _lastUsedTime).Seconds < WardenPeaceBehaviour._commandMuteTime)
         {
             _wardenPeaceNotifications.CSS_PEACE_COOLDOWN(WardenPeaceBehaviour._commandMuteTime - (DateTime.Now - _lastUsedTime).Seconds).ToAllChat();
@@ -63,12 +63,12 @@ public class WardenPeaceCommandsBehavior : IPluginBehavior
 
     [ConsoleCommand("css_unpeace", "Lets the admins remove the warden mute.")]
     [CommandHelper(0, "", CommandUsage.CLIENT_ONLY)]
-    [RequiresPermissionsOr("@css/ban", "@css/kick")]
+    [RequiresPermissionsOr("@css/ban", "@css/kick", "@css/generic")]
     public void Command_UnPeace(CCSPlayerController? invoker, CommandInfo command)
     {
         if (invoker == null) return;
         // this does nothing to teams that don't have any mutes, see the documentation for UnmutePrevMutedPlayers
-        _peaceService.UnmutePrevMutedPlayers(MuteReason.ADMIN_REMOVED_PEACEMUTE, CsTeam.Terrorist, CsTeam.CounterTerrorist, CsTeam.Spectator, CsTeam.None);
+        _peaceService.UnmutePrevMutedAlivePlayers(MuteReason.ADMIN_REMOVED_PEACEMUTE, CsTeam.Terrorist, CsTeam.CounterTerrorist, CsTeam.Spectator, CsTeam.None);
     }
 
 }

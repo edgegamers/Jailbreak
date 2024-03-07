@@ -45,6 +45,8 @@ public interface IWardenPeaceService
     /// </summary>
     /// <param name="reason"></param>
     /// <param name="target"></param>
-    public void UnmutePrevMutedPlayers(PeaceMuteOptions.MuteReason reason, params CsTeam[] target);
+    public void UnmutePrevMutedAlivePlayers(PeaceMuteOptions.MuteReason reason, params CsTeam[] target);
+
+    public void UnmutePrevMutedDeadPlayers();
 
 }

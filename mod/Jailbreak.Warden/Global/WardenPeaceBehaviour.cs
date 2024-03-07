@@ -133,7 +133,7 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
         _coroutines.Round(() =>
         {
             // if there are no active mutes anymore this function will do nothing.
-            UnmutePrevMutedPlayers(reason, targets);
+            UnmutePrevMutedAlivePlayers(reason, targets);
 
         }, time);
     }
@@ -183,8 +183,8 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
         }
         else // they are dead and get added to dead/spectator list regardless
         {
-            // todo mute dead/spec players?
             _deadPlayersAndSpectators.Add(@event.Userid);
+            @event.Userid.VoiceFlags |= VoiceFlags.Muted;
         }
 
         return HookResult.Continue;
@@ -206,6 +206,7 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
         CsTeam playerTeam = @event.Userid.GetTeam();
 
         if (!IsMuteActiveInTeam(playerTeam)) { return HookResult.Continue; }
+        // todo I need to check if voice flags persist on players leaving the server
 
         _currentlyMutedAlivePlayers[playerTeam].Remove(@event.Userid);
         _deadPlayersAndSpectators.Remove(@event.Userid);
@@ -225,8 +226,8 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
     public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
     {
         _roundEnd = true;
-        UnmutePrevMutedPlayers(MuteReason.END_ROUND, CsTeam.Terrorist, CsTeam.CounterTerrorist, CsTeam.Spectator, CsTeam.None);
-        _deadPlayersAndSpectators.Clear(); // important...
+        UnmutePrevMutedAlivePlayers(MuteReason.END_ROUND, CsTeam.Terrorist, CsTeam.CounterTerrorist, CsTeam.Spectator, CsTeam.None);
+        UnmutePrevMutedDeadPlayers();
         return HookResult.Continue;
 
     }
@@ -255,23 +256,13 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
 
     }
 
-    public void UnmutePrevMutedPlayers(MuteReason reason, params CsTeam[] targets)
+    public void UnmutePrevMutedAlivePlayers(MuteReason reason, params CsTeam[] targets)
     {
 
         if (!IsMuteActiveInTeams(targets)) { return; } // if a mute isn't active in at least one of these targets, we don't want to trigger an unmute message.
 
-        if (_roundEnd)
-        {
-            foreach (CCSPlayerController player in _deadPlayersAndSpectators)
-            {
-                if (!player.IsValid) { continue; }
-                player.VoiceFlags &= ~VoiceFlags.Muted;
-            }
-        }
-
         foreach (CsTeam target in targets)
         {
-
             List<CCSPlayerController> playersToUnmute = _currentlyMutedAlivePlayers[target];
             foreach (CCSPlayerController player in playersToUnmute)
             {
@@ -284,9 +275,7 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
                 player.VoiceFlags &= ~VoiceFlags.Muted;
 
             }
-
             playersToUnmute.Clear();
-
         }
 
         // resolve the unmute reason 
@@ -306,6 +295,19 @@ public class WardenPeaceBehaviour : IPluginBehavior, IWardenPeaceService
                 _wardenPeaceNotifications.PLAYERS_UNMUTED_ROUNDEND.ToAllChat(); break;
         }
 
+    }
+
+    public void UnmutePrevMutedDeadPlayers()
+    {
+        if (_roundEnd)
+        {
+            foreach (CCSPlayerController player in _deadPlayersAndSpectators)
+            {
+                if (!player.IsValid) { continue; }
+                player.VoiceFlags &= ~VoiceFlags.Muted;
+            }
+        }
+        _deadPlayersAndSpectators.Clear();
     }
 
     public bool IsMuteActiveInTeam(CsTeam team)
