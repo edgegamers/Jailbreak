@@ -10,10 +10,7 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Generic;
 using Jailbreak.Public.Mod.Plugin;
 using Jailbreak.Public.Mod.Warden;
-using System.Reflection.Metadata.Ecma335;
-using System.Timers;
 using static Jailbreak.Public.Mod.Warden.PeaceMuteOptions;
-
 
 namespace Jailbreak.Warden.Global;
 
