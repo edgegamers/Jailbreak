@@ -17,10 +17,11 @@ public static class WardenServiceExtension
         serviceCollection.AddPluginBehavior<IWardenService, WardenBehavior>();
         serviceCollection.AddPluginBehavior<IWardenSelectionService, WardenSelectionBehavior>();
         serviceCollection.AddPluginBehavior<IWardenPeaceService, WardenPeaceBehaviour>();
+        serviceCollection.AddPluginBehavior<IWardenLastGuardService, WardenLastGuardBehavior>();
 
         serviceCollection.AddPluginBehavior<WardenCommandsBehavior>();
         serviceCollection.AddPluginBehavior<WardenMarkerBehavior>();
         serviceCollection.AddPluginBehavior<WardenPaintBehavior>();
-        serviceCollection.AddPluginBehavior<WardenPeaceCommandsBehavior>();   
+        serviceCollection.AddPluginBehavior<WardenPeaceCommandsBehavior>();
     }
 }

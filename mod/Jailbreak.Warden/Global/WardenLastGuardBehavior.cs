@@ -2,6 +2,7 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
@@ -12,7 +13,7 @@ using static Jailbreak.Public.Mod.Warden.IWardenLastGuardService;
 
 namespace Jailbreak.Warden.Global;
 /// <summary>
-/// Will probably have to use rebel service, warden service and others? 
+/// todo: Will probably have to use rebel service, warden service and others? 
 /// </summary>
 public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
 {
@@ -53,11 +54,13 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
 
         if (!_wardenService.HasWarden) { return; }
         if (_wardenService.Warden == null) { return; }
+        if (!_wardenService.Warden.IsValid) { return; }
+        if (_wardenService.Warden.PlayerPawn.Value == null) { return; }
 
         _lastGuardEnabled = true;
 
         int totalTerroristHealth = 0; // default health of warden
-        int totalLastGuardSeconds = 0;
+        int totalLastGuardSeconds = 10;
         IterateThroughTeam((terroristPlayer) =>
         {
             if (!terroristPlayer.PawnIsAlive) { return; }
@@ -68,6 +71,7 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
 
         }, CsTeam.Terrorist);
 
+        if (totalLastGuardSeconds < 60) { totalLastGuardSeconds = 60; }
         totalTerroristHealth /= 2;
 
         // I don't like having an odd health... 
@@ -79,18 +83,16 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
         // TODO PLS REMOVE
         totalTerroristHealth = 1000;
 
-        // being extra careful
-        if (!_wardenService.Warden.IsValid) { return; } 
-        if (_wardenService.Warden.PlayerPawn.Value == null) { return; }
-
         _lastGuardMaxHealth = totalTerroristHealth;
-        _wardenService.Warden.PlayerPawn.Value.Health = _lastGuardMaxHealth;
+
+        // todo investigate what the fuck is a schema?!
+        // this works!
+        _wardenService.Warden.PlayerPawn.Value.Health = totalTerroristHealth;
+        Utilities.SetStateChanged(_wardenService.Warden.PlayerPawn.Value, "CBaseEntity", "m_iHealth");
 
         // todo see if this works?
         var gameRules = Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules").First().GameRules!;
         gameRules.RoundTime = 100;
-
-        // if health is in the 1000s trunate the last 2 digits
 
         // TODO CALCULATE TIME LIMIT
         int lastGuardTimeLimitSeconds = 60;
