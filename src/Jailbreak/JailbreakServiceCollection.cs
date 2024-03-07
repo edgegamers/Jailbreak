@@ -3,12 +3,14 @@ using CounterStrikeSharp.API.Core;
 using Jailbreak.Config;
 using Jailbreak.Debug;
 using Jailbreak.English.Generic;
+using Jailbreak.English.LastRequest;
 using Jailbreak.English.Logs;
 using Jailbreak.English.Rebel;
 using Jailbreak.English.Teams;
 using Jailbreak.English.Warden;
 using Jailbreak.Formatting.Logistics;
 using Jailbreak.Generic;
+using Jailbreak.LastRequest;
 using Jailbreak.Logs;
 using Jailbreak.Public.Configuration;
 using Jailbreak.Rebel;
@@ -39,6 +41,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
         serviceCollection.AddJailbreakTeams();
         serviceCollection.AddJailbreakRebel();
         serviceCollection.AddJailbreakDebug();
+        serviceCollection.AddJailbreakLastRequest();
 
 		//	Add in english localization
 		serviceCollection.AddLanguage<Formatting.Languages.English>(config =>
@@ -49,6 +52,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
             config.WithPeaceWarden<WardenPeaceNotifications>();
             config.WithRebel<RebelNotifications>();
 			config.WithLogging<LogMessages>();
+			config.WithLastRequest<LastRequestMessages>();
 		});
 	}
 }

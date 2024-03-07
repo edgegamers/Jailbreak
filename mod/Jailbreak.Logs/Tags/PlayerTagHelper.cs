@@ -33,7 +33,7 @@ public class PlayerTagHelper : IRichPlayerTag, IPlayerTag
 		if (player.GetTeam() == CsTeam.CounterTerrorist)
 			return new StringFormatObject("(CT)", ChatColors.BlueGrey);
 		if (_rebelService.Value.IsRebel(player))
-			return new StringFormatObject("(REBEL)", ChatColors.Darkred);
+			return new StringFormatObject("(REBEL)", ChatColors.DarkRed);
 
 		return new StringFormatObject("(T)", ChatColors.Yellow);
 	}
