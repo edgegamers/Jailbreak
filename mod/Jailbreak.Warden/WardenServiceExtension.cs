@@ -16,7 +16,11 @@ public static class WardenServiceExtension
     {
         serviceCollection.AddPluginBehavior<IWardenService, WardenBehavior>();
         serviceCollection.AddPluginBehavior<IWardenSelectionService, WardenSelectionBehavior>();
+<<<<<<< Updated upstream
         serviceCollection.AddPluginBehavior<IWardenPeaceService, WardenPeaceBehaviour>();
+=======
+        serviceCollection.AddPluginBehavior<IWardenLastGuardService, WardenLastGuardBehavior>();
+>>>>>>> Stashed changes
 
         serviceCollection.AddPluginBehavior<WardenCommandsBehavior>();
         serviceCollection.AddPluginBehavior<WardenMarkerBehavior>();

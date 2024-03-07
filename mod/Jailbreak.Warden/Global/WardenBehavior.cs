@@ -129,6 +129,9 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		if (!this.TryRemoveWarden())
 			_logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
+		// todo add eventservice hook
+		
+
 		//	Warden died!
 		_notifications.WARDEN_DIED
 			.ToAllChat()
