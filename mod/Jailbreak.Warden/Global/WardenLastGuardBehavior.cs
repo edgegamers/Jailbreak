@@ -2,13 +2,16 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Entities;
+using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Warden;
+using System.Net;
 using static Jailbreak.Public.Mod.Warden.IWardenLastGuardService;
 
 namespace Jailbreak.Warden.Global;
@@ -21,9 +24,12 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
     private readonly IWardenService _wardenService;
     private readonly IWardenLastGuardNotifications _wardenLastGuardNotifications;
 
-    private bool _lastGuardEnabled;
     private int _numOfGuardsRoundStart;
+    private float _prevRoundTimeMinutes;
+
+    private bool _lastGuardEnabled;
     private int _lastGuardMaxHealth;
+    private int _lastGuardRoundTimeSeconds;
 
     // todo add to a config file 
     public static readonly int _minNumberForLastGuard = 4;
@@ -35,9 +41,12 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
         _wardenService = wardenService;
         _wardenLastGuardNotifications = wardenLastGuardNotifications;
 
-        _lastGuardEnabled = false;
         _numOfGuardsRoundStart = 0;
+        _prevRoundTimeMinutes = 0.0f;
+
+        _lastGuardEnabled = false;
         _lastGuardMaxHealth = 0;
+        _lastGuardRoundTimeSeconds = 0;
 
     }
 
@@ -52,53 +61,74 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
     public void TryActivateLastGuard()
     {
 
-        if (!_wardenService.HasWarden) { return; }
+        if (_lastGuardEnabled) { return; }
+
         if (_wardenService.Warden == null) { return; }
-        if (!_wardenService.Warden.IsValid) { return; }
-        if (_wardenService.Warden.PlayerPawn.Value == null) { return; }
+        CCSPlayerController wardenController = _wardenService.Warden;
+
+        if (!_wardenService.HasWarden) { return; }
+        if (!wardenController.IsValid) { return; }
+        if (wardenController.PlayerPawn.Value == null) { return; }
+        if (wardenController.CBodyComponent == null) { return; }
+        if (wardenController.CBodyComponent.SceneNode == null) { return; }
 
         _lastGuardEnabled = true;
 
-        int totalTerroristHealth = 0; // default health of warden
-        int totalLastGuardSeconds = 10;
+        _lastGuardMaxHealth = 0; // default health of warden
+        _lastGuardRoundTimeSeconds = 0;
         IterateThroughTeam((terroristPlayer) =>
         {
             if (!terroristPlayer.PawnIsAlive) { return; }
 
-            totalTerroristHealth += 75; // a deliberate number
-            totalLastGuardSeconds += 10;
-            // for 10 players this gives warden HP as 
+            // for each Terrorist give the Last Guard +75HP and +10s to kill the remaining Prisoners
+            _lastGuardMaxHealth += 75;
+            _lastGuardRoundTimeSeconds += 10; 
 
         }, CsTeam.Terrorist);
 
-        if (totalLastGuardSeconds < 60) { totalLastGuardSeconds = 60; }
-        totalTerroristHealth /= 2;
+        // funny way of checking if there are 2 terrorists or less when trying to invoke last guard initially
+        //if (_lastGuardRoundTimeSeconds <= 20) { return; } // todo UNCOMMENT IT'S JUST FOR MY OWN TESTING
 
-        // I don't like having an odd health... 
-        if (totalTerroristHealth % 2 != 0)
-        {
-            totalTerroristHealth += 5;
-        }
+        // again counts if there are 6 or less Prisoners for the last guard, if so then set some BASE attributes for the last guard
+        if (_lastGuardRoundTimeSeconds < 60) { _lastGuardRoundTimeSeconds = 60; _lastGuardMaxHealth = 400; }
+        _lastGuardMaxHealth /= 2; // important otherwise it's wayyy to OP :)
 
-        // TODO PLS REMOVE
-        totalTerroristHealth = 1000;
+        // I don't like having an odd health...
+        if (_lastGuardMaxHealth % 2 != 0) {  _lastGuardMaxHealth += 5; } 
 
-        _lastGuardMaxHealth = totalTerroristHealth;
+        /**
+         * Whenever you change the state of an entity you must tell the server.
+         * The server then updates the individual clients.
+         * This is because all the clients share the same state as the server.
+         * In CS# when you change the state of an entity, NetworkStateChanged() is not automatically called,
+         * therefore we must use Utilities.SetStateChanged()
+         */
 
-        // todo investigate what the fuck is a schema?!
-        // this works!
-        _wardenService.Warden.PlayerPawn.Value.Health = totalTerroristHealth;
-        Utilities.SetStateChanged(_wardenService.Warden.PlayerPawn.Value, "CBaseEntity", "m_iHealth");
+        /**
+         * Another interesting thing is that there are server-side entities and client-side entities, and "common" entities...
+         * To quote Poggu "It's a way to network classes to clients; the game can't really do that outside entities".
+         * https://developer.valvesoftware.com/wiki/Networking_Entities
+         */
 
-        // todo see if this works?
-        var gameRules = Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules").First().GameRules!;
-        gameRules.RoundTime = 100;
+        // set the player's Pawn health and tell the server about it
+        wardenController.PlayerPawn.Value.Health = _lastGuardMaxHealth;
+        wardenController.PlayerPawn.Value.ArmorValue = 125; // in line with how it used to work
+        Utilities.SetStateChanged(wardenController.PlayerPawn.Value, "CBaseEntity", "m_iHealth");
+        Utilities.SetStateChanged(wardenController.PlayerPawn.Value, "CCSPlayerPawnBase", "m_ArmorValue");
 
-        // TODO CALCULATE TIME LIMIT
-        int lastGuardTimeLimitSeconds = 60;
-        _wardenLastGuardNotifications.LASTGUARD_ACTIVATED(_wardenService.Warden.PlayerName).ToAllChat().ToAllCenter();
+        // set the round time to the last guard round time and tell the server about it
+        CCSGameRulesProxy serverRulesEntity = Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules").First();
+
+        CCSGameRules serverGameRules = serverRulesEntity.GameRules!;
+        serverGameRules.RoundTime = _lastGuardRoundTimeSeconds;
+
+        Utilities.SetStateChanged(serverRulesEntity, "CCSGameRulesProxy", "m_pGameRules");
+
+        _wardenLastGuardNotifications.LASTGUARD_ACTIVATED(wardenController.PlayerName).ToAllChat().ToAllCenter();
         _wardenLastGuardNotifications.LASTGUARD_MAXHEALTH(_lastGuardMaxHealth).ToAllChat().ToAllCenter();
-        _wardenLastGuardNotifications.LASTGUARD_TIMELIMIT(lastGuardTimeLimitSeconds).ToAllChat().ToAllCenter();
+        _wardenLastGuardNotifications.LASTGUARD_TIMELIMIT(_lastGuardRoundTimeSeconds).ToAllChat().ToAllCenter();
+
+        // todo add beacons onto all players
 
     }
 
@@ -126,6 +156,21 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
 
     }
 
+    // get player pos:
+    // Vector pos = player.PlayerPawn.Value!.AbsOrigin!;
+
+    // PLEASE PLEASE REMOVE KLJASDKLJSAKLJDSAKLJDKLJ
+    [ConsoleCommand("css_debug", "")]
+    [CommandHelper(0, "", CommandUsage.CLIENT_ONLY)]
+    public void Command_Debug(CCSPlayerController? player, CommandInfo command)
+    {
+        if (player == null)
+            return;
+
+        // todo attempt to draw a beacon
+
+    }
+
     [GameEventHandler]
     public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
@@ -150,7 +195,7 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
                 numOfAliveTerrorists += 1;
             }, CsTeam.Terrorist);
 
-            if (numOfAliveTerrorists == 2)
+            if (numOfAliveTerrorists <= 2)
                 TryDeactivateLastGuard();
 
             return HookResult.Continue;
