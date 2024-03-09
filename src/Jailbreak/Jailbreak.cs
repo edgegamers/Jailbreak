@@ -56,7 +56,6 @@ public class Jailbreak : BasePlugin
             Logger.LogInformation("[Jailbreak] Loaded behavior {@Behavior}", extension.GetType().FullName);
         }
 
-        base.Load(hotReload);
     }
 
     /// <inheritdoc />

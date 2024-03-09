@@ -34,6 +34,6 @@ public class WrappedInfo
 
     public void ReplyToCommand(string message, bool console = false)
     {
-        Info.ReplyToCommand(message, console);
+        Info.ReplyToCommand(message);
     }
 }

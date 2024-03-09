@@ -2,16 +2,15 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Entities;
-using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Generic;
 using Jailbreak.Public.Mod.Warden;
-using System.Net;
+using System.Drawing;
 using static Jailbreak.Public.Mod.Warden.IWardenLastGuardService;
 
 namespace Jailbreak.Warden.Global;
@@ -23,6 +22,8 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
 
     private readonly IWardenService _wardenService;
     private readonly IWardenLastGuardNotifications _wardenLastGuardNotifications;
+    private readonly ICoroutines _coroutines;
+    private BasePlugin? _parent;
 
     private int _numOfGuardsRoundStart;
     private float _prevRoundTimeMinutes;
@@ -31,15 +32,18 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
     private int _lastGuardMaxHealth;
     private int _lastGuardRoundTimeSeconds;
 
+    private float _lastGuardBeaconsRadius;
+
     // todo add to a config file 
     public static readonly int _minNumberForLastGuard = 4;
 
 
 
-    public WardenLastGuardBehavior(IWardenService wardenService, IWardenLastGuardNotifications wardenLastGuardNotifications)
+    public WardenLastGuardBehavior(IWardenService wardenService, IWardenLastGuardNotifications wardenLastGuardNotifications, ICoroutines coroutines)
     {
         _wardenService = wardenService;
         _wardenLastGuardNotifications = wardenLastGuardNotifications;
+        _coroutines = coroutines;
 
         _numOfGuardsRoundStart = 0;
         _prevRoundTimeMinutes = 0.0f;
@@ -48,6 +52,19 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
         _lastGuardMaxHealth = 0;
         _lastGuardRoundTimeSeconds = 0;
 
+        _lastGuardBeaconsRadius = 0.0f;
+
+    }
+
+    public void Start(BasePlugin parent)
+    {
+        _parent = parent;
+        Console.WriteLine("Well this is being written to.");
+        _parent!.RegisterListener<Listeners.OnTick>(() =>
+        {
+            // todo register drawBeacon() for list of players that should have it enabled
+            // we'll figure it out tomorrow.
+        }); // i rlly hope this works
     }
 
     /// <summary>
@@ -129,12 +146,19 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
         _wardenLastGuardNotifications.LASTGUARD_TIMELIMIT(_lastGuardRoundTimeSeconds).ToAllChat().ToAllCenter();
 
         // todo add beacons onto all players
+        Vector wardenPos = wardenController.AbsOrigin!;
+
+
 
     }
 
     public void TryDeactivateLastGuard()
     {
         _lastGuardEnabled = false;
+
+         // remove all colours from player models, all beacons
+         // set time to 30 seconds (for LR)
+
 
     }
 
@@ -160,14 +184,120 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
     // Vector pos = player.PlayerPawn.Value!.AbsOrigin!;
 
     // PLEASE PLEASE REMOVE KLJASDKLJSAKLJDSAKLJDKLJ
-    [ConsoleCommand("css_debug", "")]
+    [ConsoleCommand("css_d", "")]
     [CommandHelper(0, "", CommandUsage.CLIENT_ONLY)]
     public void Command_Debug(CCSPlayerController? player, CommandInfo command)
     {
         if (player == null)
             return;
 
-        // todo attempt to draw a beacon
+
+        float width = 1.0f;
+        float radius = 10.0f;
+        if (command.ArgCount > 1)
+        {
+            width = Convert.ToSingle(command.GetArg(1));
+        }
+        if (command.ArgCount > 2)
+        {
+            radius = Convert.ToSingle(command.GetArg(2));
+        }
+
+
+        player.PrintToChat($"Width: {width}");
+
+        _parent!.RegisterListener<Listeners.OnTick>(() =>
+        {
+            Console.WriteLine("pls confirm we actually working doe");
+            if (_lastGuardEnabled) { return; }
+            Console.WriteLine("last guard not enabled?!");
+            renderBeacon(player);
+        }); // i rlly hope this works
+
+    }
+
+    private void renderBeacon(CCSPlayerController player)
+    {
+        if (_lastGuardBeaconsRadius >= 25.0f) { _lastGuardBeaconsRadius = 10.0f; }
+
+        // first we remove the previous beacon
+
+        // todo we will move this into a dictionary
+        // where the key is the player controller
+        // and the value is the env beams we wanna remove
+        // for now we'll just do it this way
+        foreach (CEntityInstance entity in Utilities.GetAllEntities())
+        {
+            if (entity.Entity == null) { return; }
+            if (entity.Entity.Name.Equals(player.SteamID.ToString()))
+            {
+                entity.Remove();
+            }
+        }
+
+        // then we draw our new beacon with slightly more radius
+        renderCircleAroundPlayerController(player, _lastGuardBeaconsRadius);
+        _lastGuardBeaconsRadius += 0.3f;
+    }
+
+    // assumes non-null player controller
+    private void renderCircleAroundPlayerController(CCSPlayerController player, float radius)
+    {
+        Vector beaconCenterPos = player.PlayerPawn.Value!.AbsOrigin!.Clone();
+
+        double angleStepSize = (2 * Math.PI) / 25;
+        double currentAngle = angleStepSize;
+        // set the initial prev point to the first point the function would have given if currentAngle = 0;
+        Vector prevPoint = beaconCenterPos + new Vector(radius, 0, 0);
+
+        while (currentAngle <= 2 * Math.PI)
+        {
+
+            float x = Convert.ToSingle(radius * Math.Cos(currentAngle));
+            float y = Convert.ToSingle(radius * Math.Sin(currentAngle));
+
+            Vector currentPoint = beaconCenterPos + new Vector(x, y, 0);
+            //Vector prevToCurrentDir = currentPoint - prevPoint;
+
+            CEnvBeam beam = createBeam(7.0f);
+            beam.Entity!.Name = player.SteamID.ToString(); // so we can remove it later.
+            // is this expensive.. ? :P
+
+            beam.Teleport(prevPoint, new QAngle(), new Vector());
+            beam.EndPos.X = currentPoint.X;
+            beam.EndPos.Y = currentPoint.Y;
+            beam.EndPos.Z = currentPoint.Z;
+
+            currentAngle += angleStepSize;
+            prevPoint = currentPoint;
+
+        }
+
+        // after we draw we will be missing one portion of the circle, let's draw it quickly
+        CEnvBeam finalBeam = createBeam(7.0f);
+        finalBeam.Entity!.Name = player.SteamID.ToString();
+
+        finalBeam.Teleport(prevPoint, new QAngle(), new Vector());
+        finalBeam.EndPos.X = beaconCenterPos.X + radius;
+        finalBeam.EndPos.Y = beaconCenterPos.Y;
+        finalBeam.EndPos.Z = beaconCenterPos.Z;
+
+    }
+
+    private CEnvBeam createBeam(float width)
+    {
+
+        CEnvBeam beam = Utilities.CreateEntityByName<CEnvBeam>("env_beam")!;
+
+        beam.RenderMode = RenderMode_t.kRenderWorldGlow;
+        beam.ClipStyle = BeamClipStyle_t.kMODELCLIP;
+        beam.Render = Color.Red;
+        beam.BoltWidth = width;
+        beam.NoiseAmplitude = 0f;
+
+        Utilities.SetStateChanged(beam, "CEnvBeam", "m_boltWidth");
+
+        return beam;
 
     }
 
@@ -179,6 +309,39 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
         IterateThroughTeam( (guardPlayer) => _numOfGuardsRoundStart += 1, CsTeam.CounterTerrorist);
 
         return HookResult.Continue; 
+
+    }
+
+    [GameEventHandler]
+    public HookResult OnPlayerLeave(EventPlayerDisconnect @event, GameEventInfo info)
+    {
+
+        if (!_lastGuardEnabled) { return HookResult.Continue; }
+
+        int numOfTerrorists = 0;
+        IterateThroughTeam((terroristPlayer) =>
+        {
+            numOfTerrorists++;
+        }, CsTeam.Terrorist);
+
+        if (numOfTerrorists <= 2)
+        {
+            TryDeactivateLastGuard();
+        }
+
+        return HookResult.Continue;
+
+    }
+
+
+    [GameEventHandler]
+    public HookResult OnRoundEnd(EventRoundStart @event, GameEventInfo info)
+    {
+    
+        if (_lastGuardEnabled) { TryDeactivateLastGuard(); }
+        // todo unset everyone's player model colour back to default (255?)
+
+        return HookResult.Continue;
 
     }
 

@@ -8,13 +8,14 @@ public class BeamCircle : BeamedShape
     private readonly BeamLine?[] _lines;
     private Vector[] _offsets;
     private float _radius;
+    private float _width;
 
-    public BeamCircle(BasePlugin plugin, Vector position, float radius, int resolution) : base(plugin, position,
+    public BeamCircle(BasePlugin plugin, Vector position, float radius, int resolution, float width = 1.0f) : base(plugin, position,
         resolution)
     {
         _radius = radius;
         _lines = new BeamLine[resolution];
-
+        _width = width;
         _offsets = GenerateOffsets();
     }
 
@@ -47,6 +48,7 @@ public class BeamCircle : BeamedShape
             if (line == null)
             {
                 line = new BeamLine(Plugin, start, end);
+                line.SetWidth(_width);
                 line.SetColor(Color);
                 line.Draw();
                 _lines[i] = line;
@@ -64,4 +66,10 @@ public class BeamCircle : BeamedShape
         _radius = radius;
         _offsets = GenerateOffsets();
     }
+
+    public void SetWidth(float width)
+    {
+        _width = width;
+    }
+
 }
