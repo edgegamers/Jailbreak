@@ -56,6 +56,11 @@ public class Jailbreak : BasePlugin
             Logger.LogInformation("[Jailbreak] Loaded behavior {@Behavior}", extension.GetType().FullName);
         }
 
+        RegisterListener<Listeners.OnServerPrecacheResources>((manifest) =>
+        {
+            manifest.AddResource("custom_content/particles/lastguard_beacon.vpcf");
+        });
+
     }
 
     /// <inheritdoc />

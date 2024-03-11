@@ -2,7 +2,6 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
@@ -11,6 +10,7 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Generic;
 using Jailbreak.Public.Mod.Warden;
 using System.Drawing;
+
 using static Jailbreak.Public.Mod.Warden.IWardenLastGuardService;
 
 namespace Jailbreak.Warden.Global;
@@ -26,17 +26,18 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
     private BasePlugin? _parent;
 
     private int _numOfGuardsRoundStart;
-    private float _prevRoundTimeMinutes;
 
     private bool _lastGuardEnabled;
     private int _lastGuardMaxHealth;
     private int _lastGuardRoundTimeSeconds;
 
-    private float _lastGuardBeaconsRadius;
-
     // todo add to a config file 
     public static readonly int _minNumberForLastGuard = 4;
-
+    private static readonly string _lastGuardBeaconFile = "custom_content/particles/lastguard_beacon.vpcf";
+    private List<CCSPlayerController> _activePlayerBeacons; // each player has a list of entities associated with them
+    private int ticks = 0;
+    private int step = 64 / 30; // per second 
+    private bool waitTwoSeconds = false;
 
 
     public WardenLastGuardBehavior(IWardenService wardenService, IWardenLastGuardNotifications wardenLastGuardNotifications, ICoroutines coroutines)
@@ -46,25 +47,18 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
         _coroutines = coroutines;
 
         _numOfGuardsRoundStart = 0;
-        _prevRoundTimeMinutes = 0.0f;
 
         _lastGuardEnabled = false;
         _lastGuardMaxHealth = 0;
         _lastGuardRoundTimeSeconds = 0;
 
-        _lastGuardBeaconsRadius = 0.0f;
+        _activePlayerBeacons = new List<CCSPlayerController>();
 
     }
 
     public void Start(BasePlugin parent)
     {
         _parent = parent;
-        Console.WriteLine("Well this is being written to.");
-        _parent!.RegisterListener<Listeners.OnTick>(() =>
-        {
-            // todo register drawBeacon() for list of players that should have it enabled
-            // we'll figure it out tomorrow.
-        }); // i rlly hope this works
     }
 
     /// <summary>
@@ -79,7 +73,6 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
     {
 
         if (_lastGuardEnabled) { return; }
-
         if (_wardenService.Warden == null) { return; }
         CCSPlayerController wardenController = _wardenService.Warden;
 
@@ -89,7 +82,8 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
         if (wardenController.CBodyComponent == null) { return; }
         if (wardenController.CBodyComponent.SceneNode == null) { return; }
 
-        _lastGuardEnabled = true;
+        _lastGuardEnabled = true; // only enable last guard after we've set everything we need
+        _activePlayerBeacons.Add(wardenController);
 
         _lastGuardMaxHealth = 0; // default health of warden
         _lastGuardRoundTimeSeconds = 0;
@@ -99,7 +93,8 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
 
             // for each Terrorist give the Last Guard +75HP and +10s to kill the remaining Prisoners
             _lastGuardMaxHealth += 75;
-            _lastGuardRoundTimeSeconds += 10; 
+            _lastGuardRoundTimeSeconds += 10;
+            _activePlayerBeacons.Add(terroristPlayer);
 
         }, CsTeam.Terrorist);
 
@@ -117,7 +112,7 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
          * Whenever you change the state of an entity you must tell the server.
          * The server then updates the individual clients.
          * This is because all the clients share the same state as the server.
-         * In CS# when you change the state of an entity, NetworkStateChanged() is not automatically called,
+         * In CS# when you change the state of a networked entity, NetworkStateChanged() is not automatically called,
          * therefore we must use Utilities.SetStateChanged()
          */
 
@@ -145,16 +140,12 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
         _wardenLastGuardNotifications.LASTGUARD_MAXHEALTH(_lastGuardMaxHealth).ToAllChat().ToAllCenter();
         _wardenLastGuardNotifications.LASTGUARD_TIMELIMIT(_lastGuardRoundTimeSeconds).ToAllChat().ToAllCenter();
 
-        // todo add beacons onto all players
-        Vector wardenPos = wardenController.AbsOrigin!;
-
-
-
     }
 
     public void TryDeactivateLastGuard()
     {
         _lastGuardEnabled = false;
+        _activePlayerBeacons.Clear();
 
          // remove all colours from player models, all beacons
          // set time to 30 seconds (for LR)
@@ -205,99 +196,6 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
 
 
         player.PrintToChat($"Width: {width}");
-
-        _parent!.RegisterListener<Listeners.OnTick>(() =>
-        {
-            Console.WriteLine("pls confirm we actually working doe");
-            if (_lastGuardEnabled) { return; }
-            Console.WriteLine("last guard not enabled?!");
-            renderBeacon(player);
-        }); // i rlly hope this works
-
-    }
-
-    private void renderBeacon(CCSPlayerController player)
-    {
-        if (_lastGuardBeaconsRadius >= 25.0f) { _lastGuardBeaconsRadius = 10.0f; }
-
-        // first we remove the previous beacon
-
-        // todo we will move this into a dictionary
-        // where the key is the player controller
-        // and the value is the env beams we wanna remove
-        // for now we'll just do it this way
-        foreach (CEntityInstance entity in Utilities.GetAllEntities())
-        {
-            if (entity.Entity == null) { return; }
-            if (entity.Entity.Name.Equals(player.SteamID.ToString()))
-            {
-                entity.Remove();
-            }
-        }
-
-        // then we draw our new beacon with slightly more radius
-        renderCircleAroundPlayerController(player, _lastGuardBeaconsRadius);
-        _lastGuardBeaconsRadius += 0.3f;
-    }
-
-    // assumes non-null player controller
-    private void renderCircleAroundPlayerController(CCSPlayerController player, float radius)
-    {
-        Vector beaconCenterPos = player.PlayerPawn.Value!.AbsOrigin!.Clone();
-
-        double angleStepSize = (2 * Math.PI) / 25;
-        double currentAngle = angleStepSize;
-        // set the initial prev point to the first point the function would have given if currentAngle = 0;
-        Vector prevPoint = beaconCenterPos + new Vector(radius, 0, 0);
-
-        while (currentAngle <= 2 * Math.PI)
-        {
-
-            float x = Convert.ToSingle(radius * Math.Cos(currentAngle));
-            float y = Convert.ToSingle(radius * Math.Sin(currentAngle));
-
-            Vector currentPoint = beaconCenterPos + new Vector(x, y, 0);
-            //Vector prevToCurrentDir = currentPoint - prevPoint;
-
-            CEnvBeam beam = createBeam(7.0f);
-            beam.Entity!.Name = player.SteamID.ToString(); // so we can remove it later.
-            // is this expensive.. ? :P
-
-            beam.Teleport(prevPoint, new QAngle(), new Vector());
-            beam.EndPos.X = currentPoint.X;
-            beam.EndPos.Y = currentPoint.Y;
-            beam.EndPos.Z = currentPoint.Z;
-
-            currentAngle += angleStepSize;
-            prevPoint = currentPoint;
-
-        }
-
-        // after we draw we will be missing one portion of the circle, let's draw it quickly
-        CEnvBeam finalBeam = createBeam(7.0f);
-        finalBeam.Entity!.Name = player.SteamID.ToString();
-
-        finalBeam.Teleport(prevPoint, new QAngle(), new Vector());
-        finalBeam.EndPos.X = beaconCenterPos.X + radius;
-        finalBeam.EndPos.Y = beaconCenterPos.Y;
-        finalBeam.EndPos.Z = beaconCenterPos.Z;
-
-    }
-
-    private CEnvBeam createBeam(float width)
-    {
-
-        CEnvBeam beam = Utilities.CreateEntityByName<CEnvBeam>("env_beam")!;
-
-        beam.RenderMode = RenderMode_t.kRenderWorldGlow;
-        beam.ClipStyle = BeamClipStyle_t.kMODELCLIP;
-        beam.Render = Color.Red;
-        beam.BoltWidth = width;
-        beam.NoiseAmplitude = 0f;
-
-        Utilities.SetStateChanged(beam, "CEnvBeam", "m_boltWidth");
-
-        return beam;
 
     }
 
