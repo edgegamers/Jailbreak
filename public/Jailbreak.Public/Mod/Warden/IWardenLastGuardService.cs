@@ -19,6 +19,6 @@ public interface IWardenLastGuardService
     /// if the current player being looped is on the CounterTerrorist team.
     /// </summary>
     /// <param name="callback"></param>
-    public void IterateThroughTeam(GuardCallback callback, CsTeam team);
+    public void IterateThroughTeams(GuardCallback callback, params CsTeam[] team);
 
 }

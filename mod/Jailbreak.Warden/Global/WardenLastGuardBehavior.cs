@@ -69,14 +69,14 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
         if (!_wardenService.HasWarden) { return; }
         if (!wardenController.IsValid) { return; }
         if (wardenController.PlayerPawn.Value == null) { return; }
-        if (wardenController.CBodyComponent == null) { return; }
-        if (wardenController.CBodyComponent.SceneNode == null) { return; }
+        if (wardenController.CBodyComponent == null) { return; } // todo remove ?
+        if (wardenController.CBodyComponent.SceneNode == null) { return; } // todo remove ?
 
         _lastGuardEnabled = true;
 
         _lastGuardMaxHealth = 0; // default health of warden
         _lastGuardRoundTimeSeconds = 0;
-        IterateThroughTeam((terroristPlayer) =>
+        IterateThroughTeams((terroristPlayer) =>
         {
             if (!terroristPlayer.PawnIsAlive) { return; }
 
@@ -94,7 +94,7 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
         _lastGuardMaxHealth /= 2; // important otherwise it's wayyy to OP :)
 
         // I don't like having an odd health...
-        if (_lastGuardMaxHealth % 2 != 0) {  _lastGuardMaxHealth += 5; } 
+        if (_lastGuardMaxHealth % 2 != 0) {  _lastGuardMaxHealth += 5; }
 
         /**
          * Whenever you change the state of an entity you must tell the server.
@@ -111,16 +111,13 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
          */
 
         // set the player's Pawn health and tell the server about it
-        wardenController.PlayerPawn.Value.Health = _lastGuardMaxHealth;
-        wardenController.PlayerPawn.Value.ArmorValue = 125; // in line with how it used to work
-        Utilities.SetStateChanged(wardenController.PlayerPawn.Value, "CBaseEntity", "m_iHealth");
-        Utilities.SetStateChanged(wardenController.PlayerPawn.Value, "CCSPlayerPawnBase", "m_ArmorValue");
+        SetPlayerHealthAndArmour(wardenController, _lastGuardMaxHealth, 125);
 
         // set the round time to the last guard round time and tell the server about it
         CCSGameRulesProxy serverRulesEntity = Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules").First();
 
         CCSGameRules serverGameRules = serverRulesEntity.GameRules!;
-        serverGameRules.RoundTime = _lastGuardRoundTimeSeconds;
+        serverGameRules.RoundTime = _lastGuardRoundTimeSeconds; // TODO why is this not working as intended ?? 
 
         Utilities.SetStateChanged(serverRulesEntity, "CCSGameRulesProxy", "m_pGameRules");
 
@@ -129,12 +126,25 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
         _wardenLastGuardNotifications.LASTGUARD_TIMELIMIT(_lastGuardRoundTimeSeconds).ToAllChat().ToAllCenter();
 
         // todo add beacons onto all players
-
+        // todo set: mp_radar_showall 3  // CT's can see T's on radar.
     }
 
     public void TryDeactivateLastGuard()
     {
         _lastGuardEnabled = false;
+
+        // TODO we want to integrate the deactivate last guard feature with the LR system
+        // such as setting round time and initiating LR!
+        CCSGameRulesProxy serverRulesEntity = Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules").First();
+
+        CCSGameRules serverGameRules = serverRulesEntity.GameRules!;
+        serverGameRules.RoundTime = 60; // set round time to 60s for LR
+
+        IterateThroughTeams((player) =>
+        {
+            if (!player.PawnIsAlive) { return; }
+            SetPlayerHealthAndArmour(player, 100, 0); // eh 
+        }, CsTeam.Terrorist, CsTeam.CounterTerrorist);
 
     }
 
@@ -176,9 +186,44 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
     {
 
         _numOfGuardsRoundStart = 0;
-        IterateThroughTeam( (guardPlayer) => _numOfGuardsRoundStart += 1, CsTeam.CounterTerrorist);
+        IterateThroughTeams( (guardPlayer) => _numOfGuardsRoundStart += 1, CsTeam.CounterTerrorist);
 
         return HookResult.Continue; 
+
+    }
+
+    [GameEventHandler]
+    public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
+    {
+
+        if (_lastGuardEnabled)
+        {
+            TryDeactivateLastGuard();
+
+        } 
+
+        return HookResult.Continue;
+
+    }
+
+    [GameEventHandler]
+    public HookResult OnPlayerLeave(EventPlayerDisconnect @event, GameEventInfo info)
+    {
+
+        if (!_lastGuardEnabled) { return HookResult.Continue; }
+
+        // if last guard is enabled there should be one CT, potentially they've left so let's check that...
+        int numOfTerrorists = 0;
+        int numOfGuards = 0;
+        foreach (CCSPlayerController player in Utilities.GetPlayers())
+        {
+            if (player.GetTeam() == CsTeam.Terrorist) { numOfTerrorists++; continue; }
+            if (player.GetTeam() == CsTeam.CounterTerrorist) { numOfGuards++; continue; }
+        }
+
+        if (numOfGuards == 0 || numOfTerrorists <= 2) { TryDeactivateLastGuard(); return HookResult.Continue; }
+
+        return HookResult.Continue;
 
     }
 
@@ -190,7 +235,7 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
         {
 
             int numOfAliveTerrorists = 0;
-            IterateThroughTeam( (terroristPlayer) =>
+            IterateThroughTeams( (terroristPlayer) =>
             {
                 numOfAliveTerrorists += 1;
             }, CsTeam.Terrorist);
@@ -204,7 +249,7 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
         else
         {
             int numOfAliveGuards = 0;
-            IterateThroughTeam( (guardPlayer) =>
+            IterateThroughTeams( (guardPlayer) =>
             {
                 if (guardPlayer.PawnIsAlive) { numOfAliveGuards += 1; }
             }, CsTeam.CounterTerrorist);
@@ -222,19 +267,30 @@ public class WardenLastGuardBehavior : IPluginBehavior, IWardenLastGuardService
 
     /// <summary>
     /// Iterates through the specified team and invokes the callback only if the player in question is VALID
+    /// and is in the list of specified teams
     /// </summary>
     /// <param name="callback">The PlayerHandle WILL be valid.</param>
     /// <param name="team"></param>
-    public void IterateThroughTeam(GuardCallback callback, CsTeam team)
+    public void IterateThroughTeams(GuardCallback callback, params CsTeam[] team)
     {
         foreach (CCSPlayerController player in Utilities.GetPlayers())
         {
             if (!player.IsValid) {  continue; }
-            if (player.GetTeam() == team)
+            if (team.Contains(player.GetTeam()))
             {
                 callback.Invoke(player);
             }
         }
+    }
+
+    private void SetPlayerHealthAndArmour(CCSPlayerController player, int health, int armour)
+    {
+        if (!player.IsValid) { return; }
+        if (player.PlayerPawn.Value == null) { return; }
+        player.PlayerPawn.Value.Health = health;
+        player.PlayerPawn.Value.ArmorValue = armour; 
+        Utilities.SetStateChanged(player.PlayerPawn.Value, "CBaseEntity", "m_iHealth");
+        Utilities.SetStateChanged(player.PlayerPawn.Value, "CCSPlayerPawnBase", "m_ArmorValue");
     }
 
 }
