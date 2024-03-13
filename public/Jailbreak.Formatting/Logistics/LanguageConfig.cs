@@ -31,7 +31,11 @@ public class LanguageConfig<TDialect>
 		where TRebel : class, ILanguage<TDialect>, IRebelNotifications
 		=> _collection.AddSingleton<IRebelNotifications, TRebel>();
 
-	public void WithLogging<TLogging>()
+    public void WithJihadC4<TJihadC4>()
+    where TJihadC4 : class, ILanguage<TDialect>, IJihadC4Notifications
+    => _collection.AddSingleton<IJihadC4Notifications, TJihadC4>();
+
+    public void WithLogging<TLogging>()
 		where TLogging : class, ILanguage<TDialect>, ILogMessages
 		=> _collection.AddSingleton<ILogMessages, TLogging>();
 }
