@@ -28,7 +28,7 @@ public interface IJihadC4Service
     /// or if they have the Jihad C4 or not. This function will create an explosion at the player's absolute origin.
     /// </summary>
     /// <param name="terrorist"></param>
-    public void TryBlowUpJihadC4(CCSPlayerController terrorist);
+    public void TryBlowUpJihadC4(CC4 bombEntity, CCSPlayerController terrorist);
 
     /// <summary>
     /// Attempts to defuse the "Jihad C4" by disabling the Terrorist from being able to 
