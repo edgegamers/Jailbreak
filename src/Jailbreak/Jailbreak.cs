@@ -37,6 +37,13 @@ public class Jailbreak : BasePlugin
     /// <inheritdoc />
     public override void Load(bool hotReload)
     {
+
+        RegisterListener<Listeners.OnServerPrecacheResources>((manifest) =>
+        {
+            manifest.AddResource("particles/lastguard_beacon.vpcf");
+            manifest.AddResource("particles/explosion_c4_500_fallback.vpcf");
+        });
+
         Logger.LogInformation("[Jailbreak] Loading...");
 
         _scope = _provider.CreateScope();
@@ -49,7 +56,7 @@ public class Jailbreak : BasePlugin
         {
             //	Register all event handlers on the extension object
             RegisterAllAttributes(extension);
-
+            
             //	Tell the extension to start it's magic
             extension.Start(this);
 
