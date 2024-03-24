@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
+using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
@@ -10,6 +11,7 @@ public class Coinflip : AbstractLastRequest
 {
     private ChatMenu menu;
     private Random rnd;
+    private Timer timeout;
 
     public Coinflip(BasePlugin plugin, ILastRequestManager manager, CCSPlayerController prisoner,
         CCSPlayerController guard) : base(plugin, manager, prisoner, guard)
@@ -33,7 +35,7 @@ public class Coinflip : AbstractLastRequest
     {
         MenuManager.OpenChatMenu(guard, menu);
 
-        plugin.AddTimer(10, () =>
+        timeout = plugin.AddTimer(10, () =>
         {
             if (state != LRState.Active)
                 return;
@@ -46,6 +48,7 @@ public class Coinflip : AbstractLastRequest
 
     private void Decide(bool heads, bool print)
     {
+        timeout.Kill();
         if (print)
         {
             MenuManager.CloseActiveMenu(guard);
