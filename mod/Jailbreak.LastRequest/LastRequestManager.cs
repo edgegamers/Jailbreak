@@ -171,6 +171,21 @@ public class LastRequestManager : ILastRequestManager
             lr.Setup();
             ActiveLRs.Add(lr);
 
+            if (prisoner.Pawn.Value != null)
+            {
+                prisoner.Pawn.Value.Health = 100;
+                prisoner.PlayerPawn.Value!.ArmorValue = 0;
+                Utilities.SetStateChanged(prisoner.Pawn.Value, "CBaseEntity", "m_iHealth");
+            }
+
+
+            if (guard.Pawn.Value != null)
+            {
+                guard.Pawn.Value.Health = 100;
+                guard.PlayerPawn.Value!.ArmorValue = 0;
+                Utilities.SetStateChanged(guard.Pawn.Value, "CBaseEntity", "m_iHealth");
+            }
+
             messages.InformLastRequest(lr).ToPlayerChat(prisoner);
             messages.InformLastRequest(lr).ToPlayerChat(guard);
             return true;

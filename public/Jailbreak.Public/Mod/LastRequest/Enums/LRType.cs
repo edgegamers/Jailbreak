@@ -26,9 +26,6 @@ public static class LRTypeExtensions
             LRType.KnifeFight => "Knife Fight",
             LRType.NoScope => "No Scope",
             LRType.Coinflip => "Coinflip",
-            LRType.ShotForShot => "Shot For Shot",
-            LRType.MagForMag => "Mag For Mag",
-            LRType.Race => "Race",
             _ => "Unknown"
         };
     }

@@ -48,6 +48,7 @@ public class Coinflip : AbstractLastRequest
     {
         if (print)
         {
+            MenuManager.CloseActiveMenu(guard);
             PrintToParticipants($"{guard.PlayerName} chose {(heads ? "Heads" : "Tails")}... flipping...");
             state = LRState.Active;
         }

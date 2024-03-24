@@ -32,6 +32,7 @@ public class LastRequestMenuSelector
 
     private void OnSelectLR(CCSPlayerController player, LRType lr)
     {
+        MenuManager.CloseActiveMenu(player);
         player.ExecuteClientCommandFromServer(this.command.Invoke(lr));
     }
 }

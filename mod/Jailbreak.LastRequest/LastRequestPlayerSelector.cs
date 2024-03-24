@@ -44,6 +44,7 @@ public class LastRequestPlayerSelector
 
     private void OnSelect(CCSPlayerController player, Func<string?, string> command, string? value)
     {
+        MenuManager.CloseActiveMenu(player);
         player.ExecuteClientCommandFromServer(command.Invoke(value));
     }
 }
