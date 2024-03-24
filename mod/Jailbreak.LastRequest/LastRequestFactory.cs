@@ -29,9 +29,22 @@ public class LastRequestFactory : ILastRequestFactory
             LRType.NoScope => new NoScope(plugin, manager, prisoner, guard),
             LRType.RockPaperScissors => new RockPaperScissors(plugin, manager, prisoner, guard),
             LRType.Coinflip => new Coinflip(plugin, manager, prisoner, guard),
-            LRType.ShotForShot => new ShotForShot(plugin, manager, prisoner, guard),
-            LRType.MagForMag => new MagForMag(plugin, manager, prisoner, guard),
+            // LRType.ShotForShot => new ShotForShot(plugin, manager, prisoner, guard),
+            // LRType.MagForMag => new MagForMag(plugin, manager, prisoner, guard),
             _ => throw new ArgumentException("Invalid last request type: " + type, nameof(type))
+        };
+    }
+    
+    public bool IsValidType(LRType type)
+    {
+        return type switch
+        {
+            LRType.KnifeFight => true,
+            LRType.GunToss => true,
+            LRType.NoScope => true,
+            LRType.RockPaperScissors => true,
+            LRType.Coinflip => true,
+            _ => false
         };
     }
 }

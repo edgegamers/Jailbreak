@@ -26,7 +26,8 @@ public class LastRequest : AbstractCommand
         this.plugin = plugin;
         manager = services.GetRequiredService<ILastRequestManager>();
         playerSelector = new LastRequestPlayerSelector(manager, true);
-        menuSelector = new LastRequestMenuSelector((type) => "css_debug lastrequest " + type);
+        menuSelector = new LastRequestMenuSelector(services.GetRequiredService<ILastRequestFactory>(),
+            (type) => "css_debug lastrequest " + type);
         _messages = services.GetRequiredService<ILastRequestMessages>();
         _generic = services.GetRequiredService<IGenericCommandNotifications>();
     }

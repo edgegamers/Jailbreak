@@ -22,21 +22,23 @@ public class LastRequestCommand : IPluginBehavior
     private BasePlugin plugin;
     private ILastRequestMessages _messages;
     private IGenericCommandNotifications _generic;
+    private ILastRequestFactory _factory;
 
     // css_lr <player> <LRType>
     public LastRequestCommand(ILastRequestManager manager, ILastRequestMessages messages,
-        IGenericCommandNotifications generic)
+        IGenericCommandNotifications generic, ILastRequestFactory factory)
     {
         _lrManager = manager;
         _messages = messages;
         _generic = generic;
+        _factory = factory;
     }
 
     public void Start(BasePlugin plugin)
     {
         this.plugin = plugin;
         playerSelector = new LastRequestPlayerSelector(_lrManager);
-        menuSelector = new LastRequestMenuSelector();
+        menuSelector = new LastRequestMenuSelector(_factory);
     }
 
 
