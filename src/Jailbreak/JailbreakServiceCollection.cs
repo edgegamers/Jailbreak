@@ -35,9 +35,9 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
 
         serviceCollection.AddJailbreakGeneric();
         serviceCollection.AddJailbreakLogs();
+        serviceCollection.AddJailbreakRebel();
         serviceCollection.AddJailbreakWarden();
         serviceCollection.AddJailbreakTeams();
-        serviceCollection.AddJailbreakRebel();
         serviceCollection.AddJailbreakDebug();
         serviceCollection.AddJailbreakLastRequest();
 
