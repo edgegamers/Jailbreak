@@ -33,6 +33,7 @@ public class Coinflip : AbstractLastRequest
 
     public override void Execute()
     {
+        state = LRState.Active;
         MenuManager.OpenChatMenu(guard, menu);
 
         timeout = plugin.AddTimer(10, () =>

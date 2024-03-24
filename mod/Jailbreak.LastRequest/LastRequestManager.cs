@@ -129,7 +129,7 @@ public class LastRequestManager : ILastRequestManager
         {
             // Handle active LRs
             var activeLr = ((ILastRequestManager)this).GetActiveLR(player);
-            if (activeLr != null)
+            if (activeLr != null && activeLr.state != LRState.Completed)
             {
                 var isPrisoner = activeLr.prisoner.Slot == player.Slot;
                 EndLastRequest(activeLr, isPrisoner ? LRResult.GuardWin : LRResult.PrisonerWin);
