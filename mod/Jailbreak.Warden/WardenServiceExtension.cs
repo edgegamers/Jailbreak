@@ -1,4 +1,5 @@
-﻿using Jailbreak.Public.Extensions;
+﻿using Jailbreak.Formatting.Views;
+using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Warden;
 using Jailbreak.Warden.Commands;
 using Jailbreak.Warden.Global;
@@ -15,9 +16,11 @@ public static class WardenServiceExtension
     {
         serviceCollection.AddPluginBehavior<IWardenService, WardenBehavior>();
         serviceCollection.AddPluginBehavior<IWardenSelectionService, WardenSelectionBehavior>();
+        serviceCollection.AddPluginBehavior<IWardenPeaceService, WardenPeaceBehaviour>();
 
         serviceCollection.AddPluginBehavior<WardenCommandsBehavior>();
         serviceCollection.AddPluginBehavior<WardenMarkerBehavior>();
         serviceCollection.AddPluginBehavior<WardenPaintBehavior>();
+        serviceCollection.AddPluginBehavior<WardenPeaceCommandsBehavior>();   
     }
 }

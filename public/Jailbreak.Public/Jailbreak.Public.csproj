@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Plugin\"/>
+        <Folder Include="Plugin\" />
     </ItemGroup>
 
 </Project>

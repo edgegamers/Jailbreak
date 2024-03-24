@@ -22,4 +22,5 @@ public interface IWardenService
     public bool TrySetWarden(CCSPlayerController warden);
 
     public bool TryRemoveWarden();
+
 }
