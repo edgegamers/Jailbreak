@@ -50,6 +50,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
 			config.WithRebel<RebelNotifications>();
 			config.WithLogging<LogMessages>();
 			config.WithLastRequest<LastRequestMessages>();
+			config.WithSpecialTreatment<SpecialTreatmentNotifications>();
 		});
 	}
 }
