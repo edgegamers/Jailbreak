@@ -80,7 +80,7 @@ public class SpecialTreatmentBehavior : IPluginBehavior, ISpecialTreatmentServic
             return;
 
         var color = hasSt
-            ? Color.FromArgb(254, 150, 255, 150)
+            ? Color.FromArgb(254, 0, 255, 0)
             : Color.FromArgb(254, 255, 255, 255);
 
         player.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
