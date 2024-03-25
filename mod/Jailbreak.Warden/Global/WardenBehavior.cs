@@ -65,6 +65,8 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 
 		_hasWarden = true;
 		_warden = controller;
+		
+		_warden.PlayerName = "[WARDEN] " + _warden.PlayerName;
 
 		if (_warden.Pawn.Value != null)
 		{
@@ -92,6 +94,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 
 		if (_warden != null && _warden.Pawn.Value != null)
 		{
+			_warden.PlayerName = _warden.PlayerName.Replace("[WARDEN] ", "");
 			_warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
 			_warden.Pawn.Value.Render = Color.FromArgb(254, 255, 255, 255);
 			Utilities.SetStateChanged(_warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");

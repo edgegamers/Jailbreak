@@ -20,7 +20,7 @@ public class RebelListener : IPluginBehavior
     }
 
     [GameEventHandler]
-    private HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
+    public HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
     {
         var player = @event.Userid;
         if (!player.IsReal())
