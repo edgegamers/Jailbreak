@@ -31,6 +31,7 @@ public class RockPaperScissors : AbstractLastRequest
     {
         if (player.Slot != prisoner.Slot && player.Slot != guard.Slot)
             return;
+        MenuManager.CloseActiveMenu(player);
 
         int choice = Array.IndexOf(new[] { "Rock", "Paper", "Scissors" }, option.Text);
 
