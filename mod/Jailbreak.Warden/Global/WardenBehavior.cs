@@ -146,6 +146,8 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 	{
 		foreach (var player in _bluePrisoners)
 		{
+			if(!player.IsReal())
+				continue;
 			var pawn = player.Pawn.Value;
 			if (pawn == null)
 				continue;
