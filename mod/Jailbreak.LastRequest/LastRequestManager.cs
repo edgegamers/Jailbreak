@@ -186,8 +186,7 @@ public class LastRequestManager : ILastRequestManager
                 Utilities.SetStateChanged(guard.Pawn.Value, "CBaseEntity", "m_iHealth");
             }
 
-            messages.InformLastRequest(lr).ToPlayerChat(prisoner);
-            messages.InformLastRequest(lr).ToPlayerChat(guard);
+            messages.InformLastRequest(lr).ToAllChat();
             return true;
         }
         catch (ArgumentException e)
