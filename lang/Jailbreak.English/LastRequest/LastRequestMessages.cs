@@ -23,7 +23,7 @@ public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.La
 
     public IView LastRequestEnabled() => new SimpleView()
     {
-        { PREFIX, "Last Request has been enabled." }
+        { PREFIX, "Last Request has been enabled. Type !lr to start a last request." }
     };
 
     public IView LastRequestDisabled() => new SimpleView()
