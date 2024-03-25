@@ -34,4 +34,12 @@ public class LanguageConfig<TDialect>
 	public void WithLogging<TLogging>()
 		where TLogging : class, ILanguage<TDialect>, ILogMessages
 		=> _collection.AddSingleton<ILogMessages, TLogging>();
+
+	public void WithLastRequest<TLastRequest>()
+		where TLastRequest : class, ILanguage<TDialect>, ILastRequestMessages
+		=> _collection.AddSingleton<ILastRequestMessages, TLastRequest>();
+
+	public void WithSpecialTreatment<TSpecialTreatment>()
+		where TSpecialTreatment : class, ILanguage<TDialect>, ISpecialTreatmentNotifications
+		=> _collection.AddSingleton<ISpecialTreatmentNotifications, TSpecialTreatment>();
 }

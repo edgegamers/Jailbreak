@@ -1,4 +1,4 @@
-﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
@@ -186,6 +186,16 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
         //	Player is attempting to join CT and is not a guard?
         //	If so, stop them!!
         if ((CsTeam)team == CsTeam.CounterTerrorist && !state.IsGuard)
+        {
+            _notifications.ATTEMPT_TO_JOIN_FROM_TEAM_MENU
+                .ToPlayerChat(invoked)
+                .ToPlayerCenter(invoked);
+
+            return HookResult.Stop;
+        }
+
+        // Prisoner attempted to use auto-select, cancel the action.
+        if ((CsTeam)team == CsTeam.None && invoked.GetTeam() == CsTeam.Terrorist)
         {
             _notifications.ATTEMPT_TO_JOIN_FROM_TEAM_MENU
                 .ToPlayerChat(invoked)

@@ -8,6 +8,7 @@ using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Logs;
+using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.Warden;
 using Microsoft.Extensions.Logging;
 
@@ -17,17 +18,28 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 {
 	private ILogger<WardenBehavior> _logger;
 	private IRichLogService _logs;
-
 	private IWardenNotifications _notifications;
+	private ISpecialTreatmentService _specialTreatment;
+	private IRebelService _rebels;
+	private ISet<CCSPlayerController> _bluePrisoners = new HashSet<CCSPlayerController>();
+	private BasePlugin _parent;
 
 	private bool _hasWarden;
 	private CCSPlayerController? _warden;
 
-	public WardenBehavior(ILogger<WardenBehavior> logger, IWardenNotifications notifications, IRichLogService logs)
+	public WardenBehavior(ILogger<WardenBehavior> logger, IWardenNotifications notifications, IRichLogService logs,
+		ISpecialTreatmentService specialTreatment, IRebelService rebels)
 	{
 		_logger = logger;
 		_notifications = notifications;
 		_logs = logs;
+		_specialTreatment = specialTreatment;
+		_rebels = rebels;
+	}
+
+	public void Start(BasePlugin parent)
+	{
+		_parent = parent;
 	}
 
 	/// <summary>
@@ -57,7 +69,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		if (_warden.Pawn.Value != null)
 		{
 			_warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
-		    _warden.Pawn.Value.Render = Color.Blue;
+		    _warden.Pawn.Value.Render = Color.FromArgb(254, 0, 0, 255);
 			Utilities.SetStateChanged(_warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
 		}
 
@@ -66,6 +78,8 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 			.ToAllCenter();
 
 		_logs.Append( _logs.Player(_warden), "is now the warden.");
+
+		_parent.AddTimer(3, UnmarkPrisonersBlue);
 		return true;
 	}
 
@@ -121,6 +135,53 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 			.ToAllCenter();
 
 		_notifications.BECOME_NEXT_WARDEN.ToAllChat();
+		
+		MarkPrisonersBlue();
+	}
+	
+	private void UnmarkPrisonersBlue()
+	{
+		foreach (var player in _bluePrisoners)
+		{
+			var pawn = player.Pawn.Value;
+			if (pawn == null)
+				continue;
+			if(IgnoreColor(player))
+				continue;
+			pawn.RenderMode = RenderMode_t.kRenderNormal;
+			pawn.Render = Color.FromArgb(254, 255, 255, 255);
+			Utilities.SetStateChanged(pawn, "CBaseModelEntity", "m_clrRender");
+		}
+		_bluePrisoners.Clear();
+	}
+
+	private void MarkPrisonersBlue()
+	{
+		foreach(CCSPlayerController player in Utilities.GetPlayers())
+		{
+			if(!player.IsReal() || player.Team != CsTeam.Terrorist)
+				continue;
+			if(IgnoreColor(player))
+				continue;
+
+			var pawn = player.Pawn.Value;
+			if(pawn == null)
+				continue;
+			pawn.RenderMode = RenderMode_t.kRenderTransColor;
+			pawn.Render = Color.FromArgb(254, 0, 0, 255);
+			Utilities.SetStateChanged(pawn, "CBaseModelEntity", "m_clrRender");
+
+			_bluePrisoners.Add(player);
+		}
+	}
+
+	private bool IgnoreColor(CCSPlayerController player)
+	{
+		if (_specialTreatment.IsSpecialTreatment(player))
+			return true;
+		if (_rebels.IsRebel(player))
+			return true;
+		return false;
 	}
 
 	[GameEventHandler]
