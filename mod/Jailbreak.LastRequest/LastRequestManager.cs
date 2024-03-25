@@ -112,7 +112,10 @@ public class LastRequestManager : ILastRequestManager
         if (GetGameRules().WarmupPeriod)
             return HookResult.Continue;
         if (CountAlivePrisoners() > config.PrisonersToActiveLR)
+        {
+            this.IsLREnabled = false;
             return HookResult.Continue;
+        }
         this.IsLREnabled = true;
         messages.LastRequestEnabled().ToAllChat();
         return HookResult.Continue;
