@@ -54,7 +54,8 @@ public class BeamLine : DrawableShape, IColorable
     public override void Remove()
     {
         KillTimer?.Kill();
-        _beam?.Remove();
+        if(_beam != null && _beam.IsValid)
+            _beam?.Remove();
         _beam = null;
     }
 
