@@ -2,6 +2,7 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
@@ -80,6 +81,11 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		_notifications.NEW_WARDEN(_warden)
 			.ToAllChat()
 			.ToAllCenter();
+			
+		foreach (CCSPlayerController player in Utilities.GetPlayers()) {
+			player.ExecuteClientCommand(
+				$"play sounds/wardenNew");
+		}
 
 		_logs.Append( _logs.Player(_warden), "is now the warden.");
 
@@ -138,6 +144,11 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		_notifications.WARDEN_DIED
 			.ToAllChat()
 			.ToAllCenter();
+		
+		foreach (CCSPlayerController player in Utilities.GetPlayers()) {
+			player.ExecuteClientCommand(
+				$"play sounds/wardenKilled");
+		}
 
 		_notifications.BECOME_NEXT_WARDEN.ToAllChat();
 
@@ -213,6 +224,11 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		_notifications.WARDEN_LEFT
 			.ToAllChat()
 			.ToAllCenter();
+
+		foreach (CCSPlayerController player in Utilities.GetPlayers()) {
+			player.ExecuteClientCommand(
+				$"play sounds/wardenPassed");
+		}
 
 		_notifications.BECOME_NEXT_WARDEN.ToAllChat();
 
