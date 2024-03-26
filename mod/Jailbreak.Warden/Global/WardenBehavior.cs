@@ -11,6 +11,7 @@ using Jailbreak.Public.Mod.Logs;
 using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.Warden;
 using Microsoft.Extensions.Logging;
+using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.Warden.Global;
 
@@ -23,6 +24,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 	private IRebelService _rebels;
 	private ISet<CCSPlayerController> _bluePrisoners = new HashSet<CCSPlayerController>();
 	private BasePlugin _parent;
+	private Timer? _unblueTimer;
 
 	private bool _hasWarden;
 	private CCSPlayerController? _warden;
@@ -81,7 +83,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 
 		_logs.Append( _logs.Player(_warden), "is now the warden.");
 
-		_parent.AddTimer(3, UnmarkPrisonersBlue);
+		_unblueTimer = _parent.AddTimer(3, UnmarkPrisonersBlue);
 		return true;
 	}
 
@@ -138,7 +140,8 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 			.ToAllCenter();
 
 		_notifications.BECOME_NEXT_WARDEN.ToAllChat();
-		
+
+		_unblueTimer?.Kill(); // If the warden dies withing 3 seconds of becoming warden, we need to cancel the unblue timer
 		MarkPrisonersBlue();
 	}
 	
