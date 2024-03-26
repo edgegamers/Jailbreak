@@ -15,7 +15,6 @@ using Jailbreak.LastRequest;
 using Jailbreak.Logs;
 using Jailbreak.Public.Configuration;
 using Jailbreak.Rebel;
-using Jailbreak.Teams;
 using Jailbreak.Warden;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -37,7 +36,6 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
         serviceCollection.AddJailbreakLogs();
         serviceCollection.AddJailbreakRebel();
         serviceCollection.AddJailbreakWarden();
-        serviceCollection.AddJailbreakTeams();
         serviceCollection.AddJailbreakDebug();
         serviceCollection.AddJailbreakLastRequest();
 
