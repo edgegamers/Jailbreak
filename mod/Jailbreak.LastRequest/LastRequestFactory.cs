@@ -5,36 +5,28 @@ using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestFactory : ILastRequestFactory
+public class LastRequestFactory(ILastRequestManager manager) : ILastRequestFactory
 {
-    private BasePlugin plugin;
-    private ILastRequestManager manager;
-
-    public LastRequestFactory(ILastRequestManager manager)
-    {
-        this.manager = manager;
-    }
+    private BasePlugin _plugin;
 
     public void Start(BasePlugin parent)
     {
-        plugin = parent;
+        _plugin = parent;
     }
 
     public AbstractLastRequest CreateLastRequest(CCSPlayerController prisoner, CCSPlayerController guard, LRType type)
     {
         return type switch
         {
-            LRType.KnifeFight => new KnifeFight(plugin, manager, prisoner, guard),
-            LRType.GunToss => new GunToss(plugin, manager, prisoner, guard),
-            LRType.NoScope => new NoScope(plugin, manager, prisoner, guard),
-            LRType.RockPaperScissors => new RockPaperScissors(plugin, manager, prisoner, guard),
-            LRType.Coinflip => new Coinflip(plugin, manager, prisoner, guard),
-            // LRType.ShotForShot => new ShotForShot(plugin, manager, prisoner, guard),
-            // LRType.MagForMag => new MagForMag(plugin, manager, prisoner, guard),
+            LRType.KnifeFight => new KnifeFight(_plugin, manager, prisoner, guard),
+            LRType.GunToss => new GunToss(_plugin, manager, prisoner, guard),
+            LRType.NoScope => new NoScope(_plugin, manager, prisoner, guard),
+            LRType.RockPaperScissors => new RockPaperScissors(_plugin, manager, prisoner, guard),
+            LRType.Coinflip => new Coinflip(_plugin, manager, prisoner, guard),
             _ => throw new ArgumentException("Invalid last request type: " + type, nameof(type))
         };
     }
-    
+
     public bool IsValidType(LRType type)
     {
         return type switch

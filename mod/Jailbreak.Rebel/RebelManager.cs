@@ -11,17 +11,11 @@ using Jailbreak.Public.Mod.Rebel;
 
 namespace Jailbreak.Rebel;
 
-public class RebelManager : IPluginBehavior, IRebelService
+public class RebelManager(IRebelNotifications notifs, IRichLogService logs) : IPluginBehavior, IRebelService
 {
-    private readonly IRichLogService _logs;
-    private readonly IRebelNotifications _notifs;
     private readonly Dictionary<CCSPlayerController, long> _rebelTimes = new();
-
-    public RebelManager(IRebelNotifications notifs, IRichLogService logs)
-    {
-        _notifs = notifs;
-        _logs = logs;
-    }
+    
+    public static int MAX_REBEL_TIME = 30;
 
     public void Start(BasePlugin parent)
     {
@@ -106,11 +100,11 @@ public class RebelManager : IPluginBehavior, IRebelService
         return 0;
     }
 
-    public bool MarkRebel(CCSPlayerController player, long time = 120)
+    public bool MarkRebel(CCSPlayerController player, long time = 30)
     {
         if (!_rebelTimes.ContainsKey(player))
         {
-            _logs.Append(_logs.Player(player), "is now a rebel.");
+            logs.Append(logs.Player(player), "is now a rebel.");
         }
 
         _rebelTimes[player] = DateTimeOffset.Now.ToUnixTimeSeconds() + time;
@@ -120,8 +114,8 @@ public class RebelManager : IPluginBehavior, IRebelService
 
     public void UnmarkRebel(CCSPlayerController player)
     {
-        _notifs.NO_LONGER_REBEL.ToPlayerChat(player);
-        _logs.Append(_logs.Player(player), "is no longer a rebel.");
+        notifs.NO_LONGER_REBEL.ToPlayerChat(player);
+        logs.Append(logs.Player(player), "is no longer a rebel.");
 
         _rebelTimes.Remove(player);
         ApplyRebelColor(player);
@@ -131,11 +125,11 @@ public class RebelManager : IPluginBehavior, IRebelService
     private float GetRebelTimePercentage(CCSPlayerController player)
     {
         var x = GetRebelTimeLeft(player);
-        if (x > 120)
+        if (x > MAX_REBEL_TIME)
             return 1;
         if (x <= 0)
             return 0;
-        return (float)(100 - (120 - x) * Math.Sqrt(120 - x) / 13f) / 100;
+        return (float)(100 - (MAX_REBEL_TIME - x) * Math.Sqrt(MAX_REBEL_TIME - x) / 13f) / 100;
     }
 
     private Color GetRebelColor(CCSPlayerController player)

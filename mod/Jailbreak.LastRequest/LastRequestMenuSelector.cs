@@ -8,36 +8,36 @@ namespace Jailbreak.LastRequest;
 
 public class LastRequestMenuSelector
 {
-    private readonly CenterHtmlMenu menu;
-    private Func<LRType, string> command;
-    private readonly ILastRequestFactory factory;
+    private readonly CenterHtmlMenu _menu;
+    private Func<LRType, string> _command;
+    private readonly ILastRequestFactory _factory;
 
     public LastRequestMenuSelector(ILastRequestFactory factory) : this(factory, (lr) => "css_lr " + ((int)lr))
     {
-        this.factory = factory;
+        _factory = factory;
     }
 
     public LastRequestMenuSelector(ILastRequestFactory factory, Func<LRType, string> command)
     {
-        this.factory = factory;
-        this.command = command;
-        menu = new CenterHtmlMenu("css_lr [LR] [Player]");
+        _factory = factory;
+        _command = command;
+        _menu = new CenterHtmlMenu("css_lr [LR] [Player]");
         foreach (LRType lr in Enum.GetValues(typeof(LRType)))
         {
             if (!factory.IsValidType(lr))
                 continue;
-            menu.AddMenuOption(lr.ToFriendlyString(), (p, o) => OnSelectLR(p, lr));
+            _menu.AddMenuOption(lr.ToFriendlyString(), (p, o) => OnSelectLR(p, lr));
         }
     }
 
     public CenterHtmlMenu GetMenu()
     {
-        return menu;
+        return _menu;
     }
 
     private void OnSelectLR(CCSPlayerController player, LRType lr)
     {
         MenuManager.CloseActiveMenu(player);
-        player.ExecuteClientCommandFromServer(this.command.Invoke(lr));
+        player.ExecuteClientCommandFromServer(this._command.Invoke(lr));
     }
 }

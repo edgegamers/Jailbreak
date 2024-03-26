@@ -8,16 +8,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Debug.Subcommands;
 
-public abstract class AbstractCommand
+public abstract class AbstractCommand(IServiceProvider services)
 {
-    private readonly IGenericCommandNotifications _lang;
-    protected IServiceProvider Services;
-
-    protected AbstractCommand(IServiceProvider services)
-    {
-        Services = services;
-        _lang = services.GetRequiredService<IGenericCommandNotifications>();
-    }
+    private readonly IGenericCommandNotifications _lang = services.GetRequiredService<IGenericCommandNotifications>();
+    protected readonly IServiceProvider Services = services;
 
     public abstract void OnCommand(CCSPlayerController? executor, WrappedInfo info);
 
@@ -61,7 +55,7 @@ public abstract class AbstractCommand
         return null;
     }
 
-    internal TargetResult? GetVulnerableTarget(CommandInfo command, int argIndex = 1,
+    protected TargetResult? GetVulnerableTarget(CommandInfo command, int argIndex = 1,
         Func<CCSPlayerController, bool>? predicate = null)
     {
         return GetTarget(command, argIndex,

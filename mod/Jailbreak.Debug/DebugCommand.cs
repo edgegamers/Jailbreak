@@ -25,7 +25,6 @@ public class DebugCommand : IPluginBehavior
         _commands.Add("lr", new Subcommands.LastRequest(serviceProvider, plugin));
     }
 
-
     [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_debug", "Debug command for Jailbreak.")]
     public void Command_Debug(CCSPlayerController? executor, CommandInfo info)

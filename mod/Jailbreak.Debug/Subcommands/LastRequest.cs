@@ -13,26 +13,24 @@ namespace Jailbreak.Debug.Subcommands;
 
 public class LastRequest : AbstractCommand
 {
-    private ILastRequestManager manager;
-    private LastRequestPlayerSelector playerSelector;
-    private LastRequestMenuSelector menuSelector;
-    private ILastRequestMessages _messages;
-    private IGenericCommandNotifications _generic;
+    private readonly ILastRequestManager _manager;
+    private readonly LastRequestPlayerSelector _playerSelector;
+    private readonly LastRequestMenuSelector _menuSelector;
+    private readonly ILastRequestMessages _messages;
 
-    private BasePlugin plugin;
+    private readonly BasePlugin _plugin;
 
     public LastRequest(IServiceProvider services, BasePlugin plugin) : base(services)
     {
-        this.plugin = plugin;
-        manager = services.GetRequiredService<ILastRequestManager>();
-        playerSelector = new LastRequestPlayerSelector(manager, true);
-        menuSelector = new LastRequestMenuSelector(services.GetRequiredService<ILastRequestFactory>(),
+        _plugin = plugin;
+        _manager = services.GetRequiredService<ILastRequestManager>();
+        _playerSelector = new LastRequestPlayerSelector(_manager, true);
+        _menuSelector = new LastRequestMenuSelector(services.GetRequiredService<ILastRequestFactory>(),
             (type) => "css_debug lastrequest " + type);
         _messages = services.GetRequiredService<ILastRequestMessages>();
-        _generic = services.GetRequiredService<IGenericCommandNotifications>();
     }
 
-    // css_lastrequest [lr] [player] <target>
+    // (debug) lastrequest [lr] [player] <target>
     public override void OnCommand(CCSPlayerController? executor, WrappedInfo info)
     {
         if (executor != null && !executor.IsReal())
@@ -40,7 +38,8 @@ public class LastRequest : AbstractCommand
 
         if (info.ArgCount == 1 && executor != null)
         {
-            MenuManager.OpenCenterHtmlMenu(plugin, executor, menuSelector.GetMenu());
+            MenuManager.OpenCenterHtmlMenu(_plugin, executor, _menuSelector.GetMenu());
+            return;
         }
 
         var type = LRTypeExtensions.FromString(info.GetArg(1));
@@ -52,8 +51,8 @@ public class LastRequest : AbstractCommand
 
         if (info.ArgCount == 2)
         {
-            MenuManager.OpenCenterHtmlMenu(plugin, executor,
-                playerSelector.CreateMenu(executor, (str) => "css_debug lastrequest " + type + " #" + str));
+            MenuManager.OpenCenterHtmlMenu(_plugin, executor,
+                _playerSelector.CreateMenu(executor, (str) => "css_debug lastrequest " + type + " #" + str));
             return;
         }
 
@@ -61,21 +60,24 @@ public class LastRequest : AbstractCommand
         if (fromPlayer == null)
             return;
 
-        if (info.ArgCount == 3 && executor != null)
+        switch (info.ArgCount)
         {
-            if (executor.Team == CsTeam.Terrorist)
-                manager.InitiateLastRequest(executor, fromPlayer.First(), type.Value);
-            else // They aren't necessarily on different teams, but this is debug so that's OK
-                manager.InitiateLastRequest(fromPlayer.First(), executor, type.Value);
-            return;
-        }
-
-        if (info.ArgCount == 4)
-        {
-            var targetPlayer = GetVulnerableTarget(info, 3);
-            if (targetPlayer == null)
+            case 3 when executor != null:
+            {
+                if (executor.Team == CsTeam.Terrorist)
+                    _manager.InitiateLastRequest(executor, fromPlayer.First(), type.Value);
+                else // They aren't necessarily on different teams, but this is debug so that's OK
+                    _manager.InitiateLastRequest(fromPlayer.First(), executor, type.Value);
                 return;
-            manager.InitiateLastRequest(fromPlayer.First(), targetPlayer.First(), type.Value);
+            }
+            case 4:
+            {
+                var targetPlayer = GetVulnerableTarget(info, 3);
+                if (targetPlayer == null)
+                    return;
+                _manager.InitiateLastRequest(fromPlayer.First(), targetPlayer.First(), type.Value);
+                break;
+            }
         }
     }
 }

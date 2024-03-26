@@ -14,33 +14,24 @@ using Microsoft.Extensions.DependencyModel;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestCommand : IPluginBehavior
+public class LastRequestCommand(
+    ILastRequestManager manager,
+    ILastRequestMessages messages,
+    IGenericCommandNotifications generic,
+    ILastRequestFactory factory)
+    : IPluginBehavior
 {
-    private ILastRequestManager _lrManager;
-    private LastRequestMenuSelector menuSelector;
-    private LastRequestPlayerSelector playerSelector;
-    private BasePlugin plugin;
-    private ILastRequestMessages _messages;
-    private IGenericCommandNotifications _generic;
-    private ILastRequestFactory _factory;
+    private LastRequestMenuSelector _menuSelector;
+    private LastRequestPlayerSelector _playerSelector;
+    private BasePlugin _plugin;
 
     // css_lr <player> <LRType>
-    public LastRequestCommand(ILastRequestManager manager, ILastRequestMessages messages,
-        IGenericCommandNotifications generic, ILastRequestFactory factory)
-    {
-        _lrManager = manager;
-        _messages = messages;
-        _generic = generic;
-        _factory = factory;
-    }
-
     public void Start(BasePlugin plugin)
     {
-        this.plugin = plugin;
-        playerSelector = new LastRequestPlayerSelector(_lrManager);
-        menuSelector = new LastRequestMenuSelector(_factory);
+        _plugin = plugin;
+        _playerSelector = new LastRequestPlayerSelector(manager);
+        _menuSelector = new LastRequestMenuSelector(factory);
     }
-
 
     [ConsoleCommand("css_lr", "Start a last request as a prisoner")]
     [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
@@ -60,19 +51,19 @@ public class LastRequestCommand : IPluginBehavior
             return;
         }
 
-        if (!_lrManager.IsLREnabled)
+        if (!manager.IsLREnabled)
         {
-            _messages.LastRequestNotEnabled().ToPlayerChat(executor);
+            messages.LastRequestNotEnabled().ToPlayerChat(executor);
             return;
         }
 
-        if (!playerSelector.WouldHavePlayers())
+        if (!_playerSelector.WouldHavePlayers())
         {
             info.ReplyToCommand("There are no players available to LR.");
             return;
         }
 
-        if (_lrManager.IsInLR(executor))
+        if (manager.IsInLR(executor))
         {
             info.ReplyToCommand("You are already in an LR!");
             return;
@@ -80,7 +71,7 @@ public class LastRequestCommand : IPluginBehavior
 
         if (info.ArgCount == 1)
         {
-            MenuManager.OpenCenterHtmlMenu(plugin, executor, menuSelector.GetMenu());
+            MenuManager.OpenCenterHtmlMenu(_plugin, executor, _menuSelector.GetMenu());
             return;
         }
 
@@ -88,50 +79,50 @@ public class LastRequestCommand : IPluginBehavior
         var type = LRTypeExtensions.FromString(info.GetArg(1));
         if (type is null)
         {
-            _messages.InvalidLastRequest(info.GetArg(1)).ToPlayerChat(executor);
+            messages.InvalidLastRequest(info.GetArg(1)).ToPlayerChat(executor);
             return;
         }
 
         if (info.ArgCount == 2)
         {
-            MenuManager.OpenCenterHtmlMenu(plugin, executor,
-                playerSelector.CreateMenu(executor, (str) => "css_lr " + type + " #" + str));
+            MenuManager.OpenCenterHtmlMenu(_plugin, executor,
+                _playerSelector.CreateMenu(executor, (str) => "css_lr " + type + " #" + str));
             return;
         }
 
         var target = info.GetArgTargetResult(2);
-        if (!target.Players.Any())
+        if (target.Players.Count == 0)
         {
-            _generic.PlayerNotFound(info.GetArg(2));
+            generic.PlayerNotFound(info.GetArg(2));
             return;
         }
 
         if (target.Players.Count > 1)
         {
-            _generic.PlayerFoundMultiple(info.GetArg(2));
+            generic.PlayerFoundMultiple(info.GetArg(2));
             return;
         }
 
         var player = target.Players.First();
         if (player.Team != CsTeam.CounterTerrorist)
         {
-            _messages.InvalidPlayerChoice(player, "They're not on CT!");
+            messages.InvalidPlayerChoice(player, "They're not on CT!");
             return;
         }
 
         if (!player.PawnIsAlive)
         {
-            _messages.InvalidPlayerChoice(player, "They're not alive!");
+            messages.InvalidPlayerChoice(player, "They're not alive!");
             return;
         }
 
-        if (_lrManager.IsInLR(player))
+        if (manager.IsInLR(player))
         {
-            _messages.InvalidPlayerChoice(player, "They're already in an LR!");
+            messages.InvalidPlayerChoice(player, "They're already in an LR!");
             return;
         }
 
-        if (!_lrManager.InitiateLastRequest(executor, player, (LRType)type))
+        if (!manager.InitiateLastRequest(executor, player, (LRType)type))
         {
             info.ReplyToCommand("An error occurred while initiating the last request. Please try again later.");
         }
