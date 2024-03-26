@@ -9,13 +9,13 @@ using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
-public class MagForMag : WeaponizedRequest
+public class MagForMag(
+    BasePlugin plugin,
+    ILastRequestManager manager,
+    CCSPlayerController prisoner,
+    CCSPlayerController guard)
+    : WeaponizedRequest(plugin, manager, prisoner, guard)
 {
-    public MagForMag(BasePlugin plugin, ILastRequestManager manager, CCSPlayerController prisoner,
-        CCSPlayerController guard) : base(plugin, manager, prisoner, guard)
-    {
-    }
-
     public override LRType type => LRType.GunToss;
     private CCSPlayerController whosShot;
     private int bulletCount = 7;

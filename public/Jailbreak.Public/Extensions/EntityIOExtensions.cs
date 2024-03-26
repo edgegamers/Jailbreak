@@ -12,7 +12,7 @@ public static class EntityIOExtensions
 		if (!pawn.IsValid)
 			return false;
 
-		int index = (int)pawn.Index;
+		var index = (int)pawn.Index;
 		var playerPawn = Utilities.GetEntityFromIndex<CCSPlayerPawn>(index);
 
 		if (!playerPawn.IsValid)
@@ -23,9 +23,6 @@ public static class EntityIOExtensions
 
 		controller = playerPawn.OriginalController.Value;
 
-		if (controller?.IsReal() != true)
-			return false;
-
-		return true;
+		return controller?.IsReal() == true;
 	}
 }

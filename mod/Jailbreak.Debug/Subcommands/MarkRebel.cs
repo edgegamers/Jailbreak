@@ -1,16 +1,13 @@
 using CounterStrikeSharp.API.Core;
 using Jailbreak.Public.Mod.Rebel;
+using Jailbreak.Rebel;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Debug.Subcommands;
 
 // css_markrebel [player] <duration>
-public class MarkRebel : AbstractCommand
+public class MarkRebel(IServiceProvider services) : AbstractCommand(services)
 {
-    public MarkRebel(IServiceProvider services) : base(services)
-    {
-    }
-
     public override void OnCommand(CCSPlayerController? executor, WrappedInfo info)
     {
         if (info.ArgCount == 1)
@@ -23,7 +20,7 @@ public class MarkRebel : AbstractCommand
         if (target == null)
             return;
 
-        var duration = 120;
+        var duration = RebelManager.MAX_REBEL_TIME;
         if (info.ArgCount == 3)
             if (!int.TryParse(info.GetArg(2), out duration))
             {

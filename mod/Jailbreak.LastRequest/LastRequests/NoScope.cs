@@ -7,14 +7,14 @@ using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
-public class NoScope : WeaponizedRequest
-{
-    public NoScope(BasePlugin plugin, ILastRequestManager manager, CCSPlayerController prisoner,
-        CCSPlayerController guard) : base(plugin, manager,
+public class NoScope(
+    BasePlugin plugin,
+    ILastRequestManager manager,
+    CCSPlayerController prisoner,
+    CCSPlayerController guard)
+    : WeaponizedRequest(plugin, manager,
         prisoner, guard)
-    {
-    }
-
+{
     public override LRType type => LRType.NoScope;
 
     public override void Setup()
@@ -68,5 +68,10 @@ public class NoScope : WeaponizedRequest
 
             manager.EndLastRequest(this, guard.Health > prisoner.Health ? LRResult.GuardWin : LRResult.PrisonerWin);
         }, TimerFlags.STOP_ON_MAPCHANGE);
+    }
+
+    public override void OnEnd(LRResult result)
+    {
+        plugin.RemoveListener("OnTick", OnTick);
     }
 }

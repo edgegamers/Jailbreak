@@ -8,17 +8,9 @@ using Jailbreak.Public.Mod.Rebel;
 
 namespace Jailbreak.Rebel;
 
-public class RebelListener : IPluginBehavior
+public class RebelListener(IRebelService rebelService, ILastRequestManager lastRequestManager)
+    : IPluginBehavior
 {
-    private readonly IRebelService _rebelService;
-    private readonly ILastRequestManager _lastRequestManager;
-
-    public RebelListener(IRebelService rebelService, ILastRequestManager lastRequestManager)
-    {
-        _rebelService = rebelService;
-        _lastRequestManager = lastRequestManager;
-    }
-
     [GameEventHandler]
     public HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
     {
@@ -35,10 +27,10 @@ public class RebelListener : IPluginBehavior
         if (attacker.GetTeam() != CsTeam.Terrorist)
             return HookResult.Continue;
 
-        if (_lastRequestManager.IsInLR(attacker))
+        if (lastRequestManager.IsInLR(attacker))
             return HookResult.Continue;
         
-        _rebelService.MarkRebel(attacker);
+        rebelService.MarkRebel(attacker);
         return HookResult.Continue;
     }
 }

@@ -9,13 +9,13 @@ using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
-public class ShotForShot : WeaponizedRequest
+public class ShotForShot(
+    BasePlugin plugin,
+    ILastRequestManager manager,
+    CCSPlayerController prisoner,
+    CCSPlayerController guard)
+    : WeaponizedRequest(plugin, manager, prisoner, guard)
 {
-    public ShotForShot(BasePlugin plugin, ILastRequestManager manager, CCSPlayerController prisoner,
-        CCSPlayerController guard) : base(plugin, manager, prisoner, guard)
-    {
-    }
-
     public override LRType type => LRType.ShotForShot;
     private CCSPlayerController whosShot;
 
@@ -97,7 +97,7 @@ public class ShotForShot : WeaponizedRequest
         }, TimerFlags.STOP_ON_MAPCHANGE);
     }
 
-    public HookResult OnPlayerShoot(EventPlayerShoot @event, GameEventInfo info)
+    private HookResult OnPlayerShoot(EventPlayerShoot @event, GameEventInfo info)
     {
         if (state != LRState.Active)
             return HookResult.Continue;
