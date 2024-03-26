@@ -129,7 +129,7 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs) : IP
             return 1;
         if (x <= 0)
             return 0;
-        return (float)(100 - (MAX_REBEL_TIME - x) * Math.Sqrt(MAX_REBEL_TIME - x) / 13f) / 100;
+        return (float)(100 - (MAX_REBEL_TIME - x) * Math.Sqrt(MAX_REBEL_TIME - x) / 2f) / 100;
     }
 
     private Color GetRebelColor(CCSPlayerController player)
