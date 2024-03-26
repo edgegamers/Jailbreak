@@ -9,17 +9,14 @@ namespace Jailbreak.LastRequest;
 public class LastRequestMenuSelector
 {
     private readonly CenterHtmlMenu _menu;
-    private Func<LRType, string> _command;
-    private readonly ILastRequestFactory _factory;
+    private readonly Func<LRType, string> _command;
 
     public LastRequestMenuSelector(ILastRequestFactory factory) : this(factory, (lr) => "css_lr " + ((int)lr))
     {
-        _factory = factory;
     }
 
     public LastRequestMenuSelector(ILastRequestFactory factory, Func<LRType, string> command)
     {
-        _factory = factory;
         _command = command;
         _menu = new CenterHtmlMenu("css_lr [LR] [Player]");
         foreach (LRType lr in Enum.GetValues(typeof(LRType)))

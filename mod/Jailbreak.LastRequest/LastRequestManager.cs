@@ -100,7 +100,7 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
     [GameEventHandler]
     public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
-        if (GetGameRules().WarmupPeriod)
+        if (ServerExtensions.GetGameRules().WarmupPeriod)
             return HookResult.Continue;
         if (CountAlivePrisoners() > config.PrisonersToActiveLR)
         {
@@ -116,7 +116,7 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
     public HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
     {
         var player = @event.Userid;
-        if (!player.IsReal() || GetGameRules().WarmupPeriod)
+        if (!player.IsReal() || ServerExtensions.GetGameRules().WarmupPeriod)
             return HookResult.Continue;
 
         if (IsLREnabled)
@@ -197,10 +197,5 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
         lr.OnEnd(result);
         ActiveLRs.Remove(lr);
         return true;
-    }
-
-    private static CCSGameRules GetGameRules()
-    {
-        return Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules").First().GameRules!;
     }
 }
