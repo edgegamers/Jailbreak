@@ -3,23 +3,19 @@ using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.Public.Mod.LastRequest;
 
-public abstract class AbstractLastRequest
+public abstract class AbstractLastRequest(
+    BasePlugin plugin,
+    ILastRequestManager manager,
+    CCSPlayerController prisoner,
+    CCSPlayerController guard)
 {
-    public CCSPlayerController prisoner { get; protected set; }
-    public CCSPlayerController guard { get; protected set; }
+    public CCSPlayerController prisoner { get; protected set; } = prisoner;
+    public CCSPlayerController guard { get; protected set; } = guard;
     public abstract LRType type { get; }
 
     public LRState state { get; protected set; }
-    protected BasePlugin plugin;
-    protected ILastRequestManager manager;
-
-    protected AbstractLastRequest(BasePlugin plugin, ILastRequestManager manager, CCSPlayerController prisoner, CCSPlayerController guard)
-    {
-        this.manager = manager;
-        this.plugin = plugin;
-        this.prisoner = prisoner;
-        this.guard = guard;
-    }
+    protected BasePlugin plugin = plugin;
+    protected ILastRequestManager manager = manager;
 
     public void PrintToParticipants(string message)
     {

@@ -3,14 +3,9 @@ using CounterStrikeSharp.API.Modules.Commands;
 
 namespace Jailbreak.Debug.Subcommands;
 
-public class WrappedInfo
+public class WrappedInfo(CommandInfo info)
 {
-    public readonly CommandInfo Info;
-
-    public WrappedInfo(CommandInfo info)
-    {
-        Info = info;
-    }
+    public readonly CommandInfo Info = info;
 
     public CCSPlayerController? CallingPlayer => Info.CallingPlayer;
 

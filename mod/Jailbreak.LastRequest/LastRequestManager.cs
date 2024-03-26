@@ -14,27 +14,18 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestManager : ILastRequestManager
+public class LastRequestManager(LastRequestConfig config, ILastRequestMessages messages, IServiceProvider provider)
+    : ILastRequestManager
 {
     private BasePlugin _parent;
-    private LastRequestConfig config;
-    private ILastRequestMessages messages;
-    private ILastRequestFactory factory;
-    private IServiceProvider provider;
+    private ILastRequestFactory _factory;
 
     public bool IsLREnabled { get; set; }
     public IList<AbstractLastRequest> ActiveLRs { get; } = new List<AbstractLastRequest>();
 
-    public LastRequestManager(LastRequestConfig config, ILastRequestMessages messages, IServiceProvider provider)
-    {
-        this.config = config;
-        this.messages = messages;
-        this.provider = provider;
-    }
-
     public void Start(BasePlugin parent)
     {
-        this.factory = provider.GetRequiredService<ILastRequestFactory>();
+        _factory = provider.GetRequiredService<ILastRequestFactory>();
         _parent = parent;
         _parent.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
         VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage, HookMode.Pre);
@@ -49,10 +40,10 @@ public class LastRequestManager : ILastRequestManager
     {
         if (!IsLREnabled)
             return HookResult.Continue;
-        CEntityInstance victim = handle.GetParam<CEntityInstance>(0);
-        CTakeDamageInfo damage_info = handle.GetParam<CTakeDamageInfo>(1);
+        var victim = handle.GetParam<CEntityInstance>(0);
+        var damage_info = handle.GetParam<CTakeDamageInfo>(1);
 
-        CHandle<CBaseEntity> dealer = damage_info.Attacker;
+        var dealer = damage_info.Attacker;
 
         if (dealer.Value == null)
         {
@@ -60,8 +51,8 @@ public class LastRequestManager : ILastRequestManager
         }
 
         // get player and attacker
-        CCSPlayerController? player = new CCSPlayerController(new CBaseEntity(victim.Handle).Handle);
-        CCSPlayerController? attacker = new CCSPlayerController(dealer.Value.Handle);
+        var player = new CCSPlayerController(new CBaseEntity(victim.Handle).Handle);
+        var attacker = new CCSPlayerController(dealer.Value.Handle);
 
         if (!player.IsReal() || !attacker.IsReal())
             return HookResult.Continue;
@@ -109,7 +100,7 @@ public class LastRequestManager : ILastRequestManager
     [GameEventHandler]
     public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
-        if (GetGameRules().WarmupPeriod)
+        if (ServerExtensions.GetGameRules().WarmupPeriod)
             return HookResult.Continue;
         if (CountAlivePrisoners() > config.PrisonersToActiveLR)
         {
@@ -125,7 +116,7 @@ public class LastRequestManager : ILastRequestManager
     public HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
     {
         var player = @event.Userid;
-        if (!player.IsReal() || GetGameRules().WarmupPeriod)
+        if (!player.IsReal() || ServerExtensions.GetGameRules().WarmupPeriod)
             return HookResult.Continue;
 
         if (IsLREnabled)
@@ -170,7 +161,7 @@ public class LastRequestManager : ILastRequestManager
     {
         try
         {
-            var lr = factory.CreateLastRequest(prisoner, guard, type);
+            var lr = _factory.CreateLastRequest(prisoner, guard, type);
             lr.Setup();
             ActiveLRs.Add(lr);
 
@@ -206,10 +197,5 @@ public class LastRequestManager : ILastRequestManager
         lr.OnEnd(result);
         ActiveLRs.Remove(lr);
         return true;
-    }
-
-    public static CCSGameRules GetGameRules()
-    {
-        return Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules").First().GameRules!;
     }
 }

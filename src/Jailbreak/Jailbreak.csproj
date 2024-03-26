@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <!--Unfortunately we can't use .NET Standard due to CSSharp being hardcoded to .NET 7-->
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
 
         <!--Compiler Options-->
         <ImplicitUsings>enable</ImplicitUsings>

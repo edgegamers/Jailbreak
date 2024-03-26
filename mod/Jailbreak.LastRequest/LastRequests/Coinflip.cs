@@ -9,17 +9,17 @@ namespace Jailbreak.LastRequest.LastRequests;
 
 public class Coinflip : AbstractLastRequest
 {
-    private ChatMenu menu;
-    private Random rnd;
-    private Timer timeout;
+    private readonly ChatMenu _menu;
+    private readonly Random _rnd;
+    private Timer _timeout;
 
     public Coinflip(BasePlugin plugin, ILastRequestManager manager, CCSPlayerController prisoner,
         CCSPlayerController guard) : base(plugin, manager, prisoner, guard)
     {
-        rnd = new Random();
-        menu = new ChatMenu("Heads or Tails?");
-        menu.AddMenuOption("Heads", (_, _) => Decide(true, true));
-        menu.AddMenuOption("Tails", (_, _) => Decide(false, true));
+        _rnd = new Random();
+        _menu = new ChatMenu("Heads or Tails?");
+        _menu.AddMenuOption("Heads", (_, _) => Decide(true, true));
+        _menu.AddMenuOption("Tails", (_, _) => Decide(false, true));
     }
 
     public override LRType type => LRType.Coinflip;
@@ -27,21 +27,21 @@ public class Coinflip : AbstractLastRequest
     public override void Setup()
     {
         state = LRState.Pending;
-        menu.Title = "Heads or Tails? - " + prisoner.PlayerName + " vs " + guard.PlayerName;
+        _menu.Title = "Heads or Tails? - " + prisoner.PlayerName + " vs " + guard.PlayerName;
         Execute();
     }
 
     public override void Execute()
     {
         state = LRState.Active;
-        MenuManager.OpenChatMenu(guard, menu);
+        MenuManager.OpenChatMenu(guard, _menu);
 
-        timeout = plugin.AddTimer(10, () =>
+        _timeout = plugin.AddTimer(10, () =>
         {
             if (state != LRState.Active)
                 return;
             MenuManager.CloseActiveMenu(guard);
-            bool choice = rnd.Next(2) == 1;
+            var choice = _rnd.Next(2) == 1;
             guard.PrintToChat($"You failed to choose in time, defaulting to {(choice ? "Heads" : "Tails")}");
             Decide(choice, true);
         });
@@ -49,7 +49,7 @@ public class Coinflip : AbstractLastRequest
 
     private void Decide(bool heads, bool print)
     {
-        timeout.Kill();
+        _timeout.Kill();
         if (print)
         {
             MenuManager.CloseActiveMenu(guard);
@@ -58,14 +58,14 @@ public class Coinflip : AbstractLastRequest
         }
         plugin.AddTimer(2, () =>
         {
-            if (rnd.Next(4) == 0)
+            if (_rnd.Next(4) == 0)
             {
-                PrintToParticipants(events[rnd.Next(events.Length)]);
+                PrintToParticipants(events[_rnd.Next(events.Length)]);
                 plugin.AddTimer(2, () => Decide(heads, false));
             }
             else
             {
-                var side = rnd.Next(2) == 1;
+                var side = _rnd.Next(2) == 1;
                 PrintToParticipants($"The coin lands on {(side ? "Heads" : "Tails")}!");
                 manager.EndLastRequest(this, side == heads ? LRResult.GuardWin : LRResult.PrisonerWin);
             }
