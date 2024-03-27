@@ -17,10 +17,12 @@ public class WardenCommandsBehavior : IPluginBehavior
     private readonly IWardenNotifications _notifications;
     private readonly IWardenSelectionService _queue;
     private readonly IWardenService _warden;
+    private readonly WardenConfig _config;
 
     public WardenCommandsBehavior(IWardenSelectionService queue, IWardenService warden,
-        IWardenNotifications notifications)
+        IWardenNotifications notifications, WardenConfig config)
     {
+        _config = config;
         _queue = queue;
         _warden = warden;
         _notifications = notifications;
@@ -45,6 +47,12 @@ public class WardenCommandsBehavior : IPluginBehavior
             _notifications.PASS_WARDEN(player)
                 .ToAllChat()
                 .ToAllCenter();
+
+		    foreach (CCSPlayerController clients in Utilities.GetPlayers()) {
+			    if (!clients.IsReal()) continue;
+			    clients.ExecuteClientCommand(
+				    $"play sounds/{_config.WardenPassedSoundName}");
+		    }
 
             _notifications.BECOME_NEXT_WARDEN.ToAllChat();
 
