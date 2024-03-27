@@ -28,6 +28,9 @@ public class NoScope(
     {
         if (this.state != LRState.Active) return;
 
+        if (!prisoner.IsReal() || !guard.IsReal())
+            return;
+        
         if (prisoner.PlayerPawn.Value == null || guard.PlayerPawn.Value == null) return;
         DisableScope(prisoner);
         DisableScope(guard);
