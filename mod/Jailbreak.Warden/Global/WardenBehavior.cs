@@ -2,6 +2,7 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
@@ -26,13 +27,16 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 	private BasePlugin _parent;
 	private Timer? _unblueTimer;
 
+	private WardenConfig _config;
+
 	private bool _hasWarden;
 	private CCSPlayerController? _warden;
 
 	public WardenBehavior(ILogger<WardenBehavior> logger, IWardenNotifications notifications, IRichLogService logs,
-		ISpecialTreatmentService specialTreatment, IRebelService rebels)
+		ISpecialTreatmentService specialTreatment, IRebelService rebels, WardenConfig config)
 	{
 		_logger = logger;
+		_config = config;
 		_notifications = notifications;
 		_logs = logs;
 		_specialTreatment = specialTreatment;
@@ -80,6 +84,11 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		_notifications.NEW_WARDEN(_warden)
 			.ToAllChat()
 			.ToAllCenter();
+			
+		foreach (CCSPlayerController player in Utilities.GetPlayers()) {
+			player.ExecuteClientCommand(
+				$"play sounds/{_config.WardenNewSoundName}");
+		}
 
 		_logs.Append( _logs.Player(_warden), "is now the warden.");
 
@@ -138,6 +147,11 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		_notifications.WARDEN_DIED
 			.ToAllChat()
 			.ToAllCenter();
+		
+		foreach (CCSPlayerController player in Utilities.GetPlayers()) {
+			player.ExecuteClientCommand(
+				$"play sounds/{_config.WardenKilledSoundName}");
+		}
 
 		_notifications.BECOME_NEXT_WARDEN.ToAllChat();
 
@@ -213,6 +227,11 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 		_notifications.WARDEN_LEFT
 			.ToAllChat()
 			.ToAllCenter();
+
+		foreach (CCSPlayerController player in Utilities.GetPlayers()) {
+			player.ExecuteClientCommand(
+				$"play sounds/{_config.WardenPassedSoundName}");
+		}
 
 		_notifications.BECOME_NEXT_WARDEN.ToAllChat();
 

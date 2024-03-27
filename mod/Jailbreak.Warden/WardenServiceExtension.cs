@@ -15,6 +15,7 @@ public static class WardenServiceExtension
 {
     public static void AddJailbreakWarden(this IServiceCollection serviceCollection)
     {
+        serviceCollection.AddConfig<WardenConfig>("warden");
         serviceCollection.AddPluginBehavior<IWardenService, WardenBehavior>();
         serviceCollection.AddPluginBehavior<IWardenSelectionService, WardenSelectionBehavior>();
         serviceCollection.AddPluginBehavior<ISpecialTreatmentService, SpecialTreatmentBehavior>();
