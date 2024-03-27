@@ -230,7 +230,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 
 		foreach (CCSPlayerController player in Utilities.GetPlayers()) {
 			player.ExecuteClientCommand(
-				$"play {_config.WardenPassedSoundName}");
+				$"play sounds/{_config.WardenPassedSoundName}");
 		}
 
 		_notifications.BECOME_NEXT_WARDEN.ToAllChat();
