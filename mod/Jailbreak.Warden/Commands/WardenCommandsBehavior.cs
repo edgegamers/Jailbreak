@@ -48,7 +48,7 @@ public class WardenCommandsBehavior : IPluginBehavior
                 .ToAllChat()
                 .ToAllCenter();
 
-		    foreach (CCSPlayerController clients in Utilities.GetPlayers()) {
+		    foreach (var clients in Utilities.GetPlayers()) {
 			    if (!clients.IsReal()) continue;
 			    clients.ExecuteClientCommand(
 				    $"play sounds/{_config.WardenPassedSoundName}");

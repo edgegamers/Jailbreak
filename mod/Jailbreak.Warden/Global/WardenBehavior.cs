@@ -85,7 +85,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 			.ToAllChat()
 			.ToAllCenter();
 			
-		foreach (CCSPlayerController player in Utilities.GetPlayers()) {
+		foreach (var player in Utilities.GetPlayers()) {
 			if (!player.IsReal()) continue;
 			player.ExecuteClientCommand(
 				$"play sounds/{_config.WardenNewSoundName}");
@@ -149,7 +149,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 			.ToAllChat()
 			.ToAllCenter();
 		
-		foreach (CCSPlayerController player in Utilities.GetPlayers()) {
+		foreach (var player in Utilities.GetPlayers()) {
 			if (!player.IsReal()) continue;
 			player.ExecuteClientCommand(
 				$"play sounds/{_config.WardenKilledSoundName}");
@@ -230,7 +230,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 			.ToAllChat()
 			.ToAllCenter();
 
-		foreach (CCSPlayerController player in Utilities.GetPlayers()) {
+		foreach (var player in Utilities.GetPlayers()) {
 			if (!player.IsReal()) continue;
 			player.ExecuteClientCommand(
 				$"play sounds/{_config.WardenPassedSoundName}");
