@@ -54,6 +54,9 @@ public class RockPaperScissors : AbstractLastRequest
             return;
         }
 
+        if (state != LRState.Active)
+            return;
+
         if (_prisonerChoice == 0 && _guardChoice == 2 || _prisonerChoice == 1 && _guardChoice == 0 ||
             _prisonerChoice == 2 && _guardChoice == 1)
             manager.EndLastRequest(this, LRResult.PrisonerWin);

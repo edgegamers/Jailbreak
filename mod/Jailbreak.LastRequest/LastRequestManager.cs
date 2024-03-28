@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -27,7 +28,6 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
     {
         _factory = provider.GetRequiredService<ILastRequestFactory>();
         _parent = parent;
-        _parent.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
         VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage, HookMode.Pre);
     }
 
@@ -93,6 +93,10 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
     [GameEventHandler]
     public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
     {
+        if (IsLREnabled)
+            foreach (var lr in ActiveLRs)
+                EndLastRequest(lr, LRResult.TimedOut);
+
         IsLREnabled = false;
         return HookResult.Continue;
     }
@@ -107,6 +111,7 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
             this.IsLREnabled = false;
             return HookResult.Continue;
         }
+
         this.IsLREnabled = true;
         messages.LastRequestEnabled().ToAllChat();
         return HookResult.Continue;
@@ -138,9 +143,76 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
         if (CountAlivePrisoners() - 1 > config.PrisonersToActiveLR)
             return HookResult.Continue;
 
-        IsLREnabled = true;
+        EnableLR();
         messages.LastRequestEnabled().ToAllChat();
         return HookResult.Continue;
+    }
+
+    [GameEventHandler(HookMode.Post)]
+    public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
+    {
+        var player = @event.Userid;
+        if (!player.IsReal() || ServerExtensions.GetGameRules().WarmupPeriod)
+            return HookResult.Continue;
+        if (IsLREnabled)
+            return HookResult.Continue;
+
+        if (player.GetTeam() != CsTeam.Terrorist)
+            return HookResult.Continue;
+        if (CountAlivePrisoners() - 1 > config.PrisonersToActiveLR)
+            return HookResult.Continue;
+
+        EnableLR();
+        messages.LastRequestEnabled().ToAllChat();
+        return HookResult.Continue;
+    }
+
+    public void DisableLR()
+    {
+        IsLREnabled = false;
+    }
+
+    public void EnableLR()
+    {
+        IsLREnabled = true;
+        SetRoundTime(60);
+
+        foreach (var player in Utilities.GetPlayers())
+        {
+            if (!player.IsReal() || player.Team != CsTeam.Terrorist || !player.PawnIsAlive)
+                continue;
+            player.ExecuteClientCommandFromServer("css_lr");
+        }
+    }
+
+    private int GetCurrentRoundTime()
+    {
+        var gamerules = ServerExtensions.GetGameRules();
+        var timeleft = (gamerules.RoundStartTime + gamerules.RoundTime) - Server.CurrentTime;
+        return (int) timeleft;
+    }
+
+    private int GetCurrentTimeElapsed()
+    {
+        var gamerules = ServerExtensions.GetGameRules();
+        var freezeTime = gamerules.FreezeTime;
+        return (int)((Server.CurrentTime - gamerules.RoundStartTime) - freezeTime);
+    }
+    
+    private void SetRoundTime(int time)
+    {
+        var gamerules = ServerExtensions.GetGameRules();
+        gamerules.RoundTime = (int) GetCurrentTimeElapsed() + time;
+        
+        Utilities.SetStateChanged(ServerExtensions.GetGameRulesProxy(), "CCSGameRulesProxy", "m_pGameRules");
+    }
+    
+    private void AddRoundTime(int time)
+    {
+        var gamerules = ServerExtensions.GetGameRules();
+        gamerules.RoundTime += time;
+        
+        Utilities.SetStateChanged(ServerExtensions.GetGameRulesProxy(), "CCSGameRulesProxy", "m_pGameRules");
     }
 
     private int CountAlivePrisoners()
@@ -193,7 +265,11 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
     public bool EndLastRequest(AbstractLastRequest lr, LRResult result)
     {
         if (result is LRResult.GuardWin or LRResult.PrisonerWin)
+        {
+            AddRoundTime(30);
             messages.LastRequestDecided(lr, result).ToAllChat();
+        }
+
         lr.OnEnd(result);
         ActiveLRs.Remove(lr);
         return true;

@@ -25,7 +25,7 @@ public abstract class WeaponizedRequest(
         // Strip weapons, teleport T to CT
         prisoner.RemoveWeapons();
         guard.RemoveWeapons();
-        guard.Teleport(prisoner.Pawn.Value!.AbsOrigin!.Clone(), prisoner.Pawn.Value.AbsRotation!, new Vector());
+        guard.Teleport(prisoner);
         for (var i = 3; i >= 1; i--)
         {
             var copy = i;

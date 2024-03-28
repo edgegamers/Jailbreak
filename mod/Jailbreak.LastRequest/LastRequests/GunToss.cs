@@ -22,7 +22,7 @@ public class GunToss(
         // Strip weapons, teleport T to CT
         prisoner.RemoveWeapons();
         guard.RemoveWeapons();
-        guard.Teleport(prisoner.Pawn.Value!.AbsOrigin!.Clone(), prisoner.Pawn.Value.AbsRotation!, new Vector());
+        guard.Teleport(prisoner);
         state = LRState.Pending;
 
         plugin.AddTimer(3, Execute);

@@ -21,4 +21,10 @@ public static class ServerExtensions
 		//	From killstr3ak
 		return Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules").First().GameRules!;
 	}
+	
+	public static CCSGameRulesProxy GetGameRulesProxy()
+	{
+		//	From killstr3ak
+		return Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules").First()!;
+	}
 }

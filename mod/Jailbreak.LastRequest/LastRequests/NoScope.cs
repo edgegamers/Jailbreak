@@ -26,11 +26,11 @@ public class NoScope(
 
     private void OnTick()
     {
-        if (this.state != LRState.Active) return;
+        if (state != LRState.Active) return;
 
         if (!prisoner.IsReal() || !guard.IsReal())
             return;
-        
+
         if (prisoner.PlayerPawn.Value == null || guard.PlayerPawn.Value == null) return;
         DisableScope(prisoner);
         DisableScope(guard);
@@ -40,15 +40,16 @@ public class NoScope(
     {
         if (!player.IsReal())
             return;
-        try
-        {
-            player.PlayerPawn.Value!.WeaponServices!.ActiveWeapon.Value!.NextSecondaryAttackTick =
-                Server.TickCount + 500;
-        }
-        catch (NullReferenceException e)
-        {
-            Console.WriteLine(e);
-        }
+        var pawn = player.PlayerPawn.Value;
+        if (pawn == null || !pawn.IsValid)
+            return;
+        var weaponServices = pawn.WeaponServices;
+        if (weaponServices == null)
+            return;
+        var activeWeapon = weaponServices.ActiveWeapon.Value;
+        if (activeWeapon == null || !activeWeapon.IsValid)
+            return;
+        activeWeapon.NextSecondaryAttackTick = Server.TickCount + 500;
     }
 
     public override void Execute()
@@ -75,6 +76,16 @@ public class NoScope(
 
     public override void OnEnd(LRResult result)
     {
+        this.state = LRState.Completed;
         plugin.RemoveListener("OnTick", OnTick);
+        
+        if(result != LRResult.GuardWin && result != LRResult.PrisonerWin)
+            return;
+
+        var winner = result == LRResult.GuardWin ? guard : prisoner;
+        
+        winner.RemoveWeapons();
+        winner.GiveNamedItem("weapon_knife");
+        winner.GiveNamedItem("weapon_ak47");
     }
 }
