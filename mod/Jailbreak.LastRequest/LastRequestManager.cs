@@ -107,6 +107,7 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
             this.IsLREnabled = false;
             return HookResult.Continue;
         }
+
         this.IsLREnabled = true;
         messages.LastRequestEnabled().ToAllChat();
         return HookResult.Continue;
@@ -135,6 +136,25 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
         if (player.GetTeam() != CsTeam.Terrorist)
             return HookResult.Continue;
 
+        if (CountAlivePrisoners() - 1 > config.PrisonersToActiveLR)
+            return HookResult.Continue;
+
+        IsLREnabled = true;
+        messages.LastRequestEnabled().ToAllChat();
+        return HookResult.Continue;
+    }
+
+    [GameEventHandler(HookMode.Post)]
+    public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
+    {
+        var player = @event.Userid;
+        if (!player.IsReal() || ServerExtensions.GetGameRules().WarmupPeriod)
+            return HookResult.Continue;
+        if (IsLREnabled)
+            return HookResult.Continue;
+
+        if (player.GetTeam() != CsTeam.Terrorist)
+            return HookResult.Continue;
         if (CountAlivePrisoners() - 1 > config.PrisonersToActiveLR)
             return HookResult.Continue;
 
