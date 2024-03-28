@@ -78,5 +78,14 @@ public class NoScope(
     {
         this.state = LRState.Completed;
         plugin.RemoveListener("OnTick", OnTick);
+        
+        if(result != LRResult.GuardWin && result != LRResult.PrisonerWin)
+            return;
+
+        var winner = result == LRResult.GuardWin ? guard : prisoner;
+        
+        winner.RemoveWeapons();
+        winner.GiveNamedItem("weapon_knife");
+        winner.GiveNamedItem("weapon_ak47");
     }
 }
