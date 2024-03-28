@@ -41,13 +41,13 @@ public class NoScope(
         if (!player.IsReal())
             return;
         var pawn = player.PlayerPawn.Value;
-        if (pawn == null)
+        if (pawn == null || !pawn.IsValid)
             return;
         var weaponServices = pawn.WeaponServices;
         if (weaponServices == null)
             return;
         var activeWeapon = weaponServices.ActiveWeapon.Value;
-        if (activeWeapon == null)
+        if (activeWeapon == null || !activeWeapon.IsValid)
             return;
         activeWeapon.NextSecondaryAttackTick = Server.TickCount + 500;
     }

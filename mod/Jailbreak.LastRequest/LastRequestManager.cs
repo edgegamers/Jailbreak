@@ -92,6 +92,10 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
     [GameEventHandler]
     public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
     {
+        if (IsLREnabled)
+            foreach (var lr in ActiveLRs)
+                EndLastRequest(lr, LRResult.TimedOut);
+
         IsLREnabled = false;
         return HookResult.Continue;
     }
@@ -138,7 +142,7 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
         if (CountAlivePrisoners() - 1 > config.PrisonersToActiveLR)
             return HookResult.Continue;
 
-        IsLREnabled = true;
+        EnableLR();
         messages.LastRequestEnabled().ToAllChat();
         return HookResult.Continue;
     }
@@ -157,9 +161,28 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
         if (CountAlivePrisoners() - 1 > config.PrisonersToActiveLR)
             return HookResult.Continue;
 
-        IsLREnabled = true;
+        EnableLR();
         messages.LastRequestEnabled().ToAllChat();
         return HookResult.Continue;
+    }
+
+    private void EnableLR()
+    {
+        IsLREnabled = true;
+        SetRoundTime(60);
+    }
+
+    private void SetRoundTime(int time)
+    {
+        var gamerules = ServerExtensions.GetGameRules();
+        gamerules.RoundTime = (int) gamerules.RoundStartTime + time;
+        Utilities.SetStateChanged(ServerExtensions.GetGameRulesProxy(), "m_pGameRules", "RoundTime");
+        foreach (var player in Utilities.GetPlayers())
+        {
+            if(!player.IsReal())
+                continue;
+            Utilities.SetStateChanged(player, "m_pGameRules", "RoundTime");
+        }
     }
 
     private int CountAlivePrisoners()
@@ -212,7 +235,11 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
     public bool EndLastRequest(AbstractLastRequest lr, LRResult result)
     {
         if (result is LRResult.GuardWin or LRResult.PrisonerWin)
+        {
+            SetRoundTime(ServerExtensions.GetGameRules().RoundTime + 30);
             messages.LastRequestDecided(lr, result).ToAllChat();
+        }
+
         lr.OnEnd(result);
         ActiveLRs.Remove(lr);
         return true;
