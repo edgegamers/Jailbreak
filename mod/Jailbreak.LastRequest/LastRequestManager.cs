@@ -27,7 +27,6 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
     {
         _factory = provider.GetRequiredService<ILastRequestFactory>();
         _parent = parent;
-        _parent.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
         VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage, HookMode.Pre);
     }
 
