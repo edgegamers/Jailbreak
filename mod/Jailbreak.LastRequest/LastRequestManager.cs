@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -166,23 +167,52 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
         return HookResult.Continue;
     }
 
-    private void EnableLR()
+    public void DisableLR()
+    {
+        IsLREnabled = false;
+    }
+
+    public void EnableLR()
     {
         IsLREnabled = true;
         SetRoundTime(60);
+
+        foreach (var player in Utilities.GetPlayers())
+        {
+            if (!player.IsReal() || player.Team != CsTeam.Terrorist || !player.PawnIsAlive)
+                continue;
+            player.ExecuteClientCommandFromServer("css_lr");
+        }
     }
 
+    private int GetCurrentRoundTime()
+    {
+        var gamerules = ServerExtensions.GetGameRules();
+        var timeleft = (gamerules.RoundStartTime + gamerules.RoundTime) - Server.CurrentTime;
+        return (int) timeleft;
+    }
+
+    private int GetCurrentTimeElapsed()
+    {
+        var gamerules = ServerExtensions.GetGameRules();
+        var freezeTime = gamerules.FreezeTime;
+        return (int)((Server.CurrentTime - gamerules.RoundStartTime) - freezeTime);
+    }
+    
     private void SetRoundTime(int time)
     {
         var gamerules = ServerExtensions.GetGameRules();
-        gamerules.RoundTime = (int) gamerules.RoundStartTime + time;
-        Utilities.SetStateChanged(ServerExtensions.GetGameRulesProxy(), "m_pGameRules", "RoundTime");
-        foreach (var player in Utilities.GetPlayers())
-        {
-            if(!player.IsReal())
-                continue;
-            Utilities.SetStateChanged(player, "m_pGameRules", "RoundTime");
-        }
+        gamerules.RoundTime = (int) GetCurrentTimeElapsed() + time;
+        
+        Utilities.SetStateChanged(ServerExtensions.GetGameRulesProxy(), "CCSGameRulesProxy", "m_pGameRules");
+    }
+    
+    private void AddRoundTime(int time)
+    {
+        var gamerules = ServerExtensions.GetGameRules();
+        gamerules.RoundTime += time;
+        
+        Utilities.SetStateChanged(ServerExtensions.GetGameRulesProxy(), "CCSGameRulesProxy", "m_pGameRules");
     }
 
     private int CountAlivePrisoners()
@@ -236,7 +266,7 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
     {
         if (result is LRResult.GuardWin or LRResult.PrisonerWin)
         {
-            SetRoundTime(ServerExtensions.GetGameRules().RoundTime + 30);
+            AddRoundTime(30);
             messages.LastRequestDecided(lr, result).ToAllChat();
         }
 

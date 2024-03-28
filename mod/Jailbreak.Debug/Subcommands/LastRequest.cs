@@ -42,6 +42,21 @@ public class LastRequest : AbstractCommand
             return;
         }
 
+        if (info.ArgCount == 2)
+        {
+            switch (info.GetArg(1).ToLower())
+            {
+                case "enable":
+                    _manager.EnableLR();
+                    info.ReplyToCommand("Last Request enabled.");
+                    return;
+                case "disable":
+                    _manager.DisableLR();
+                    info.ReplyToCommand("Last Request disabled.");
+                    return;
+            }
+        }
+
         var type = LRTypeExtensions.FromString(info.GetArg(1));
         if (type is null)
         {
