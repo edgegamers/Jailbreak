@@ -159,7 +159,7 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
 
         if (player.GetTeam() != CsTeam.Terrorist)
             return HookResult.Continue;
-        if (CountAlivePrisoners() - 1 > config.PrisonersToActiveLR)
+        if (CountAlivePrisoners() > config.PrisonersToActiveLR)
             return HookResult.Continue;
 
         EnableLR();
