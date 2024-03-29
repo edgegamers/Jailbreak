@@ -51,7 +51,7 @@ public class WardenPaintBehavior : IPluginBehavior
         if(_parent == null)
             throw new NullReferenceException("Parent plugin is null");
         
-        new BeamLine(_parent, start.Clone(), position.Clone()).Draw(10f);
+        new BeamLine(_parent, start.Clone(), position.Clone()).Draw(30f);
     }
 
     private Vector? FindFloorIntersection(CCSPlayerController player)

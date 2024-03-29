@@ -32,7 +32,7 @@ Our **Nightly** builds are used exclusively for development and staging, and are
   - [x] Ratio Enforcement
   - [ ] Bans/Punishments
 - **🎃 Prisoners**
-  - [ ] Last Request
+  - [x] Last Request
   - [x] Rebel System
 - **🛕 Maps**
   - [ ] Custom Entities
