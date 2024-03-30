@@ -41,6 +41,11 @@ public abstract class FormatObject
         return new PlayerFormatObject(value);
     }
 
+    public static implicit operator FormatObject(int value)
+    {
+	    return new IntegerFormatObject(value);
+    }
+
     public static FormatObject FromObject(object value)
     {
         return new StringFormatObject(value.ToString() ?? "null");
