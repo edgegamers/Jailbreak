@@ -135,11 +135,34 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
     private void OnPlayerSpeak(int playerSlot)
     {
         var player = Utilities.GetPlayerFromSlot(playerSlot);
-        if (!player.IsReal() || warden.IsWarden(player))
+        if (!player.IsReal())
             return;
+
+        if (warden.IsWarden(player))
+        {
+            // Always let the warden speak
+            unmute(player);
+            return;
+        }
+
+        if (!player.PawnIsAlive && !bypassMute(player))
+        {
+            // Normal players can't speak when dead
+            messages.DEAD_REMINDER.ToPlayerCenter(player);
+            mute(player);
+            return;
+        }
+
+        if (isMuted(player))
+        {
+            // Remind any muted players they're muted
+            messages.MUTE_REMINDER.ToPlayerCenter(player);
+            return;
+        }
 
         if (bypassMute(player))
         {
+            // Warn admins if they're not muted
             if (IsPeaceEnabled())
             {
                 if (player.Team == CsTeam.CounterTerrorist && DateTime.Now >= ctPeaceEnd)
@@ -148,22 +171,8 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
             }
 
             if (!player.PawnIsAlive)
-            {
                 messages.ADMIN_DEAD_REMINDER.ToPlayerCenter(player);
-            }
-
-            return;
         }
-
-        if (!player.PawnIsAlive)
-        {
-            messages.DEAD_REMINDER.ToPlayerCenter(player);
-            mute(player);
-            return;
-        }
-
-        if (isMuted(player))
-            messages.MUTE_REMINDER.ToPlayerCenter(player);
     }
 
     private bool isMuted(CCSPlayerController player)
