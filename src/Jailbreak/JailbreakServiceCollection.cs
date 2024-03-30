@@ -6,12 +6,14 @@ using Jailbreak.Debug;
 using Jailbreak.English.Generic;
 using Jailbreak.English.LastRequest;
 using Jailbreak.English.Logs;
+using Jailbreak.English.Mute;
 using Jailbreak.English.Rebel;
 using Jailbreak.English.Warden;
 using Jailbreak.Formatting.Logistics;
 using Jailbreak.Generic;
 using Jailbreak.LastRequest;
 using Jailbreak.Logs;
+using Jailbreak.Mute;
 using Jailbreak.Public.Configuration;
 using Jailbreak.Rebel;
 using Jailbreak.Warden;
@@ -34,6 +36,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
         serviceCollection.AddJailbreakGeneric();
         serviceCollection.AddJailbreakLogs();
         serviceCollection.AddJailbreakRebel();
+        serviceCollection.AddJailbreakMute();
         serviceCollection.AddJailbreakWarden();
         serviceCollection.AddJailbreakDebug();
         serviceCollection.AddJailbreakLastRequest();
@@ -47,6 +50,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
 			config.WithLogging<LogMessages>();
 			config.WithLastRequest<LastRequestMessages>();
 			config.WithSpecialTreatment<SpecialTreatmentNotifications>();
+			config.WithMute<PeaceMessages>();
 		});
 	}
 }
