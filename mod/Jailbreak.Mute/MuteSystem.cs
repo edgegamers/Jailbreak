@@ -8,21 +8,31 @@ using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Mute;
+using Jailbreak.Public.Mod.Warden;
+using Microsoft.Extensions.DependencyInjection;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.Mute;
 
-public class MuteSystem(IPeaceMessages messages) : IPluginBehavior, IMuteService
+public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteService
 {
     private BasePlugin parent;
-    private DateTime lastPeace;
-    private DateTime peaceEnd;
-    private DateTime ctPeaceEnd;
+    private DateTime lastPeace = DateTime.MinValue;
+    private DateTime peaceEnd = DateTime.MinValue;
+    private DateTime ctPeaceEnd = DateTime.MinValue;
+
+    private IPeaceMessages messages;
+    private IWardenService warden;
 
     private Timer? prisonerTimer, guardTimer;
 
     public void Start(BasePlugin parent)
     {
+        this.parent = parent;
+        
+        this.messages = provider.GetRequiredService<IPeaceMessages>();
+        this.warden = provider.GetRequiredService<IWardenService>();
+        
         parent.RegisterListener<Listeners.OnClientVoice>(OnPlayerSpeak);
     }
 
@@ -110,7 +120,7 @@ public class MuteSystem(IPeaceMessages messages) : IPluginBehavior, IMuteService
 
     public bool IsPeaceEnabled()
     {
-        return DateTime.Now > peaceEnd;
+        return DateTime.Now < peaceEnd;
     }
 
     public DateTime GetLastPeace()
@@ -121,7 +131,7 @@ public class MuteSystem(IPeaceMessages messages) : IPluginBehavior, IMuteService
     private void OnPlayerSpeak(int playerSlot)
     {
         var player = Utilities.GetPlayerFromSlot(playerSlot);
-        if (!player.IsReal())
+        if (!player.IsReal() || warden.IsWarden(player))
             return;
 
         if (bypassMute(player))
