@@ -9,6 +9,7 @@ using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Logs;
+using Jailbreak.Public.Mod.Mute;
 using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.Warden;
 using Microsoft.Extensions.Logging;
@@ -16,32 +17,23 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.Warden.Global;
 
-public class WardenBehavior : IPluginBehavior, IWardenService
+public class WardenBehavior(
+	ILogger<WardenBehavior> logger,
+	IWardenNotifications notifications,
+	IRichLogService logs,
+	ISpecialTreatmentService specialTreatment,
+	IRebelService rebels,
+	WardenConfig config,
+	IMuteService mute)
+	: IPluginBehavior, IWardenService
 {
-	private ILogger<WardenBehavior> _logger;
-	private IRichLogService _logs;
-	private IWardenNotifications _notifications;
-	private ISpecialTreatmentService _specialTreatment;
-	private IRebelService _rebels;
 	private ISet<CCSPlayerController> _bluePrisoners = new HashSet<CCSPlayerController>();
 	private BasePlugin _parent;
 	private Timer? _unblueTimer;
-
-	private readonly WardenConfig _config;
+	private bool hadWarden = false;
 
 	private bool _hasWarden;
 	private CCSPlayerController? _warden;
-
-	public WardenBehavior(ILogger<WardenBehavior> logger, IWardenNotifications notifications, IRichLogService logs,
-		ISpecialTreatmentService specialTreatment, IRebelService rebels, WardenConfig config)
-	{
-		_logger = logger;
-		_config = config;
-		_notifications = notifications;
-		_logs = logs;
-		_specialTreatment = specialTreatment;
-		_rebels = rebels;
-	}
 
 	public void Start(BasePlugin parent)
 	{
@@ -81,19 +73,22 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 			Utilities.SetStateChanged(_warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
 		}
 
-		_notifications.NEW_WARDEN(_warden)
+		notifications.NEW_WARDEN(_warden)
 			.ToAllChat()
 			.ToAllCenter();
 			
 		foreach (var player in Utilities.GetPlayers()) {
 			if (!player.IsReal()) continue;
 			player.ExecuteClientCommand(
-				$"play sounds/{_config.WardenNewSoundName}");
+				$"play sounds/{config.WardenNewSoundName}");
 		}
 
-		_logs.Append( _logs.Player(_warden), "is now the warden.");
+		logs.Append( logs.Player(_warden), "is now the warden.");
 
 		_unblueTimer = _parent.AddTimer(3, UnmarkPrisonersBlue);
+		
+		mute.PeaceMute(hadWarden ? MuteReason.WARDEN_TAKEN : MuteReason.INITIAL_WARDEN);
+		hadWarden = true;
 		return true;
 	}
 
@@ -110,7 +105,7 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 			_warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
 			_warden.Pawn.Value.Render = Color.FromArgb(254, 255, 255, 255);
 			Utilities.SetStateChanged(_warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
-			_logs.Append( _logs.Player(_warden), "is no longer the warden.");
+			logs.Append( logs.Player(_warden), "is no longer the warden.");
 		}
 
 		_warden = null;
@@ -142,20 +137,20 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 	private void ProcessWardenDeath()
 	{
 		if (!this.TryRemoveWarden())
-			_logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
+			logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
 		//	Warden died!
-		_notifications.WARDEN_DIED
+		notifications.WARDEN_DIED
 			.ToAllChat()
 			.ToAllCenter();
 		
 		foreach (var player in Utilities.GetPlayers()) {
 			if (!player.IsReal()) continue;
 			player.ExecuteClientCommand(
-				$"play sounds/{_config.WardenKilledSoundName}");
+				$"play sounds/{config.WardenKilledSoundName}");
 		}
 
-		_notifications.BECOME_NEXT_WARDEN.ToAllChat();
+		notifications.BECOME_NEXT_WARDEN.ToAllChat();
 
 		_unblueTimer?.Kill(); // If the warden dies withing 3 seconds of becoming warden, we need to cancel the unblue timer
 		MarkPrisonersBlue();
@@ -201,9 +196,9 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 
 	private bool IgnoreColor(CCSPlayerController player)
 	{
-		if (_specialTreatment.IsSpecialTreatment(player))
+		if (specialTreatment.IsSpecialTreatment(player))
 			return true;
-		if (_rebels.IsRebel(player))
+		if (rebels.IsRebel(player))
 			return true;
 		return false;
 	}
@@ -217,26 +212,33 @@ public class WardenBehavior : IPluginBehavior, IWardenService
 	}
 
 	[GameEventHandler]
+	public HookResult OnRoundStart(EventRoundStart ev, GameEventInfo info)
+	{
+		hadWarden = false;
+		return HookResult.Continue;
+	}
+
+	[GameEventHandler]
 	public HookResult OnPlayerDisconnect(EventPlayerDisconnect ev, GameEventInfo info)
 	{
 		if(!((IWardenService) this).IsWarden(ev.Userid))
 			return HookResult.Continue;
 		
 		if (!this.TryRemoveWarden())
-			_logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
+			logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
 
-		_notifications.WARDEN_LEFT
+		notifications.WARDEN_LEFT
 			.ToAllChat()
 			.ToAllCenter();
 
 		foreach (var player in Utilities.GetPlayers()) {
 			if (!player.IsReal()) continue;
 			player.ExecuteClientCommand(
-				$"play sounds/{_config.WardenPassedSoundName}");
+				$"play sounds/{config.WardenPassedSoundName}");
 		}
 
-		_notifications.BECOME_NEXT_WARDEN.ToAllChat();
+		notifications.BECOME_NEXT_WARDEN.ToAllChat();
 
 		return HookResult.Continue;
 	}
