@@ -29,10 +29,10 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
     public void Start(BasePlugin parent)
     {
         this.parent = parent;
-        
+
         this.messages = provider.GetRequiredService<IPeaceMessages>();
         this.warden = provider.GetRequiredService<IWardenService>();
-        
+
         parent.RegisterListener<Listeners.OnClientVoice>(OnPlayerSpeak);
     }
 
@@ -46,18 +46,22 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
         var duration = GetPeaceDuration(reason);
         var ctDuration = Math.Min(10, duration);
         foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal()))
-            mute(player);
+            if (!warden.IsWarden(player))
+                mute(player);
 
         switch (reason)
         {
             case MuteReason.ADMIN:
                 messages.PEACE_ENACTED_BY_ADMIN(duration).ToAllChat();
                 break;
-            case MuteReason.WARDEN_TAKEN or MuteReason.INITIAL_WARDEN:
-                messages.WARDEN_ENACTED_PEACE(duration);
+            case MuteReason.WARDEN_TAKEN:
+                messages.GENERAL_PEACE_ENACTED(duration).ToAllChat();
                 break;
             case MuteReason.WARDEN_INVOKED:
-                messages.GENERAL_PEACE_ENACTED(duration);
+                messages.WARDEN_ENACTED_PEACE(duration).ToAllChat();
+                break;
+            case MuteReason.INITIAL_WARDEN:
+                messages.GENERAL_PEACE_ENACTED(duration).ToAllChat();
                 break;
         }
 
@@ -137,7 +141,17 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
         if (bypassMute(player))
         {
             if (IsPeaceEnabled())
+            {
+                if (player.Team == CsTeam.CounterTerrorist && DateTime.Now >= ctPeaceEnd)
+                    return;
                 messages.PEACE_REMINDER.ToPlayerCenter(player);
+            }
+
+            if (!player.PawnIsAlive)
+            {
+                messages.ADMIN_DEAD_REMINDER.ToPlayerCenter(player);
+            }
+
             return;
         }
 

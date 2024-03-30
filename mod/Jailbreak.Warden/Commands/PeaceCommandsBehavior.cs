@@ -24,13 +24,15 @@ public class PeaceCommandsBehavior(
         if (mute.IsPeaceEnabled())
         {
             if (executor != null)
-                messages.PEACE_REMINDER.ToPlayerChat(executor);
+                messages.PEACE_ACTIVE.ToPlayerChat(executor);
             return;
         }
 
+        bool fromWarden = executor != null && warden.IsWarden(executor);
+
         if (executor == null || AdminManager.PlayerHasPermissions(executor, "@css/cheats"))
         {
-            mute.PeaceMute(MuteReason.ADMIN);
+            mute.PeaceMute(fromWarden ? MuteReason.WARDEN_INVOKED : MuteReason.ADMIN);
             return;
         }
 
@@ -40,7 +42,6 @@ public class PeaceCommandsBehavior(
             return;
         }
 
-        bool admin = !warden.IsWarden(executor);
 
         if (DateTime.Now - mute.GetLastPeace() < TimeSpan.FromSeconds(60))
         {
@@ -48,6 +49,6 @@ public class PeaceCommandsBehavior(
             return;
         }
 
-        mute.PeaceMute(admin ? MuteReason.ADMIN : MuteReason.WARDEN_INVOKED);
+        mute.PeaceMute(fromWarden ? MuteReason.WARDEN_INVOKED : MuteReason.ADMIN);
     }
 }

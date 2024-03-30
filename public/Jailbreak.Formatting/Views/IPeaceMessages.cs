@@ -20,4 +20,8 @@ public interface IPeaceMessages
     public IView PEACE_REMINDER { get; }
 
     public IView DEAD_REMINDER { get; }
+    
+    public IView ADMIN_DEAD_REMINDER { get; }
+    
+    public IView PEACE_ACTIVE { get; }
 }

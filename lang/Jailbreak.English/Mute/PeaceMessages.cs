@@ -12,7 +12,7 @@ public class PeaceMessages : IPeaceMessages, ILanguage<Formatting.Languages.Engl
 {
     private static readonly FormatObject PREFIX =
         new HiddenFormatObject(
-            $"{ChatColors.DarkBlue}[{ChatColors.LightBlue}Voice{ChatColors.DarkBlue}]{ChatColors.Grey} ")
+            $" {ChatColors.DarkBlue}[{ChatColors.LightBlue}Voice{ChatColors.DarkBlue}]{ChatColors.Grey} ")
         {
             Plain = false,
             Panorama = false,
@@ -75,5 +75,15 @@ public class PeaceMessages : IPeaceMessages, ILanguage<Formatting.Languages.Engl
     public IView DEAD_REMINDER => new SimpleView()
     {
         { PREFIX, "You are dead and cannot speak!" }
+    };
+    
+    public IView ADMIN_DEAD_REMINDER => new SimpleView()
+    {
+        { PREFIX, "You are dead and should only be talking if absolutely necessary!" }
+    };
+    
+    public IView PEACE_ACTIVE => new SimpleView()
+    {
+        { PREFIX, "Peace is currently active." }
     };
 }
