@@ -42,4 +42,8 @@ public class LanguageConfig<TDialect>
 	public void WithSpecialTreatment<TSpecialTreatment>()
 		where TSpecialTreatment : class, ILanguage<TDialect>, ISpecialTreatmentNotifications
 		=> _collection.AddSingleton<ISpecialTreatmentNotifications, TSpecialTreatment>();
+	
+	public void WithMute<TMute>()
+		where TMute : class, ILanguage<TDialect>, IPeaceMessages
+		=> _collection.AddSingleton<IPeaceMessages, TMute>();
 }
