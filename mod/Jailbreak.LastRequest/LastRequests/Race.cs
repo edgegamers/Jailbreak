@@ -18,7 +18,7 @@ public class Race(
 {
     public override LRType type => LRType.Race;
 
-    private BeamedShape? start, end;
+    private BeamCircle? start, end;
     private Vector startLocation, endLocation;
 
     private Timer? raceTimer;
@@ -88,6 +88,8 @@ public class Race(
         if (prisoner.AbsOrigin == null || guard.AbsOrigin == null)
             return;
         var requiredDistance = getRequiredDistance();
+
+        end?.SetRadius(requiredDistance / 2);
 
         if (guard.AbsOrigin.DistanceSquared(endLocation) < requiredDistance)
         {
