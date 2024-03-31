@@ -13,5 +13,6 @@ public static class LastRequestExtension
         collection.AddPluginBehavior<ILastRequestFactory, LastRequestFactory>();
         collection.AddPluginBehavior<ILastRequestManager, LastRequestManager>();
         collection.AddPluginBehavior<LastRequestCommand>();
+        collection.AddPluginBehavior<EndRaceCommand>();
     }
 }
