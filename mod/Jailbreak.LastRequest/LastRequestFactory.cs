@@ -23,6 +23,7 @@ public class LastRequestFactory(ILastRequestManager manager) : ILastRequestFacto
             LRType.NoScope => new NoScope(_plugin, manager, prisoner, guard),
             LRType.RockPaperScissors => new RockPaperScissors(_plugin, manager, prisoner, guard),
             LRType.Coinflip => new Coinflip(_plugin, manager, prisoner, guard),
+            LRType.Race => new Race(_plugin, manager, prisoner, guard),
             _ => throw new ArgumentException("Invalid last request type: " + type, nameof(type))
         };
     }
@@ -36,6 +37,7 @@ public class LastRequestFactory(ILastRequestManager manager) : ILastRequestFacto
             LRType.NoScope => true,
             LRType.RockPaperScissors => true,
             LRType.Coinflip => true,
+            LRType.Race => true,
             _ => false
         };
     }
