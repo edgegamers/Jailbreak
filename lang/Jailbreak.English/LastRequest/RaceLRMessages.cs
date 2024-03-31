@@ -9,7 +9,9 @@ public class RaceLRMessages : IRaceLRMessages, ILanguage<Formatting.Languages.En
 {
     public IView END_RACE_INSTRUCTION => new SimpleView()
     {
-        { LastRequestMessages.PREFIX, "Type !endrace to set the end point!" }
+        { LastRequestMessages.PREFIX, "Type !endrace to set the end point!"}, SimpleView.NEWLINE,
+        { LastRequestMessages.PREFIX, "Type !endrace to set the end point!"}, SimpleView.NEWLINE,
+        { LastRequestMessages.PREFIX, "Type !endrace to set the end point!"}, SimpleView.NEWLINE,
     };
 
     public IView RACE_STARTING_MESSAGE(CCSPlayerController prisoner)
