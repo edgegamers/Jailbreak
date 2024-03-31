@@ -44,7 +44,7 @@ public static class PlayerExtensions
             return;
 
         if (targetPawn is { AbsRotation: not null, AbsOrigin: not null })
-            Teleport(player, target.AbsOrigin!, target.AbsRotation);
+            Teleport(player, targetPawn.AbsOrigin, targetPawn.AbsRotation);
     }
 
     public static void Teleport(this CCSPlayerController player, Vector pos, QAngle? rot = null)
