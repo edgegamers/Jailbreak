@@ -21,6 +21,7 @@ public abstract class TeleportingRequest(
         prisoner.Freeze();
         plugin.AddTimer(1, () =>
         {
+            prisoner.PrintToChat("unfreeze");
             guard.UnFreeze();
             prisoner.UnFreeze();
         });

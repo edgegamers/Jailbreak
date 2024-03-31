@@ -93,7 +93,7 @@ public static class PlayerExtensions
     {
         pawn.MoveType = MoveType_t.MOVETYPE_WALK;
 
-        Schema.SetSchemaValue(pawn.Handle, "CBaseEntity", "m_nActualMoveType", 22);
+        Schema.SetSchemaValue(pawn.Handle, "CBaseEntity", "m_nActualMoveType", 2);
         Utilities.SetStateChanged(pawn, "CBaseEntity", "m_MoveType");
     }
 }

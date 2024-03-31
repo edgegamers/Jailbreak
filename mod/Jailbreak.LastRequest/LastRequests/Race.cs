@@ -29,7 +29,7 @@ public class Race(
         base.Setup();
 
         prisoner.RemoveWeapons();
-        
+
         guard.RemoveWeapons();
         guard.GiveNamedItem("weapon_knife");
 
@@ -47,12 +47,9 @@ public class Race(
 
         startLocation = prisoner.AbsOrigin!.Clone();
 
-        if (prisoner.AbsOrigin != null)
-        {
-            start = new BeamCircle(plugin, prisoner.AbsOrigin, 10, 16);
-            start.SetColor(Color.Aqua);
-            start.Draw();
-        }
+        start = new BeamCircle(plugin, startLocation, 10, 16);
+        start.SetColor(Color.Aqua);
+        start.Draw();
     }
 
     // Called when the prisoner types !endrace
@@ -87,7 +84,7 @@ public class Race(
     {
         if (prisoner.AbsOrigin == null || guard.AbsOrigin == null)
             return;
-        var requiredDistance = getRequiredDistance();
+        var requiredDistance = MathF.Pow(getRequiredDistance(), 2);
 
         end?.SetRadius(requiredDistance / 2);
 
