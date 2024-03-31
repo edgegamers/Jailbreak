@@ -1,7 +1,11 @@
 ﻿using System.Drawing;
+using System.Xml.Schema;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
+using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.LastRequest;
@@ -14,7 +18,8 @@ public class Race(
     BasePlugin plugin,
     ILastRequestManager manager,
     CCSPlayerController prisoner,
-    CCSPlayerController guard) : TeleportingRequest(plugin, manager, prisoner, guard)
+    CCSPlayerController guard,
+    IRaceLRMessages messages) : TeleportingRequest(plugin, manager, prisoner, guard)
 {
     public override LRType type => LRType.Race;
 
@@ -40,14 +45,13 @@ public class Race(
             prisoner.GiveNamedItem("weapon_knife");
         });
 
-        prisoner.PrintToCenter("Type !endrace to set the end point!");
+        messages.END_RACE_INSTRUCTION.ToPlayerChat(prisoner);
 
-        PrintToParticipants(prisoner.PlayerName +
-                            " is starting a Race LR, pay attention to where they set the end point!");
+        messages.RACE_STARTING_MESSAGE(prisoner).ToPlayerChat(guard);
 
-        startLocation = prisoner.AbsOrigin!.Clone();
+        startLocation = prisoner.Pawn.Value.AbsOrigin.Clone();
 
-        start = new BeamCircle(plugin, startLocation, 10, 16);
+        start = new BeamCircle(plugin, startLocation, 20, 16);
         start.SetColor(Color.Aqua);
         start.Draw();
     }
@@ -57,9 +61,9 @@ public class Race(
     {
         state = LRState.Active;
 
-        endLocation = prisoner.AbsOrigin!.Clone();
+        endLocation = prisoner.Pawn.Value.AbsOrigin.Clone();
 
-        end = new BeamCircle(plugin, endLocation, 10, 16);
+        end = new BeamCircle(plugin, endLocation, 10, 32);
         end.SetColor(Color.Red);
         end.Draw();
 
@@ -84,17 +88,22 @@ public class Race(
     {
         if (prisoner.AbsOrigin == null || guard.AbsOrigin == null)
             return;
-        var requiredDistance = MathF.Pow(getRequiredDistance(), 2);
+        var requiredDistance = getRequiredDistance();
+        var requiredDistanceSqured = MathF.Pow(requiredDistance, 2);
 
         end?.SetRadius(requiredDistance / 2);
+        end?.Update();
 
-        if (guard.AbsOrigin.DistanceSquared(endLocation) < requiredDistance)
+        var guardDist = guard.Pawn.Value.AbsOrigin.Clone().DistanceSquared(endLocation);
+
+        if (guardDist < requiredDistanceSqured)
         {
             manager.EndLastRequest(this, LRResult.GuardWin);
             return;
         }
 
-        if (prisoner.AbsOrigin.DistanceSquared(endLocation) < requiredDistance)
+        var prisonerDist = prisoner.Pawn.Value.AbsOrigin.Clone().DistanceSquared(endLocation);
+        if (prisonerDist < requiredDistanceSqured)
         {
             manager.EndLastRequest(this, LRResult.PrisonerWin);
         }
@@ -105,7 +114,7 @@ public class Race(
     {
         var elapsedSeconds = (DateTime.Now - raceStart).TotalSeconds;
 
-        return (float)(elapsedSeconds + Math.Pow(elapsedSeconds, 2.9) / 5000);
+        return (float)(10 + elapsedSeconds + Math.Pow(elapsedSeconds, 2.9) / 5000);
     }
 
     public override void OnEnd(LRResult result)
@@ -121,8 +130,8 @@ public class Race(
         }
 
         state = LRState.Completed;
+        raceTimer?.Kill();
         start?.Remove();
         end?.Remove();
-        raceTimer?.Kill();
     }
 }
