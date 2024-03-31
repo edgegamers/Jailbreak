@@ -51,6 +51,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
 			config.WithLastRequest<LastRequestMessages>();
 			config.WithSpecialTreatment<SpecialTreatmentNotifications>();
 			config.WithMute<PeaceMessages>();
+			config.WithRaceLR<RaceLRMessages>();
 		});
 	}
 }

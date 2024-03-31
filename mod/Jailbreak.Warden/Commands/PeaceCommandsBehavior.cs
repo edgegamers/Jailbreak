@@ -45,7 +45,7 @@ public class PeaceCommandsBehavior(
 
         if (DateTime.Now - mute.GetLastPeace() < TimeSpan.FromSeconds(60))
         {
-            generics.CommandOnCooldown(DateTime.Now.AddSeconds(60)).ToPlayerChat(executor);
+            generics.CommandOnCooldown(mute.GetLastPeace().AddSeconds(60)).ToPlayerChat(executor);
             return;
         }
 
