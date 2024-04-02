@@ -26,5 +26,7 @@ public static class WardenServiceExtension
 
         serviceCollection.AddPluginBehavior<WardenMarkerBehavior>();
         serviceCollection.AddPluginBehavior<WardenPaintBehavior>();
+        
+        serviceCollection.AddPluginBehavior<CTBehavior>();
     }
 }

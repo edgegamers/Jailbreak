@@ -96,4 +96,30 @@ public static class PlayerExtensions
         Schema.SetSchemaValue(pawn.Handle, "CBaseEntity", "m_nActualMoveType", 2);
         Utilities.SetStateChanged(pawn, "CBaseEntity", "m_MoveType");
     }
+
+    public static void SetHp(this CCSPlayerController controller, int health = 100)
+    {
+        if (health <= 0 || !controller.PawnIsAlive || controller.PlayerPawn.Value == null) return;
+
+        controller.Health = health;
+        controller.PlayerPawn.Value.Health = health;
+
+        if (health > 100)
+        {
+            controller.MaxHealth = health;
+            controller.PlayerPawn.Value.MaxHealth = health;
+        }
+
+        var weaponServices = controller.PlayerPawn.Value!.WeaponServices;
+        if (weaponServices == null) return;
+
+        controller.GiveNamedItem("weapon_healthshot");
+
+        foreach (var weapon in weaponServices.MyWeapons)
+            if (weapon.IsValid && weapon.Value!.DesignerName == "weapon_healthshot")
+            {
+                weapon.Value.Remove();
+                break;
+            }
+    }
 }

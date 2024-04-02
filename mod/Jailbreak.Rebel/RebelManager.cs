@@ -15,7 +15,7 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs) : IP
 {
     private readonly Dictionary<CCSPlayerController, long> _rebelTimes = new();
     
-    public static int MAX_REBEL_TIME = 30;
+    public static int MAX_REBEL_TIME = 45;
 
     public void Start(BasePlugin parent)
     {
@@ -129,7 +129,7 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs) : IP
             return 1;
         if (x <= 0)
             return 0;
-        return (float)(100 - (MAX_REBEL_TIME - x) * Math.Sqrt(MAX_REBEL_TIME - x) / 2f) / 100;
+        return (float)(100 - (MAX_REBEL_TIME - x) * Math.Sqrt(MAX_REBEL_TIME - x) / 3.8f) / 100;
     }
 
     private Color GetRebelColor(CCSPlayerController player)
