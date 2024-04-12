@@ -47,7 +47,10 @@ public class WardenNotifications : IWardenNotifications, ILanguage<Formatting.La
 	public IView NOT_WARDEN =>
 		new SimpleView { PREFIX, "You are not the warden!" };
 
-	public IView PASS_WARDEN(CCSPlayerController player)
+    public IView FIRE_COMMAND_FAILED =>
+    new SimpleView { PREFIX, "The fire command has failed to work for some unknown reason..." };
+
+    public IView PASS_WARDEN(CCSPlayerController player)
 	{
 		return new SimpleView { PREFIX, player, "has resigned from being warden!" };
 	}
@@ -64,4 +67,9 @@ public class WardenNotifications : IWardenNotifications, ILanguage<Formatting.La
 		else
 			return new SimpleView { PREFIX, "There is currently no warden!" };
 	}
+    public IView FIRE_COMMAND_SUCCESS(CCSPlayerController player)
+    {
+        return new SimpleView { PREFIX, player, "has been fired and is no longer the warden." };
+    }
+
 }
