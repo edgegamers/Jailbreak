@@ -16,16 +16,15 @@ public abstract class WeaponizedRequest(
     ILastRequestManager manager,
     CCSPlayerController prisoner,
     CCSPlayerController guard)
-    : AbstractLastRequest(plugin, manager, prisoner, guard)
+    : TeleportingRequest(plugin, manager, prisoner, guard)
 {
     public override void Setup()
     {
-        state = LRState.Pending;
+        base.Setup();
 
         // Strip weapons, teleport T to CT
         prisoner.RemoveWeapons();
         guard.RemoveWeapons();
-        guard.Teleport(prisoner);
         for (var i = 3; i >= 1; i--)
         {
             var copy = i;

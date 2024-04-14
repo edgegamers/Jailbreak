@@ -13,8 +13,6 @@ namespace Jailbreak.English.Logs;
 public class LogMessages : ILogMessages, ILanguage<Formatting.Languages.English>
 {
 
-
-
 	public IView BEGIN_JAILBREAK_LOGS => new SimpleView()
 	{
 		{ "********************************" }, SimpleView.NEWLINE,
@@ -28,7 +26,5 @@ public class LogMessages : ILogMessages, ILanguage<Formatting.Languages.English>
 		{ "****** END JAILBREAK LOGS ******" }, SimpleView.NEWLINE,
 		{ "********************************" }
 	};
-
-
 
 }
