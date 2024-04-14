@@ -19,21 +19,58 @@ public class LogEntityListeners : IPluginBehavior
 		OnDropGun();
 	}
 	
-	private static MemoryFunctionVoid<CBasePlayerPawn, CBasePlayerWeapon, IntPtr> WeaponDrop = new( "\\x55\\x48\\x89\\xE5\\x41\\x56\\x41\\x55\\x49\\x89\\xD5\\x41\\x54\\x49\\x89\\xFC\\x53\\x48\\x89\\xF3\\xE8\\x2A\\x2A\\x2A\\x2A" );
+	private static MemoryFunctionVoid<CBasePlayerPawn, CBasePlayerWeapon, IntPtr> WeaponDrop = new( @"\x55\x48\x89\xE5\x41\x56\x41\x55\x49\x89\xD5\x41\x54\x49\x89\xFC\x53\x48\x89\xF3\xE8\x2A\x2A\x2A\x2A" );
 
 	private void OnDropGun()
 	{
 		WeaponDrop.Hook(hook =>
 		{
-			var player = hook.GetParam<CBasePlayerPawn>(0);
+			var pawn = hook.GetParam<CBasePlayerPawn>(0);
 			var weapon = hook.GetParam<CBasePlayerWeapon>(1);
 
-			if (!player.IsValid) return HookResult.Continue;
-			if (player.TeamNum != (byte)CsTeam.CounterTerrorist) return HookResult.Changed;
+			if (!pawn.IsValid) return HookResult.Continue;
+			if (pawn.Controller.Value == null || !pawn.Controller.IsValid) return HookResult.Continue;
+
+			var player = (CCSPlayerController)pawn.Controller.Value;
+
+			if (player.Team != CsTeam.CounterTerrorist) return HookResult.Changed;
 			
-			_logs.Append(_logs.Player((CCSPlayerController)player.Controller.Value), $"dropped weapon: {weapon.DesignerName}");
+			_logs.Append(_logs.Player(player), $"dropped weapon: {weapon.DesignerName}");
 			return HookResult.Continue;
 		}, HookMode.Pre);
+	}
+
+	[GameEventHandler]
+	public void OnItemPickup(EventItemPickup @event, GameEventInfo info)
+	{
+		var player = @event.Userid;
+		if (!player.IsReal())
+			return;
+		
+		if (!player.IsValid)
+			return;
+		
+		if (player.Team != CsTeam.Terrorist) return;
+
+
+		Server.NextFrame(() =>
+		{
+			var pawn = player.PlayerPawn.Value;
+			if (pawn == null || !pawn.IsValid) return;
+			var weaponServices = pawn.WeaponServices;
+			if (weaponServices == null) return;
+
+			foreach (var weaponHandle in weaponServices.MyWeapons.Where(handle => handle.IsValid && handle.Value != null).ToList())
+			{
+				if (!weaponHandle.Value.DesignerName.Equals(@event.Item)) continue;
+
+				var owner = weaponHandle.Value.OwnerEntity.Value.As<CCSPlayerController>();
+				if (owner.Team != CsTeam.CounterTerrorist) return;
+				_logs.Append(_logs.Player(player), $"picked up an {_logs.Player(owner)}s item: {weaponHandle.Value.DesignerName}");
+
+			}
+		});
+
 	}
 
 	[EntityOutputHook("func_button", "OnPressed")]
