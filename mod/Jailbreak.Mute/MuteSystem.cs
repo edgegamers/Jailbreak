@@ -14,7 +14,7 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.Mute;
 
-public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteService
+public class MuteSystem(IServiceProvider provider, MuteConfig muteConfig) : IPluginBehavior, IMuteService
 {
     private BasePlugin parent;
     private DateTime lastPeace = DateTime.MinValue;
@@ -47,8 +47,8 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
     public void PeaceMute(MuteReason reason)
     {
         var duration = GetPeaceDuration(reason);
-        var ctDuration = Math.Min(10, duration); //                                      This check ensures we only mute players who aren't already muted.
-        foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal() && (player.VoiceFlags & VoiceFlags.Muted) == 0))
+        var ctDuration = Math.Min(10, duration); //                                      This check ensures we only mute players who aren't already muted, if the config allows it.
+        foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal() && (muteConfig.PeaceShouldConsiderMutedPlayers) ? (player.VoiceFlags & VoiceFlags.Muted) == 0 : true))
             if (!warden.IsWarden(player))
             {
                 mute(player); _mutedPlayers.Add(player);

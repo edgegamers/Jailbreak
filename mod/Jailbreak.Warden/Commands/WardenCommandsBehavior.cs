@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Events;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -125,8 +126,10 @@ public class WardenCommandsBehavior : IPluginBehavior
     public void Command_FireWarden(CCSPlayerController? player, CommandInfo command)
     {
         CCSPlayerController? warden = _warden.Warden;
-        if (player == null || warden == null) return;
+
+        if (player == null || warden == null) { return; }
         if (!AdminManager.PlayerHasPermissions(player, "@css/eg")) { return; }
+
         bool success = _warden.TryRemoveWarden();
 
         if (!success)
@@ -135,6 +138,15 @@ public class WardenCommandsBehavior : IPluginBehavior
         {
             _notifications.FIRE_COMMAND_SUCCESS(warden).ToAllChat();
             _mute.RemovePeaceMute();
+
+            // TEMP SOLUTION. Eventually we want to use EmitSound in the world instead, waiting for CS#... 
+            foreach (var p in Utilities.GetPlayers())
+            {
+                if (!p.IsReal()) continue;
+                p.ExecuteClientCommand(
+                    $"play sounds/{_config.WardenKilledSoundName}");
+            }
+
         }
 
     }
