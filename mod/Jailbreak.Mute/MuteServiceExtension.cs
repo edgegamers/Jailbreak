@@ -8,6 +8,8 @@ public static class MuteServiceExtension
 {
     public static void AddJailbreakMute(this IServiceCollection services)
     {
+        services.AddConfig<MuteConfig>("muteconfig");
+
         services.AddPluginBehavior<IMuteService, MuteSystem>();
     }
 }
