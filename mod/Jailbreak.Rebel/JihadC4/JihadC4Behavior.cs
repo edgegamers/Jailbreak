@@ -60,20 +60,24 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             Console.WriteLine("2");
 
             CPlayer_WeaponServices? weaponServices = TryGetWeaponServices(player);
-            if (weaponServices == null || player.PlayerPawn.Value!.WeaponServices!.ActiveWeapon == null || player.PlayerPawn.Value.WeaponServices.ActiveWeapon.Value == null) { continue; }
-
+            if (weaponServices == null || weaponServices.ActiveWeapon == null || weaponServices.ActiveWeapon.Value == null || !weaponServices.ActiveWeapon.Value.IsValid) { continue; }
+            Console.WriteLine("2.1??");
             // Check if the currently held and "used" item is our C4
             if (!weaponServices.ActiveWeapon!.Value!.DesignerName.Equals("weapon_c4")) { continue; }
+            Console.WriteLine("2.2");
 
             CC4 bombEntity = new CC4(weaponServices.ActiveWeapon!.Value!.Handle);
-            _currentActiveJihadC4s.Remove(bombEntity);
+            Console.WriteLine("is bomb valid tho: " + bombEntity.IsValid);
+            // _currentActiveJihadC4s.Remove(bombEntity); DEBUG1
             Console.WriteLine("3");
 
             //player.ExecuteClientCommandFromServer("kill"); UNCOMMENT LATER
-            TryDetonateJihadC4(player, metadata.Delay);
+            //TryDetonateJihadC4(player, metadata.Delay);
             Console.WriteLine("4");
 
-            _jihadNotifications.PlayerDetonateC4(player).ToAllChat();
+            //_jihadNotifications.PlayerDetonateC4(player).ToAllChat();
+
+            // todo next frame print chat
 
             /**Server.NextFrame(bombEntity.Remove);
             Console.WriteLine("5");**/ // UNCOMMENT LATER AND LOOK INTO THIS, HOW TO REMOVE C4 AFTER KILL CMD
@@ -147,41 +151,24 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     public void TryDetonateJihadC4(CCSPlayerController player, float delay)
     {
         /* PARTICLE EXPLOSION */
-        CParticleSystem particleSystemEntity = Utilities.CreateEntityByName<CParticleSystem>("info_particle_system")!;
+        /**CParticleSystem particleSystemEntity = Utilities.CreateEntityByName<CParticleSystem>("info_particle_system")!;
         particleSystemEntity.EffectName = "particles/explosions_fx/explosion_c4_500.vpcf";
         particleSystemEntity.StartActive = true;
 
         particleSystemEntity.Teleport(player.PlayerPawn!.Value!.AbsOrigin!, new QAngle(), new Vector());
-        particleSystemEntity.DispatchSpawn();
+        particleSystemEntity.DispatchSpawn();**/
 
         /* PHYS EXPLPOSION, FOR PUSHING PLAYERS */
-        CPhysExplosion envPhysExplosionEntity = Utilities.CreateEntityByName<CPhysExplosion>("env_physexplosion")!;
+        /**CPhysExplosion envPhysExplosionEntity = Utilities.CreateEntityByName<CPhysExplosion>("env_physexplosion")!;
 
         envPhysExplosionEntity.Spawnflags = 1 << 1;
-
-        envPhysExplosionEntity.Magnitude = 50f;
-        envPhysExplosionEntity.Damage = 0f;
-        envPhysExplosionEntity.Radius = 0f; // clampradius ? 
-        envPhysExplosionEntity.InnerRadius = 0f;
-        envPhysExplosionEntity.PushScale = 10f;
-
-        envPhysExplosionEntity.ConvertToDebrisWhenPossible = false;
         envPhysExplosionEntity.ExplodeOnSpawn = true;
+        envPhysExplosionEntity.Magnitude = 50f;
+        envPhysExplosionEntity.PushScale = 3.5f;
+        envPhysExplosionEntity.Radius = 340f; // As per old code.
 
-        envPhysExplosionEntity.Teleport(player.PlayerPawn!.Value!.AbsOrigin!, new QAngle(), new Vector());
-        envPhysExplosionEntity.DispatchSpawn();
-
-        /* ENV_EXPLOSION, FOR DAMAGING PLAYERS, LIKE BOMB BLAST IN CS2 */
-        /**CEnvExplosion envExplosionEntity = Utilities.CreateEntityByName<CEnvExplosion>("env_explosion")!;
-
-        envExplosionEntity.Magnitude = 50;
-        envExplosionEntity.RadiusOverride = 0;
-        envExplosionEntity.RenderMode = RenderMode_t.kRenderNormal;
-
-        envExplosionEntity.Teleport(player.PlayerPawn!.Value!.AbsOrigin, new QAngle(), new Vector());
-        envExplosionEntity.DispatchSpawn();
-
-        envExplosionEntity.AcceptInput("Explode");**/
+        envPhysExplosionEntity.Teleport(player.PlayerPawn.Value!.AbsOrigin!, new QAngle(), new Vector());
+        envPhysExplosionEntity.DispatchSpawn();**/
 
     }
 
