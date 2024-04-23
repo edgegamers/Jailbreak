@@ -45,6 +45,12 @@ public class Jailbreak : BasePlugin
 
         Logger.LogInformation("[Jailbreak] Found {@BehaviorCount} behaviors.", _extensions.Count);
 
+        // Precache particles needed for features like Jihad C4 
+        RegisterListener<Listeners.OnServerPrecacheResources>((manifest) =>
+        {
+            manifest.AddResource("particles/explosions_fx/explosion_c4_500.vpcf");
+        });
+
         foreach (var extension in _extensions)
         {
             //	Register all event handlers on the extension object
