@@ -67,7 +67,6 @@ public class LogEntityListeners : IPluginBehavior
 				var owner = weaponHandle.Value.OwnerEntity.Value.As<CCSPlayerController>();
 				if (owner.Team != CsTeam.CounterTerrorist) return;
 				_logs.Append(_logs.Player(player), $"picked up an {_logs.Player(owner)}s item: {weaponHandle.Value.DesignerName}");
-
 			}
 		});
 
