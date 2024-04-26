@@ -43,6 +43,9 @@ public class WardenNotifications : IWardenNotifications, ILanguage<Formatting.La
 
 	public IView LEAVE_RAFFLE =>
 		new SimpleView { PREFIX, "You've left the warden raffle!" };
+	
+	public IView NOT_WARDEN =>
+		new SimpleView { PREFIX, "You are not the warden!" };
 
 	public IView PASS_WARDEN(CCSPlayerController player)
 	{

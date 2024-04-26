@@ -1,4 +1,6 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
 
 namespace Jailbreak.Public.Extensions;
@@ -42,6 +44,56 @@ public static class PlayerExtensions
             return;
 
         if (targetPawn is { AbsRotation: not null, AbsOrigin: not null })
-            playerPawn.Teleport(targetPawn.AbsOrigin, targetPawn.AbsRotation, new Vector());
+            Teleport(player, targetPawn.AbsOrigin, targetPawn.AbsRotation);
+    }
+
+    public static void Teleport(this CCSPlayerController player, Vector pos, QAngle? rot = null)
+    {
+        if (!player.IsReal())
+            return;
+
+        var playerPawn = player.Pawn.Value;
+        if (playerPawn == null)
+            return;
+
+        playerPawn.Teleport(pos, rot ?? playerPawn.AbsRotation!, new Vector());
+    }
+
+    public static void Freeze(this CCSPlayerController player)
+    {
+        if (!player.Pawn.IsValid || player.Connected != PlayerConnectedState.PlayerConnected)
+            return;
+
+        if (player.Pawn.Value == null)
+            return;
+
+        player.Pawn.Value.Freeze();
+    }
+
+    public static void UnFreeze(this CCSPlayerController player)
+    {
+        if (!player.Pawn.IsValid || player.Connected != PlayerConnectedState.PlayerConnected)
+            return;
+
+        if (player.Pawn.Value == null)
+            return;
+
+        player.Pawn.Value.UnFreeze();
+    }
+
+    public static void Freeze(this CBasePlayerPawn pawn)
+    {
+        pawn.MoveType = MoveType_t.MOVETYPE_OBSOLETE;
+
+        Schema.SetSchemaValue(pawn.Handle, "CBaseEntity", "m_nActualMoveType", 1);
+        Utilities.SetStateChanged(pawn, "CBaseEntity", "m_MoveType");
+    }
+
+    public static void UnFreeze(this CBasePlayerPawn pawn)
+    {
+        pawn.MoveType = MoveType_t.MOVETYPE_WALK;
+
+        Schema.SetSchemaValue(pawn.Handle, "CBaseEntity", "m_nActualMoveType", 2);
+        Utilities.SetStateChanged(pawn, "CBaseEntity", "m_MoveType");
     }
 }
