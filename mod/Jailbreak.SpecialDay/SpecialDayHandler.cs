@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using Jailbreak.Public.Behaviors;
@@ -76,5 +77,7 @@ public class SpecialDayHandler : ISpecialDayHandler, IPluginBehavior
             _currentSpecialDay.OnStart();
             break;
         }
+        
+        Server.NextFrame(() => Server.PrintToChatAll($"{_currentSpecialDay?.Name} has started - {_currentSpecialDay?.Description}"));
     }
 }

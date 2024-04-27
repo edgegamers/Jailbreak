@@ -9,10 +9,12 @@ public class SpecialDayMenu : ISpecialDayMenu
 {
     private BaseMenu _menu;
     private readonly ISpecialDayHandler _handler;
+    private readonly BasePlugin _plugin;
 
     public SpecialDayMenu(BasePlugin plugin, SpecialDayHandler handler)
     {
         _menu = new CenterHtmlMenu("Special Days", plugin);
+        _plugin = plugin;
         _handler = handler;
         AddSpecialDays();
     }
@@ -27,7 +29,7 @@ public class SpecialDayMenu : ISpecialDayMenu
         foreach (var type in q)
         {
             if (type == null) return;
-            var item = (ISpecialDay?) Activator.CreateInstance(type);
+            var item = (ISpecialDay?) Activator.CreateInstance(type, _plugin);
             if (item == null) return;
             AddSpecialDay(item);
         }
