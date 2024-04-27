@@ -17,7 +17,6 @@ public class SpecialDayHandler : ISpecialDayHandler, IPluginBehavior
     {
         plugin.RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
         plugin.RegisterEventHandler<EventRoundStart>(OnRoundStart);
-
     }
 
     [GameEventHandler]
@@ -56,9 +55,9 @@ public class SpecialDayHandler : ISpecialDayHandler, IPluginBehavior
         return _isSpecialDayActive;
     }
 
-    public void StartSpecialDay(string name)
+    public bool StartSpecialDay(string name)
     {
-        if (_isSpecialDayActive || !CanStartSpecialDay()) return;
+        if (_isSpecialDayActive || !CanStartSpecialDay()) return false;
         
         var fullName = "Jailbreak.SpecialDay.SpecialDays";
         var q = from t in Assembly.GetExecutingAssembly().GetTypes()
@@ -67,9 +66,9 @@ public class SpecialDayHandler : ISpecialDayHandler, IPluginBehavior
 
         foreach (var type in q)
         {
-            if (type == null) return;
+            if (type == null) continue;
             var item = (ISpecialDay) Activator.CreateInstance(type);
-            if (item == null) return;
+            if (item == null) continue;
             if (item.Name != name) continue;
             
             _currentSpecialDay = item;
@@ -79,5 +78,6 @@ public class SpecialDayHandler : ISpecialDayHandler, IPluginBehavior
         }
         
         Server.NextFrame(() => Server.PrintToChatAll($"{_currentSpecialDay?.Name} has started - {_currentSpecialDay?.Description}"));
+        return true;
     }
 }

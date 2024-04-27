@@ -27,12 +27,16 @@ public class FreeForAllDay : ISpecialDay
     
     public void OnStart()
     {
-        var spawn = Utilities.FindAllEntitiesByDesignerName<SpawnPoint>("info_player_counterterrorist").First();
+        var spawn = Utilities.FindAllEntitiesByDesignerName<SpawnPoint>("info_player_counterterrorist").ToList();
 
         foreach (var player in Utilities.GetPlayers()
                      .Where(player => player.IsReal()))
         {
-            player.Teleport(spawn.AbsOrigin);
+            var max = spawn.Count;
+            
+            var index = new Random().Next(0, max);
+            
+            player.Teleport(spawn[index].AbsOrigin);
             player.Freeze();
         }
         
