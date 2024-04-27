@@ -15,6 +15,8 @@ public class SpecialDay : ISpecialDayHandler, IPluginBehavior
     public void Start(BasePlugin plugin)
     {
         plugin.RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
+        plugin.RegisterEventHandler<EventRoundStart>(OnRoundStart);
+
     }
 
     [GameEventHandler]
@@ -28,6 +30,13 @@ public class SpecialDay : ISpecialDayHandler, IPluginBehavior
         _currentSpecialDay = null;
         _roundsSinceLastSpecialDay = 0;
         
+        return HookResult.Continue;
+    }
+    
+    [GameEventHandler]
+    private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
+    {
+        _roundsSinceLastSpecialDay++;
         return HookResult.Continue;
     }
     
@@ -48,7 +57,7 @@ public class SpecialDay : ISpecialDayHandler, IPluginBehavior
 
     public void StartSpecialDay(string name)
     {
-        if (_isSpecialDayActive) return;
+        if (_isSpecialDayActive || !CanStartSpecialDay()) return;
         
         var fullName = "Jailbreak.SpecialDay.SpecialDays";
         var q = from t in Assembly.GetExecutingAssembly().GetTypes()
@@ -65,6 +74,7 @@ public class SpecialDay : ISpecialDayHandler, IPluginBehavior
             _currentSpecialDay = item;
             _isSpecialDayActive = true;
             _currentSpecialDay.OnStart();
+            break;
         }
     }
 }
