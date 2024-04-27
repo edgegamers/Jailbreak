@@ -10,7 +10,7 @@ public class SpecialDayMenu : ISpecialDayMenu
     private BaseMenu _menu;
     private readonly ISpecialDayHandler _handler;
 
-    public SpecialDayMenu(BasePlugin plugin, SpecialDay handler)
+    public SpecialDayMenu(BasePlugin plugin, SpecialDayHandler handler)
     {
         _menu = new CenterHtmlMenu("Special Days", plugin);
         _handler = handler;

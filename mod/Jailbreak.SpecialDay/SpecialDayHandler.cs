@@ -6,7 +6,7 @@ using Jailbreak.Public.Mod.SpecialDays;
 
 namespace Jailbreak.SpecialDay;
 
-public class SpecialDay : ISpecialDayHandler, IPluginBehavior
+public class SpecialDayHandler : ISpecialDayHandler, IPluginBehavior
 {
     private int _roundsSinceLastSpecialDay = 0;
     private bool _isSpecialDayActive = false;

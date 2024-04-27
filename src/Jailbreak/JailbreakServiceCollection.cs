@@ -16,6 +16,7 @@ using Jailbreak.Logs;
 using Jailbreak.Mute;
 using Jailbreak.Public.Configuration;
 using Jailbreak.Rebel;
+using Jailbreak.SpecialDay;
 using Jailbreak.Warden;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -33,6 +34,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
         //	Not sure how this will behave with multiple rounds and whatnot.
         serviceCollection.AddTransient<IConfigService, ConfigService>();
 
+        serviceCollection.AddSpecialDays();
         serviceCollection.AddJailbreakGeneric();
         serviceCollection.AddJailbreakLogs();
         serviceCollection.AddJailbreakRebel();
