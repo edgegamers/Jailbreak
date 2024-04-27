@@ -5,12 +5,11 @@ using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDays;
-using Microsoft.VisualBasic.CompilerServices;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
-public class Warday : ISpecialDay
+public class FreeForAllDay : ISpecialDay
 {
     public string Name => "Warday";
     public string Description => "The guards can kill prisoners without any consequences.";
@@ -21,7 +20,7 @@ public class Warday : ISpecialDay
     private BasePlugin _plugin;
     private bool _hasStarted = false;
 
-    public Warday(BasePlugin plugin)
+    public FreeForAllDay(BasePlugin plugin)
     {
         _plugin = plugin;
         VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(_ => _hasStarted ? HookResult.Continue : HookResult.Stop, HookMode.Pre);    }
@@ -37,6 +36,10 @@ public class Warday : ISpecialDay
             player.Freeze();
         }
         
+        var pointServerCommands = Utilities.FindAllEntitiesByDesignerName<CPointServerCommand>("point_servercommand");
+
+        Server.ExecuteCommand("mp_friendlyfire 1");
+        
         AddTimers();
     }
 
@@ -47,8 +50,7 @@ public class Warday : ISpecialDay
             foreach (var player in Utilities.GetPlayers()
                          .Where(player => player.IsReal()))
             {
-                if (timer == 3 || player.Team == CsTeam.CounterTerrorist) player.UnFreeze();
-                if (timer != 29 && player.Team != CsTeam.Terrorist) continue;
+                if (timer != 5) return;
                 
                 player.UnFreeze();
                 _hasStarted = true;
@@ -59,13 +61,14 @@ public class Warday : ISpecialDay
         timer2 = _plugin.AddTimer(1f, () =>
         {
             timer++;
-            if (timer == 29) timer1.Kill();
+            if (timer == 5) timer1.Kill();
         }, TimerFlags.REPEAT);
     }
 
     public void OnEnd()
     {
-        //do nothing for now
+        Server.ExecuteCommand("mp_friendlyfire 0");
+
     }
-    
+
 }

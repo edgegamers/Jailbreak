@@ -11,7 +11,7 @@ public class SpecialDayMenu : ISpecialDayMenu
     private readonly ISpecialDayHandler _handler;
     private readonly BasePlugin _plugin;
 
-    public SpecialDayMenu(BasePlugin plugin, SpecialDayHandler handler)
+    public SpecialDayMenu(BasePlugin plugin, ISpecialDayHandler handler)
     {
         _menu = new CenterHtmlMenu("Special Days", plugin);
         _plugin = plugin;
@@ -40,6 +40,7 @@ public class SpecialDayMenu : ISpecialDayMenu
         _menu.AddMenuOption(specialDay.Name + " - " + specialDay.Description, (player, _menu) =>
         {
             _handler.StartSpecialDay(specialDay.Name);
+            MenuManager.CloseActiveMenu(player);
         });
     }
     
