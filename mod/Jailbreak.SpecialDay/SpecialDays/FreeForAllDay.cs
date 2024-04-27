@@ -40,8 +40,6 @@ public class FreeForAllDay : ISpecialDay
             player.Freeze();
         }
         
-        var pointServerCommands = Utilities.FindAllEntitiesByDesignerName<CPointServerCommand>("point_servercommand");
-
         Server.ExecuteCommand("mp_friendlyfire 1");
         
         AddTimers();
