@@ -98,6 +98,12 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
     {
         var duration = GetPeaceDuration(reason);
         var ctDuration = Math.Min(10, duration);
+
+        if (IsPeaceEnabled())
+        {
+            foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal() && (player.VoiceFlags & VoiceFlags.Muted) != 0))
+                unmute(player);
+        }
         foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal()))
             if (!warden.IsWarden(player))
                 Mute(player);
@@ -121,7 +127,7 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
         peaceEnd = DateTime.Now.AddSeconds(duration);
         ctPeaceEnd = DateTime.Now.AddSeconds(ctDuration);
         lastPeace = DateTime.Now;
-
+        
         guardTimer?.Kill();
         prisonerTimer?.Kill();
         
