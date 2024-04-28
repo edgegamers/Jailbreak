@@ -64,10 +64,10 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
     
     private void TickCounterTerroristMutes()
     {
-        if (tScheduledMutes.Count == 0)
+        if (ctScheduledMutes.Count == 0)
             return;
 
-        var muteDuration = tScheduledMutes.Dequeue();
+        var muteDuration = ctScheduledMutes.Dequeue();
 
         guardTimer = parent.AddTimer(muteDuration, () =>
         {
