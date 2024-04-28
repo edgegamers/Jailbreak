@@ -57,8 +57,13 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
             {
                 UnMute(player);
             }
-            if (tScheduledMutes.Count != 0) TickCounterTerroristMutes();
-            prisonerTimer?.Kill();
+            if (ctScheduledMutes.Count != 0)
+            {
+                TickTerroristMutes();
+                return;
+            }
+            guardTimer?.Kill();
+            guardTimer = null;
         });
     }
     
@@ -75,8 +80,14 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
             {
                 UnMute(player);
             }
-            if (ctScheduledMutes.Count != 0) TickCounterTerroristMutes();
+
+            if (ctScheduledMutes.Count != 0)
+            {
+                TickCounterTerroristMutes();
+                return;
+            }
             guardTimer?.Kill();
+            guardTimer = null;
         });
     }
 
@@ -114,8 +125,8 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
         ctScheduledMutes.Enqueue(ctDuration);
         tScheduledMutes.Enqueue(duration);
         
-        if (tScheduledMutes.Count == 0) TickTerroristMutes();
-        if (ctScheduledMutes.Count == 0) TickCounterTerroristMutes();
+        if (tScheduledMutes.Count == 1 || prisonerTimer == null) TickTerroristMutes();
+        if (ctScheduledMutes.Count == 1 || guardTimer == null) TickCounterTerroristMutes();
     }
 
     private int GetPeaceDuration(MuteReason reason)
