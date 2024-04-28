@@ -43,6 +43,8 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
 
     public void PeaceMute(MuteReason reason)
     {
+        guardTimer?.Kill();
+        prisonerTimer?.Kill();
         var duration = GetPeaceDuration(reason);
         var ctDuration = Math.Min(10, duration);
         foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal()))
@@ -68,9 +70,6 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
         this.peaceEnd = DateTime.Now.AddSeconds(duration);
         this.ctPeaceEnd = DateTime.Now.AddSeconds(ctDuration);
         this.lastPeace = DateTime.Now;
-
-        guardTimer?.Kill();
-        prisonerTimer?.Kill();
 
         guardTimer = parent.AddTimer(ctDuration, () =>
         {
