@@ -102,7 +102,7 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
         if (IsPeaceEnabled())
         {
             foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal() && (player.VoiceFlags & VoiceFlags.Muted) != 0))
-                unmute(player);
+                UnMute(player);
         }
         foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal()))
             if (!warden.IsWarden(player))
