@@ -13,6 +13,7 @@ public interface IWardenNotifications
     public IView BECOME_NEXT_WARDEN { get; }
     public IView JOIN_RAFFLE { get; }
     public IView LEAVE_RAFFLE { get; }
+    public IView NOT_WARDEN { get; }
 
     /// <summary>
     ///     Create a view for when the specified player passes warden

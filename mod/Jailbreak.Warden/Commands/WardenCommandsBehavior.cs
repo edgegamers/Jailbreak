@@ -2,6 +2,7 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Events;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
@@ -17,21 +18,26 @@ public class WardenCommandsBehavior : IPluginBehavior
     private readonly IWardenNotifications _notifications;
     private readonly IWardenSelectionService _queue;
     private readonly IWardenService _warden;
+    private readonly IGenericCommandNotifications _generics;
     private readonly WardenConfig _config;
+    private readonly Dictionary<CCSPlayerController, DateTime> _lastWardenCommand = new();
 
     public WardenCommandsBehavior(IWardenSelectionService queue, IWardenService warden,
-        IWardenNotifications notifications, WardenConfig config)
+        IWardenNotifications notifications, IGenericCommandNotifications generics, WardenConfig config)
     {
         _config = config;
         _queue = queue;
         _warden = warden;
+        _generics = generics;
         _notifications = notifications;
     }
 
-    public void Dispose()
+    [GameEventHandler]
+    public HookResult OnRoundStart(EventRoundStart ev, GameEventInfo info)
     {
+        _lastWardenCommand.Clear();
+        return HookResult.Continue;
     }
-
 
     [ConsoleCommand("css_pass", "Pass warden onto another player")]
     [ConsoleCommand("css_uw", "Pass warden onto another player")]
@@ -48,11 +54,12 @@ public class WardenCommandsBehavior : IPluginBehavior
                 .ToAllChat()
                 .ToAllCenter();
 
-		    foreach (var clients in Utilities.GetPlayers()) {
-			    if (!clients.IsReal()) continue;
-			    clients.ExecuteClientCommand(
-				    $"play sounds/{_config.WardenPassedSoundName}");
-		    }
+            foreach (var clients in Utilities.GetPlayers())
+            {
+                if (!clients.IsReal()) continue;
+                clients.ExecuteClientCommand(
+                    $"play sounds/{_config.WardenPassedSoundName}");
+            }
 
             _notifications.BECOME_NEXT_WARDEN.ToAllChat();
 
@@ -69,6 +76,18 @@ public class WardenCommandsBehavior : IPluginBehavior
     {
         if (player == null)
             return;
+
+        if (_lastWardenCommand.TryGetValue(player, out var last))
+        {
+            var cooldown = last.AddSeconds(15);
+            if (DateTime.Now < cooldown)
+            {
+                _generics.CommandOnCooldown(cooldown).ToPlayerChat(player);
+                return;
+            }
+        }
+        
+        _lastWardenCommand[player] = DateTime.Now;
 
         var isCt = player.GetTeam() == CsTeam.CounterTerrorist;
 
