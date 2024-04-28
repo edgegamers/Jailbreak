@@ -53,17 +53,18 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
 
         prisonerTimer = parent.AddTimer(muteDuration, () =>
         {
-            foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal() && player.Team == CsTeam.Terrorist))
-            {
-                UnMute(player);
-            }
-            if (ctScheduledMutes.Count != 0)
+            if (tScheduledMutes.Count != 0)
             {
                 TickTerroristMutes();
                 return;
             }
-            guardTimer?.Kill();
-            guardTimer = null;
+            foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal() && player.Team == CsTeam.Terrorist))
+            {
+                UnMute(player);
+            }
+            
+            prisonerTimer?.Kill();
+            prisonerTimer = null;
         });
     }
     
@@ -76,16 +77,18 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
 
         guardTimer = parent.AddTimer(muteDuration, () =>
         {
-            foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal() && player.Team == CsTeam.CounterTerrorist))
-            {
-                UnMute(player);
-            }
-
             if (ctScheduledMutes.Count != 0)
             {
                 TickCounterTerroristMutes();
                 return;
             }
+            
+            foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal() && player.Team == CsTeam.CounterTerrorist))
+            {
+                UnMute(player);
+            }
+
+            
             guardTimer?.Kill();
             guardTimer = null;
         });
