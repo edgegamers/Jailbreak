@@ -104,7 +104,7 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
         var prisoners = Utilities.GetPlayers()
             .Count(c => c.IsReal() && c is { Team: CsTeam.Terrorist, PawnIsAlive: true });
         // https://www.desmos.com/calculator/gwd9cqw4yq
-        var baseTime = (int)Math.Floor((prisoners + 30) / 5.0) * 5;
+        var baseTime = (int)Math.Floor((prisoners + 45) / 5.0) * 5;
 
         return reason switch
         {
