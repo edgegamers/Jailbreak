@@ -124,9 +124,9 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
                 break;
         }
 
-        peaceEnd = DateTime.Now.AddSeconds(duration);
-        ctPeaceEnd = DateTime.Now.AddSeconds(ctDuration);
-        lastPeace = DateTime.Now;
+        this.peaceEnd = DateTime.Now.AddSeconds(duration);
+        this.ctPeaceEnd = DateTime.Now.AddSeconds(ctDuration);
+        this.lastPeace = DateTime.Now;
         
         guardTimer?.Kill();
         prisonerTimer?.Kill();
