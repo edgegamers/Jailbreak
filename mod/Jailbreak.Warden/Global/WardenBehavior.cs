@@ -61,6 +61,8 @@ public class WardenBehavior(
 		if (!controller.PawnIsAlive)
 			return false;
 
+		mute.UnPeaceMute();
+		
 		_hasWarden = true;
 		_warden = controller;
 		

@@ -43,7 +43,7 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
     {
         parent.RemoveListener("OnClientVoice", OnPlayerSpeak);
     }
-
+    
     private void TickTerroristMutes()
     {
         if (tScheduledMutes.Count == 0)
@@ -137,6 +137,23 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
         if (tScheduledMutes.Count == 1 || prisonerTimer == null) TickTerroristMutes();
         if (ctScheduledMutes.Count == 1 || guardTimer == null) TickCounterTerroristMutes();
     }
+    
+    public void UnPeaceMute()
+    {
+        foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal() && player.Team == CsTeam.Terrorist))
+        {
+            UnMute(player);
+        }
+        foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal() && player.Team == CsTeam.CounterTerrorist))
+        {
+            UnMute(player);
+        }
+        prisonerTimer?.Kill();
+        prisonerTimer = null;
+        guardTimer?.Kill();
+        guardTimer = null;
+    }
+
 
     private int GetPeaceDuration(MuteReason reason)
     {

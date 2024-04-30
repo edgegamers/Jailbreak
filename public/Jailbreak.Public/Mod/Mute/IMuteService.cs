@@ -6,6 +6,8 @@ public interface IMuteService
 {
     void PeaceMute(MuteReason reason);
 
+    void UnPeaceMute();
+
     bool IsPeaceEnabled();
 
     DateTime GetLastPeace();
