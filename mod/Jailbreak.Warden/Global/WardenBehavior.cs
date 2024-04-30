@@ -61,6 +61,8 @@ public class WardenBehavior(
 		if (!controller.PawnIsAlive)
 			return false;
 
+		mute.UnPeaceMute();
+		
 		_hasWarden = true;
 		_warden = controller;
 		
@@ -96,6 +98,8 @@ public class WardenBehavior(
 	{
 		if (!_hasWarden)
 			return false;
+		
+		mute.UnPeaceMute();
 
 		_hasWarden = false;
 
@@ -119,6 +123,7 @@ public class WardenBehavior(
 		if(!((IWardenService)this).IsWarden(ev.Userid))
 			return HookResult.Continue;
 		
+		mute.UnPeaceMute();
 		ProcessWardenDeath();
 		return HookResult.Continue;
 	}
@@ -130,6 +135,7 @@ public class WardenBehavior(
 		if (!((IWardenService)this).IsWarden(player))
 			return HookResult.Continue;
 		
+		mute.UnPeaceMute();
 		ProcessWardenDeath();	
 		return HookResult.Continue;
 	}
@@ -207,7 +213,7 @@ public class WardenBehavior(
 	public HookResult OnRoundEnd(EventRoundEnd ev, GameEventInfo info)
 	{
 		this.TryRemoveWarden();
-
+		mute.UnPeaceMute();
 		return HookResult.Continue;
 	}
 
