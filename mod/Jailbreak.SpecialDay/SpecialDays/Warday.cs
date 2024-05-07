@@ -13,11 +13,10 @@ namespace Jailbreak.SpecialDay.SpecialDays;
 public class Warday : ISpecialDay
 {
     public string Name => "Warday";
-    public string Description => "The guards can kill prisoners without any consequences.";
+    public string Description => "Guards versus Prisoners. Your goal is to ensure that your team is last team standing!";
 
     private int timer = 0;
     private Timer timer1;
-    private Timer timer2;
     private BasePlugin _plugin;
     private bool _hasStarted = false;
 
@@ -44,6 +43,7 @@ public class Warday : ISpecialDay
     {
         timer1 = _plugin.AddTimer(1f, () =>
         {
+            timer++;
             foreach (var player in Utilities.GetPlayers()
                          .Where(player => player.IsReal()))
             {
@@ -52,15 +52,11 @@ public class Warday : ISpecialDay
                 
                 player.UnFreeze();
                 _hasStarted = true;
-                timer2.Kill();
+                timer1.Kill();
+                
             }
         }, TimerFlags.REPEAT);
-
-        timer2 = _plugin.AddTimer(1f, () =>
-        {
-            timer++;
-            if (timer == 29) timer1.Kill();
-        }, TimerFlags.REPEAT);
+        
     }
 
     public void OnEnd()

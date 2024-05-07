@@ -22,11 +22,11 @@ public class SpecialDayMenu : ISpecialDayMenu
     private void AddSpecialDays()
     {
         var fullName = "Jailbreak.SpecialDay.SpecialDays";
-        var q = from t in Assembly.GetExecutingAssembly().GetTypes()
-            where t.IsClass && t.Namespace == fullName && t.GetInterface("ISpecialDay") != null
-            select t;
+        var types = from type in Assembly.GetExecutingAssembly().GetTypes()
+            where type.IsClass && type.Namespace == fullName && type.GetInterface("ISpecialDay") != null
+            select type;
 
-        foreach (var type in q)
+        foreach (var type in types)
         {
             if (type == null) return;
             var item = (ISpecialDay?) Activator.CreateInstance(type, _plugin);
