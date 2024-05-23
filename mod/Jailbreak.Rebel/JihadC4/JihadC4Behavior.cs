@@ -2,7 +2,6 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
@@ -10,14 +9,9 @@ using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rebel;
-using Microsoft.Extensions.Logging;
 
 namespace Jailbreak.Rebel.JihadC4;
 
-/*
- * TODO: fix soundevents not working for jb plugin addon
- * fix bomb doing correct damage and setting player health
- */
 public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 {
 
@@ -29,11 +23,9 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     private IJihadC4Notifications _jihadNotifications;
     private BasePlugin? _basePlugin;
 
-    // Windows AND Linux... :)
     // EmitSound(CBaseEntity* pEnt, const char* sSoundName, int nPitch, float flVolume, float flDelay)
-    private readonly MemoryFunctionVoid<CBaseEntity, string, int, float, float> CBaseEntity_EmitSoundParamsLinux;
+    private readonly MemoryFunctionVoid<CBaseEntity, string, int, float, float> CBaseEntity_EmitSoundParamsLinux; // LINUX ONLY.
 
-    // todo add notification support here
     public JihadC4Behavior(IJihadC4Notifications jihadC4Notifications)
     {
         _jihadNotifications = jihadC4Notifications;
@@ -49,8 +41,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 
 
     }
-
-    // TODO HANDLE WHEN PLAYER LEAVES AND STUFF LIKE THAT
 
     /// <summary>
     /// This function listens to when a player with an active Jihad C4 detonates their bomb by doing +use.
@@ -80,10 +70,8 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             CC4 bombEntity = new CC4(weaponServices.ActiveWeapon!.Value!.Handle);
             _currentActiveJihadC4s.Remove(bombEntity);
 
-            // this will deal with the explosion and ensuring the detonator is killed.
+            // This will deal with the explosion and ensuring the detonator is killed, as well as removing the bomb entity.
             TryDetonateJihadC4(player, metadata.Delay, bombEntity); 
-
-            // once the explosion is generated we must remove the bomb entity that has been dropped as a result of the player dying!
 
             TryEmitSound(player, "jb.jihad", 1, 1f, 0f);
             _jihadNotifications.PlayerDetonateC4(player).ToAllChat();
@@ -95,7 +83,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     [ConsoleCommand("css_d", "debug cmd")]
     public void Command_Debug(CCSPlayerController? executor, CommandInfo info)
     {
-
         if (executor == null || !executor.IsValid) { return; }
         TryGiveC4ToPlayer(executor);
     }
@@ -104,9 +91,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     /// This function importantly allows players who have a Jihad C4 to pass it on to other Terrorists. Additionally it deals with
     /// the edge case where a player dies with a Jihad C4, as this function is still called when that happens.
     /// </summary>
-    /// <param name="event"></param>
-    /// <param name="info"></param>
-    /// <returns></returns>
     [GameEventHandler]
     public HookResult OnPlayerDropC4(EventBombDropped @event, GameEventInfo info)
     {
@@ -133,9 +117,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     /// This function listens to when a player picks up any weapon_c4 item. If it is a Jihad C4 (which can easily be checked) then
     /// we assign the Jihad C4's "owner" to that player. 
     /// </summary>
-    /// <param name="event"></param>
-    /// <param name="info"></param>
-    /// <returns></returns>
     [GameEventHandler]
     public HookResult OnPlayerPickupC4(EventBombPickup @event, GameEventInfo info)
     {
@@ -145,7 +126,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         CPlayer_WeaponServices? weaponServices = player.PlayerPawn?.Value?.WeaponServices;
         if (weaponServices == null) { return HookResult.Continue; }
 
-        CC4 bombEntity = new CC4(weaponServices.MyWeapons.Last()!.Value!.Handle); // The last item in the weapons list is the last item the player picked up, apparently
+        CC4 bombEntity = new CC4(weaponServices.MyWeapons.Last()!.Value!.Handle); // The last item in the weapons list is the last item the player picked up, apparently.
         if (!_currentActiveJihadC4s.ContainsKey(bombEntity)) { return HookResult.Continue; }
 
         _currentActiveJihadC4s[bombEntity].Player = player;
@@ -158,9 +139,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     /// <summary>
     /// Invokes the method that attempts to give a jihad C4 to a random terrorist, done at the start of the round.
     /// </summary>
-    /// <param name="event"></param>
-    /// <param name="info"></param>
-    /// <returns></returns>
     [GameEventHandler]
     public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
@@ -171,9 +149,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     /// <summary>
     /// A useful function to reset the Jihad C4 state. A better solution might be to clear the list on round START instead.
     /// </summary>
-    /// <param name="event"></param>
-    /// <param name="info"></param>
-    /// <returns></returns>
     [GameEventHandler]
     public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
     {
@@ -185,9 +160,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     /// The purpose of this event handler is to safely handle when a player with an active Jihad C4 leaves the server.
     /// It ensures that the Jihad C4 that is dropped when they are disconnected is still useable.
     /// </summary>
-    /// <param name="event"></param>
-    /// <param name="info"></param>
-    /// <returns></returns>
     [GameEventHandler]
     public HookResult OnPlayerLeave(EventPlayerDisconnect @event, GameEventInfo info)
     {
@@ -211,7 +183,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     /// Self-explanatory function. This function registers the given C4 and the player who received the bomb.
     /// If this function fails then nothing will happen.
     /// </summary>
-    /// <param name="player"></param>
+    /// <param name="player">The player who should receive the Jihad C4.</param>
     public void TryGiveC4ToPlayer(CCSPlayerController player)
     {
         foreach (var metadata in _currentActiveJihadC4s.Values)
@@ -227,8 +199,9 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     /// This function creates a Jihad C4 styled explosion centred at the player's AbsOrigin. This function doesn't check if 
     /// the player even has a C4, it is simply used to create the explosion!
     /// </summary>
-    /// <param name="player"></param>
-    /// <param name="delay"></param>
+    /// <param name="player">The explosion will be generated at the player's AbsOrigin.</param>
+    /// <param name="delay">The delay, in seconds, to wait before creating our explosion!</param>
+    /// <param name="bombEntity">By default this is null, but if it is NOT null, then this entity will be removed after the explosion is generated.</param>
     public void TryDetonateJihadC4(CCSPlayerController player, float delay, CC4? bombEntity = null)
     {
         if (_basePlugin == null) { return; }
@@ -258,10 +231,9 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             envPhysExplosionEntity.DispatchSpawn();
             /* END */
 
-            /* Calculate damage here */
-            
-            // don't waste time calculating stuff for dead players
-            // Also, Utilities.GetPlayers() returns valid players anyway, so no need to check it.
+            /* Calculate damage here. */
+            /* Don't waste time calculating stuff for dead players. */
+            /* Also, Utilities.GetPlayers() returns valid players anyway, so no need to check for that. */
             foreach (CCSPlayerController potentialTarget in Utilities.GetPlayers().Where<CCSPlayerController>((p) => p.PawnIsAlive))
             {
                 float distanceFromBomb = potentialTarget.PlayerPawn!.Value!.AbsOrigin!.Distance(player.PlayerPawn!.Value!.AbsOrigin!);
@@ -273,8 +245,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
                 float healthRef = player.PlayerPawn.Value.Health;
                 if (healthRef <= damage)
                 {
-                    // This was giving me a headache, but the trick is to kill them FIRST, and THEN remove the c4 entity AFTER!
-                    player.ExecuteClientCommandFromServer("kill");
+                    player.ExecuteClientCommandFromServer("kill"); // We kill them inside the loop which will drop their bomb entity, which we can delete later.
                 } else
                 {
                     player.PlayerPawn.Value.Health -= (int)damage;
@@ -284,7 +255,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             }
 
             /* Finally play our sound */
-            //CBaseEntity_EmitSoundParamsLinux.Invoke(player.Handle, "jb_jihad", 1, 1f, 0f);
             TryEmitSound(player, "jb.jihadExplosion", 1, 1f, 0f);
 
             // We're going to remove the bomb entity if it's supplied as an argument and if we have detonated a jihad c4 that is in our special list...
@@ -297,6 +267,9 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 
     }
 
+    /// <summary>
+    /// Self-explanatory.
+    /// </summary>
     public void TryGiveC4ToRandomTerrorist()
     {
         List<CCSPlayerController> validTerroristPlayers = Utilities.GetPlayers().Where(player => player.Team == CsTeam.Terrorist && player.PawnIsAlive).ToList();
