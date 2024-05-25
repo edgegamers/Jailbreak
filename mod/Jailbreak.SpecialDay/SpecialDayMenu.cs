@@ -10,16 +10,18 @@ public class SpecialDayMenu : ISpecialDayMenu, IPluginBehavior
 {
     private BaseMenu _menu;
     private readonly ISpecialDayHandler _handler;
-    private readonly BasePlugin _plugin;
+    private BasePlugin _plugin;
 
-    public SpecialDayMenu(BasePlugin plugin, ISpecialDayHandler handler)
+    public SpecialDayMenu(ISpecialDayHandler handler)
     {
-        _menu = new CenterHtmlMenu("Special Days", plugin);
-        _plugin = plugin;
         _handler = handler;
-        AddSpecialDays();
     }
 
+    public void Start(BasePlugin plugin) {
+        _menu = new CenterHtmlMenu("Special Days", plugin);
+        _plugin = plugin;
+        AddSpecialDays();
+    }
     private void AddSpecialDays()
     {
         var fullName = "Jailbreak.SpecialDay.SpecialDays";
