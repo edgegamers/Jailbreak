@@ -68,6 +68,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="CounterStrikeSharp.API" Version="1.0.233" />
       <PackageReference Include="GitVersion.MsBuild" Version="6.0.0-beta.5">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -75,10 +76,7 @@
     </ItemGroup>
 
     <Target Name="ZipOutputPath" AfterTargets="Publish">
-        <ZipDirectory
-                Overwrite="true"
-                SourceDirectory="$(PublishDir)\"
-                DestinationFile="$(PublishBaseDirectory)\Jailbreak.zip" />
+        <ZipDirectory Overwrite="true" SourceDirectory="$(PublishDir)\" DestinationFile="$(PublishBaseDirectory)\Jailbreak.zip" />
     </Target>
 
 </Project>
