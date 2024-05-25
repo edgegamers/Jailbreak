@@ -9,6 +9,7 @@ public static class SpecialDayServiceExtension
 {
     public static void AddSpecialDays(this IServiceCollection serviceCollection)
     {
+        serviceCollection.AddPluginBehavior<ISpecialDayMenu, SpecialDayMenu>();
         serviceCollection.AddPluginBehavior<ISpecialDayHandler, SpecialDayHandler>();
     }
 }
