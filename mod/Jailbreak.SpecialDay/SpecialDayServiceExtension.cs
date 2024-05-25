@@ -11,6 +11,6 @@ public static class SpecialDayServiceExtension
     public static void AddSpecialDays(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddPluginBehavior<ISpecialDayHandler, SpecialDayHandler>();
-
+        serviceCollection.AddPluginBehavior<SpecialDayCommandsBehavior>();
     }
 }
