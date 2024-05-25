@@ -1,11 +1,12 @@
 ﻿using System.Reflection;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
+using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.SpecialDays;
 
 namespace Jailbreak.SpecialDay;
 
-public class SpecialDayMenu : ISpecialDayMenu
+public class SpecialDayMenu : ISpecialDayMenu, IPluginBehavior
 {
     private BaseMenu _menu;
     private readonly ISpecialDayHandler _handler;

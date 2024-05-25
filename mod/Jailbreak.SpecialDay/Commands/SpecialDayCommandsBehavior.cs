@@ -15,10 +15,10 @@ public class SpecialDayCommandsBehavior : IPluginBehavior
     
     private ISpecialDayMenu _menu;
     
-    public SpecialDayCommandsBehavior(BasePlugin plugin, IWardenService warden, ISpecialDayMenu menu, ISpecialDayHandler hndlr)
+    public SpecialDayCommandsBehavior(IWardenService warden, ISpecialDayMenu menu)
     {
         _warden = warden;
-        _menu = new SpecialDayMenu(plugin, hndlr);
+        _menu = menu;
     }
     
     [ConsoleCommand("css_specialday", "Open the special day menu")]
