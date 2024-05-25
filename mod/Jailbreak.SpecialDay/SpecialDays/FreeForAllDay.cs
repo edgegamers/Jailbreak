@@ -46,7 +46,7 @@ public class FreeForAllDay : ISpecialDay
         var friendlyFireValue = friendlyFire.GetPrimitiveValue<bool>(); //assume false in this example, use GetNativeValue for vectors, Qangles, etc
         
         if (!friendlyFireValue) {
-            friendlyFire.SetValue<>(true);
+            friendlyFire.SetValue<bool>(true);
         }        
         AddTimers();
     }
@@ -78,7 +78,7 @@ public class FreeForAllDay : ISpecialDay
         var friendlyFireValue = friendlyFire.GetPrimitiveValue<bool>(); //assume false in this example, use GetNativeValue for vectors, Qangles, etc
         
         if (friendlyFireValue) {
-            friendlyFire.SetValue<>(false);
+            friendlyFire.SetValue<bool>(false);
         }        
     }
 
