@@ -33,7 +33,6 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
         //	Do we want to make this scoped?
         //	Not sure how this will behave with multiple rounds and whatnot.
         serviceCollection.AddTransient<IConfigService, ConfigService>();
-
         serviceCollection.AddSpecialDays();
         serviceCollection.AddJailbreakGeneric();
         serviceCollection.AddJailbreakLogs();
@@ -51,8 +50,8 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
 			config.WithRebel<RebelNotifications>();
 			config.WithLogging<LogMessages>();
    			config.WithRollCommand<RollCommandNotifications>();
-            		config.WithJihadC4<JihadC4Notifications>();
-            		config.WithLastRequest<LastRequestMessages>();
+            config.WithJihadC4<JihadC4Notifications>();
+            config.WithLastRequest<LastRequestMessages>();
 			config.WithSpecialTreatment<SpecialTreatmentNotifications>();
 			config.WithMute<PeaceMessages>();
 			config.WithRaceLR<RaceLRMessages>();

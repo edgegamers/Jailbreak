@@ -1,4 +1,4 @@
-﻿using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using Jailbreak.Formatting.Extensions;
@@ -7,7 +7,7 @@ using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.SpecialDays;
 using Jailbreak.Public.Mod.Warden;
 
-namespace Jailbreak.Warden.Commands;
+namespace Jailbreak.SpecialDay.Commands;
 
 public class SpecialDayCommandsBehavior : IPluginBehavior
 {
