@@ -40,7 +40,7 @@ public class LanguageConfig<TDialect>
 		=> _collection.AddSingleton<ILogMessages, TLogging>();
 
       	public void WithRollCommand<TRollCommand>()
-		where TLogging : class, ILanguage<TDialect>, ILogMessages
+		where TRollCommand : class, ILanguage<TDialect>, IRollCommandNotications
 		=> _collection.AddSingleton<IRollCommandNotications, TRollCommand>();
 
 	public void WithLastRequest<TLastRequest>()
