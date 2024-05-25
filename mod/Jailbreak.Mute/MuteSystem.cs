@@ -23,6 +23,9 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
 
     private IPeaceMessages messages;
     private IWardenService warden;
+    private Queue<int> ctScheduledMutes = new();
+    private Queue<int> tScheduledMutes = new();
+
 
     private Timer? prisonerTimer, guardTimer;
 
@@ -30,8 +33,8 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
     {
         this.parent = parent;
 
-        this.messages = provider.GetRequiredService<IPeaceMessages>();
-        this.warden = provider.GetRequiredService<IWardenService>();
+        messages = provider.GetRequiredService<IPeaceMessages>();
+        warden = provider.GetRequiredService<IWardenService>();
 
         parent.RegisterListener<Listeners.OnClientVoice>(OnPlayerSpeak);
     }
@@ -40,14 +43,70 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
     {
         parent.RemoveListener("OnClientVoice", OnPlayerSpeak);
     }
+    
+    private void TickTerroristMutes()
+    {
+        if (tScheduledMutes.Count == 0)
+            return;
+
+        var muteDuration = tScheduledMutes.Dequeue();
+
+        prisonerTimer = parent.AddTimer(muteDuration, () =>
+        {
+            if (tScheduledMutes.Count != 0)
+            {
+                TickTerroristMutes();
+                return;
+            }
+            foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal() && player.Team == CsTeam.Terrorist))
+            {
+                UnMute(player);
+            }
+            
+            prisonerTimer?.Kill();
+            prisonerTimer = null;
+        });
+    }
+    
+    private void TickCounterTerroristMutes()
+    {
+        if (ctScheduledMutes.Count == 0)
+            return;
+
+        var muteDuration = ctScheduledMutes.Dequeue();
+
+        guardTimer = parent.AddTimer(muteDuration, () =>
+        {
+            if (ctScheduledMutes.Count != 0)
+            {
+                TickCounterTerroristMutes();
+                return;
+            }
+            
+            foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal() && player.Team == CsTeam.CounterTerrorist))
+            {
+                UnMute(player);
+            }
+
+            
+            guardTimer?.Kill();
+            guardTimer = null;
+        });
+    }
 
     public void PeaceMute(MuteReason reason)
     {
         var duration = GetPeaceDuration(reason);
         var ctDuration = Math.Min(10, duration);
+
+        if (IsPeaceEnabled())
+        {
+            foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal() && (player.VoiceFlags & VoiceFlags.Muted) != 0))
+                UnMute(player);
+        }
         foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal()))
             if (!warden.IsWarden(player))
-                mute(player);
+                Mute(player);
 
         switch (reason)
         {
@@ -68,30 +127,33 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
         this.peaceEnd = DateTime.Now.AddSeconds(duration);
         this.ctPeaceEnd = DateTime.Now.AddSeconds(ctDuration);
         this.lastPeace = DateTime.Now;
-
+        
         guardTimer?.Kill();
         prisonerTimer?.Kill();
-
-        guardTimer = parent.AddTimer(ctDuration, () =>
-        {
-            foreach (var player in Utilities.GetPlayers()
-                         .Where(player =>
-                             player.IsReal() && player is { Team: CsTeam.CounterTerrorist, PawnIsAlive: true }))
-                unmute(player);
-
-            messages.UNMUTED_GUARDS.ToAllChat();
-        });
-
-        prisonerTimer = parent.AddTimer(duration, () =>
-        {
-            foreach (var player in Utilities.GetPlayers()
-                         .Where(player =>
-                             player.IsReal() && player is { Team: CsTeam.Terrorist, PawnIsAlive: true }))
-                unmute(player);
-
-            messages.UNMUTED_PRISONERS.ToAllChat();
-        });
+        
+        ctScheduledMutes.Enqueue(ctDuration);
+        tScheduledMutes.Enqueue(duration);
+        
+        if (tScheduledMutes.Count == 1 || prisonerTimer == null) TickTerroristMutes();
+        if (ctScheduledMutes.Count == 1 || guardTimer == null) TickCounterTerroristMutes();
     }
+    
+    public void UnPeaceMute()
+    {
+        foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal() && player.Team == CsTeam.Terrorist))
+        {
+            UnMute(player);
+        }
+        foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal() && player.Team == CsTeam.CounterTerrorist))
+        {
+            UnMute(player);
+        }
+        prisonerTimer?.Kill();
+        prisonerTimer = null;
+        guardTimer?.Kill();
+        guardTimer = null;
+    }
+
 
     private int GetPeaceDuration(MuteReason reason)
     {
@@ -110,14 +172,14 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
         };
     }
 
-    private void mute(CCSPlayerController player)
+    private void Mute(CCSPlayerController player)
     {
-        if (bypassMute(player))
+        if (BypassMute(player))
             return;
         player.VoiceFlags |= VoiceFlags.Muted;
     }
 
-    private void unmute(CCSPlayerController player)
+    private void UnMute(CCSPlayerController player)
     {
         player.VoiceFlags &= ~VoiceFlags.Muted;
     }
@@ -141,26 +203,26 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
         if (warden.IsWarden(player))
         {
             // Always let the warden speak
-            unmute(player);
+            UnMute(player);
             return;
         }
 
-        if (!player.PawnIsAlive && !bypassMute(player))
+        if (!player.PawnIsAlive && !BypassMute(player))
         {
             // Normal players can't speak when dead
             messages.DEAD_REMINDER.ToPlayerCenter(player);
-            mute(player);
+            Mute(player);
             return;
         }
 
-        if (isMuted(player))
+        if (IsMuted(player))
         {
             // Remind any muted players they're muted
             messages.MUTE_REMINDER.ToPlayerCenter(player);
             return;
         }
 
-        if (bypassMute(player))
+        if (BypassMute(player))
         {
             // Warn admins if they're not muted
             if (IsPeaceEnabled())
@@ -175,14 +237,14 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
         }
     }
 
-    private bool isMuted(CCSPlayerController player)
+    private bool IsMuted(CCSPlayerController player)
     {
         if (!player.IsReal())
             return false;
         return (player.VoiceFlags & VoiceFlags.Muted) != 0;
     }
 
-    private bool bypassMute(CCSPlayerController player)
+    private bool BypassMute(CCSPlayerController player)
     {
         return player.IsReal() && AdminManager.PlayerHasPermissions(player, "@css/chat");
     }
