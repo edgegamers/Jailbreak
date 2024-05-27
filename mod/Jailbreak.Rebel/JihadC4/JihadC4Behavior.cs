@@ -162,13 +162,11 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         CCSPlayerController? player = @event.Userid;
         if (player == null || !player.IsValid) { return HookResult.Continue; }
 
-        foreach (JihadBombMetadata metadata in _currentActiveJihadC4s.Values)
-        {
-            if (metadata.Player == player)
-            {
-                metadata.Player = null;
-            }
-        }
+        // get the bomb metadata where the Player variable is assigned to the player who disconnected
+        JihadBombMetadata? metadata = _currentActiveJihadC4s.Values.DistinctBy((metadata) => metadata.Player == player).FirstOrDefault();
+        if (metadata == null) { return HookResult.Continue; }
+
+        metadata.Player = null; // then null it.
 
         return HookResult.Continue;
 
@@ -262,7 +260,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     {
         List<CCSPlayerController> validTerroristPlayers = Utilities.GetPlayers().Where(player => player.Team == CsTeam.Terrorist && player.PawnIsAlive && !player.IsBot).ToList();
         int numOfTerrorists = validTerroristPlayers.Count;
-        if (numOfTerrorists < 1) return;
 
         if (numOfTerrorists == 0) { _basePlugin!.Logger.LogInformation("Tried to give Jihad C4 at round start but there were no valid players to give it to."); return; }
 
