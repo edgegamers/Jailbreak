@@ -23,7 +23,7 @@ public class SpecialDayCommandsBehavior : IPluginBehavior
     
     [ConsoleCommand("css_specialday", "Open the special day menu")]
     [ConsoleCommand("css_sd", "Open the special day menu")]
-    [CommandHelper(1, "", CommandUsage.CLIENT_ONLY)]
+    [CommandHelper(0, "", CommandUsage.CLIENT_ONLY)]
     public void Command_Toggle(CCSPlayerController? player, CommandInfo command)
     {
         if (player == null)
