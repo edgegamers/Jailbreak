@@ -195,12 +195,11 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     {
         foreach (var metadata in _currentActiveJihadC4s.Values)
         { if (metadata.Player == player) { return; } }
-        
-        Server.NextFrame(() => {
-            CC4 bombEntity = new CC4(player.GiveNamedItem("weapon_c4"));
-            _currentActiveJihadC4s.Add(bombEntity, new JihadBombMetadata(player, 1.0f));
-            _jihadNotifications.JIHAD_C4_RECEIVED.ToPlayerChat(player);
-        });
+
+        CC4 bombEntity = new CC4(player.GiveNamedItem("weapon_c4"));
+        _currentActiveJihadC4s.Add(bombEntity, new JihadBombMetadata(player, 1.0f));
+        _jihadNotifications.JIHAD_C4_RECEIVED.ToPlayerChat(player);
+
     }
 
     // Not using _notifications.PlayerDetonateC4() here, as I invoked that in the +use callback already
@@ -241,9 +240,9 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             /* END */
 
             /* Calculate damage here. */
-            /* Don't waste time calculating stuff for dead players. */
+            /* Don't waste time calculating stuff for dead players or players on the Terrorist team!. */
             /* Also, Utilities.GetPlayers() returns valid players anyway, so no need to check for that. */
-            foreach (CCSPlayerController potentialTarget in Utilities.GetPlayers().Where((p) => p.PawnIsAlive))
+            foreach (CCSPlayerController potentialTarget in Utilities.GetPlayers().Where((p) => p.PawnIsAlive && p.Team != CsTeam.Terrorist))
             {
                 float distanceFromBomb = potentialTarget.PlayerPawn!.Value!.AbsOrigin!.Distance(player.PlayerPawn!.Value!.AbsOrigin!);
                 if (distanceFromBomb > 350f) { continue; } // 350f = "bombRadius"
@@ -260,6 +259,9 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
                     Utilities.SetStateChanged(potentialTarget, "CBaseEntity", "m_iHealth");
                 }
             }
+
+            // ensure we kill the detonator...
+            player.CommitSuicide(true, true);
 
             /* Finally play our sound and remove the bomb */
             TryEmitSound(player, "jb.jihadExplosion", 1, 1f, 0f);
@@ -282,7 +284,10 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         Random rnd = new();
         int randomIndex = rnd.Next(numOfTerrorists);
 
-        TryGiveC4ToPlayer(validTerroristPlayers[randomIndex]);
+        Server.RunOnTick(Server.TickCount + 10, () => // let's be extra safe and wait a WHOLE ten ticks before giving the jihad c4, so we don't get any plugin conflicts.
+        {
+            TryGiveC4ToPlayer(validTerroristPlayers[randomIndex]);
+        });
 
     }
 
