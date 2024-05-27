@@ -195,10 +195,12 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     {
         foreach (var metadata in _currentActiveJihadC4s.Values)
         { if (metadata.Player == player) { return; } }
-
-        CC4 bombEntity = new CC4(player.GiveNamedItem("weapon_c4"));
-        _currentActiveJihadC4s.Add(bombEntity, new JihadBombMetadata(player, 1.0f));
-        _jihadNotifications.JIHAD_C4_RECEIVED.ToPlayerChat(player);
+        
+        Server.NextFrame(() => {
+            CC4 bombEntity = new CC4(player.GiveNamedItem("weapon_c4"));
+            _currentActiveJihadC4s.Add(bombEntity, new JihadBombMetadata(player, 1.0f));
+            _jihadNotifications.JIHAD_C4_RECEIVED.ToPlayerChat(player);
+        });
     }
 
     // Not using _notifications.PlayerDetonateC4() here, as I invoked that in the +use callback already
