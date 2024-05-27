@@ -51,7 +51,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     private void PlayerUseC4ListenerCallback()
     {
 
-        foreach (JihadBombMetadata metadata in _currentActiveJihadC4s.Values)
+        foreach ((CC4 c4, JihadBombMetadata metadata) in _currentActiveJihadC4s)
         {
             CCSPlayerController? player = metadata.Player;
             if (player == null) { continue; }
@@ -59,19 +59,21 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             // is the use button currently active? 
             if ((player.Buttons & PlayerButtons.Use) == 0) { continue; }
 
-            CPlayer_WeaponServices? weaponServices = player.PlayerPawn?.Value?.WeaponServices;
+            CPlayer_WeaponServices? weaponServices = player.PlayerPawn.Value?.WeaponServices;
             if (weaponServices == null) { continue; }
 
             // Check if the currently held and "+used" item is our C4
-            string? heldItemDesignerName = weaponServices.ActiveWeapon?.Value?.DesignerName;
+            string? heldItemDesignerName = weaponServices.ActiveWeapon.Value?.DesignerName;
             if (heldItemDesignerName == null) { continue; }
             if (!heldItemDesignerName.Equals("weapon_c4")) { continue; }
 
-            CC4 bombEntity = new CC4(weaponServices.ActiveWeapon!.Value!.Handle);
-            _currentActiveJihadC4s.Remove(bombEntity);
+            nint heldItemHandle = weaponServices.ActiveWeapon.Value!.Handle;
+            if (heldItemHandle != c4.Handle) { continue; }
+
+            _currentActiveJihadC4s.Remove(c4);
 
             // This will deal with the explosion and ensuring the detonator is killed, as well as removing the bomb entity.
-            TryDetonateJihadC4(player, metadata.Delay, bombEntity);
+            TryDetonateJihadC4(player, metadata.Delay, c4);
 
             TryEmitSound(player, "jb.jihad", 1, 1f, 0f);
             _jihadNotifications.PlayerDetonateC4(player).ToAllChat();
@@ -85,6 +87,18 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     {
         if (executor == null || !executor.IsValid) { return; }
         TryGiveC4ToPlayer(executor);
+    }
+
+    // Todo please remove later!!
+    [ConsoleCommand("css_dd", "debug cmd")]
+    public void Command_Debugg(CCSPlayerController? executor, CommandInfo info)
+    {
+        if (executor == null || !executor.IsValid) { return; }
+
+        foreach ((var key, var value) in _currentActiveJihadC4s)
+        {
+            Console.WriteLine($"{key.Handle} {(value.Player != null ? value.Player.PlayerName : "it's null")}");
+        }
     }
 
     /// <summary>
@@ -128,7 +142,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         if (weaponServices == null) { return HookResult.Continue; }
 
         CC4 bombEntity = new CC4(weaponServices.MyWeapons.Last()!.Value!.Handle); // The last item in the weapons list is the last item the player picked up, apparently.
-        if (!_currentActiveJihadC4s.ContainsKey(bombEntity)) { return HookResult.Continue; }
 
         _currentActiveJihadC4s.TryGetValue(bombEntity, out JihadBombMetadata? bombMetadata);
         if (bombMetadata == null) { return HookResult.Continue; }
@@ -185,7 +198,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         { if (metadata.Player == player) { return; } }
 
         CC4 bombEntity = new CC4(player.GiveNamedItem("weapon_c4"));
-        _currentActiveJihadC4s[bombEntity] = new JihadBombMetadata(player, 1.0f);
+        _currentActiveJihadC4s.Add(bombEntity, new JihadBombMetadata(player, 1.0f));
         _jihadNotifications.JIHAD_C4_RECEIVED.ToPlayerChat(player);
     }
 
@@ -220,7 +233,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             envPhysExplosionEntity.ExplodeOnSpawn = true;
             envPhysExplosionEntity.Magnitude = 50f; // I have tweaked these values
             envPhysExplosionEntity.PushScale = 3.5f; // I have tweaked these values
-            envPhysExplosionEntity.Radius = 340f; // As per the old code.
+            envPhysExplosionEntity.Radius = 350f; // As per the old code.
 
             envPhysExplosionEntity.Teleport(player.PlayerPawn.Value!.AbsOrigin!, new QAngle(), new Vector());
             envPhysExplosionEntity.DispatchSpawn();
@@ -262,7 +275,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     {
         List<CCSPlayerController> validTerroristPlayers = Utilities.GetPlayers().Where(player => player.Team == CsTeam.Terrorist && player.PawnIsAlive && !player.IsBot).ToList();
         int numOfTerrorists = validTerroristPlayers.Count;
-        if (numOfTerrorists < 1) return;
 
         if (numOfTerrorists == 0) { _basePlugin!.Logger.LogInformation("Tried to give Jihad C4 at round start but there were no valid players to give it to."); return; }
 
