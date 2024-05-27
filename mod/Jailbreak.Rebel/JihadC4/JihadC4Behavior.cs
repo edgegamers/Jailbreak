@@ -73,6 +73,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             _currentActiveJihadC4s.Remove(c4);
 
             // This will deal with the explosion and ensuring the detonator is killed, as well as removing the bomb entity.
+            
             TryDetonateJihadC4(player, metadata.Delay, c4);
 
             TryEmitSound(player, "jb.jihad", 1, 1f, 0f);
@@ -175,13 +176,11 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         CCSPlayerController? player = @event.Userid;
         if (player == null || !player.IsValid) { return HookResult.Continue; }
 
-        foreach (JihadBombMetadata metadata in _currentActiveJihadC4s.Values)
-        {
-            if (metadata.Player == player)
-            {
-                metadata.Player = null;
-            }
-        }
+        // get the bomb metadata where the Player variable is assigned to the player who disconnected
+        JihadBombMetadata? metadata = _currentActiveJihadC4s.Values.DistinctBy((metadata) => metadata.Player == player).FirstOrDefault();
+        if (metadata == null) { return HookResult.Continue; }
+
+        metadata.Player = null; // then null it.
 
         return HookResult.Continue;
 
