@@ -274,6 +274,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     {
         List<CCSPlayerController> validTerroristPlayers = Utilities.GetPlayers().Where(player => player.Team == CsTeam.Terrorist && player.PawnIsAlive).ToList();
         int numOfTerrorists = validTerroristPlayers.Count;
+        if (numOfTerrorists < 1) return;
 
         Random rnd = new Random();
         int randomIndex = rnd.Next(numOfTerrorists);
