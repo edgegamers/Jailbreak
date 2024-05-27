@@ -262,6 +262,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     {
         List<CCSPlayerController> validTerroristPlayers = Utilities.GetPlayers().Where(player => player.Team == CsTeam.Terrorist && player.PawnIsAlive && !player.IsBot).ToList();
         int numOfTerrorists = validTerroristPlayers.Count;
+        if (numOfTerrorists < 1) return;
 
         if (numOfTerrorists == 0) { _basePlugin!.Logger.LogInformation("Tried to give Jihad C4 at round start but there were no valid players to give it to."); return; }
 
