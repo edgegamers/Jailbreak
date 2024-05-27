@@ -51,7 +51,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     private void PlayerUseC4ListenerCallback()
     {
 
-        foreach ((CC4 c4, JihadBombMetadata metadata) in _currentActiveJihadC4s)
+        foreach (JihadBombMetadata metadata in _currentActiveJihadC4s.Values)
         {
             CCSPlayerController? player = metadata.Player;
             if (player == null) { continue; }
