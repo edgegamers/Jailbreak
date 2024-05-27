@@ -18,7 +18,7 @@ public class FreeForAllDay : ISpecialDay
     private int timer = 0;
     private Timer? timer1;
     private BasePlugin _plugin;
-    private bool _hasStarted = false;
+    private bool _hasStarted = true;
 
     public FreeForAllDay(BasePlugin plugin)
     {
@@ -47,7 +47,9 @@ public class FreeForAllDay : ISpecialDay
         
         if (!friendlyFireValue) {
             friendlyFire.SetValue<bool>(true);
-        }        
+        }
+
+        _hasStarted = false;
         AddTimers();
     }
 

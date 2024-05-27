@@ -12,11 +12,13 @@ public class SpecialDayHandler : ISpecialDayHandler, IPluginBehavior
     private int _roundsSinceLastSpecialDay = 0;
     private bool _isSpecialDayActive = false;
     private ISpecialDay? _currentSpecialDay = null;
+    private BasePlugin _plugin;
 
     public void Start(BasePlugin plugin)
     {
         plugin.RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
         plugin.RegisterEventHandler<EventRoundStart>(OnRoundStart);
+        _plugin = plugin;
     }
 
     [GameEventHandler]
@@ -67,7 +69,7 @@ public class SpecialDayHandler : ISpecialDayHandler, IPluginBehavior
         foreach (var type in q)
         {
             if (type == null) continue;
-            var item = (ISpecialDay) Activator.CreateInstance(type);
+            var item = (ISpecialDay) Activator.CreateInstance(type, _plugin);
             if (item == null) continue;
             if (item.Name != name) continue;
             

@@ -18,7 +18,7 @@ public class Warday : ISpecialDay
     private int timer = 0;
     private Timer timer1;
     private BasePlugin _plugin;
-    private bool _hasStarted = false;
+    private bool _hasStarted = true;
 
     public Warday(BasePlugin plugin)
     {
@@ -35,7 +35,7 @@ public class Warday : ISpecialDay
             player.Teleport(spawn.AbsOrigin);
             player.Freeze();
         }
-        
+        _hasStarted = false;
         AddTimers();
     }
 
