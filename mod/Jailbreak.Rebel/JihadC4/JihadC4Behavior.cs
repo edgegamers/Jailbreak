@@ -82,26 +82,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         }
     }
 
-    // Todo please remove later!!
-    [ConsoleCommand("css_d", "debug cmd")]
-    public void Command_Debug(CCSPlayerController? executor, CommandInfo info)
-    {
-        if (executor == null || !executor.IsValid) { return; }
-        TryGiveC4ToPlayer(executor);
-    }
-
-    // Todo please remove later!!
-    [ConsoleCommand("css_dd", "debug cmd")]
-    public void Command_Debugg(CCSPlayerController? executor, CommandInfo info)
-    {
-        if (executor == null || !executor.IsValid) { return; }
-
-        foreach ((var key, var value) in _currentActiveJihadC4s)
-        {
-            Console.WriteLine($"{key.Handle} {(value.Player != null ? value.Player.PlayerName : "it's null")}");
-        }
-    }
-
     /// <summary>
     /// This function importantly allows players who have a Jihad C4 to pass it on to other Terrorists. Additionally it deals with
     /// the edge case where a player dies with a Jihad C4, as this function is still called when that happens.
