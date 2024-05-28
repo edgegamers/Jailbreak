@@ -32,7 +32,7 @@ public class Warday : ISpecialDay
         foreach (var player in Utilities.GetPlayers()
                      .Where(player => player.IsReal()))
         {
-            player.Teleport(spawn.AbsOrigin);
+            player.PlayerPawn.Value!.Teleport(spawn.AbsOrigin);
             player.Freeze();
         }
         _hasStarted = false;

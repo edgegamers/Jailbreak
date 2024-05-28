@@ -36,7 +36,7 @@ public class FreeForAllDay : ISpecialDay
             
             var index = new Random().Next(0, max);
             
-            player.Teleport(spawn[index].AbsOrigin);
+            player.PlayerPawn.Value!.Teleport(spawn[index].AbsOrigin);
             player.Freeze();
         }
         
