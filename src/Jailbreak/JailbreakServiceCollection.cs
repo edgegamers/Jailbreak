@@ -8,6 +8,7 @@ using Jailbreak.English.LastRequest;
 using Jailbreak.English.Logs;
 using Jailbreak.English.Mute;
 using Jailbreak.English.Rebel;
+using Jailbreak.English.SpecialDay;
 using Jailbreak.English.Warden;
 using Jailbreak.Formatting.Logistics;
 using Jailbreak.Generic;
@@ -51,6 +52,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
 			config.WithLogging<LogMessages>();
    			config.WithRollCommand<RollCommandNotifications>();
             config.WithJihadC4<JihadC4Notifications>();
+            config.WithSpecialDay<SpecialDayNotifications>();
             config.WithLastRequest<LastRequestMessages>();
 			config.WithSpecialTreatment<SpecialTreatmentNotifications>();
 			config.WithMute<PeaceMessages>();

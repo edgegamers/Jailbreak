@@ -4,6 +4,8 @@ using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
+using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDays;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
@@ -19,6 +21,7 @@ public class FreeForAllDay : ISpecialDay
     private Timer? timer1;
     private BasePlugin _plugin;
     private bool _hasStarted = true;
+    private readonly ISpecialDayNotifications _notifications;
 
     public FreeForAllDay(BasePlugin plugin)
     {
@@ -27,6 +30,9 @@ public class FreeForAllDay : ISpecialDay
     
     public void OnStart()
     {
+        _notifications.SD_FFA_STARTED
+            .ToAllChat()
+            .ToAllCenter();
         var spawn = Utilities.FindAllEntitiesByDesignerName<SpawnPoint>("info_player_counterterrorist").ToList();
 
         foreach (var player in Utilities.GetPlayers()

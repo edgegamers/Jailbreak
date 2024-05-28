@@ -1,5 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Mod.SpecialDays;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
@@ -8,6 +10,7 @@ public class Freeday : ISpecialDay
 {
     public string Name => "Freeday";
     public string Description => "All prisoners and guards are allowed to roam freely.";
+    private readonly ISpecialDayNotifications _notifications;
     
     public Freeday(BasePlugin plugin)
     {
@@ -16,6 +19,10 @@ public class Freeday : ISpecialDay
     
     public void OnStart()
     {
+        _notifications.SD_FREEDAY_STARTED
+            .ToAllChat()
+            .ToAllCenter();
+        
         ForceEntInput("func_door","Open");
         ForceEntInput("func_door_rotating","Open");
         ForceEntInput("prop_door_rotating","Open");

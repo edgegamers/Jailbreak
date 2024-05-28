@@ -79,7 +79,7 @@ public class SpecialDayHandler(SpecialDayConfig config) : ISpecialDayHandler, IP
             break;
         }
         
-        Server.NextFrame(() => Server.PrintToChatAll($"{_currentSpecialDay?.Name} has started - {_currentSpecialDay?.Description}"));
+        //Server.NextFrame(() => Server.PrintToChatAll($"{_currentSpecialDay?.Name} has started - {_currentSpecialDay?.Description}"));
         return true;
     }
 }
