@@ -5,5 +5,5 @@ public interface ISpecialDayHandler
     int RoundsSinceLastSpecialDay();
     bool CanStartSpecialDay();
     bool IsSpecialDayActive();
-    bool StartSpecialDay(string name);
+    bool StartSpecialDay<T>(string name,T a);
 }

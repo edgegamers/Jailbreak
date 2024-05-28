@@ -45,7 +45,7 @@ public class SpecialDayMenu : ISpecialDayMenu, IPluginBehavior
     {
         _menu.AddMenuOption(specialDay.Name + " - " + specialDay.Description, (player, _menu) =>
         {
-            _handler.StartSpecialDay(specialDay.Name);
+            _handler.StartSpecialDay(specialDay.Name, _notifications);
             MenuManager.CloseActiveMenu(player);
         });
     }

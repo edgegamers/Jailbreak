@@ -2,6 +2,7 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.SpecialDays;
 
@@ -57,7 +58,7 @@ public class SpecialDayHandler(SpecialDayConfig config) : ISpecialDayHandler, IP
         return _isSpecialDayActive;
     }
 
-    public bool StartSpecialDay(string name)
+    public bool StartSpecialDay<ISpecialDayNotifications>(string name, ISpecialDayNotifications _notifications)
     {
         if (_isSpecialDayActive || !CanStartSpecialDay()) return false;
         
@@ -69,7 +70,7 @@ public class SpecialDayHandler(SpecialDayConfig config) : ISpecialDayHandler, IP
         foreach (var type in q)
         {
             if (type == null) continue;
-            var item = (ISpecialDay) Activator.CreateInstance(type, _plugin);
+            var item = (ISpecialDay) Activator.CreateInstance(type, _plugin, _notifications);
             if (item == null) continue;
             if (item.Name != name) continue;
             
