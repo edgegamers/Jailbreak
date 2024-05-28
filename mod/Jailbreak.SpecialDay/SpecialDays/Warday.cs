@@ -23,8 +23,9 @@ public class Warday : ISpecialDay
     private bool _hasStarted = true;
     private readonly ISpecialDayNotifications _notifications;
 
-    public Warday(BasePlugin plugin)
+    public Warday(BasePlugin plugin, ISpecialDayNotifications notifications)
     {
+        _notifications = notifications;
         _plugin = plugin;
         VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(_ => _hasStarted ? HookResult.Continue : HookResult.Stop, HookMode.Pre);    }
     

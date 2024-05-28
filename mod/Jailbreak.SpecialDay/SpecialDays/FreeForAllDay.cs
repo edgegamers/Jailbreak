@@ -23,8 +23,9 @@ public class FreeForAllDay : ISpecialDay
     private bool _hasStarted = true;
     private readonly ISpecialDayNotifications _notifications;
 
-    public FreeForAllDay(BasePlugin plugin)
+    public FreeForAllDay(BasePlugin plugin, ISpecialDayNotifications notifications)
     {
+        _notifications = notifications;
         _plugin = plugin;
         VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(_ => _hasStarted ? HookResult.Continue : HookResult.Stop, HookMode.Pre);    }
     

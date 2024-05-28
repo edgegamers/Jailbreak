@@ -12,9 +12,9 @@ public class Freeday : ISpecialDay
     public string Description => "All prisoners and guards are allowed to roam freely.";
     private readonly ISpecialDayNotifications _notifications;
     
-    public Freeday(BasePlugin plugin)
+    public Freeday(BasePlugin plugin, ISpecialDayNotifications notifications)
     {
-        
+        _notifications = notifications;
     }
     
     public void OnStart()
