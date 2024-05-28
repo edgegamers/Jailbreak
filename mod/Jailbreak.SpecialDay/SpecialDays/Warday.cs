@@ -13,7 +13,7 @@ namespace Jailbreak.SpecialDay.SpecialDays;
 public class Warday : ISpecialDay
 {
     public string Name => "Warday";
-    public string Description => "Guards versus Prisoners. Your goal is to ensure that your team is last team standing!";
+    public string Description => $" {ChatColors.Red}[Warday] {ChatColors.Blue} Guards versus Prisoners. Your goal is to ensure that your team is last team standing!";
 
     private int timer = 0;
     private Timer timer1;
@@ -32,7 +32,7 @@ public class Warday : ISpecialDay
         foreach (var player in Utilities.GetPlayers()
                      .Where(player => player.IsReal()))
         {
-            player.Teleport(spawn.AbsOrigin);
+            player.PlayerPawn.Value!.Teleport(spawn.AbsOrigin);
             player.Freeze();
         }
         _hasStarted = false;
