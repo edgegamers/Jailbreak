@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
+using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.SpecialDays;
 
@@ -11,9 +12,11 @@ public class SpecialDayMenu : ISpecialDayMenu, IPluginBehavior
     private BaseMenu _menu;
     private readonly ISpecialDayHandler _handler;
     private BasePlugin _plugin;
+    private readonly ISpecialDayNotifications _notifications;
 
-    public SpecialDayMenu(ISpecialDayHandler handler)
+    public SpecialDayMenu(ISpecialDayHandler handler, ISpecialDayNotifications notifications)
     {
+        _notifications = notifications;
         _handler = handler;
     }
 
@@ -32,7 +35,7 @@ public class SpecialDayMenu : ISpecialDayMenu, IPluginBehavior
         foreach (var type in types)
         {
             if (type == null) return;
-            var item = (ISpecialDay?) Activator.CreateInstance(type, _plugin);
+            var item = (ISpecialDay?) Activator.CreateInstance(type, _plugin, _notifications);
             if (item == null) return;
             AddSpecialDay(item);
         }
