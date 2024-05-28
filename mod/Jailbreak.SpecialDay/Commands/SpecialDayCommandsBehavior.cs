@@ -15,15 +15,15 @@ public class SpecialDayCommandsBehavior() : IPluginBehavior
     
     private ISpecialDayMenu _menu;
 
-    private IWardenNotifications _notifications;
+    private ISpecialDayNotifications _specialDayNotifications;
 
     private SpecialDayHandler _handler;
     
-    public SpecialDayCommandsBehavior(IWardenService warden, ISpecialDayMenu menu, IWardenNotifications notifications, SpecialDayHandler handler) : this()
+    public SpecialDayCommandsBehavior(IWardenService warden, ISpecialDayMenu menu, ISpecialDayNotifications notifications, SpecialDayHandler handler) : this()
     {
         _warden = warden;
         _menu = menu;
-        _notifications = notifications;
+        _specialDayNotifications = notifications;
         _handler = handler;
     }
     
@@ -37,13 +37,13 @@ public class SpecialDayCommandsBehavior() : IPluginBehavior
 
         if (!_handler.CanStartSpecialDay())
         {
-            player.PrintToChat("Special Day has already happened recently!");
+            _specialDayNotifications.SD_CANT_START.ToPlayerChat(player);
+            return;
         }
 
         if (!_warden.IsWarden(player))
         {
-            _notifications.NOT_WARDEN.ToPlayerChat(player);
-            //	You're not that warden, blud
+            _specialDayNotifications.SD_NOT_WARDEN.ToPlayerChat(player);
             return;
         }
 
