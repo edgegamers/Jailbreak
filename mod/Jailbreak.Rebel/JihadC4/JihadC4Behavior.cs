@@ -72,8 +72,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 
             _currentActiveJihadC4s.Remove(c4);
 
-            // This will deal with the explosion and ensuring the detonator is killed, as well as removing the bomb entity.
-            
+            // This will deal with the explosion and ensures the detonator is killed as well as removing the bomb entity.
             TryDetonateJihadC4(player, metadata.Delay, c4);
 
             TryEmitSound(player, "jb.jihad", 1, 1f, 0f);
@@ -195,6 +194,9 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         if (_basePlugin == null) { return; }
         _basePlugin.AddTimer(delay, () =>
         {
+
+            if (!player.IsValid) { return; } // Just in case.
+
             /* PARTICLE EXPLOSION */
             CParticleSystem particleSystemEntity = Utilities.CreateEntityByName<CParticleSystem>("info_particle_system")!;
             particleSystemEntity.EffectName = "particles/explosions_fx/explosion_c4_500.vpcf";
@@ -222,8 +224,9 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             /* Calculate damage here. */
             /* Don't waste time calculating stuff for dead players or players on the Terrorist team!. */
             /* Also, Utilities.GetPlayers() returns valid players anyway, so no need to check for that. */
-            foreach (CCSPlayerController potentialTarget in Utilities.GetPlayers().Where((p) => p.PawnIsAlive && p.Team != CsTeam.Terrorist))
+            foreach (CCSPlayerController potentialTarget in Utilities.GetPlayers().Where((p) => p.Team == CsTeam.CounterTerrorist && p.PawnIsAlive))
             {
+
                 float distanceFromBomb = potentialTarget.PlayerPawn!.Value!.AbsOrigin!.Distance(player.PlayerPawn!.Value!.AbsOrigin!);
                 if (distanceFromBomb > 350f) { continue; } // 350f = "bombRadius"
 
@@ -240,12 +243,15 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
                 }
             }
 
-            // ensure we kill the detonator...
-            player.CommitSuicide(true, true);
-
-            /* Finally play our sound and remove the bomb */
+            // Emit the sound first.
             TryEmitSound(player, "jb.jihadExplosion", 1, 1f, 0f);
-            bombEntity?.Remove();
+
+            // Why do I need to do this? I don't know, but it crashes if I don't...
+            Server.RunOnTick(Server.TickCount + 2, () =>
+            {
+                player.CommitSuicide(true, true);
+                bombEntity?.Remove();
+            });
 
         });
 
