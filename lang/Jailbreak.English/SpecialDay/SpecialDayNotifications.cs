@@ -21,6 +21,7 @@ public class SpecialDayNotifications : ISpecialDayNotifications, ILanguage<Forma
 
     public IView SD_FREEDAY_STARTED => new SimpleView { PREFIX, "Freeday has started! Do whatever you want! Vents/Armory KOS unless allowed by warden" };
     public IView SD_FFA_STARTED => new SimpleView { PREFIX, "Free for all Warday has started! Everyone for themselves." };
+    public IView SD_CUSTOM_STARTED => new SimpleView { PREFIX, "A Custom Day has started! Listen carefully to the warden." };
 
     public IView SD_NOT_WARDEN => new SimpleView { PREFIX, "You are not the warden!" };
     public IView SD_CANT_START => new SimpleView { PREFIX, "Unable to use Special Days this round!" };
