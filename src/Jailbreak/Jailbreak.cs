@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using CounterStrikeSharp.API.Core;
 using Jailbreak.Public.Behaviors;
+using Jailbreak.Public.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -46,6 +47,9 @@ public class Jailbreak : BasePlugin
             manifest.AddResource("soundevents/explosion.vsnd");
             manifest.AddResource("soundevents/jihad.vsnd");
         });
+        
+        //  Load Managers
+        FreezeManager.CreateInstance(this);
 
         Logger.LogInformation("[Jailbreak] Loading...");
 

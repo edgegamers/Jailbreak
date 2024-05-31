@@ -8,6 +8,7 @@ using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDays;
+using Jailbreak.Public.Utils;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
@@ -44,7 +45,7 @@ public class FreeForAllDay : ISpecialDay
             var index = new Random().Next(0, max);
             
             player.PlayerPawn.Value!.Teleport(spawn[index].AbsOrigin);
-            player.Freeze();
+            FreezeManager.FreezePlayer(player, 3);
         }
         
         var friendlyFire = ConVar.Find("mp_friendlyfire");
@@ -65,14 +66,11 @@ public class FreeForAllDay : ISpecialDay
         timer1 = _plugin.AddTimer(1f, () =>
         {
             timer++;
-            foreach (var player in Utilities.GetPlayers()
-                         .Where(player => player.IsReal()))
-            {
-                if (timer != 5) return;
-                
-                player.UnFreeze();
-                _hasStarted = true;
-            }
+            
+            if (timer != 15) return;
+            
+            _hasStarted = true;
+            
             timer1.Kill();
         }, TimerFlags.REPEAT);
         
