@@ -5,6 +5,7 @@ using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDays;
+using Jailbreak.Public.Utils;
 using Microsoft.VisualBasic.CompilerServices;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
@@ -33,7 +34,7 @@ public class Warday : ISpecialDay
                      .Where(player => player.IsReal()))
         {
             player.PlayerPawn.Value!.Teleport(spawn.AbsOrigin);
-            player.Freeze();
+            FreezeManager.FreezePlayer(player, player.Team == CsTeam.Terrorist ? 30 : 7);
         }
         _hasStarted = false;
         AddTimers();
@@ -44,17 +45,10 @@ public class Warday : ISpecialDay
         timer1 = _plugin.AddTimer(1f, () =>
         {
             timer++;
-            foreach (var player in Utilities.GetPlayers()
-                         .Where(player => player.IsReal()))
-            {
-                if (timer == 3 || player.Team == CsTeam.CounterTerrorist) player.UnFreeze();
-                if (timer != 29 && player.Team != CsTeam.Terrorist) continue;
                 
-                player.UnFreeze();
-                _hasStarted = true;
-                timer1.Kill();
-                
-            }
+            if (timer != 30) return;
+            _hasStarted = true;
+            timer1.Kill();
         }, TimerFlags.REPEAT);
         
     }
