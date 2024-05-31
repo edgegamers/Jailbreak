@@ -121,7 +121,14 @@ public class LastRequestCommand(
             messages.InvalidPlayerChoice(player, "They're already in an LR!");
             return;
         }
-
+        
+        //One final check in case they got the menu open in the last round
+        if (!manager.IsLREnabled)
+        {
+            messages.LastRequestNotEnabled().ToPlayerChat(executor);
+            return;
+        }
+        
         if (!manager.InitiateLastRequest(executor, player, (LRType)type))
         {
             info.ReplyToCommand("An error occurred while initiating the last request. Please try again later.");

@@ -2,12 +2,13 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.SpecialDays;
 
 namespace Jailbreak.SpecialDay;
 
-public class SpecialDayHandler : ISpecialDayHandler, IPluginBehavior
+public class SpecialDayHandler(SpecialDayConfig config) : ISpecialDayHandler, IPluginBehavior
 {
     private int _roundsSinceLastSpecialDay = 0;
     private bool _isSpecialDayActive = false;
@@ -49,7 +50,7 @@ public class SpecialDayHandler : ISpecialDayHandler, IPluginBehavior
 
     public bool CanStartSpecialDay()
     {
-        return RoundsSinceLastSpecialDay() >= 2;
+        return RoundsSinceLastSpecialDay() >= config.MinRoundsBeforeSpecialDay;
     }
 
     public bool IsSpecialDayActive()
@@ -57,7 +58,7 @@ public class SpecialDayHandler : ISpecialDayHandler, IPluginBehavior
         return _isSpecialDayActive;
     }
 
-    public bool StartSpecialDay(string name)
+    public bool StartSpecialDay<ISpecialDayNotifications>(string name, ISpecialDayNotifications _notifications)
     {
         if (_isSpecialDayActive || !CanStartSpecialDay()) return false;
         
@@ -69,7 +70,7 @@ public class SpecialDayHandler : ISpecialDayHandler, IPluginBehavior
         foreach (var type in q)
         {
             if (type == null) continue;
-            var item = (ISpecialDay) Activator.CreateInstance(type, _plugin);
+            var item = (ISpecialDay) Activator.CreateInstance(type, _plugin, _notifications);
             if (item == null) continue;
             if (item.Name != name) continue;
             
@@ -79,7 +80,7 @@ public class SpecialDayHandler : ISpecialDayHandler, IPluginBehavior
             break;
         }
         
-        Server.NextFrame(() => Server.PrintToChatAll($"{_currentSpecialDay?.Name} has started - {_currentSpecialDay?.Description}"));
+        //Server.NextFrame(() => Server.PrintToChatAll($"{_currentSpecialDay?.Name} has started - {_currentSpecialDay?.Description}"));
         return true;
     }
 }

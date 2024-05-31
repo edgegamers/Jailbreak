@@ -3,6 +3,8 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
+using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDays;
 using Jailbreak.Public.Utils;
@@ -20,14 +22,19 @@ public class Warday : ISpecialDay
     private Timer timer1;
     private BasePlugin _plugin;
     private bool _hasStarted = true;
+    private readonly ISpecialDayNotifications _notifications;
 
-    public Warday(BasePlugin plugin)
+    public Warday(BasePlugin plugin, ISpecialDayNotifications notifications)
     {
+        _notifications = notifications;
         _plugin = plugin;
         VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(_ => _hasStarted ? HookResult.Continue : HookResult.Stop, HookMode.Pre);    }
     
     public void OnStart()
     {
+        _notifications.SD_WARDAY_STARTED
+            .ToAllChat()
+            .ToAllCenter();
         var spawn = Utilities.FindAllEntitiesByDesignerName<SpawnPoint>("info_player_counterterrorist").First();
 
         foreach (var player in Utilities.GetPlayers()

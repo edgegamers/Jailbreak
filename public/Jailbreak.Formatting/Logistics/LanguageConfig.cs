@@ -34,8 +34,12 @@ public class LanguageConfig<TDialect>
     	public void WithJihadC4<TJihadC4>()
         	where TJihadC4 : class, ILanguage<TDialect>, IJihadC4Notifications
         	=> _collection.AddSingleton<IJihadC4Notifications, TJihadC4>();
+	    
+	    public void WithSpecialDay<TSpecialDay>()
+			where TSpecialDay : class, ILanguage<TDialect>, ISpecialDayNotifications
+		    => _collection.AddSingleton<ISpecialDayNotifications, TSpecialDay>(); 
 
-    	public void WithLogging<TLogging>()
+	    public void WithLogging<TLogging>()
 		where TLogging : class, ILanguage<TDialect>, ILogMessages
 		=> _collection.AddSingleton<ILogMessages, TLogging>();
 

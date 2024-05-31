@@ -9,6 +9,7 @@ using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rebel;
+using Microsoft.Extensions.Logging;
 
 namespace Jailbreak.Rebel.JihadC4;
 
@@ -50,7 +51,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     private void PlayerUseC4ListenerCallback()
     {
 
-        foreach (JihadBombMetadata metadata in _currentActiveJihadC4s.Values)
+        foreach ((CC4 c4, JihadBombMetadata metadata) in _currentActiveJihadC4s)
         {
             CCSPlayerController? player = metadata.Player;
             if (player == null) { continue; }
@@ -58,33 +59,26 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             // is the use button currently active? 
             if ((player.Buttons & PlayerButtons.Use) == 0) { continue; }
 
-            CPlayer_WeaponServices? weaponServices = player.PlayerPawn?.Value?.WeaponServices;
+            CPlayer_WeaponServices? weaponServices = player.PlayerPawn.Value?.WeaponServices;
             if (weaponServices == null) { continue; }
 
             // Check if the currently held and "+used" item is our C4
-            string? heldItemDesignerName = weaponServices.ActiveWeapon?.Value?.DesignerName;
+            string? heldItemDesignerName = weaponServices.ActiveWeapon.Value?.DesignerName;
             if (heldItemDesignerName == null) { continue; }
-
             if (!heldItemDesignerName.Equals("weapon_c4")) { continue; }
 
-            CC4 bombEntity = new CC4(weaponServices.ActiveWeapon!.Value!.Handle);
-            _currentActiveJihadC4s.Remove(bombEntity);
+            nint heldItemHandle = weaponServices.ActiveWeapon.Value!.Handle;
+            if (heldItemHandle != c4.Handle) { continue; }
 
-            // This will deal with the explosion and ensuring the detonator is killed, as well as removing the bomb entity.
-            TryDetonateJihadC4(player, metadata.Delay, bombEntity); 
+            _currentActiveJihadC4s.Remove(c4);
+
+            // This will deal with the explosion and ensures the detonator is killed as well as removing the bomb entity.
+            TryDetonateJihadC4(player, metadata.Delay, c4);
 
             TryEmitSound(player, "jb.jihad", 1, 1f, 0f);
             _jihadNotifications.PlayerDetonateC4(player).ToAllChat();
 
         }
-    }
-
-    // Todo please remove later!!
-    [ConsoleCommand("css_d", "debug cmd")]
-    public void Command_Debug(CCSPlayerController? executor, CommandInfo info)
-    {
-        if (executor == null || !executor.IsValid) { return; }
-        TryGiveC4ToPlayer(executor);
     }
 
     /// <summary>
@@ -101,10 +95,11 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         if (bombEntity == null) { return HookResult.Continue; } // I mean this should never be the case...
 
         // We check this as obviously we're only concerned with C4's that are in our dictionary
-        if (!_currentActiveJihadC4s.ContainsKey(bombEntity)) { return HookResult.Continue; }
+        _currentActiveJihadC4s.TryGetValue(bombEntity, out JihadBombMetadata? bombMetadata);
+        if (bombMetadata == null) { return HookResult.Continue; }
 
         // If a jihad bomb is dropped then the player entry in the dictionary needs to be nulled. We will set it again when another player picks it up.
-        _currentActiveJihadC4s[bombEntity].Player = null;
+        bombMetadata.Player = null;
 
         // This requires a nextframe because apparently some Valve functions don't like printing inside of them.
         Server.NextFrame(() => { _jihadNotifications.JIHAD_C4_DROPPED.ToPlayerChat(player); });
@@ -127,9 +122,11 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         if (weaponServices == null) { return HookResult.Continue; }
 
         CC4 bombEntity = new CC4(weaponServices.MyWeapons.Last()!.Value!.Handle); // The last item in the weapons list is the last item the player picked up, apparently.
-        if (!_currentActiveJihadC4s.ContainsKey(bombEntity)) { return HookResult.Continue; }
 
-        _currentActiveJihadC4s[bombEntity].Player = player;
+        _currentActiveJihadC4s.TryGetValue(bombEntity, out JihadBombMetadata? bombMetadata);
+        if (bombMetadata == null) { return HookResult.Continue; }
+
+        bombMetadata.Player = player;
         _jihadNotifications.JIHAD_C4_PICKUP.ToPlayerChat(player);
 
         return HookResult.Continue;
@@ -142,17 +139,8 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     [GameEventHandler]
     public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
-        TryGiveC4ToRandomTerrorist();
-        return HookResult.Continue;
-    }
-
-    /// <summary>
-    /// A useful function to reset the Jihad C4 state. A better solution might be to clear the list on round START instead.
-    /// </summary>
-    [GameEventHandler]
-    public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
-    {
         _currentActiveJihadC4s.Clear();
+        TryGiveC4ToRandomTerrorist();
         return HookResult.Continue;
     }
 
@@ -167,13 +155,11 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         CCSPlayerController? player = @event.Userid;
         if (player == null || !player.IsValid) { return HookResult.Continue; }
 
-        foreach (JihadBombMetadata metadata in _currentActiveJihadC4s.Values)
-        {
-            if (metadata.Player == player)
-            {
-                metadata.Player = null;
-            }
-        }
+        // get the bomb metadata where the Player variable is assigned to the player who disconnected
+        JihadBombMetadata? metadata = _currentActiveJihadC4s.Values.DistinctBy((metadata) => metadata.Player == player).FirstOrDefault();
+        if (metadata == null) { return HookResult.Continue; }
+
+        metadata.Player = null; // then null it.
 
         return HookResult.Continue;
 
@@ -190,8 +176,9 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         { if (metadata.Player == player) { return; } }
 
         CC4 bombEntity = new CC4(player.GiveNamedItem("weapon_c4"));
-        _currentActiveJihadC4s[bombEntity] = new JihadBombMetadata(player, 1.0f);
+        _currentActiveJihadC4s.Add(bombEntity, new JihadBombMetadata(player, 1.0f));
         _jihadNotifications.JIHAD_C4_RECEIVED.ToPlayerChat(player);
+
     }
 
     // Not using _notifications.PlayerDetonateC4() here, as I invoked that in the +use callback already
@@ -207,6 +194,9 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         if (_basePlugin == null) { return; }
         _basePlugin.AddTimer(delay, () =>
         {
+
+            if (!player.IsValid) { return; } // Just in case.
+
             /* PARTICLE EXPLOSION */
             CParticleSystem particleSystemEntity = Utilities.CreateEntityByName<CParticleSystem>("info_particle_system")!;
             particleSystemEntity.EffectName = "particles/explosions_fx/explosion_c4_500.vpcf";
@@ -225,43 +215,43 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             envPhysExplosionEntity.ExplodeOnSpawn = true;
             envPhysExplosionEntity.Magnitude = 50f; // I have tweaked these values
             envPhysExplosionEntity.PushScale = 3.5f; // I have tweaked these values
-            envPhysExplosionEntity.Radius = 340f; // As per the old code.
+            envPhysExplosionEntity.Radius = 350f; // As per the old code.
 
             envPhysExplosionEntity.Teleport(player.PlayerPawn.Value!.AbsOrigin!, new QAngle(), new Vector());
             envPhysExplosionEntity.DispatchSpawn();
             /* END */
 
             /* Calculate damage here. */
-            /* Don't waste time calculating stuff for dead players. */
+            /* Don't waste time calculating stuff for dead players or players on the Terrorist team!. */
             /* Also, Utilities.GetPlayers() returns valid players anyway, so no need to check for that. */
-            foreach (CCSPlayerController potentialTarget in Utilities.GetPlayers().Where<CCSPlayerController>((p) => p.PawnIsAlive))
+            foreach (CCSPlayerController potentialTarget in Utilities.GetPlayers().Where((p) => p.Team == CsTeam.CounterTerrorist && p.PawnIsAlive))
             {
+
                 float distanceFromBomb = potentialTarget.PlayerPawn!.Value!.AbsOrigin!.Distance(player.PlayerPawn!.Value!.AbsOrigin!);
                 if (distanceFromBomb > 350f) { continue; } // 350f = "bombRadius"
 
                 float damage = 340f;
-                damage = damage * ((350f - distanceFromBomb) / distanceFromBomb);
-
-                float healthRef = player.PlayerPawn.Value.Health;
+                damage *= (350f - distanceFromBomb) / 350f;
+                float healthRef = potentialTarget.PlayerPawn.Value.Health;
                 if (healthRef <= damage)
                 {
-                    player.ExecuteClientCommandFromServer("kill"); // We kill them inside the loop which will drop their bomb entity, which we can delete later.
+                    potentialTarget.CommitSuicide(true, true);
                 } else
                 {
-                    player.PlayerPawn.Value.Health -= (int)damage;
-                    Utilities.SetStateChanged(player, "CBaseEntity", "m_iHealth");
+                    potentialTarget.PlayerPawn.Value.Health -= (int)damage;
+                    Utilities.SetStateChanged(potentialTarget, "CBaseEntity", "m_iHealth");
                 }
-
             }
 
-            /* Finally play our sound */
+            // Emit the sound first.
             TryEmitSound(player, "jb.jihadExplosion", 1, 1f, 0f);
 
-            // We're going to remove the bomb entity if it's supplied as an argument and if we have detonated a jihad c4 that is in our special list...
-            if (bombEntity != null)
+            // Why do I need to do this? I don't know, but it crashes if I don't...
+            Server.RunOnTick(Server.TickCount + 2, () =>
             {
-                bombEntity.Remove();
-            }
+                player.CommitSuicide(true, true);
+                bombEntity?.Remove();
+            });
 
         });
 
@@ -272,13 +262,18 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     /// </summary>
     public void TryGiveC4ToRandomTerrorist()
     {
-        List<CCSPlayerController> validTerroristPlayers = Utilities.GetPlayers().Where(player => player.Team == CsTeam.Terrorist && player.PawnIsAlive).ToList();
+        List<CCSPlayerController> validTerroristPlayers = Utilities.GetPlayers().Where(player => player.Team == CsTeam.Terrorist && player.PawnIsAlive && !player.IsBot).ToList();
         int numOfTerrorists = validTerroristPlayers.Count;
 
-        Random rnd = new Random();
+        if (numOfTerrorists == 0) { _basePlugin!.Logger.LogInformation("Tried to give Jihad C4 at round start but there were no valid players to give it to."); return; }
+
+        Random rnd = new();
         int randomIndex = rnd.Next(numOfTerrorists);
 
-        TryGiveC4ToPlayer(validTerroristPlayers[randomIndex]);
+        Server.RunOnTick(Server.TickCount + 10, () => // let's be extra safe and wait a WHOLE ten ticks before giving the jihad c4, so we don't get any plugin conflicts.
+        {
+            TryGiveC4ToPlayer(validTerroristPlayers[randomIndex]);
+        });
 
     }
 
