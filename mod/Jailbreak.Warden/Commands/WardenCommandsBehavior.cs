@@ -13,29 +13,20 @@ using Jailbreak.Public.Mod.Warden;
 
 namespace Jailbreak.Warden.Commands;
 
-public class WardenCommandsBehavior : IPluginBehavior
+public class WardenCommandsBehavior(
+    IWardenSelectionService queue,
+    IWardenService warden,
+    IWardenNotifications notifications,
+    IGenericCommandNotifications generics,
+    WardenConfig config)
+    : IPluginBehavior
 {
-    private readonly IWardenNotifications _notifications;
-    private readonly IWardenSelectionService _queue;
-    private readonly IWardenService _warden;
-    private readonly IGenericCommandNotifications _generics;
-    private readonly WardenConfig _config;
-    private readonly Dictionary<CCSPlayerController, DateTime> _lastWardenCommand = new();
-
-    public WardenCommandsBehavior(IWardenSelectionService queue, IWardenService warden,
-        IWardenNotifications notifications, IGenericCommandNotifications generics, WardenConfig config)
-    {
-        _config = config;
-        _queue = queue;
-        _warden = warden;
-        _generics = generics;
-        _notifications = notifications;
-    }
+    private readonly Dictionary<ulong, DateTime> lastPassCommand = new();
 
     [GameEventHandler]
     public HookResult OnRoundStart(EventRoundStart ev, GameEventInfo info)
     {
-        _lastWardenCommand.Clear();
+        lastPassCommand.Clear();
         return HookResult.Continue;
     }
 
@@ -47,25 +38,27 @@ public class WardenCommandsBehavior : IPluginBehavior
         if (player == null)
             return;
 
-        if (_warden.IsWarden(player))
+        if (!warden.IsWarden(player)) return;
+
+
+        lastPassCommand[player.SteamID] = DateTime.Now;
+
+        //	Handle warden pass
+        notifications.PASS_WARDEN(player)
+            .ToAllChat()
+            .ToAllCenter();
+
+        foreach (var clients in Utilities.GetPlayers())
         {
-            //	Handle warden pass
-            _notifications.PASS_WARDEN(player)
-                .ToAllChat()
-                .ToAllCenter();
-
-            foreach (var clients in Utilities.GetPlayers())
-            {
-                if (!clients.IsReal()) continue;
-                clients.ExecuteClientCommand(
-                    $"play sounds/{_config.WardenPassedSoundName}");
-            }
-
-            _notifications.BECOME_NEXT_WARDEN.ToAllChat();
-
-            if (!_warden.TryRemoveWarden())
-                Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");
+            if (!clients.IsReal()) continue;
+            clients.ExecuteClientCommand(
+                $"play sounds/{config.WardenPassedSoundName}");
         }
+
+        notifications.BECOME_NEXT_WARDEN.ToAllChat();
+
+        if (!warden.TryRemoveWarden())
+            Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");
     }
 
     [ConsoleCommand("css_warden",
@@ -77,41 +70,39 @@ public class WardenCommandsBehavior : IPluginBehavior
         if (player == null)
             return;
 
-        if (_lastWardenCommand.TryGetValue(player, out var last))
-        {
-            var cooldown = last.AddSeconds(15);
-            if (DateTime.Now < cooldown)
-            {
-                _generics.CommandOnCooldown(cooldown).ToPlayerChat(player);
-                return;
-            }
-        }
-        
-        _lastWardenCommand[player] = DateTime.Now;
-
         var isCt = player.GetTeam() == CsTeam.CounterTerrorist;
 
         //	Is a CT and queue is open
-        if (isCt && _queue.Active)
+        if (isCt && queue.Active)
         {
-            if (!_queue.InQueue(player))
+            if (!queue.InQueue(player))
             {
-                if (_queue.TryEnter(player))
-                    _notifications.JOIN_RAFFLE.ToPlayerChat(player);
+                if (queue.TryEnter(player))
+                    notifications.JOIN_RAFFLE.ToPlayerChat(player);
                 return;
             }
 
-            if (_queue.InQueue(player))
-                if (_queue.TryExit(player))
-                    _notifications.LEAVE_RAFFLE.ToPlayerChat(player);
+            if (queue.InQueue(player))
+                if (queue.TryExit(player))
+                    notifications.LEAVE_RAFFLE.ToPlayerChat(player);
 
             return;
         }
 
-        //	Is a CT and there is no warden
-        if (isCt && !_warden.HasWarden)
-            _warden.TrySetWarden(player);
+        if (lastPassCommand.TryGetValue(player.SteamID, out var last))
+        {
+            var cooldown = last.AddSeconds(30);
+            if (DateTime.Now < cooldown)
+            {
+                generics.CommandOnCooldown(cooldown).ToPlayerChat(player);
+                return;
+            }
+        }
 
-        _notifications.CURRENT_WARDEN(_warden.Warden).ToPlayerChat(player);
+        //	Is a CT and there is no warden
+        if (isCt && !warden.HasWarden)
+            warden.TrySetWarden(player);
+
+        notifications.CURRENT_WARDEN(warden.Warden).ToPlayerChat(player);
     }
 }
