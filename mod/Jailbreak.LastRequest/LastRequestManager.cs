@@ -105,7 +105,7 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
     [GameEventHandler]
     public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
-        foreach (var player in Utilities.GetPlayers())
+        foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal()))
         {
             MenuManager.CloseActiveMenu(player);
         }
