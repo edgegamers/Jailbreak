@@ -31,7 +31,6 @@ public class WardenBehavior(
 	private BasePlugin _parent;
 	private Timer? _unblueTimer;
 	private bool hadWarden = false;
-	private bool firstWarden = false;
 
 	private bool _hasWarden;
 	private CCSPlayerController? _warden;
@@ -91,18 +90,6 @@ public class WardenBehavior(
 		_unblueTimer = _parent.AddTimer(3, UnmarkPrisonersBlue);
 		
 		mute.PeaceMute(hadWarden ? MuteReason.WARDEN_TAKEN : MuteReason.INITIAL_WARDEN);
-
-		if (!hadWarden)
-		{ // First warden gets boost
-			_warden.SetHp(125);
-			_warden.PawnArmor = 125;
-			firstWarden = true;
-		}
-		else
-		{ // Already had a warden, update flag
-			firstWarden = false;
-		}
-		
 		hadWarden = true;
 		return true;
 	}
@@ -123,12 +110,6 @@ public class WardenBehavior(
 			_warden.Pawn.Value.Render = Color.FromArgb(254, 255, 255, 255);
 			Utilities.SetStateChanged(_warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
 			logs.Append( logs.Player(_warden), "is no longer the warden.");
-
-			if (_warden.PawnIsAlive && firstWarden)
-			{
-				_warden.SetHp(Math.Min(100, (int) _warden.PawnHealth));
-				_warden.PawnArmor = Math.Min(100, _warden.PawnArmor);
-			}
 		}
 
 		_warden = null;
@@ -201,7 +182,7 @@ public class WardenBehavior(
 
 	private void MarkPrisonersBlue()
 	{
-		foreach(var player in Utilities.GetPlayers())
+		foreach(CCSPlayerController player in Utilities.GetPlayers())
 		{
 			if(!player.IsReal() || player.Team != CsTeam.Terrorist)
 				continue;
@@ -240,7 +221,6 @@ public class WardenBehavior(
 	public HookResult OnRoundStart(EventRoundStart ev, GameEventInfo info)
 	{
 		hadWarden = false;
-		firstWarden = false;
 		return HookResult.Continue;
 	}
 
