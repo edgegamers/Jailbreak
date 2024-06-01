@@ -4,7 +4,6 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
-using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
@@ -105,10 +104,6 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
     [GameEventHandler]
     public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
-        foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal()))
-        {
-            MenuManager.CloseActiveMenu(player);
-        }
         if (ServerExtensions.GetGameRules().WarmupPeriod)
             return HookResult.Continue;
         if (CountAlivePrisoners() > config.PrisonersToActiveLR)
