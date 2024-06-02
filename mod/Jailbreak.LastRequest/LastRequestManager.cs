@@ -29,45 +29,22 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
     {
         _factory = provider.GetRequiredService<ILastRequestFactory>();
         _parent = parent;
-        VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage, HookMode.Pre);
     }
 
-    public void Dispose()
-    {
-        VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(OnTakeDamage, HookMode.Pre);
-    }
-
-    private HookResult OnTakeDamage(DynamicHook handle)
+    [GameEventHandler(HookMode.Pre)]
+    public HookResult OnTakeDamage(EventPlayerHurt @event, GameEventInfo info)
     {
         if (!IsLREnabled)
             return HookResult.Continue;
-        var victim = handle.GetParam<CEntityInstance>(0);
-        var damage_info = handle.GetParam<CTakeDamageInfo>(1);
-
-        var dealer = damage_info.Attacker;
-
-        if (dealer.Value == null)
-        {
-            return HookResult.Continue;
-        }
 
         // get player and attacker
-        var player = new CCSPlayerController(new CBaseEntity(victim.Handle).Handle);
-        var attacker = new CCSPlayerController(dealer.Value.Handle);
-
-        if (!player.IsReal() || !attacker.IsReal())
+        var attacker = @event.Attacker;
+        var player = @event.Userid;
+        if (player == null || attacker == null || !player.IsReal() || !attacker.IsReal())
             return HookResult.Continue;
 
         var playerLR = ((ILastRequestManager)this).GetActiveLR(player);
         var attackerLR = ((ILastRequestManager)this).GetActiveLR(attacker);
-
-        if ((playerLR == null) != (attackerLR == null))
-        {
-            // One of them is in an LR
-            attacker.PrintToChat("You or they are in LR, damage blocked.");
-            damage_info.Damage = 0;
-            return HookResult.Changed;
-        }
 
         if (playerLR == null && attackerLR == null)
         {
@@ -75,20 +52,38 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
             return HookResult.Continue;
         }
 
+        if ((playerLR != null || attackerLR != null) && (attackerLR != playerLR))
+        {
+            // One of them is in an LR
+            attacker.PrintToChat("You or they are in LR, damage blocked.");
+            BlockDamage(@event, player);
+            return HookResult.Handled;
+        }
+
         // Both of them are in LR
         // verify they're in same LR
         if (playerLR == null)
             return HookResult.Continue;
 
-        if (playerLR.prisoner.Slot == attacker.Slot || playerLR.guard.Slot == attacker.Slot)
+        if (playerLR.prisoner.Equals(attacker) || playerLR.guard.Equals(attacker))
         {
             // Same LR, allow damage
-            return HookResult.Changed;
+            return HookResult.Continue;
         }
-
         attacker.PrintToChat("You are not in the same LR as them, damage blocked.");
-        damage_info.Damage = 0;
-        return HookResult.Continue;
+        BlockDamage(@event, player);
+        return HookResult.Handled;
+    }
+
+    private void BlockDamage(EventPlayerHurt @event, CCSPlayerController player)
+    {
+        if (player.PlayerPawn.IsValid)
+        {
+            CCSPlayerPawn playerPawn = player.PlayerPawn.Value!;
+            playerPawn.Health = playerPawn.LastHealth;
+        }
+        @event.DmgArmor = 0;
+        @event.DmgHealth = 0;
     }
 
     [GameEventHandler]
@@ -194,7 +189,7 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
     {
         var gamerules = ServerExtensions.GetGameRules();
         var timeleft = (gamerules.RoundStartTime + gamerules.RoundTime) - Server.CurrentTime;
-        return (int) timeleft;
+        return (int)timeleft;
     }
 
     private int GetCurrentTimeElapsed()
@@ -203,20 +198,20 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
         var freezeTime = gamerules.FreezeTime;
         return (int)((Server.CurrentTime - gamerules.RoundStartTime) - freezeTime);
     }
-    
+
     private void SetRoundTime(int time)
     {
         var gamerules = ServerExtensions.GetGameRules();
-        gamerules.RoundTime = (int) GetCurrentTimeElapsed() + time;
-        
+        gamerules.RoundTime = (int)GetCurrentTimeElapsed() + time;
+
         Utilities.SetStateChanged(ServerExtensions.GetGameRulesProxy(), "CCSGameRulesProxy", "m_pGameRules");
     }
-    
+
     private void AddRoundTime(int time)
     {
         var gamerules = ServerExtensions.GetGameRules();
         gamerules.RoundTime += time;
-        
+
         Utilities.SetStateChanged(ServerExtensions.GetGameRulesProxy(), "CCSGameRulesProxy", "m_pGameRules");
     }
 
