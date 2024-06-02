@@ -42,6 +42,8 @@ public class FreeForAllDay : ISpecialDay
         }
         
         var friendlyFire = ConVar.Find("mp_friendlyfire");
+        var teammates = ConVar.Find("mp_teammates_are_enemies");
+
         if (friendlyFire == null) return;
         
         var friendlyFireValue = friendlyFire.GetPrimitiveValue<bool>(); //assume false in this example, use GetNativeValue for vectors, Qangles, etc
@@ -49,6 +51,10 @@ public class FreeForAllDay : ISpecialDay
         if (!friendlyFireValue) {
             friendlyFire.SetValue<bool>(true);
         }
+        
+        if (teammates == null) return;
+        
+        teammates.SetValue<bool>(true);
 
         _hasStarted = false;
         AddTimers();
@@ -73,13 +79,18 @@ public class FreeForAllDay : ISpecialDay
     {
         
         var friendlyFire = ConVar.Find("mp_friendlyfire");
+        var teammates = ConVar.Find("mp_teammates_are_enemies");
+
         if (friendlyFire == null) return;
         
         var friendlyFireValue = friendlyFire.GetPrimitiveValue<bool>(); //assume false in this example, use GetNativeValue for vectors, Qangles, etc
         
         if (friendlyFireValue) {
-            friendlyFire.SetValue<bool>(false);
-        }        
+            friendlyFire?.SetValue<bool>(false);
+        }
+
+        teammates?.SetValue<bool>(false);
+
     }
 
 }

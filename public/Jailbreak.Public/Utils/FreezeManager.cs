@@ -4,17 +4,12 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.Public.Utils;
 
-public class FreezeManager
+public class FreezeManager(BasePlugin plugin)
 {
     private readonly Dictionary<CCSPlayerController, Timer> _frozenPlayers = [];
     private static FreezeManager Manager;
-    private readonly BasePlugin _plugin;
+    private readonly BasePlugin _plugin = plugin;
 
-    public FreezeManager(BasePlugin plugin)
-    {
-        _plugin = plugin;
-    }
-    
     public static void CreateInstance(BasePlugin plugin)
     {
         Manager = new FreezeManager(plugin);
