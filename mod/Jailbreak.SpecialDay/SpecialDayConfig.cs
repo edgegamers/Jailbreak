@@ -2,5 +2,5 @@
 
 public class SpecialDayConfig
 {
-    public int MinRoundsBeforeSpecialDay { get; } = 2;
+    public int MinRoundsBeforeSpecialDay { get; } = 3;
 }
