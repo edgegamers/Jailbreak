@@ -18,7 +18,7 @@ public class LogEntityListeners : IPluginBehavior
 	{
 		_logs = logs;
 	}
-
+	
 	[EntityOutputHook("func_button", "OnPressed")]
 	public HookResult OnButtonPressed(CEntityIOOutput output, string name, CEntityInstance activator,
 		CEntityInstance caller, CVariant value, float delay)

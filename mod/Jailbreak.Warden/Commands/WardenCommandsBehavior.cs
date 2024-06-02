@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.ComponentModel.Design;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
@@ -10,6 +11,7 @@ using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Warden;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Warden.Commands;
 
