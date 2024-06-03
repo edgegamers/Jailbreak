@@ -1,7 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
-using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
@@ -15,7 +15,6 @@ namespace Jailbreak.Rebel.JihadC4;
 
 public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 {
-
     // Importantly the Player argument CAN be null!
     private class JihadBombMetadata(CCSPlayerController? player, float delay) { public CCSPlayerController? Player { get; set; } = player; public float Delay { get; set; } = delay; }
     // Key presents any active Jihad C4 in the world. Values represent metadata about that Jihad C4.
@@ -40,7 +39,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         // Register an OnTick listener to listen for +use
         _basePlugin.RegisterListener<Listeners.OnTick>(PlayerUseC4ListenerCallback);
 
-
     }
 
     /// <summary>
@@ -50,7 +48,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     /// </summary>
     private void PlayerUseC4ListenerCallback()
     {
-
         foreach ((CC4 c4, JihadBombMetadata metadata) in _currentActiveJihadC4s)
         {
             CCSPlayerController? player = metadata.Player;
@@ -63,13 +60,10 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             if (weaponServices == null) { continue; }
 
             // Check if the currently held and "+used" item is our C4
-            string? heldItemDesignerName = weaponServices.ActiveWeapon.Value?.DesignerName;
-            if (heldItemDesignerName == null) { continue; }
-            if (!heldItemDesignerName.Equals("weapon_c4")) { continue; }
+            CBasePlayerWeapon? heldItem = weaponServices.ActiveWeapon.Value;
+            if (heldItem == null) { continue; }
 
-            nint heldItemHandle = weaponServices.ActiveWeapon.Value!.Handle;
-            if (heldItemHandle != c4.Handle) { continue; }
-
+            if (heldItem.Handle != c4.Handle) { continue; }
             _currentActiveJihadC4s.Remove(c4);
 
             // This will deal with the explosion and ensures the detonator is killed as well as removing the bomb entity.
@@ -78,7 +72,8 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             TryEmitSound(player, "jb.jihad", 1, 1f, 0f);
             _jihadNotifications.PlayerDetonateC4(player).ToAllChat();
 
-        }
+        }   
+
     }
 
     /// <summary>
@@ -209,7 +204,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             /* PHYS EXPLPOSION, FOR PUSHING PLAYERS */
             /* Values can always be tweaked, the important ones are Magnitude and Pushscale */
             /* Currently this physics explosion will affect players through walls, this can be changed though. */
-            CPhysExplosion envPhysExplosionEntity = Utilities.CreateEntityByName<CPhysExplosion>("env_physexplosion")!;
+            /**CPhysExplosion envPhysExplosionEntity = Utilities.CreateEntityByName<CPhysExplosion>("env_physexplosion")!;
 
             envPhysExplosionEntity.Spawnflags = 1 << 1; // Push players flag set to true!
             envPhysExplosionEntity.ExplodeOnSpawn = true;
@@ -220,8 +215,9 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             envPhysExplosionEntity.Teleport(player.PlayerPawn.Value!.AbsOrigin!, new QAngle(), new Vector());
             envPhysExplosionEntity.DispatchSpawn();**/
 
-            TryRemoveWeaponC4(player); // We want to remove the C4 from their inventory b4 we detonate the bomb.
 
+            TryRemoveWeaponC4(player); // We want to remove the C4 from their inventory b4 we detonate the bomb.
+            
             /* END */
 
             /* Calculate damage here. */
@@ -229,8 +225,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             /* Also, Utilities.GetPlayers() returns valid players anyway, so no need to check for that. */
             foreach (CCSPlayerController potentialTarget in Utilities.GetPlayers().Where((p) => p.Team == CsTeam.CounterTerrorist && p.PawnIsAlive))
             {
-
-                float distanceFromBomb = potentialTarget.PlayerPawn!.Value!.AbsOrigin!.Distance(player.PlayerPawn!.Value!.AbsOrigin!);
+                float distanceFromBomb = potentialTarget.PlayerPawn!.Value!.AbsOrigin!.Distance(player.PlayerPawn.Value.AbsOrigin!);
                 if (distanceFromBomb > 350f) { continue; } // 350f = "bombRadius"
 
                 float damage = 340f;
@@ -250,10 +245,9 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             TryEmitSound(player, "jb.jihadExplosion", 1, 1f, 0f);
 
             // Why do I need to do this? I don't know, but it crashes if I don't...
-            Server.RunOnTick(Server.TickCount + 2, () =>
-            {
-                if (player.IsReal()) 
-                {
+
+             if (player.IsReal()) 
+             {
                     bool hasC4 = TryRemoveWeaponC4(player);
                     if (!hasC4)
                     {
@@ -262,13 +256,10 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
                     {
                         _basePlugin.Logger.LogCritical("We've called TryRemoveWeaponC4 twice and they still have the C4. This should be impossible.");
                     }
-                } else
-                {
-                    _basePlugin.Logger.LogCritical("Player somehow isn't real.");
-
-                }
-            });
-
+            } else
+            {
+                _basePlugin.Logger.LogCritical("Player somehow isn't real.");
+            }
         });
 
     }
