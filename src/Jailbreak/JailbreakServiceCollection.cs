@@ -51,9 +51,9 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
 			config.WithRebel<RebelNotifications>();
 			config.WithLogging<LogMessages>();
    			config.WithRollCommand<RollCommandNotifications>();
-            config.WithJihadC4<JihadC4Notifications>();
-            config.WithSpecialDay<SpecialDayNotifications>();
-            config.WithLastRequest<LastRequestMessages>();
+   			//config.WithJihadC4<JihadC4Notifications>();
+   			config.WithSpecialDay<SpecialDayNotifications>();
+   			config.WithLastRequest<LastRequestMessages>();
 			config.WithSpecialTreatment<SpecialTreatmentNotifications>();
 			config.WithMute<PeaceMessages>();
 			config.WithRaceLR<RaceLRMessages>();
