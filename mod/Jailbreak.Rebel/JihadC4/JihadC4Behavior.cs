@@ -195,7 +195,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         _basePlugin.AddTimer(delay, () =>
         {
 
-            if (!player.IsValid) { return; } // Just in case.
+            if (!player.IsReal()) { return; } // Just in case.
 
             /* PARTICLE EXPLOSION */
             CParticleSystem particleSystemEntity = Utilities.CreateEntityByName<CParticleSystem>("info_particle_system")!;
@@ -218,7 +218,10 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             envPhysExplosionEntity.Radius = 350f; // As per the old code.
 
             envPhysExplosionEntity.Teleport(player.PlayerPawn.Value!.AbsOrigin!, new QAngle(), new Vector());
-            envPhysExplosionEntity.DispatchSpawn();
+            envPhysExplosionEntity.DispatchSpawn();**/
+
+            TryRemoveWeaponC4(player); // We want to remove the C4 from their inventory b4 we detonate the bomb.
+
             /* END */
 
             /* Calculate damage here. */
@@ -249,8 +252,21 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             // Why do I need to do this? I don't know, but it crashes if I don't...
             Server.RunOnTick(Server.TickCount + 2, () =>
             {
-                player.CommitSuicide(true, true);
-                bombEntity?.Remove();
+                if (player.IsReal()) 
+                {
+                    bool hasC4 = TryRemoveWeaponC4(player);
+                    if (!hasC4)
+                    {
+                        player.CommitSuicide(true, true);
+                    } else
+                    {
+                        _basePlugin.Logger.LogCritical("We've called TryRemoveWeaponC4 twice and they still have the C4. This should be impossible.");
+                    }
+                } else
+                {
+                    _basePlugin.Logger.LogCritical("Player somehow isn't real.");
+
+                }
             });
 
         });
@@ -272,7 +288,11 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 
         Server.RunOnTick(Server.TickCount + 10, () => // let's be extra safe and wait a WHOLE ten ticks before giving the jihad c4, so we don't get any plugin conflicts.
         {
+            if (!validTerroristPlayers[randomIndex].IsValid) { TryGiveC4ToRandomTerrorist(); return; }
             TryGiveC4ToPlayer(validTerroristPlayers[randomIndex]);
+            var movementServices = validTerroristPlayers[randomIndex].Pawn.Value?.MovementServices;
+            if (movementServices == null) { _basePlugin!.Logger.LogCritical("Couldn't get movementServices in jihad C4."); return; }
+            validTerroristPlayers[randomIndex].Pawn.Value!.MovementServices!.Buttons.ButtonStates.Clear(); // pls work
         });
 
     }
@@ -281,6 +301,22 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     private void TryEmitSound(CBaseEntity entity, string soundEventName, int pitch, float volume, float delay)
     {
         CBaseEntity_EmitSoundParamsLinux.Invoke(entity, soundEventName, pitch, volume, delay);
+    }
+
+    // returns whether the weapon c4 was in their inventory or not
+    private bool TryRemoveWeaponC4(CCSPlayerController player)
+    {
+        if (player.PlayerPawn.Value?.WeaponServices == null) { return false; }
+        foreach (var weapon in player.PlayerPawn.Value.WeaponServices.MyWeapons)
+        {
+            if (weapon.Value == null) { continue; }
+            if (weapon.Value.DesignerName == "weapon_c4")
+            {
+                weapon.Value.Remove();
+                return true;
+            }
+        }
+        return false;
     }
 
 }
