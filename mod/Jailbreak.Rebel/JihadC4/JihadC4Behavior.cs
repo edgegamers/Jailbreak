@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
@@ -14,7 +15,6 @@ namespace Jailbreak.Rebel.JihadC4;
 
 public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 {
-
     // Importantly the Player argument CAN be null!
     private class JihadBombMetadata(CCSPlayerController? player, float delay) { public CCSPlayerController? Player { get; set; } = player; public float Delay { get; set; } = delay; }
     // Key presents any active Jihad C4 in the world. Values represent metadata about that Jihad C4.
@@ -268,6 +268,9 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         Server.RunOnTick(Server.TickCount + 10, () => // let's be extra safe and wait a WHOLE ten ticks before giving the jihad c4, so we don't get any plugin conflicts.
         {
             TryGiveC4ToPlayer(validTerroristPlayers[randomIndex]);
+            var movementServices = validTerroristPlayers[randomIndex].Pawn.Value?.MovementServices;
+            if (movementServices == null) { _basePlugin!.Logger.LogCritical("Couldn't get movementServices in jihad C4."); return; }
+            validTerroristPlayers[randomIndex].Pawn.Value!.MovementServices!.Buttons.ButtonStates.Clear(); // pls work
         });
 
     }
