@@ -117,7 +117,10 @@ public class WardenBehavior(
             SetWardenStats(wardenPawn, 125, 125, 125);	
 			if (!hasHealthshot) { _warden.GiveNamedItem("weapon_healthshot"); }
 
-        }
+        } else 
+		{
+			_preWardenStats = null;
+		}
 
 		return true;
 	}
@@ -142,14 +145,19 @@ public class WardenBehavior(
 		}
 
         CCSPlayerPawn? wardenPawn = _warden!.PlayerPawn.Value;
-
 		if (wardenPawn == null) {  return false; }
 
 		// if isPass we restore their old health values or their current health, whichever is less.
-		if (isPass && _preWardenStats.HasValue && _numOfDeadGuards == 0) // we only restore want to restore old values if numOfDeadGuards == 0.
+		if (isPass && _preWardenStats != null)
 		{
-			hadWarden = false; // This way the next time somebody claims warden they can get the warden buff.
 
+			// If this is true then we want to make it so the next person who claims warden receives the buff.
+			if (_numOfDeadGuards == 0) 
+			{
+				hadWarden = false; 
+			}
+
+			// Regardless of if the above if statement is true or false, we want to restore the player's previous stats.
 			SetWardenStats(wardenPawn,
 				Math.Min(wardenPawn.ArmorValue, _preWardenStats.Value.armorValue),
 				Math.Min(wardenPawn.Health, _preWardenStats.Value.health),

@@ -56,6 +56,9 @@ public class WardenCommandsBehavior(
 
             if (!_warden.TryRemoveWarden(true))
                 Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");
+
+            _lastWardenCommand.Clear();
+            
         }
     }
 
