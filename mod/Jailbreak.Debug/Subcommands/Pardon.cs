@@ -5,12 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jailbreak.Debug.Subcommands;
 
 // css_markrebel [player] <duration>
-public class Pardon : AbstractCommand
+public class Pardon(IServiceProvider services) : AbstractCommand(services)
 {
-    public Pardon(IServiceProvider services) : base(services)
-    {
-    }
-
     public override void OnCommand(CCSPlayerController? executor, WrappedInfo info)
     {
         if (info.ArgCount == 1)

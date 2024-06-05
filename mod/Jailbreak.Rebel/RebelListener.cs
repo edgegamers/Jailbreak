@@ -1,26 +1,18 @@
 ﻿using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.Rebel;
 
 namespace Jailbreak.Rebel;
 
-public class RebelListener : IPluginBehavior
+public class RebelListener(IRebelService rebelService, ILastRequestManager lastRequestManager)
+    : IPluginBehavior
 {
-    private readonly IRebelService _rebelService;
-
-    public RebelListener(IRebelService rebelService)
-    {
-        _rebelService = rebelService;
-    }
-
-    public void Start(BasePlugin parent)
-    {
-        parent.RegisterEventHandler<EventPlayerHurt>(OnPlayerHurt);
-    }
-
-    private HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
+    [GameEventHandler]
+    public HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
     {
         var player = @event.Userid;
         if (!player.IsReal())
@@ -35,7 +27,10 @@ public class RebelListener : IPluginBehavior
         if (attacker.GetTeam() != CsTeam.Terrorist)
             return HookResult.Continue;
 
-        _rebelService.MarkRebel(attacker);
+        if (lastRequestManager.IsInLR(attacker))
+            return HookResult.Continue;
+        
+        rebelService.MarkRebel(attacker);
         return HookResult.Continue;
     }
 }

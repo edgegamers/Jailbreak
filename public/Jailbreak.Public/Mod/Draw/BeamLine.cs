@@ -5,17 +5,11 @@ using CounterStrikeSharp.API.Modules.Utils;
 
 namespace Jailbreak.Public.Mod.Draw;
 
-public class BeamLine : DrawableShape, IColorable
+public class BeamLine(BasePlugin plugin, Vector position, Vector end) : DrawableShape(plugin, position), IColorable
 {
     private CEnvBeam? _beam;
     private Color _color = Color.White;
-    private Vector _end;
     private float _width = 1f;
-
-    public BeamLine(BasePlugin plugin, Vector position, Vector end) : base(plugin, position)
-    {
-        _end = end;
-    }
 
     public void SetColor(Color color)
     {
@@ -27,10 +21,10 @@ public class BeamLine : DrawableShape, IColorable
         return _color;
     }
 
-    public void Move(Vector start, Vector end)
+    public void Move(Vector start, Vector end1)
     {
         Position = start;
-        _end = end;
+        end = end1;
     }
 
     public override void Draw()
@@ -43,9 +37,9 @@ public class BeamLine : DrawableShape, IColorable
         beam.Render = GetColor();
 
         beam.Teleport(Position, new QAngle(), new Vector());
-        beam.EndPos.X = _end.X;
-        beam.EndPos.Y = _end.Y;
-        beam.EndPos.Z = _end.Z;
+        beam.EndPos.X = end.X;
+        beam.EndPos.Y = end.Y;
+        beam.EndPos.Z = end.Z;
         _beam = beam;
 
         Utilities.SetStateChanged(beam, "CBeam", "m_vecEndPos");
@@ -54,7 +48,8 @@ public class BeamLine : DrawableShape, IColorable
     public override void Remove()
     {
         KillTimer?.Kill();
-        _beam?.Remove();
+        if(_beam != null && _beam.IsValid)
+            _beam?.Remove();
         _beam = null;
     }
 

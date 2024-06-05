@@ -56,7 +56,7 @@ public class SimpleView : IView, IEnumerable<IList<FormatObject>>
 
 	public void Render(FormatWriter writer)
 	{
-		foreach (List<FormatObject> formatObjects in _lines)
+		foreach (var formatObjects in _lines)
 			writer.Line(formatObjects.ToArray());
 	}
 

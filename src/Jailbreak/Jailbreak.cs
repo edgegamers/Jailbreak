@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using CounterStrikeSharp.API.Core;
 using Jailbreak.Public.Behaviors;
+using Jailbreak.Public.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -37,6 +38,19 @@ public class Jailbreak : BasePlugin
     /// <inheritdoc />
     public override void Load(bool hotReload)
     {
+
+        // Precache particles needed for features like Jihad C4
+        RegisterListener<Listeners.OnServerPrecacheResources>((manifest) =>
+        {
+            manifest.AddResource("particles/explosions_fx/explosion_c4_500.vpcf");
+            manifest.AddResource("soundevents/soundevents_jb.vsndevts");
+            manifest.AddResource("soundevents/explosion.vsnd");
+            manifest.AddResource("soundevents/jihad.vsnd");
+        });
+        
+        //  Load Managers
+        FreezeManager.CreateInstance(this);
+
         Logger.LogInformation("[Jailbreak] Loading...");
 
         _scope = _provider.CreateScope();

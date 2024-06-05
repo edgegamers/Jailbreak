@@ -1,14 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\public\Jailbreak.Formatting\Jailbreak.Formatting.csproj"/>
-        <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj"/>
+      <PackageReference Include="CounterStrikeSharp.API" Version="1.0.233" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\public\Jailbreak.Formatting\Jailbreak.Formatting.csproj" />
+        <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj" />
+        <ProjectReference Include="..\Jailbreak.LastRequest\Jailbreak.LastRequest.csproj" />
+        <ProjectReference Include="..\Jailbreak.Rebel\Jailbreak.Rebel.csproj" />
     </ItemGroup>
 
 </Project>

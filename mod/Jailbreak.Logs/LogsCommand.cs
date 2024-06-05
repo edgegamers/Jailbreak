@@ -7,19 +7,12 @@ using Jailbreak.Public.Mod.Logs;
 
 namespace Jailbreak.Logs;
 
-public class LogsCommand : IPluginBehavior
+public class LogsCommand(ILogService logs) : IPluginBehavior
 {
-    private readonly ILogService _logs;
-
-    public LogsCommand(ILogService logs)
-    {
-        _logs = logs;
-    }
-
     [ConsoleCommand("css_logs")]
     [RequiresPermissionsOr("@css/ban", "@css/generic", "@css/kick")]
     public void Command_Logs(CCSPlayerController? executor, CommandInfo info)
     {
-        _logs.PrintLogs(executor);
+        logs.PrintLogs(executor);
     }
 }

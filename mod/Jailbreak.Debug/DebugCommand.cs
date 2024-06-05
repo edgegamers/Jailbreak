@@ -8,16 +8,21 @@ using Jailbreak.Public.Behaviors;
 namespace Jailbreak.Debug;
 
 // css_debug [subcommand] [args] -> subcommand [args]
-public class DebugCommand : IPluginBehavior
+/// <summary>
+/// The debug command allows for Developers to debug and force certain actions/gamestates.
+/// </summary>
+public class DebugCommand(IServiceProvider serviceProvider) : IPluginBehavior
 {
     private readonly Dictionary<string, AbstractCommand> _commands = new();
+    private BasePlugin _plugin;
 
-    public DebugCommand(IServiceProvider serviceProvider)
+    public void Start(BasePlugin parent)
     {
+        _plugin = parent;
         _commands.Add("markrebel", new MarkRebel(serviceProvider));
         _commands.Add("pardon", new Pardon(serviceProvider));
+        _commands.Add("lr", new Subcommands.LastRequest(serviceProvider, _plugin));
     }
-
 
     [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_debug", "Debug command for Jailbreak.")]
@@ -28,7 +33,6 @@ public class DebugCommand : IPluginBehavior
         if (info.ArgCount == 1)
         {
             foreach (var command in _commands) info.ReplyToCommand(command.Key);
-
             return;
         }
 

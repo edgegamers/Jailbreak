@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <!--Unfortunately we can't use .NET Standard due to CSSharp being hardcoded to .NET 7-->
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
 
         <!--Compiler Options-->
         <ImplicitUsings>enable</ImplicitUsings>
@@ -58,7 +58,9 @@
     <ItemGroup>
       <ProjectReference Include="..\..\lang\Jailbreak.English\Jailbreak.English.csproj" />
       <ProjectReference Include="..\..\mod\Jailbreak.Debug\Jailbreak.Debug.csproj" />
-      <ProjectReference Include="..\..\mod\Jailbreak.Teams\Jailbreak.Teams.csproj" />
+      <ProjectReference Include="..\..\mod\Jailbreak.LastRequest\Jailbreak.LastRequest.csproj" />
+      <ProjectReference Include="..\..\mod\Jailbreak.Mute\Jailbreak.Mute.csproj" />
+      <ProjectReference Include="..\..\mod\Jailbreak.SpecialDay\Jailbreak.SpecialDay.csproj" />
       <ProjectReference Include="..\..\mod\Jailbreak.Warden\Jailbreak.Warden.csproj" />
       <ProjectReference Include="..\..\mod\Jailbreak.Rebel\Jailbreak.Rebel.csproj" />
         <ProjectReference Include="..\..\mod\Jailbreak.Logs\Jailbreak.Logs.csproj" />
@@ -67,6 +69,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="CounterStrikeSharp.API" Version="1.0.233" />
       <PackageReference Include="GitVersion.MsBuild" Version="6.0.0-beta.5">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -74,10 +77,7 @@
     </ItemGroup>
 
     <Target Name="ZipOutputPath" AfterTargets="Publish">
-        <ZipDirectory
-                Overwrite="true"
-                SourceDirectory="$(PublishDir)\"
-                DestinationFile="$(PublishBaseDirectory)\Jailbreak.zip" />
+        <ZipDirectory Overwrite="true" SourceDirectory="$(PublishDir)\" DestinationFile="$(PublishBaseDirectory)\Jailbreak.zip" />
     </Target>
 
 </Project>

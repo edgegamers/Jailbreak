@@ -7,16 +7,12 @@ namespace Jailbreak.Public.Mod.Draw;
 /// <summary>
 ///     Represents a shape that is drawn using many beam segments
 /// </summary>
-public abstract class BeamedShape : DrawableShape, IColorable
+public abstract class BeamedShape(BasePlugin plugin, Vector position, int resolution)
+    : DrawableShape(plugin, position), IColorable
 {
-    protected BeamLine?[] Beams;
+    protected readonly BeamLine?[] Beams = new BeamLine[resolution];
     protected Color Color = Color.White;
     protected int Resolution;
-
-    protected BeamedShape(BasePlugin plugin, Vector position, int resolution) : base(plugin, position)
-    {
-        Beams = new BeamLine[resolution];
-    }
 
     // TODO: Add support for rotation across arbitrary axis
 

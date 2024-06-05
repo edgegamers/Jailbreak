@@ -13,6 +13,8 @@ public interface IWardenNotifications
     public IView BECOME_NEXT_WARDEN { get; }
     public IView JOIN_RAFFLE { get; }
     public IView LEAVE_RAFFLE { get; }
+    public IView NOT_WARDEN { get; }
+    public IView FIRE_COMMAND_FAILED { get; }
 
     /// <summary>
     ///     Create a view for when the specified player passes warden
@@ -35,4 +37,5 @@ public interface IWardenNotifications
     /// <param name="player"></param>
     /// <returns></returns>
     public IView CURRENT_WARDEN(CCSPlayerController? player);
+    public IView FIRE_COMMAND_SUCCESS(CCSPlayerController player);
 }
