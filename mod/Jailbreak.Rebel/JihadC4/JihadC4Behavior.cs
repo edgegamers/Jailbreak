@@ -51,7 +51,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         foreach ((CC4 c4, JihadBombMetadata metadata) in _currentActiveJihadC4s)
         {
             CCSPlayerController? player = metadata.Player;
-            if (player == null) { continue; }
+            if (player == null) { Console.WriteLine("if you see this when somebody has bomb on back, this is a bug."); continue; }
 
             // is the use button currently active? 
             if ((player.Buttons & PlayerButtons.Use) == 0) { continue; }
