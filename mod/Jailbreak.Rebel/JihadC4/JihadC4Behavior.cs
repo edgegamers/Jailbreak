@@ -71,9 +71,8 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 
             TryEmitSound(player, "jb.jihad", 1, 1f, 0f);
             _jihadNotifications.PlayerDetonateC4(player).ToAllChat();
-
+            
         }   
-
     }
 
     /// <summary>
