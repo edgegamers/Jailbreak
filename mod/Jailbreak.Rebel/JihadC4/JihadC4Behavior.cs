@@ -29,6 +29,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     public JihadC4Behavior(IJihadC4Notifications jihadC4Notifications)
     {
         _jihadNotifications = jihadC4Notifications;
+        // I hope you like signatures jii :)
         CBaseEntity_EmitSoundParamsLinux = new("48 B8 ? ? ? ? ? ? ? ? 55 48 89 E5 41 55 41 54 49 89 FC 53 48 89 F3");
     }
 
@@ -38,7 +39,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 
         // Register an OnTick listener to listen for +use
         _basePlugin.RegisterListener<Listeners.OnTick>(PlayerUseC4ListenerCallback);
-
     }
 
     /// <summary>
@@ -71,9 +71,8 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 
             TryEmitSound(player, "jb.jihad", 1, 1f, 0f);
             _jihadNotifications.PlayerDetonateC4(player).ToAllChat();
-
+            
         }   
-
     }
 
     /// <summary>
@@ -116,6 +115,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         CPlayer_WeaponServices? weaponServices = player.PlayerPawn?.Value?.WeaponServices;
         if (weaponServices == null) { return HookResult.Continue; }
 
+        if (weaponServices.MyWeapons.Last()?.Value == null) { return HookResult.Continue; }
         CC4 bombEntity = new CC4(weaponServices.MyWeapons.Last()!.Value!.Handle); // The last item in the weapons list is the last item the player picked up, apparently.
 
         _currentActiveJihadC4s.TryGetValue(bombEntity, out JihadBombMetadata? bombMetadata);
@@ -172,7 +172,11 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 
         CC4 bombEntity = new CC4(player.GiveNamedItem("weapon_c4"));
         _currentActiveJihadC4s.Add(bombEntity, new JihadBombMetadata(player, 1.0f));
+
         _jihadNotifications.JIHAD_C4_RECEIVED.ToPlayerChat(player);
+        _jihadNotifications.JIHAD_C4_USAGE1.ToPlayerChat(player);
+        _jihadNotifications.JIHAD_C4_USAGE2.ToPlayerChat(player);
+        _jihadNotifications.JIHAD_C4_USAGE3.ToPlayerChat(player);
 
     }
 
@@ -187,10 +191,10 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     public void TryDetonateJihadC4(CCSPlayerController player, float delay, CC4? bombEntity = null)
     {
         if (_basePlugin == null) { return; }
-        _basePlugin.AddTimer(delay, () =>
+        Server.RunOnTick(Server.TickCount + (int)(66 * delay), () =>
         {
 
-            if (!player.IsValid) { return; } // Just in case.
+            if (!player.IsReal()) { return; }
 
             /* PARTICLE EXPLOSION */
             CParticleSystem particleSystemEntity = Utilities.CreateEntityByName<CParticleSystem>("info_particle_system")!;
@@ -199,27 +203,23 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 
             particleSystemEntity.Teleport(player.PlayerPawn!.Value!.AbsOrigin!, new QAngle(), new Vector());
             particleSystemEntity.DispatchSpawn();
-            /* END */
 
             /* PHYS EXPLPOSION, FOR PUSHING PLAYERS */
-            /* Values can always be tweaked, the important ones are Magnitude and Pushscale */
             /* Currently this physics explosion will affect players through walls, this can be changed though. */
-            /**CPhysExplosion envPhysExplosionEntity = Utilities.CreateEntityByName<CPhysExplosion>("env_physexplosion")!;
+            CPhysExplosion envPhysExplosionEntity = Utilities.CreateEntityByName<CPhysExplosion>("env_physexplosion")!;
 
             envPhysExplosionEntity.Spawnflags = 1 << 1; // Push players flag set to true!
             envPhysExplosionEntity.ExplodeOnSpawn = true;
-            envPhysExplosionEntity.Magnitude = 50f; // I have tweaked these values
-            envPhysExplosionEntity.PushScale = 3.5f; // I have tweaked these values
+            envPhysExplosionEntity.Magnitude = 50f;
+            envPhysExplosionEntity.PushScale = 3.5f;
             envPhysExplosionEntity.Radius = 350f; // As per the old code.
 
             envPhysExplosionEntity.Teleport(player.PlayerPawn.Value!.AbsOrigin!, new QAngle(), new Vector());
-            envPhysExplosionEntity.DispatchSpawn();**/
+            envPhysExplosionEntity.DispatchSpawn();
 
-            /* END */
+            bool hadC4 = TryRemoveWeaponC4(player); // We want to remove the C4 from their inventory b4 we detonate the bomb (if they have it).
 
-            /* Calculate damage here. */
-            /* Don't waste time calculating stuff for dead players or players on the Terrorist team!. */
-            /* Also, Utilities.GetPlayers() returns valid players anyway, so no need to check for that. */
+            /* Calculate damage here, only applies to alive CTs. */
             foreach (CCSPlayerController potentialTarget in Utilities.GetPlayers().Where((p) => p.Team == CsTeam.CounterTerrorist && p.PawnIsAlive))
             {
                 float distanceFromBomb = potentialTarget.PlayerPawn!.Value!.AbsOrigin!.Distance(player.PlayerPawn.Value.AbsOrigin!);
@@ -241,12 +241,12 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             // Emit the sound first.
             TryEmitSound(player, "jb.jihadExplosion", 1, 1f, 0f);
 
-            // Why do I need to do this? I don't know, but it crashes if I don't...
-            Server.RunOnTick(Server.TickCount + 2, () =>
+            if (!hadC4) // If they didn't have the C4 that means it's on the ground, so let's remove it here.
             {
-                if (player.PawnIsAlive) { player.CommitSuicide(true, true); }
                 bombEntity?.Remove();
-            });
+            }
+
+            player.CommitSuicide(true, true);
 
         });
 
@@ -267,10 +267,8 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 
         Server.RunOnTick(Server.TickCount + 10, () => // let's be extra safe and wait a WHOLE ten ticks before giving the jihad c4, so we don't get any plugin conflicts.
         {
+            if (!validTerroristPlayers[randomIndex].IsValid) { TryGiveC4ToRandomTerrorist(); return; }
             TryGiveC4ToPlayer(validTerroristPlayers[randomIndex]);
-            var movementServices = validTerroristPlayers[randomIndex].Pawn.Value?.MovementServices;
-            if (movementServices == null) { _basePlugin!.Logger.LogCritical("Couldn't get movementServices in jihad C4."); return; }
-            validTerroristPlayers[randomIndex].Pawn.Value!.MovementServices!.Buttons.ButtonStates.Clear(); // pls work
         });
 
     }
@@ -279,6 +277,22 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     private void TryEmitSound(CBaseEntity entity, string soundEventName, int pitch, float volume, float delay)
     {
         CBaseEntity_EmitSoundParamsLinux.Invoke(entity, soundEventName, pitch, volume, delay);
+    }
+
+    // returns whether the weapon c4 was in their inventory or not
+    private bool TryRemoveWeaponC4(CCSPlayerController player)
+    {
+        if (player.PlayerPawn.Value?.WeaponServices == null) { return false; }
+        foreach (var weapon in player.PlayerPawn.Value.WeaponServices.MyWeapons)
+        {
+            if (weapon.Value == null) { continue; }
+            if (weapon.Value.DesignerName == "weapon_c4")
+            {
+                weapon.Value.Remove();
+                return true;
+            }
+        }
+        return false;
     }
 
 }
