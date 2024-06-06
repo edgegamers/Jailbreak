@@ -86,7 +86,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     [GameEventHandler]
     public HookResult OnPlayerDropC4(EventBombDropped @event, GameEventInfo info)
     {
-        Console.WriteLine("2");
         CCSPlayerController? player = @event.Userid;
         if (player == null || !player.IsValid) { return HookResult.Continue; }
 
@@ -170,7 +169,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     /// <param name="player">The player who should receive the Jihad C4.</param>
     public void TryGiveC4ToPlayer(CCSPlayerController player)
     {
-        Console.WriteLine("1");
         foreach (var metadata in _currentActiveJihadC4s.Values)
         { if (metadata.Player == player) { return; } }
 
