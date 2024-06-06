@@ -60,31 +60,31 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     /// </summary>
     private void PlayerUseC4ListenerCallback()
     {
-        // foreach ((CC4 c4, JihadBombMetadata metadata) in _currentActiveJihadC4s)
-        // {
-        //     CCSPlayerController? player = metadata.Player;
-        //     if (player == null) { continue; }
+         foreach ((CC4 c4, JihadBombMetadata metadata) in _currentActiveJihadC4s)
+         {
+             CCSPlayerController? player = metadata.Player;
+             if (player == null) { continue; }
 
-        //     // is the use button currently active? 
-        //     if ((player.Buttons & PlayerButtons.Use) == 0) { continue; }
+             // is the use button currently active? 
+             if ((player.Buttons & PlayerButtons.Use) == 0) { continue; }
 
-        //     CPlayer_WeaponServices? weaponServices = player.PlayerPawn.Value?.WeaponServices;
-        //     if (weaponServices == null) { continue; }
+             CPlayer_WeaponServices? weaponServices = player.PlayerPawn.Value?.WeaponServices;
+             if (weaponServices == null) { continue; }
 
-        //     // Check if the currently held and "+used" item is our C4
-        //     CBasePlayerWeapon? heldItem = weaponServices.ActiveWeapon.Value;
-        //     if (heldItem == null) { continue; }
+             // Check if the currently held and "+used" item is our C4
+             CBasePlayerWeapon? heldItem = weaponServices.ActiveWeapon.Value;
+             if (heldItem == null) { continue; }
 
-        //     if (heldItem.Handle != c4.Handle) { continue; }
-        //     _currentActiveJihadC4s.Remove(c4);
+             if (heldItem.Handle != c4.Handle) { continue; }
+             _currentActiveJihadC4s.Remove(c4);
 
-        //     // This will deal with the explosion and ensures the detonator is killed as well as removing the bomb entity.
-        //     TryDetonateJihadC4(player, metadata.Delay, c4);
+             // This will deal with the explosion and ensures the detonator is killed as well as removing the bomb entity.
+             TryDetonateJihadC4(player, metadata.Delay, c4);
 
-        //     TryEmitSound(player, "jb.jihad", 1, 1f, 0f);
-        //     _jihadNotifications.PlayerDetonateC4(player).ToAllChat();
+             TryEmitSound(player, "jb.jihad", 1, 1f, 0f);
+             _jihadNotifications.PlayerDetonateC4(player).ToAllChat();
 
-        // }   
+         }   
 
     }
 
