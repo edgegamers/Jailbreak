@@ -225,7 +225,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             envPhysExplosionEntity.Radius = 350f; // As per the old code.
 
             envPhysExplosionEntity.Teleport(player.PlayerPawn.Value!.AbsOrigin!, new QAngle(), new Vector());
-            envPhysExplosionEntity.DispatchSpawn();**/
+            envPhysExplosionEntity.DispatchSpawn();
 
 
             TryRemoveWeaponC4(player); // We want to remove the C4 from their inventory b4 we detonate the bomb.
