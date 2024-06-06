@@ -15,7 +15,7 @@ public interface IJihadC4Service
     /// Tries to detonate the jihad c4, relative to the player's position and after the specified delay.
     /// </summary>
     /// <param name="player"></param>
-    void TryDetonateJihadC4(CCSPlayerController player, float delay, CC4? bombEntity = null);
+    void TryDetonateJihadC4(CCSPlayerController player, float delay, CC4 bombEntity);
 
     /// <summary>
     /// Attempts to give the Jihad C4 to a random Terrorist, if they already have one and they are chosen then nothing will happen.
