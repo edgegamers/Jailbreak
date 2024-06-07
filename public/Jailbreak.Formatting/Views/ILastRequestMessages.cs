@@ -15,4 +15,6 @@ public interface ILastRequestMessages
     public IView InformLastRequest(AbstractLastRequest lr);
     public IView AnnounceLastRequest(AbstractLastRequest lr);
     public IView LastRequestDecided(AbstractLastRequest lr, LRResult result);
+    public IView DamageBlockedInsideLastRequest { get; }
+    public IView DamageBlockedNotInSameLR { get; }
 }

@@ -12,12 +12,17 @@ using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
+using Jailbreak.Public.Mod.Damage;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestManager(LastRequestConfig config, ILastRequestMessages messages, IServiceProvider provider)
-    : ILastRequestManager
+public class LastRequestManager(
+    LastRequestConfig _config,
+    ILastRequestMessages _messages,
+    IServiceProvider _provider
+    )
+    : ILastRequestManager, IBlockUserDamage
 {
     private BasePlugin _parent;
     private ILastRequestFactory _factory;
@@ -27,21 +32,26 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
 
     public void Start(BasePlugin parent)
     {
-        _factory = provider.GetRequiredService<ILastRequestFactory>();
+        _factory = _provider.GetRequiredService<ILastRequestFactory>();
         _parent = parent;
     }
 
     [GameEventHandler(HookMode.Pre)]
     public HookResult OnTakeDamage(EventPlayerHurt @event, GameEventInfo info)
     {
-        if (!IsLREnabled)
-            return HookResult.Continue;
+        IBlockUserDamage damageHandler = this;
+        return damageHandler.BlockUserDamage(@event, info);
+    }
 
-        // get player and attacker
-        var attacker = @event.Attacker;
-        var player = @event.Userid;
-        if (player == null || attacker == null || !player.IsReal() || !attacker.IsReal())
-            return HookResult.Continue;
+    public bool ShouldBlockDamage(CCSPlayerController player, CCSPlayerController? attacker, EventPlayerHurt @event)
+    {
+        if (!IsLREnabled)
+            return false;
+
+        if (attacker == null || !attacker.IsReal())
+        {
+            return false;
+        }
 
         var playerLR = ((ILastRequestManager)this).GetActiveLR(player);
         var attackerLR = ((ILastRequestManager)this).GetActiveLR(attacker);
@@ -49,41 +59,28 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
         if (playerLR == null && attackerLR == null)
         {
             // Neither of them is in an LR
-            return HookResult.Continue;
+            return false;
         }
 
-        if ((playerLR != null || attackerLR != null) && (attackerLR != playerLR))
+        if ((playerLR == null) != (attackerLR == null))
         {
             // One of them is in an LR
-            attacker.PrintToChat("You or they are in LR, damage blocked.");
-            BlockDamage(@event, player);
-            return HookResult.Handled;
+            _messages.DamageBlockedInsideLastRequest.ToPlayerCenter(attacker);
+            return true;
         }
 
         // Both of them are in LR
         // verify they're in same LR
         if (playerLR == null)
-            return HookResult.Continue;
+            return false;
 
         if (playerLR.prisoner.Equals(attacker) || playerLR.guard.Equals(attacker))
         {
             // Same LR, allow damage
-            return HookResult.Continue;
+            return false;
         }
-        attacker.PrintToChat("You are not in the same LR as them, damage blocked.");
-        BlockDamage(@event, player);
-        return HookResult.Handled;
-    }
-
-    private void BlockDamage(EventPlayerHurt @event, CCSPlayerController player)
-    {
-        if (player.PlayerPawn.IsValid)
-        {
-            CCSPlayerPawn playerPawn = player.PlayerPawn.Value!;
-            playerPawn.Health = playerPawn.LastHealth;
-        }
-        @event.DmgArmor = 0;
-        @event.DmgHealth = 0;
+        _messages.DamageBlockedNotInSameLR.ToPlayerCenter(attacker);
+        return true;
     }
 
     [GameEventHandler]
@@ -106,14 +103,14 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
         }
         if (ServerExtensions.GetGameRules().WarmupPeriod)
             return HookResult.Continue;
-        if (CountAlivePrisoners() > config.PrisonersToActiveLR)
+        if (CountAlivePrisoners() > _config.PrisonersToActiveLR)
         {
             this.IsLREnabled = false;
             return HookResult.Continue;
         }
 
         this.IsLREnabled = true;
-        messages.LastRequestEnabled().ToAllChat();
+        _messages.LastRequestEnabled().ToAllChat();
         return HookResult.Continue;
     }
 
@@ -140,11 +137,11 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
         if (player.GetTeam() != CsTeam.Terrorist)
             return HookResult.Continue;
 
-        if (CountAlivePrisoners() - 1 > config.PrisonersToActiveLR)
+        if (CountAlivePrisoners() - 1 > _config.PrisonersToActiveLR)
             return HookResult.Continue;
 
         EnableLR();
-        messages.LastRequestEnabled().ToAllChat();
+        _messages.LastRequestEnabled().ToAllChat();
         return HookResult.Continue;
     }
 
@@ -159,11 +156,11 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
 
         if (player.GetTeam() != CsTeam.Terrorist)
             return HookResult.Continue;
-        if (CountAlivePrisoners() > config.PrisonersToActiveLR)
+        if (CountAlivePrisoners() > _config.PrisonersToActiveLR)
             return HookResult.Continue;
 
         EnableLR();
-        messages.LastRequestEnabled().ToAllChat();
+        _messages.LastRequestEnabled().ToAllChat();
         return HookResult.Continue;
     }
 
@@ -252,7 +249,7 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
                 Utilities.SetStateChanged(guard.Pawn.Value, "CBaseEntity", "m_iHealth");
             }
 
-            messages.InformLastRequest(lr).ToAllChat();
+            _messages.InformLastRequest(lr).ToAllChat();
             return true;
         }
         catch (ArgumentException e)
@@ -267,7 +264,7 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
         if (result is LRResult.GuardWin or LRResult.PrisonerWin)
         {
             AddRoundTime(30);
-            messages.LastRequestDecided(lr, result).ToAllChat();
+            _messages.LastRequestDecided(lr, result).ToAllChat();
         }
 
         lr.OnEnd(result);
