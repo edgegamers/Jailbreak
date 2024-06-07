@@ -1,7 +1,6 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
-using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
@@ -10,7 +9,7 @@ using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rebel;
 using Microsoft.Extensions.Logging;
-using System.Reflection.Metadata.Ecma335;
+using Jailbreak.Public.Mod.SpecialDays;
 
 namespace Jailbreak.Rebel.JihadC4;
 
@@ -20,6 +19,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     private class JihadBombMetadata(CCSPlayerController? player, float delay, bool isDetonating) { public CCSPlayerController? Player { get; set; } = player; public float Delay { get; set; } = delay; public bool IsDetonating { get; set; } = isDetonating; }
     // Key presents any active Jihad C4 in the world. Values represent metadata about that Jihad C4.
     private Dictionary<CC4, JihadBombMetadata> _currentActiveJihadC4s = new();
+    private ISpecialDayHandler _specialDayHandler;
 
     private IJihadC4Notifications _jihadNotifications;
     private BasePlugin? _basePlugin;
@@ -27,8 +27,9 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     // EmitSound(CBaseEntity* pEnt, const char* sSoundName, int nPitch, float flVolume, float flDelay)
     private readonly MemoryFunctionVoid<CBaseEntity, string, int, float, float> CBaseEntity_EmitSoundParamsLinux; // LINUX ONLY.
 
-    public JihadC4Behavior(IJihadC4Notifications jihadC4Notifications)
+    public JihadC4Behavior(IJihadC4Notifications jihadC4Notifications, ISpecialDayHandler specialDayHandler)
     {
+        _specialDayHandler = specialDayHandler;
         _jihadNotifications = jihadC4Notifications;
         // I hope you like signatures jii :)
         CBaseEntity_EmitSoundParamsLinux = new("48 B8 ? ? ? ? ? ? ? ? 55 48 89 E5 41 55 41 54 49 89 FC 53 48 89 F3");
@@ -53,6 +54,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         {
 
             CCSPlayerController? player = metadata.Player;
+            if (_specialDayHandler.IsSpecialDayActive()) { continue; }
             if (player == null) { continue; }
 
             if (metadata.IsDetonating) { continue; }
