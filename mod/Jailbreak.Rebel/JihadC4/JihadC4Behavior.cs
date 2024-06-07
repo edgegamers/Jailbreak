@@ -259,17 +259,30 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     /// </summary>
     public void TryGiveC4ToRandomTerrorist()
     {
-        List<CCSPlayerController> validTerroristPlayers = Utilities.GetPlayers().Where(player => player.Team == CsTeam.Terrorist && player.PawnIsAlive && !player.IsBot).ToList();
-        int numOfTerrorists = validTerroristPlayers.Count;
+        List<CCSPlayerController> validTerroristPlayers;
+        int numOfTerrorists;
+        int randomIndex;
 
-        if (numOfTerrorists == 0) { _basePlugin!.Logger.LogInformation("Tried to give Jihad C4 at round start but there were no valid players to give it to."); return; }
-
-        Random rnd = new();
-        int randomIndex = rnd.Next(numOfTerrorists);
-
-        Server.RunOnTick(Server.TickCount + 32, () => // Wait a bunch of ticks before we give the bomb.
+        Server.RunOnTick(Server.TickCount + 256, () => // Wait 4 secs before going thru
         {
-            if (!validTerroristPlayers[randomIndex].IsValid) { TryGiveC4ToRandomTerrorist(); return; }
+            validTerroristPlayers = Utilities.GetPlayers()
+                .Where(player => player.Team == CsTeam.Terrorist && player.PawnIsAlive && !player.IsBot).ToList();
+            numOfTerrorists = validTerroristPlayers.Count;
+            if (numOfTerrorists == 0)
+            {
+                _basePlugin!.Logger.LogInformation(
+                    "Tried to give Jihad C4 at round start but there were no valid players to give it to.");
+                return;
+            }
+
+            Random rnd = new();
+            randomIndex = rnd.Next(numOfTerrorists);
+            if (!validTerroristPlayers[randomIndex].IsValid)
+            {
+                TryGiveC4ToRandomTerrorist();
+                return;
+            }
+
             TryGiveC4ToPlayer(validTerroristPlayers[randomIndex]);
         });
     }
