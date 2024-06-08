@@ -13,6 +13,7 @@ public class SpecialDayHandler(SpecialDayConfig config) : ISpecialDayHandler, IP
 {
     private int _roundsSinceLastSpecialDay = 0;
     private bool _isSpecialDayActive = false;
+    private int _roundStartTime = 0;
     private ISpecialDay? _currentSpecialDay = null;
     private BasePlugin _plugin;
 
@@ -56,6 +57,7 @@ public class SpecialDayHandler(SpecialDayConfig config) : ISpecialDayHandler, IP
     private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
         _roundsSinceLastSpecialDay++;
+        _roundStartTime = (int)Math.Round(Server.CurrentTime);
         return HookResult.Continue;
     }
 
@@ -66,7 +68,7 @@ public class SpecialDayHandler(SpecialDayConfig config) : ISpecialDayHandler, IP
 
     public bool CanStartSpecialDay()
     {
-        return RoundsSinceLastSpecialDay() >= config.MinRoundsBeforeSpecialDay;
+        return RoundsSinceLastSpecialDay() >= config.MinRoundsBeforeSpecialDay && _roundStartTime <= config.MaxRoundSecondsBeforeSpecialDay;
     }
 
     public bool IsSpecialDayActive()
