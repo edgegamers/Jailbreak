@@ -10,15 +10,17 @@ using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.SpecialDays;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestManager(LastRequestConfig config, ILastRequestMessages messages, IServiceProvider provider)
+public class LastRequestManager(LastRequestConfig config, ILastRequestMessages messages, IServiceProvider provider, ISpecialDayHandler sdHandler)
     : ILastRequestManager
 {
+    private ISpecialDayHandler _sdHandler;
     private BasePlugin _parent;
     private ILastRequestFactory _factory;
 
@@ -29,6 +31,7 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
     {
         _factory = provider.GetRequiredService<ILastRequestFactory>();
         _parent = parent;
+        _sdHandler = sdHandler;
         VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage, HookMode.Pre);
     }
 
@@ -179,6 +182,7 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
 
     public void EnableLR()
     {
+        if (_sdHandler.IsSpecialDayActive()) return;
         IsLREnabled = true;
         SetRoundTime(60);
 
