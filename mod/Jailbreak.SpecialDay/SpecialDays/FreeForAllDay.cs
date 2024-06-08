@@ -32,7 +32,7 @@ public class FreeForAllDay : ISpecialDay
     
     public void OnStart()
     {
-        _notifications.SD_FFA_STARTED
+        _notifications.SD_FFA_STARTING
             .ToAllChat()
             .ToAllCenter();
         var spawn = Utilities.FindAllEntitiesByDesignerName<SpawnPoint>("info_player_counterterrorist").ToList();
@@ -73,10 +73,12 @@ public class FreeForAllDay : ISpecialDay
         {
             timer++;
             
-            if (timer != 15) return;
+            if (timer != 30) return;
             
+            _notifications.SD_FFA_STARTED
+                .ToAllChat()
+                .ToAllCenter();
             _hasStarted = true;
-            
             timer1.Kill();
         }, TimerFlags.REPEAT);
         
