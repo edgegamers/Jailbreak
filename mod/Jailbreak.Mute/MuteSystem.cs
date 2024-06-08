@@ -1,7 +1,9 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Utils;
+using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
@@ -42,7 +44,7 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
     {
         parent.RemoveListener("OnClientVoice", OnPlayerSpeak);
     }
-    
+
     private void TickTerroristMutes()
     {
         if (tScheduledMutes.Count == 0)
@@ -61,12 +63,12 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
             {
                 UnMute(player);
             }
-            
+
             prisonerTimer?.Kill();
             prisonerTimer = null;
         });
     }
-    
+
     private void TickCounterTerroristMutes()
     {
         if (ctScheduledMutes.Count == 0)
@@ -81,16 +83,34 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
                 TickCounterTerroristMutes();
                 return;
             }
-            
+
             foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal() && player.Team == CsTeam.CounterTerrorist))
             {
                 UnMute(player);
             }
 
-            
+
             guardTimer?.Kill();
             guardTimer = null;
         });
+    }
+
+    [GameEventHandler]
+    public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
+    {
+        foreach (var player in Utilities.GetPlayers())
+        {
+            player.VoiceFlags &= VoiceFlags.ListenAll | VoiceFlags.ListenTeam;
+            foreach (var target in Utilities.GetPlayers())
+            {
+                if (target == player)
+                {
+                    continue;
+                }
+                player.SetListenOverride(target, ListenOverride.Default);
+            }
+        }
+        return HookResult.Continue;
     }
 
     public void PeaceMute(MuteReason reason)
@@ -126,17 +146,17 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
         this.peaceEnd = DateTime.Now.AddSeconds(duration);
         this.ctPeaceEnd = DateTime.Now.AddSeconds(ctDuration);
         this.lastPeace = DateTime.Now;
-        
+
         guardTimer?.Kill();
         prisonerTimer?.Kill();
-        
+
         ctScheduledMutes.Enqueue(ctDuration);
         tScheduledMutes.Enqueue(duration);
-        
+
         if (tScheduledMutes.Count == 1 || prisonerTimer == null) TickTerroristMutes();
         if (ctScheduledMutes.Count == 1 || guardTimer == null) TickCounterTerroristMutes();
     }
-    
+
     public void UnPeaceMute()
     {
         foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal() && player.Team == CsTeam.Terrorist))

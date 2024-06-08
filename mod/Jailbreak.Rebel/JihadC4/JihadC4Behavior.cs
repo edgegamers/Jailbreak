@@ -10,6 +10,7 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rebel;
 using Microsoft.Extensions.Logging;
 using Jailbreak.Public.Mod.SpecialDays;
+using System.Runtime.InteropServices;
 
 namespace Jailbreak.Rebel.JihadC4;
 
@@ -43,7 +44,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             if (metadata.IsDetonating) { continue; }
 
             CCSPlayerController? bombCarrier = c4.OwnerEntity.Value?.As<CCSPlayerPawn>().Controller.Value?.As<CCSPlayerController>();
-            if (bombCarrier == null  || (bombCarrier.Buttons & PlayerButtons.Use) == 0) { continue; }
+            if (bombCarrier == null || (bombCarrier.Buttons & PlayerButtons.Use) == 0) { continue; }
 
             CBasePlayerWeapon? activeWeapon = bombCarrier.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
             if (activeWeapon == null || (activeWeapon.Handle != c4.Handle)) { continue; }
@@ -53,7 +54,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 
             TryEmitSound(bombCarrier, "jb.jihad", 1, 1f, 0f);
             _jihadNotifications.PlayerDetonateC4(bombCarrier).ToAllChat();
-        }   
+        }
     }
 
     [GameEventHandler]
@@ -71,7 +72,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         if (player == null || !player.IsValid) { return HookResult.Continue; }
 
         CC4? bombEntity = Utilities.GetEntityFromIndex<CC4>((int)@event.Entindex);
-        if (bombEntity == null) { return HookResult.Continue; } 
+        if (bombEntity == null) { return HookResult.Continue; }
 
         _currentActiveJihadC4s.TryGetValue(bombEntity, out JihadBombMetadata? bombMetadata);
         if (bombMetadata == null) { return HookResult.Continue; }
@@ -79,7 +80,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         // This print to chat requires a NextFrame.
         Server.NextFrame(() => { _jihadNotifications.JIHAD_C4_DROPPED.ToPlayerChat(player); });
 
-        return HookResult.Continue; 
+        return HookResult.Continue;
 
     }
 
@@ -98,7 +99,8 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         if (_basePlugin == null) { return; }
         Server.RunOnTick(Server.TickCount + (int)(64 * delay), () =>
         {
-            if (!player.IsReal() || !player.PawnIsAlive) {
+            if (!player.IsReal() || !player.PawnIsAlive)
+            {
                 _currentActiveJihadC4s.TryGetValue(bombEntity, out var metadata);
                 if (metadata != null)
                 {
@@ -128,7 +130,8 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
                 if (healthRef <= damage)
                 {
                     potentialTarget.CommitSuicide(true, true);
-                } else
+                }
+                else
                 {
                     potentialTarget.PlayerPawn.Value.Health -= (int)damage;
                     Utilities.SetStateChanged(potentialTarget, "CBaseEntity", "m_iHealth");
@@ -186,7 +189,10 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 
     private void TryEmitSound(CBaseEntity entity, string soundEventName, int pitch, float volume, float delay)
     {
-        CBaseEntity_EmitSoundParamsLinux.Invoke(entity, soundEventName, pitch, volume, delay);
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            CBaseEntity_EmitSoundParamsLinux.Invoke(entity, soundEventName, pitch, volume, delay);
+        }
     }
 
     // Returns whether the weapon c4 was in their inventory or not.
