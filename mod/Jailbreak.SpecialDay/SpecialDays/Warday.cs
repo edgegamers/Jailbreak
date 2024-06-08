@@ -52,7 +52,7 @@ public class Warday : ISpecialDay, IBlockUserDamage
                      .Where(player => player.IsReal()))
         {
             player.PlayerPawn.Value!.Teleport(spawn.AbsOrigin);
-            FreezeManager.FreezePlayer(player, player.Team == CsTeam.Terrorist ? 30 : 7);
+            if (player.Team == CsTeam.Terrorist) FreezeManager.FreezePlayer(player, 30);
         }
         _hasStarted = false;
         AddTimers();
