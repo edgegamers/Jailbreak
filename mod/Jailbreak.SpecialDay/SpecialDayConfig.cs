@@ -3,5 +3,5 @@
 public class SpecialDayConfig
 {
     public int MinRoundsBeforeSpecialDay { get; } = 3;
-    public int MaxRoundSecondsBeforeSpecialDay { get; } = 90;
+    public int MaxRoundSecondsBeforeSpecialDay { get; } = 30;
 }
