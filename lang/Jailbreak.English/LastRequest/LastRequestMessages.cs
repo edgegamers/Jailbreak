@@ -86,4 +86,7 @@ public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.La
             result == LRResult.PrisonerWin ? lr.prisoner : lr.guard, "won the LR."
         };
     }
+
+    public IView DamageBlockedInsideLastRequest => new SimpleView { PREFIX, "You or they are in LR, damage blocked." };
+    public IView DamageBlockedNotInSameLR => new SimpleView { PREFIX, "You are not in the same LR as them, damage blocked." };
 }

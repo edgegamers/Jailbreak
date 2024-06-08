@@ -1,11 +1,13 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.Damage;
 using Jailbreak.Public.Mod.SpecialDays;
 using Jailbreak.Public.Utils;
 using Microsoft.VisualBasic.CompilerServices;
@@ -13,7 +15,7 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
-public class Warday : ISpecialDay
+public class Warday : ISpecialDay, IBlockUserDamage
 {
     public string Name => "Warday";
     public string Description => $" {ChatColors.Red}[Warday] {ChatColors.Blue} Guards versus Prisoners. Your goal is to ensure that your team is last team standing!";
@@ -28,8 +30,17 @@ public class Warday : ISpecialDay
     {
         _notifications = notifications;
         _plugin = plugin;
-        VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(_ => _hasStarted ? HookResult.Continue : HookResult.Stop, HookMode.Pre);    }
-    
+    }
+
+    public bool ShouldBlockDamage(CCSPlayerController player, CCSPlayerController? attacker, EventPlayerHurt @event)
+    {
+        if (_hasStarted)
+        {
+            return false;
+        }
+        return true;
+    }
+
     public void OnStart()
     {
         _notifications.SD_WARDAY_STARTED
@@ -52,17 +63,17 @@ public class Warday : ISpecialDay
         timer1 = _plugin.AddTimer(1f, () =>
         {
             timer++;
-                
+
             if (timer != 30) return;
             _hasStarted = true;
             timer1.Kill();
         }, TimerFlags.REPEAT);
-        
+
     }
 
     public void OnEnd()
     {
         //do nothing for now
     }
-    
+
 }
