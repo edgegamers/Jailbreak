@@ -17,7 +17,7 @@ namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class FreeForAllDay : ISpecialDay, IBlockUserDamage
 {
-    public string Name => "Warday";
+    public string Name => "Free For All";
     public string Description => "Everyone for themselves. Your goal is to be the last man standing!";
 
     private int timer = 0;
