@@ -69,7 +69,7 @@ public class SpecialDayHandler(SpecialDayConfig config, IJihadC4Service jihadC4S
 
     public bool CanStartSpecialDay()
     {
-        return RoundsSinceLastSpecialDay() >= config.MinRoundsBeforeSpecialDay && _roundStartTime <= config.MaxRoundSecondsBeforeSpecialDay;
+        return RoundsSinceLastSpecialDay() >= config.MinRoundsBeforeSpecialDay && ((int)Math.Round(Server.CurrentTime - _roundStartTime)) <= config.MaxRoundSecondsBeforeSpecialDay;
     }
 
     public bool IsSpecialDayActive()
