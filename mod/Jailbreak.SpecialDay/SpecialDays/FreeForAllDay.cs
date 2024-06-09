@@ -1,10 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Cvars;
-using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Timers;
-using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Extensions;
@@ -19,6 +16,7 @@ public class FreeForAllDay : ISpecialDay, IBlockUserDamage
 {
     public string Name => "Free For All";
     public string Description => "Everyone for themselves. Your goal is to be the last man standing!";
+    public bool ShouldJihadC4BeEnabled => false;
 
     private int timer = 0;
     private Timer? timer1;
