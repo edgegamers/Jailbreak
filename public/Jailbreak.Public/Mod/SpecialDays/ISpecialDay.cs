@@ -6,4 +6,5 @@ public interface ISpecialDay
     string Description { get; }
     void OnStart();
     void OnEnd();
+    bool ShouldJihadC4BeEnabled { get; }
 }

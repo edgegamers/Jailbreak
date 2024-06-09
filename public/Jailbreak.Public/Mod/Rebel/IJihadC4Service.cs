@@ -22,4 +22,6 @@ public interface IJihadC4Service
     /// </summary>
     void TryGiveC4ToRandomTerrorist();
 
+    void ClearActiveC4s();
+
 }

@@ -1,7 +1,5 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Core.Attributes.Registration;
-using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
@@ -10,7 +8,6 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Damage;
 using Jailbreak.Public.Mod.SpecialDays;
 using Jailbreak.Public.Utils;
-using Microsoft.VisualBasic.CompilerServices;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
@@ -19,7 +16,7 @@ public class Warday : ISpecialDay, IBlockUserDamage
 {
     public string Name => "Warday";
     public string Description => $" {ChatColors.Red}[Warday] {ChatColors.Blue} Guards versus Prisoners. Your goal is to ensure that your team is last team standing!";
-
+    public bool ShouldJihadC4BeEnabled => false;
     private int timer = 0;
     private Timer timer1;
     private BasePlugin _plugin;

@@ -4,17 +4,18 @@ using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.Mute;
 using Jailbreak.Public.Mod.SpecialDays;
 using Jailbreak.Public.Utils;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class CustomDay : ISpecialDay
 {
-    public string Name => "Custom Day";
-    public string Description => "Follow warden orders!";
+
+    public string Name => "Freeday";
+    public string Description => "All prisoners and guards are allowed to roam freely.";
+    public bool ShouldJihadC4BeEnabled => true;
+
     private readonly ISpecialDayNotifications _notifications;
     
     public CustomDay(BasePlugin plugin, ISpecialDayNotifications notifications)
