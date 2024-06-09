@@ -15,11 +15,8 @@ namespace Jailbreak.Rebel.JihadC4;
 
 public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 {
-    // Importantly the Player argument CAN be null!
     private class JihadBombMetadata(float delay, bool isDetonating) { public float Delay { get; set; } = delay; public bool IsDetonating { get; set; } = isDetonating; }
-    // Key presents any active Jihad C4 in the world. Values represent metadata about that Jihad C4.
     private Dictionary<CC4, JihadBombMetadata> _currentActiveJihadC4s = new();
-    private ISpecialDayHandler _specialDayHandler;
 
     private IJihadC4Notifications _jihadNotifications;
     private BasePlugin? _basePlugin;
@@ -27,9 +24,8 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     // EmitSound(CBaseEntity* pEnt, const char* sSoundName, int nPitch, float flVolume, float flDelay)
     private readonly MemoryFunctionVoid<CBaseEntity, string, int, float, float> CBaseEntity_EmitSoundParamsLinux; // LINUX ONLY.
 
-    public JihadC4Behavior(IJihadC4Notifications jihadC4Notifications, ISpecialDayHandler specialDayHandler)
+    public JihadC4Behavior(IJihadC4Notifications jihadC4Notifications)
     {
-        _specialDayHandler = specialDayHandler;
         _jihadNotifications = jihadC4Notifications;
         CBaseEntity_EmitSoundParamsLinux = new("48 B8 ? ? ? ? ? ? ? ? 55 48 89 E5 41 55 41 54 49 89 FC 53 48 89 F3");
     }
@@ -63,7 +59,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     [GameEventHandler]
     public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
-        _currentActiveJihadC4s.Clear();
+        ClearActiveC4s();
         TryGiveC4ToRandomTerrorist();
         return HookResult.Continue;
     }
@@ -193,6 +189,11 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             }
             TryGiveC4ToPlayer(validTerroristPlayers[randomIndex]);
         });
+    }
+
+    public void ClearActiveC4s()
+    {
+        _currentActiveJihadC4s.Clear();
     }
 
     private void TryEmitSound(CBaseEntity entity, string soundEventName, int pitch, float volume, float delay)
