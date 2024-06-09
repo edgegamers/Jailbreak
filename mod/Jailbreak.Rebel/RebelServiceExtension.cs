@@ -10,7 +10,7 @@ public static class RebelServiceExtension
     public static void AddJailbreakRebel(this IServiceCollection collection)
     {
         collection.AddPluginBehavior<IRebelService, RebelManager>();
-        collection.AddPluginBehavior<IJihadC4Service, JihadC4Behavior>();
+//        collection.AddPluginBehavior<IJihadC4Service, JihadC4Behavior>();
         collection.AddPluginBehavior<RebelListener>();
     }
 }

@@ -39,14 +39,14 @@ public class Jailbreak : BasePlugin
     public override void Load(bool hotReload)
     {
 
-        // Precache particles needed for features like Jihad C4
-        RegisterListener<Listeners.OnServerPrecacheResources>((manifest) =>
-        {
-            manifest.AddResource("particles/explosions_fx/explosion_c4_500.vpcf");
-            manifest.AddResource("soundevents/soundevents_jb.vsndevts");
-            manifest.AddResource("soundevents/explosion.vsnd");
-            manifest.AddResource("soundevents/jihad.vsnd");
-        });
+        // Precache particles needed for features like Jihad C4, temp disabled
+//        RegisterListener<Listeners.OnServerPrecacheResources>((manifest) =>
+//        {
+//            manifest.AddResource("particles/explosions_fx/explosion_c4_500.vpcf");
+//            manifest.AddResource("soundevents/soundevents_jb.vsndevts");
+//            manifest.AddResource("soundevents/explosion.vsnd");
+//            manifest.AddResource("soundevents/jihad.vsnd");
+//        });
         
         //  Load Managers
         FreezeManager.CreateInstance(this);

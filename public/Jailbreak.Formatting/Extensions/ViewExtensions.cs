@@ -10,32 +10,32 @@ namespace Jailbreak.Formatting.Extensions;
 public static class ViewExtensions
 {
 
-	public static FormatWriter ToWriter(this IView view)
-	{
-		var writer = new FormatWriter();
+    public static FormatWriter ToWriter(this IView view)
+    {
+        var writer = new FormatWriter();
 
-		view.Render(writer);
+        view.Render(writer);
 
-		return writer;
-	}
+        return writer;
+    }
 
-	public static IView ToServerConsole(this IView view)
-	{
-		var writer = view.ToWriter();
+    public static IView ToServerConsole(this IView view)
+    {
+        var writer = view.ToWriter();
 
-		foreach (string s in writer.Plain)
-		{
-			Server.PrintToConsole(s);
-		}
+        foreach (string s in writer.Plain)
+        {
+            Server.PrintToConsole(s);
+        }
 
-		return view;
-	}
+        return view;
+    }
 
-	#region Individual
+    #region Individual
 
     public static IView ToPlayerConsole(this IView view, CCSPlayerController player)
     {
-        if(!player.IsReal())
+        if (!player.IsReal() || player.IsBot)
             return view;
 
         var writer = view.ToWriter();
@@ -48,7 +48,7 @@ public static class ViewExtensions
 
     public static IView ToPlayerChat(this IView view, CCSPlayerController player)
     {
-        if(!player.IsReal())
+        if (!player.IsReal() || player.IsBot)
             return view;
 
         var writer = view.ToWriter();
@@ -61,7 +61,7 @@ public static class ViewExtensions
 
     public static IView ToPlayerCenter(this IView view, CCSPlayerController player)
     {
-        if(!player.IsReal())
+        if (!player.IsReal() || player.IsBot)
             return view;
 
         var writer = view.ToWriter();
@@ -74,7 +74,7 @@ public static class ViewExtensions
 
     public static IView ToPlayerCenterHtml(this IView view, CCSPlayerController player)
     {
-        if(!player.IsReal())
+        if (!player.IsReal() || player.IsBot)
             return view;
 
         var writer = view.ToWriter();
@@ -85,26 +85,26 @@ public static class ViewExtensions
         return view;
     }
 
-	#endregion
+    #endregion
 
-	public static IView ToAllConsole(this IView view)
-	{
-		Utilities.GetPlayers().ForEach(player => view.ToPlayerConsole(player));
+    public static IView ToAllConsole(this IView view)
+    {
+        Utilities.GetPlayers().ForEach(player => view.ToPlayerConsole(player));
 
-		return view;
-	}
+        return view;
+    }
 
-	public static IView ToAllChat(this IView view)
-	{
-		Utilities.GetPlayers().ForEach(player => view.ToPlayerChat(player));
+    public static IView ToAllChat(this IView view)
+    {
+        Utilities.GetPlayers().ForEach(player => view.ToPlayerChat(player));
 
-		return view;
-	}
+        return view;
+    }
 
-	public static IView ToAllCenter(this IView view)
-	{
-		Utilities.GetPlayers().ForEach(player => view.ToPlayerCenter(player));
+    public static IView ToAllCenter(this IView view)
+    {
+        Utilities.GetPlayers().ForEach(player => view.ToPlayerCenter(player));
 
-		return view;
-	}
+        return view;
+    }
 }

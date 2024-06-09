@@ -13,8 +13,8 @@ namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class CustomDay : ISpecialDay
 {
-    public string Name => "Freeday";
-    public string Description => "All prisoners and guards are allowed to roam freely.";
+    public string Name => "Custom Day";
+    public string Description => "Follow warden orders!";
     private readonly ISpecialDayNotifications _notifications;
     
     public CustomDay(BasePlugin plugin, ISpecialDayNotifications notifications)

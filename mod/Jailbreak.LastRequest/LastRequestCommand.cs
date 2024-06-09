@@ -10,12 +10,14 @@ using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
+using Jailbreak.Public.Mod.SpecialDays;
 using Microsoft.Extensions.DependencyModel;
 
 namespace Jailbreak.LastRequest;
 
 public class LastRequestCommand(
     ILastRequestManager manager,
+    ISpecialDayHandler sdHandler,
     ILastRequestMessages messages,
     IGenericCommandNotifications generic,
     ILastRequestFactory factory)
@@ -23,12 +25,14 @@ public class LastRequestCommand(
 {
     private LastRequestMenuSelector _menuSelector;
     private LastRequestPlayerSelector _playerSelector;
+    private ISpecialDayHandler _sdHandler;
     private BasePlugin _plugin;
 
     // css_lr <player> <LRType>
     public void Start(BasePlugin plugin)
     {
         _plugin = plugin;
+        _sdHandler = sdHandler;
         _playerSelector = new LastRequestPlayerSelector(manager);
         _menuSelector = new LastRequestMenuSelector(factory);
     }
@@ -43,6 +47,11 @@ public class LastRequestCommand(
         {
             info.ReplyToCommand("You must be a terrorist to LR.");
             return;
+        }
+
+        if (_sdHandler.IsSpecialDayActive())
+        {
+            info.ReplyToCommand("You cannot LR during a special day!");
         }
 
         if (!executor.PawnIsAlive)

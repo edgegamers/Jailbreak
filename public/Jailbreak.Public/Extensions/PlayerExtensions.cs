@@ -24,7 +24,7 @@ public static class PlayerExtensions
         if (player.Connected != PlayerConnectedState.PlayerConnected)
             return false;
 
-        if (player.IsBot || player.IsHLTV)
+        if (player.IsHLTV)
             return false;
 
         return true;

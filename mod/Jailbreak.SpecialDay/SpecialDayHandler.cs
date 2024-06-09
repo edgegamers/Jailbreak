@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
+using Jailbreak.Public.Mod.Damage;
 using Jailbreak.Public.Mod.SpecialDays;
 
 namespace Jailbreak.SpecialDay;
@@ -12,6 +13,7 @@ public class SpecialDayHandler(SpecialDayConfig config) : ISpecialDayHandler, IP
 {
     private int _roundsSinceLastSpecialDay = 0;
     private bool _isSpecialDayActive = false;
+    private int _roundStartTime = 0;
     private ISpecialDay? _currentSpecialDay = null;
     private BasePlugin _plugin;
 
@@ -19,6 +21,7 @@ public class SpecialDayHandler(SpecialDayConfig config) : ISpecialDayHandler, IP
     {
         plugin.RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
         plugin.RegisterEventHandler<EventRoundStart>(OnRoundStart);
+        plugin.RegisterEventHandler<EventPlayerHurt>(DamageHandler);
         _plugin = plugin;
     }
 
@@ -32,17 +35,32 @@ public class SpecialDayHandler(SpecialDayConfig config) : ISpecialDayHandler, IP
 
         _currentSpecialDay = null;
         _roundsSinceLastSpecialDay = 0;
-        
+
         return HookResult.Continue;
     }
-    
+
+    [GameEventHandler(HookMode.Pre)]
+    private HookResult DamageHandler(EventPlayerHurt @event, GameEventInfo info)
+    {
+        if (_currentSpecialDay == null)
+        {
+            return HookResult.Continue;
+        }
+        if (_currentSpecialDay is IBlockUserDamage damageHandler)
+        {
+            return damageHandler.BlockUserDamage(@event, info);
+        }
+        return HookResult.Continue;
+    }
+
     [GameEventHandler]
     private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
         _roundsSinceLastSpecialDay++;
+        _roundStartTime = (int)Math.Round(Server.CurrentTime);
         return HookResult.Continue;
     }
-    
+
     public int RoundsSinceLastSpecialDay()
     {
         return _roundsSinceLastSpecialDay;
@@ -50,7 +68,7 @@ public class SpecialDayHandler(SpecialDayConfig config) : ISpecialDayHandler, IP
 
     public bool CanStartSpecialDay()
     {
-        return RoundsSinceLastSpecialDay() >= config.MinRoundsBeforeSpecialDay;
+        return RoundsSinceLastSpecialDay() >= config.MinRoundsBeforeSpecialDay && ((int)Math.Round(Server.CurrentTime - _roundStartTime)) <= config.MaxRoundSecondsBeforeSpecialDay;
     }
 
     public bool IsSpecialDayActive()
@@ -61,25 +79,25 @@ public class SpecialDayHandler(SpecialDayConfig config) : ISpecialDayHandler, IP
     public bool StartSpecialDay<ISpecialDayNotifications>(string name, ISpecialDayNotifications _notifications)
     {
         if (_isSpecialDayActive || !CanStartSpecialDay()) return false;
-        
+
         var fullName = "Jailbreak.SpecialDay.SpecialDays";
         var q = from t in Assembly.GetExecutingAssembly().GetTypes()
-            where t.IsClass && t.Namespace == fullName && t.GetInterface("ISpecialDay") != null
-            select t;
+                where t.IsClass && t.Namespace == fullName && t.GetInterface("ISpecialDay") != null
+                select t;
 
         foreach (var type in q)
         {
             if (type == null) continue;
-            var item = (ISpecialDay) Activator.CreateInstance(type, _plugin, _notifications);
+            var item = (ISpecialDay)Activator.CreateInstance(type, _plugin, _notifications);
             if (item == null) continue;
             if (item.Name != name) continue;
-            
+
             _currentSpecialDay = item;
             _isSpecialDayActive = true;
             _currentSpecialDay.OnStart();
             break;
         }
-        
+
         //Server.NextFrame(() => Server.PrintToChatAll($"{_currentSpecialDay?.Name} has started - {_currentSpecialDay?.Description}"));
         return true;
     }
