@@ -172,16 +172,24 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
                     .ToPlayerCenter(invoked);
                 invoked.ChangeTeam(CsTeam.Terrorist);
             });
+
         if (!int.TryParse(command.ArgByIndex(1), out var team))
             return HookResult.Stop;
 
-        if (Utilities.GetPlayers().Find(c => c.GetTeam() == CsTeam.CounterTerrorist) == null)
+        if (Utilities.GetPlayers().All(c => c.GetTeam() != CsTeam.CounterTerrorist))
             return HookResult.Continue; // If no CTs, let anyone on CT team
-        
+
         // Force player to prisoner if they attempt to join prisoners
-        // Allows for uncapped prisoners regardless of mapos
-        if((CsTeam)team == CsTeam.Terrorist)
-            invoked.ChangeTeam(CsTeam.Terrorist);
+        // Allows for uncapped prisoners regardless of maps
+        if ((CsTeam)team == CsTeam.Terrorist )
+        {
+	        //	Apparently ChangeTeam doesn't kill them here,
+	        //	so we need to force the suicide. ~ Moo
+	        if (invoked.GetTeam() == CsTeam.CounterTerrorist)
+		        invoked.CommitSuicide(/* explode: */ true, true);
+
+	        invoked.ChangeTeam(CsTeam.Terrorist);
+        }
 
         //	Player is attempting to join CT and is not a guard?
         //	If so, stop them!!
