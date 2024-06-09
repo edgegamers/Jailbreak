@@ -115,17 +115,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             particleSystemEntity.Teleport(player.PlayerPawn!.Value!.AbsOrigin!, new QAngle(), new Vector());
             particleSystemEntity.DispatchSpawn();
 
-            CPhysExplosion envPhysExplosionEntity = Utilities.CreateEntityByName<CPhysExplosion>("env_physexplosion")!;
-
-            envPhysExplosionEntity.Spawnflags = 1 << 1; // Push players flag set to true!
-            envPhysExplosionEntity.ExplodeOnSpawn = true;
-            envPhysExplosionEntity.Magnitude = 50f;
-            envPhysExplosionEntity.PushScale = 3.5f;
-            envPhysExplosionEntity.Radius = 350f; // As per the old code.
-
-            envPhysExplosionEntity.Teleport(player.PlayerPawn.Value!.AbsOrigin!, new QAngle(), new Vector());
-            envPhysExplosionEntity.DispatchSpawn();
-
             bool hadC4 = TryRemoveWeaponC4(player); // We want to remove the C4 from their inventory b4 we detonate the bomb (if they have it).
 
             /* Calculate damage here, only applies to alive CTs. */
