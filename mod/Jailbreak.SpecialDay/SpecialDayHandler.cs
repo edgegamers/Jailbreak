@@ -68,7 +68,7 @@ public class SpecialDayHandler(SpecialDayConfig config) : ISpecialDayHandler, IP
 
     public bool CanStartSpecialDay()
     {
-        return RoundsSinceLastSpecialDay() >= config.MinRoundsBeforeSpecialDay && ((int)Server.CurrentTime - _roundStartTime) <= config.MaxRoundSecondsBeforeSpecialDay;
+        return RoundsSinceLastSpecialDay() >= config.MinRoundsBeforeSpecialDay && ((int)Math.Round(Server.CurrentTime - _roundStartTime)) <= config.MaxRoundSecondsBeforeSpecialDay;
     }
 
     public bool IsSpecialDayActive()
