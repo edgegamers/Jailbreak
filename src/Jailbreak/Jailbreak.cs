@@ -44,8 +44,8 @@ public class Jailbreak : BasePlugin
         {
             manifest.AddResource("particles/explosions_fx/explosion_c4_500.vpcf");
             manifest.AddResource("soundevents/soundevents_jb.vsndevts");
-            manifest.AddResource("soundevents/explosion.vsnd");
-            manifest.AddResource("soundevents/jihad.vsnd");
+            manifest.AddResource("sounds/explosion.vsnd");
+            manifest.AddResource("sounds/jihad.vsnd");
         });
         
         //  Load Managers
