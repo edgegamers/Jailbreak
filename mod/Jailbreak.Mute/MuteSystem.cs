@@ -107,7 +107,7 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
                 {
                     continue;
                 }
-                player.SetListenOverride(target, ListenOverride.Default);
+                player.SetListenOverride(target, ListenOverride.Hear);
             }
         }
         return HookResult.Continue;
