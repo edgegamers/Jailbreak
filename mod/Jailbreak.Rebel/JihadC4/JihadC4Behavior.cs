@@ -156,7 +156,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         int numOfTerrorists;
         int randomIndex;
 
-        Server.RunOnTick(Server.TickCount + 256, () => // Wait 4 secs before going thru
+        Server.RunOnTick(Server.TickCount + 64, () => // Wait 1 sec before going thru
         {
             validTerroristPlayers = Utilities.GetPlayers()
                 .Where(player => player.Team == CsTeam.Terrorist && player.PawnIsAlive && !player.IsBot).ToList();
