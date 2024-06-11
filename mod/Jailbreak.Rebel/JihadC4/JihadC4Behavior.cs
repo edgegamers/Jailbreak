@@ -189,10 +189,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 
     private void TryEmitSound(CBaseEntity entity, string soundEventName, int pitch, float volume, float delay)
     {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            CBaseEntity_EmitSoundParamsLinux.Invoke(entity, soundEventName, pitch, volume, delay);
-        }
+        CBaseEntity_EmitSoundParamsLinux.Invoke(entity, soundEventName, pitch, volume, delay);
     }
 
     // Returns whether the weapon c4 was in their inventory or not.
