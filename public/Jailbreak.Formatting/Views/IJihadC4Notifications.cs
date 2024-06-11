@@ -16,7 +16,5 @@ public interface IJihadC4Notifications
     public IView JIHAD_C4_RECEIVED { get; }
     public IView JIHAD_C4_USAGE1 { get; }
     public IView JIHAD_C4_USAGE2 { get; }
-    public IView JIHAD_C4_USAGE3 { get; }
-
 
 }

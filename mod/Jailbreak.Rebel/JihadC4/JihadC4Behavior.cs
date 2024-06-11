@@ -86,18 +86,17 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     public void TryGiveC4ToPlayer(CCSPlayerController player)
     {
         CC4 bombEntity = new CC4(player.GiveNamedItem("weapon_c4"));
-        _currentActiveJihadC4s.Add(bombEntity, new JihadBombMetadata(1.0f, false));
+        _currentActiveJihadC4s.Add(bombEntity, new JihadBombMetadata(0.75f, false));
 
         _jihadNotifications.JIHAD_C4_RECEIVED.ToPlayerChat(player);
         _jihadNotifications.JIHAD_C4_USAGE1.ToPlayerChat(player);
         _jihadNotifications.JIHAD_C4_USAGE2.ToPlayerChat(player);
-        _jihadNotifications.JIHAD_C4_USAGE3.ToPlayerChat(player);
     }
 
     public void TryDetonateJihadC4(CCSPlayerController player, float delay, CC4 bombEntity)
     {
         if (_basePlugin == null) { return; }
-        Server.RunOnTick(Server.TickCount + (int)(66.66 * delay), () =>
+        Server.RunOnTick(Server.TickCount + (int)(64 * delay), () =>
         {
             if (!player.IsReal() || !player.PawnIsAlive) {
                 _currentActiveJihadC4s.TryGetValue(bombEntity, out var metadata);
@@ -157,7 +156,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         int numOfTerrorists;
         int randomIndex;
 
-        Server.RunOnTick(Server.TickCount + 256, () => // Wait 4 secs before going thru
+        Server.RunOnTick(Server.TickCount + 64, () => // Wait 1 sec before going thru
         {
             validTerroristPlayers = Utilities.GetPlayers()
                 .Where(player => player.Team == CsTeam.Terrorist && player.PawnIsAlive && !player.IsBot).ToList();
