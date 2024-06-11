@@ -11,12 +11,13 @@ namespace Jailbreak.Formatting.Views;
 public interface IJihadC4Notifications
 {
     public IView PlayerDetonateC4(CCSPlayerController player);
+
+    public IView PLAYER_RESULTS(int damage, int kills);
+
     public IView JIHAD_C4_DROPPED { get; }
     public IView JIHAD_C4_PICKUP { get; }
     public IView JIHAD_C4_RECEIVED { get; }
-    public IView JIHAD_C4_USAGE1 { get; }
-    public IView JIHAD_C4_USAGE2 { get; }
-    public IView JIHAD_C4_USAGE3 { get; }
+    public IView JIHAD_C4_USAGE { get; }
 
 
 }

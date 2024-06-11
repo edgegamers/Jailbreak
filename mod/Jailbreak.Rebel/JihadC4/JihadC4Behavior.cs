@@ -13,6 +13,7 @@ using Jailbreak.Public.Mod.SpecialDays;
 
 namespace Jailbreak.Rebel.JihadC4;
 
+#if _
 public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 {
     // Importantly the Player argument CAN be null!
@@ -45,7 +46,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 
     /// <summary>
     /// This function listens to when a player with an active Jihad C4 detonates their bomb by doing +use.
-    /// It will call another function to actually produce the Jihad C4 styled explosion, and handles removing the player 
+    /// It will call another function to actually produce the Jihad C4 styled explosion, and handles removing the player
     /// from the list of active C4's, to name one thing.
     /// </summary>
     private void PlayerUseC4ListenerCallback()
@@ -59,7 +60,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 
             if (metadata.IsDetonating) { continue; }
 
-            // is the use button currently active? 
+            // is the use button currently active?
             if ((player.Buttons & PlayerButtons.Use) == 0) { continue; }
 
             CPlayer_WeaponServices? weaponServices = player.PlayerPawn.Value?.WeaponServices;
@@ -77,8 +78,8 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
 
             TryEmitSound(player, "jb.jihad", 1, 1f, 0f);
             _jihadNotifications.PlayerDetonateC4(player).ToAllChat();
-            
-        }   
+
+        }
     }
 
     /// <summary>
@@ -104,13 +105,13 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         // This requires a nextframe because apparently some Valve functions don't like printing inside of them.
         Server.NextFrame(() => { _jihadNotifications.JIHAD_C4_DROPPED.ToPlayerChat(player); });
 
-        return HookResult.Continue; 
+        return HookResult.Continue;
 
     }
 
     /// <summary>
     /// This function listens to when a player picks up any weapon_c4 item. If it is a Jihad C4 (which can easily be checked) then
-    /// we assign the Jihad C4's "owner" to that player. 
+    /// we assign the Jihad C4's "owner" to that player.
     /// </summary>
     [GameEventHandler]
     public HookResult OnPlayerPickupC4(EventBombPickup @event, GameEventInfo info)
@@ -128,7 +129,9 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         if (bombMetadata == null) { return HookResult.Continue; }
 
         bombMetadata.Player = player;
-        _jihadNotifications.JIHAD_C4_PICKUP.ToPlayerChat(player);
+        _jihadNotifications.JIHAD_C4_PICKUP
+	        .ToPlayerChat(player)
+	        .ToPlayerCenter(player);
 
         return HookResult.Continue;
 
@@ -195,14 +198,17 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
                     metadata.IsDetonating = false; // So other players can detonate it.
                 }
                 return;
-            } // Cancel the detonation if the player died. 
+            } // Cancel the detonation if the player died.
+
+            //	Originate the explosion from the center of the bomb
+            var explosionOrigin = bombEntity.AbsOrigin!;
 
             /* PARTICLE EXPLOSION */
             CParticleSystem particleSystemEntity = Utilities.CreateEntityByName<CParticleSystem>("info_particle_system")!;
             particleSystemEntity.EffectName = "particles/explosions_fx/explosion_c4_500.vpcf";
             particleSystemEntity.StartActive = true;
 
-            particleSystemEntity.Teleport(player.PlayerPawn!.Value!.AbsOrigin!, new QAngle(), new Vector());
+            particleSystemEntity.Teleport(explosionOrigin, new QAngle(), new Vector());
             particleSystemEntity.DispatchSpawn();
 
             /* PHYS EXPLPOSION, FOR PUSHING PLAYERS */
@@ -215,43 +221,61 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
             envPhysExplosionEntity.PushScale = 3.5f;
             envPhysExplosionEntity.Radius = 350f; // As per the old code.
 
-            envPhysExplosionEntity.Teleport(player.PlayerPawn.Value!.AbsOrigin!, new QAngle(), new Vector());
+            envPhysExplosionEntity.Teleport(explosionOrigin, new QAngle(), new Vector());
             envPhysExplosionEntity.DispatchSpawn();
 
-            bool hadC4 = TryRemoveWeaponC4(player); // We want to remove the C4 from their inventory b4 we detonate the bomb (if they have it).
-
             /* Calculate damage here, only applies to alive CTs. */
-            foreach (CCSPlayerController potentialTarget in Utilities.GetPlayers().Where((p) => p.Team == CsTeam.CounterTerrorist && p.PawnIsAlive))
+            foreach (CCSPlayerController potentialTarget in Utilities.GetPlayers()
+	                     .Where((p) => p.Team == CsTeam.CounterTerrorist && p.PawnIsAlive))
             {
-                float distanceFromBomb = potentialTarget.PlayerPawn!.Value!.AbsOrigin!.Distance(player.PlayerPawn.Value.AbsOrigin!);
-                if (distanceFromBomb > 350f) { continue; } // 350f = "bombRadius"
+                float distanceFromBomb = potentialTarget.PlayerPawn!.Value!.AbsOrigin!.Distance(explosionOrigin);
 
-                float damage = 340f;
-                damage *= (350f - distanceFromBomb) / 350f;
-                float healthRef = potentialTarget.PlayerPawn.Value.Health;
-                if (healthRef <= damage)
-                {
-                    potentialTarget.CommitSuicide(true, true);
-                } else
-                {
-                    potentialTarget.PlayerPawn.Value.Health -= (int)damage;
-                    Utilities.SetStateChanged(potentialTarget, "CBaseEntity", "m_iHealth");
-                }
+                this.ApplyDamage(potentialTarget, distanceFromBomb);
             }
 
             // Emit the sound first.
             TryEmitSound(player, "jb.jihadExplosion", 1, 1f, 0f);
 
-            if (!hadC4) // If they didn't have the C4 that means it's on the ground, so let's remove it here.
+            //	Is the player still alive?
+            if (player.IsReal() && player.PawnIsAlive) {
+	            if (!TryRemoveWeaponC4(player))
+		            bombEntity.Remove();
+
+	            //	The player isn't necessarily right next to the C4 if they drop it
+	            float bomberDistanceFromBomb = player.PlayerPawn!.Value!.AbsOrigin!.Distance(explosionOrigin);
+	            this.ApplyDamage(player, bomberDistanceFromBomb);
+	        }
+            else
             {
-                bombEntity.Remove();
+	            //	Nope, player is dead :(
+	            bombEntity.Remove();
             }
 
-            player.CommitSuicide(true, true);
             _currentActiveJihadC4s.Remove(bombEntity);
-
         });
 
+    }
+
+    private void ApplyDamage(CCSPlayerController target, float distance)
+    {
+	    if (!target.IsReal() || !target.PawnIsAlive)
+		    return;
+
+	    //	Distance is greater than 350?
+	    if (distance > 350f)
+		    return;
+
+	    float damage = 340f;
+	    damage *= (350f - distance) / 350f;
+	    float healthRef = target.PlayerPawn.Value.Health;
+	    if (healthRef <= damage)
+	    {
+		    target.CommitSuicide(true, true);
+	    } else
+	    {
+		    target.PlayerPawn.Value.Health -= (int)damage;
+		    Utilities.SetStateChanged(target, "CBaseEntity", "m_iHealth");
+	    }
     }
 
     /// <summary>
@@ -310,3 +334,4 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     }
 
 }
+#endif

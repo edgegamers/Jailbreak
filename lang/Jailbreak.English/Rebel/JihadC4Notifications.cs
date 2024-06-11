@@ -8,16 +8,25 @@ namespace Jailbreak.English.Rebel;
 
 public class JihadC4Notifications : IJihadC4Notifications, ILanguage<Formatting.Languages.English>
 {
-    public IView JIHAD_C4_DROPPED => new SimpleView { RebelNotifications.PREFIX, "You dropped your Jihad C4!" };
-    public IView JIHAD_C4_PICKUP => new SimpleView { RebelNotifications.PREFIX, "You picked up a Jihad C4!" };
-    public IView JIHAD_C4_RECEIVED => new SimpleView { RebelNotifications.PREFIX, "You received a Jihad C4!" };
-    public IView JIHAD_C4_USAGE1 => new SimpleView { RebelNotifications.PREFIX, $"To detonate it, hold it out and press {ChatColors.Yellow + "E" + ChatColors.Default}." };
-    public IView JIHAD_C4_USAGE2 => new SimpleView { RebelNotifications.PREFIX, $"The default delay is {ChatColors.Yellow + "1 second" + ChatColors.Default}." };
-    public IView JIHAD_C4_USAGE3 => new SimpleView { RebelNotifications.PREFIX, $"You can drop the C4 to other players with {ChatColors.Yellow + "G" + ChatColors.Default}." };
 
+    public IView JIHAD_C4_DROPPED => new SimpleView { RebelNotifications.PREFIX, "You've dropped your Bomb\u2122 :(" };
+    public IView JIHAD_C4_PICKUP => new SimpleView { RebelNotifications.PREFIX, "You've picked up The Bomb\u2122!" };
+    public IView JIHAD_C4_RECEIVED => new SimpleView { RebelNotifications.PREFIX, "You were smugged The Bomb\u2122! Use it wisely." };
+    public IView JIHAD_C4_USAGE => new SimpleView
+    {
+	    { RebelNotifications.PREFIX, $"To detonate The Bomb\u2122, hold it out and press {ChatColors.Yellow + "E" + ChatColors.Default}. (or +use)" }, SimpleView.NEWLINE,
+	    { RebelNotifications.PREFIX, $"The Bomb\u2122's delay is {ChatColors.Yellow + "2.5 seconds" + ChatColors.Default}." }, SimpleView.NEWLINE,
+	    { RebelNotifications.PREFIX, $"You can throw The Bomb\u2122 during the delay period using {ChatColors.Yellow + "G" + ChatColors.Default}."}, SimpleView.NEWLINE,
+	    { RebelNotifications.PREFIX, $"You can drop The Bomb\u2122 to other players with {ChatColors.Yellow + "G" + ChatColors.Default}." }
+    };
 
     public IView PlayerDetonateC4(CCSPlayerController player)
     {
-        return new SimpleView { RebelNotifications.PREFIX, $"{player.PlayerName} has detonated a Jihad C4!" };
+        return new SimpleView { RebelNotifications.PREFIX, $"{player.PlayerName} has detonated The Bomb\u2122!" };
+    }
+
+    public IView PLAYER_RESULTS(int damage, int kills)
+    {
+	    return new SimpleView { RebelNotifications.PREFIX, $"The Bomb\u2122 dealt", damage, "HP of damage, and killed", kills, "guards." };
     }
 }
