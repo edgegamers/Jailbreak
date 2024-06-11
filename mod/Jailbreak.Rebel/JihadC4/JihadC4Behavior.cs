@@ -91,7 +91,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
         _jihadNotifications.JIHAD_C4_RECEIVED.ToPlayerChat(player);
         _jihadNotifications.JIHAD_C4_USAGE1.ToPlayerChat(player);
         _jihadNotifications.JIHAD_C4_USAGE2.ToPlayerChat(player);
-        _jihadNotifications.JIHAD_C4_USAGE3.ToPlayerChat(player);
     }
 
     public void TryDetonateJihadC4(CCSPlayerController player, float delay, CC4 bombEntity)
