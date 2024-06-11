@@ -86,7 +86,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     public void TryGiveC4ToPlayer(CCSPlayerController player)
     {
         CC4 bombEntity = new CC4(player.GiveNamedItem("weapon_c4"));
-        _currentActiveJihadC4s.Add(bombEntity, new JihadBombMetadata(1.0f, false));
+        _currentActiveJihadC4s.Add(bombEntity, new JihadBombMetadata(0.75f, false));
 
         _jihadNotifications.JIHAD_C4_RECEIVED.ToPlayerChat(player);
         _jihadNotifications.JIHAD_C4_USAGE1.ToPlayerChat(player);
@@ -97,7 +97,7 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     public void TryDetonateJihadC4(CCSPlayerController player, float delay, CC4 bombEntity)
     {
         if (_basePlugin == null) { return; }
-        Server.RunOnTick(Server.TickCount + (int)(66.66 * delay), () =>
+        Server.RunOnTick(Server.TickCount + (int)(64 * delay), () =>
         {
             if (!player.IsReal() || !player.PawnIsAlive) {
                 _currentActiveJihadC4s.TryGetValue(bombEntity, out var metadata);
