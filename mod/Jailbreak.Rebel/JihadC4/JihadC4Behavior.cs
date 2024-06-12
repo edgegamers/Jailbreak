@@ -96,6 +96,8 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
     public void TryDetonateJihadC4(CCSPlayerController player, float delay, CC4 bombEntity)
     {
         if (_basePlugin == null) { return; }
+        // Emit the sound first.
+        TryEmitSound(player, "jb.jihadExplosion", 1, 1f, 0f);
         Server.RunOnTick(Server.TickCount + (int)(64 * delay), () =>
         {
             if (!player.IsReal() || !player.PawnIsAlive) {
@@ -134,9 +136,6 @@ public class JihadC4Behavior : IPluginBehavior, IJihadC4Service
                     Utilities.SetStateChanged(potentialTarget, "CBaseEntity", "m_iHealth");
                 }
             }
-
-            // Emit the sound first.
-            TryEmitSound(player, "jb.jihadExplosion", 1, 1f, 0f);
 
             if (!hadC4) // If they didn't have the C4 that means it's on the ground, so let's remove it here.
             {
