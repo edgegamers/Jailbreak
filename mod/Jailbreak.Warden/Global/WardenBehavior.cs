@@ -64,7 +64,6 @@ public class WardenBehavior(
 		_hasWarden = true;
 		_warden = controller;
 		
-		_warden.PlayerName = "[WARDEN] " + _warden.PlayerName;
 
 		if (_warden.Pawn.Value != null)
 		{
@@ -76,6 +75,8 @@ public class WardenBehavior(
 		notifications.NEW_WARDEN(_warden)
 			.ToAllChat()
 			.ToAllCenter();
+		
+		_warden.PlayerName = "[WARDEN] " + _warden.PlayerName;
 			
 		foreach (var player in Utilities.GetPlayers()) {
 			if (!player.IsReal()) continue;

@@ -32,6 +32,7 @@ public class PeaceCommandsBehavior(
 
         if (executor == null || AdminManager.PlayerHasPermissions(executor, "@css/cheats"))
         {
+            // Server console or a high-admin is invoking the peace period, bypass cooldown
             mute.PeaceMute(fromWarden ? MuteReason.WARDEN_INVOKED : MuteReason.ADMIN);
             return;
         }

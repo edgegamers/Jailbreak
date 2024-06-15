@@ -1,8 +1,6 @@
 ﻿using System.Drawing;
-
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
@@ -12,19 +10,13 @@ using Jailbreak.Public.Mod.Warden;
 
 namespace Jailbreak.Warden.SpecialTreatment;
 
-public class SpecialTreatmentBehavior : IPluginBehavior, ISpecialTreatmentService
+public class SpecialTreatmentBehavior(
+    IPlayerStateFactory factory,
+    IRebelService rebel,
+    ISpecialTreatmentNotifications notifications)
+    : IPluginBehavior, ISpecialTreatmentService
 {
-    private IPlayerState<SpecialTreatmentState> _sts;
-    private IRebelService _rebel;
-    private ISpecialTreatmentNotifications _notifications;
-
-    public SpecialTreatmentBehavior(IPlayerStateFactory factory, IRebelService rebel, ISpecialTreatmentNotifications notifications)
-    {
-        _sts = factory.Round<SpecialTreatmentState>();
-
-        _rebel = rebel;
-        _notifications = notifications;
-    }
+    private readonly IPlayerState<SpecialTreatmentState> _sts = factory.Round<SpecialTreatmentState>();
 
     private class SpecialTreatmentState
     {
@@ -45,14 +37,14 @@ public class SpecialTreatmentBehavior : IPluginBehavior, ISpecialTreatmentServic
 
         _sts.Get(player).HasSpecialTreatment = true;
 
-        _rebel.UnmarkRebel(player);
-        this.SetPlayerColor(player, /* hasSt */ true);
+        rebel.UnmarkRebel(player);
+        this.SetSpecialColor(player, /* hasSt */ true);
 
-        _notifications.GRANTED
+        notifications.GRANTED
             .ToPlayerChat(player)
             .ToPlayerCenter(player);
 
-        _notifications.GRANTED_TO(player)
+        notifications.GRANTED_TO(player)
             .ToAllChat();
     }
 
@@ -64,17 +56,17 @@ public class SpecialTreatmentBehavior : IPluginBehavior, ISpecialTreatmentServic
 
         _sts.Get(player).HasSpecialTreatment = false;
 
-        this.SetPlayerColor(player, /* hasSt */ false);
+        this.SetSpecialColor(player, false);
 
-        _notifications.REVOKED
+        notifications.REVOKED
             .ToPlayerChat(player)
             .ToPlayerCenter(player);
 
-        _notifications.REVOKED_FROM(player)
+        notifications.REVOKED_FROM(player)
             .ToAllChat();
     }
 
-    private void SetPlayerColor(CCSPlayerController player, bool hasSt)
+    private void SetSpecialColor(CCSPlayerController player, bool hasSt)
     {
         if (!player.IsValid || player.Pawn.Value == null)
             return;
