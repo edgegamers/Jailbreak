@@ -4,20 +4,29 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
+using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.SpecialDays;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
+using Jailbreak.Public.Mod.Damage;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestManager(LastRequestConfig config, ILastRequestMessages messages, IServiceProvider provider)
-    : ILastRequestManager
+public class LastRequestManager(
+    LastRequestConfig _config,
+    ILastRequestMessages _messages,
+    IServiceProvider _provider,
+    ISpecialDayHandler sdHandler
+    )
+    : ILastRequestManager, IBlockUserDamage
 {
+    private ISpecialDayHandler _sdHandler;
     private BasePlugin _parent;
     private ILastRequestFactory _factory;
 
@@ -26,68 +35,56 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
 
     public void Start(BasePlugin parent)
     {
-        _factory = provider.GetRequiredService<ILastRequestFactory>();
+        _factory = _provider.GetRequiredService<ILastRequestFactory>();
         _parent = parent;
-        VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage, HookMode.Pre);
+        _sdHandler = sdHandler;
     }
 
-    public void Dispose()
+    [GameEventHandler(HookMode.Pre)]
+    public HookResult OnTakeDamage(EventPlayerHurt @event, GameEventInfo info)
     {
-        VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(OnTakeDamage, HookMode.Pre);
+        IBlockUserDamage damageHandler = this;
+        return damageHandler.BlockUserDamage(@event, info);
     }
 
-    private HookResult OnTakeDamage(DynamicHook handle)
+    public bool ShouldBlockDamage(CCSPlayerController player, CCSPlayerController? attacker, EventPlayerHurt @event)
     {
         if (!IsLREnabled)
-            return HookResult.Continue;
-        var victim = handle.GetParam<CEntityInstance>(0);
-        var damage_info = handle.GetParam<CTakeDamageInfo>(1);
+            return false;
 
-        var dealer = damage_info.Attacker;
-
-        if (dealer.Value == null)
+        if (attacker == null || !attacker.IsReal())
         {
-            return HookResult.Continue;
+            return false;
         }
-
-        // get player and attacker
-        var player = new CCSPlayerController(new CBaseEntity(victim.Handle).Handle);
-        var attacker = new CCSPlayerController(dealer.Value.Handle);
-
-        if (!player.IsReal() || !attacker.IsReal())
-            return HookResult.Continue;
 
         var playerLR = ((ILastRequestManager)this).GetActiveLR(player);
         var attackerLR = ((ILastRequestManager)this).GetActiveLR(attacker);
 
-        if ((playerLR == null) != (attackerLR == null))
-        {
-            // One of them is in an LR
-            attacker.PrintToChat("You or they are in LR, damage blocked.");
-            damage_info.Damage = 0;
-            return HookResult.Changed;
-        }
-
         if (playerLR == null && attackerLR == null)
         {
             // Neither of them is in an LR
-            return HookResult.Continue;
+            return false;
+        }
+
+        if ((playerLR == null) != (attackerLR == null))
+        {
+            // One of them is in an LR
+            _messages.DamageBlockedInsideLastRequest.ToPlayerCenter(attacker);
+            return true;
         }
 
         // Both of them are in LR
         // verify they're in same LR
         if (playerLR == null)
-            return HookResult.Continue;
+            return false;
 
-        if (playerLR.prisoner.Slot == attacker.Slot || playerLR.guard.Slot == attacker.Slot)
+        if (playerLR.prisoner.Equals(attacker) || playerLR.guard.Equals(attacker))
         {
             // Same LR, allow damage
-            return HookResult.Changed;
+            return false;
         }
-
-        attacker.PrintToChat("You are not in the same LR as them, damage blocked.");
-        damage_info.Damage = 0;
-        return HookResult.Continue;
+        _messages.DamageBlockedNotInSameLR.ToPlayerCenter(attacker);
+        return true;
     }
 
     [GameEventHandler]
@@ -104,16 +101,20 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
     [GameEventHandler]
     public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
+        foreach (var player in Utilities.GetPlayers())
+        {
+            MenuManager.CloseActiveMenu(player);
+        }
         if (ServerExtensions.GetGameRules().WarmupPeriod)
             return HookResult.Continue;
-        if (CountAlivePrisoners() > config.PrisonersToActiveLR)
+        if (CountAlivePrisoners() > _config.PrisonersToActiveLR)
         {
             this.IsLREnabled = false;
             return HookResult.Continue;
         }
 
         this.IsLREnabled = true;
-        messages.LastRequestEnabled().ToAllChat();
+        _messages.LastRequestEnabled().ToAllChat();
         return HookResult.Continue;
     }
 
@@ -140,11 +141,11 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
         if (player.GetTeam() != CsTeam.Terrorist)
             return HookResult.Continue;
 
-        if (CountAlivePrisoners() - 1 > config.PrisonersToActiveLR)
+        if (CountAlivePrisoners() - 1 > _config.PrisonersToActiveLR)
             return HookResult.Continue;
 
         EnableLR();
-        messages.LastRequestEnabled().ToAllChat();
+        _messages.LastRequestEnabled().ToAllChat();
         return HookResult.Continue;
     }
 
@@ -159,11 +160,11 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
 
         if (player.GetTeam() != CsTeam.Terrorist)
             return HookResult.Continue;
-        if (CountAlivePrisoners() > config.PrisonersToActiveLR)
+        if (CountAlivePrisoners() > _config.PrisonersToActiveLR)
             return HookResult.Continue;
 
         EnableLR();
-        messages.LastRequestEnabled().ToAllChat();
+        _messages.LastRequestEnabled().ToAllChat();
         return HookResult.Continue;
     }
 
@@ -174,6 +175,7 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
 
     public void EnableLR()
     {
+        if (_sdHandler.IsSpecialDayActive()) return;
         IsLREnabled = true;
         SetRoundTime(60);
 
@@ -189,7 +191,7 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
     {
         var gamerules = ServerExtensions.GetGameRules();
         var timeleft = (gamerules.RoundStartTime + gamerules.RoundTime) - Server.CurrentTime;
-        return (int) timeleft;
+        return (int)timeleft;
     }
 
     private int GetCurrentTimeElapsed()
@@ -198,20 +200,20 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
         var freezeTime = gamerules.FreezeTime;
         return (int)((Server.CurrentTime - gamerules.RoundStartTime) - freezeTime);
     }
-    
+
     private void SetRoundTime(int time)
     {
         var gamerules = ServerExtensions.GetGameRules();
-        gamerules.RoundTime = (int) GetCurrentTimeElapsed() + time;
-        
+        gamerules.RoundTime = (int)GetCurrentTimeElapsed() + time;
+
         Utilities.SetStateChanged(ServerExtensions.GetGameRulesProxy(), "CCSGameRulesProxy", "m_pGameRules");
     }
-    
+
     private void AddRoundTime(int time)
     {
         var gamerules = ServerExtensions.GetGameRules();
         gamerules.RoundTime += time;
-        
+
         Utilities.SetStateChanged(ServerExtensions.GetGameRulesProxy(), "CCSGameRulesProxy", "m_pGameRules");
     }
 
@@ -252,7 +254,7 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
                 Utilities.SetStateChanged(guard.Pawn.Value, "CBaseEntity", "m_iHealth");
             }
 
-            messages.InformLastRequest(lr).ToAllChat();
+            _messages.InformLastRequest(lr).ToAllChat();
             return true;
         }
         catch (ArgumentException e)
@@ -267,7 +269,7 @@ public class LastRequestManager(LastRequestConfig config, ILastRequestMessages m
         if (result is LRResult.GuardWin or LRResult.PrisonerWin)
         {
             AddRoundTime(30);
-            messages.LastRequestDecided(lr, result).ToAllChat();
+            _messages.LastRequestDecided(lr, result).ToAllChat();
         }
 
         lr.OnEnd(result);

@@ -1,36 +1,27 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.ComponentModel.Design;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Events;
-using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
-using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Warden;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Warden.Commands;
 
-public class WardenCommandsBehavior : IPluginBehavior
+public class WardenCommandsBehavior(
+    IWardenNotifications _notifications,
+    IWardenSelectionService _queue,
+    IWardenService _warden,
+    IGenericCommandNotifications _generics,
+    WardenConfig _config
+    ) : IPluginBehavior
 {
-    private readonly IWardenNotifications _notifications;
-    private readonly IWardenSelectionService _queue;
-    private readonly IWardenService _warden;
-    private readonly IGenericCommandNotifications _generics;
-    private readonly WardenConfig _config;
-    private readonly Dictionary<CCSPlayerController, DateTime> _lastWardenCommand = new();
 
-    public WardenCommandsBehavior(IWardenSelectionService queue, IWardenService warden,
-        IWardenNotifications notifications, IGenericCommandNotifications generics, WardenConfig config)
-    {
-        _config = config;
-        _queue = queue;
-        _warden = warden;
-        _generics = generics;
-        _notifications = notifications;
-    }
+    private readonly Dictionary<CCSPlayerController, DateTime> _lastWardenCommand = new();
 
     [GameEventHandler]
     public HookResult OnRoundStart(EventRoundStart ev, GameEventInfo info)
@@ -54,17 +45,20 @@ public class WardenCommandsBehavior : IPluginBehavior
                 .ToAllChat()
                 .ToAllCenter();
 
+            // GetPlayers() returns valid players, no need to error check here.
             foreach (var clients in Utilities.GetPlayers())
             {
-                if (!clients.IsReal()) continue;
                 clients.ExecuteClientCommand(
                     $"play sounds/{_config.WardenPassedSoundName}");
             }
 
             _notifications.BECOME_NEXT_WARDEN.ToAllChat();
 
-            if (!_warden.TryRemoveWarden())
+            if (!_warden.TryRemoveWarden(true))
                 Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");
+
+            _lastWardenCommand.Clear();
+            
         }
     }
 
@@ -77,6 +71,10 @@ public class WardenCommandsBehavior : IPluginBehavior
         if (player == null)
             return;
 
+        // Why add them to a cooldown list if they can't even be warden :) 
+        if (player.Team != CsTeam.CounterTerrorist || !player.PawnIsAlive) { return; }
+
+        // If they're already in the cooldown dictionary, check if their cooldown has expired.
         if (_lastWardenCommand.TryGetValue(player, out var last))
         {
             var cooldown = last.AddSeconds(15);
@@ -87,12 +85,11 @@ public class WardenCommandsBehavior : IPluginBehavior
             }
         }
         
+        // This makes an entry if the key doesn't exist (and here it doesn't).
         _lastWardenCommand[player] = DateTime.Now;
 
-        var isCt = player.GetTeam() == CsTeam.CounterTerrorist;
-
-        //	Is a CT and queue is open
-        if (isCt && _queue.Active)
+        //  Queue is open ?
+        if (_queue.Active)
         {
             if (!_queue.InQueue(player))
             {
@@ -108,10 +105,27 @@ public class WardenCommandsBehavior : IPluginBehavior
             return;
         }
 
-        //	Is a CT and there is no warden
-        if (isCt && !_warden.HasWarden)
+        //	Is a CT and there is no warden i.e. the queue is not open/active.
+        if (!_warden.HasWarden)
             _warden.TrySetWarden(player);
 
         _notifications.CURRENT_WARDEN(_warden.Warden).ToPlayerChat(player);
     }
+
+    /// <summary>
+    /// If the player who just died was the warden, clear the claim cooldown dictionary, so other CT's can claim!
+    /// </summary>
+    [GameEventHandler]
+    public HookResult OnWardenDeath(EventPlayerDeath @event, GameEventInfo info)
+    {
+        CCSPlayerController? player = @event.Userid;
+        if (player == null) { return HookResult.Continue; }
+
+        if (player != _warden.Warden) { return HookResult.Continue; }
+
+        _lastWardenCommand.Clear();
+        return HookResult.Continue;
+
+    } 
+
 }
