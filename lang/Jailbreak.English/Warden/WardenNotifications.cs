@@ -11,7 +11,7 @@ namespace Jailbreak.English.Warden;
 public class WardenNotifications : IWardenNotifications, ILanguage<Formatting.Languages.English>
 {
     public static FormatObject PREFIX =
-        new HiddenFormatObject($" {ChatColors.Olive}[{ChatColors.Green}WARDEN{ChatColors.Olive}]")
+        new HiddenFormatObject($" {ChatColors.Green}[{ChatColors.Olive}WARDEN{ChatColors.Green}]")
         {
             //	Hide in panorama and center text
             Plain = false,

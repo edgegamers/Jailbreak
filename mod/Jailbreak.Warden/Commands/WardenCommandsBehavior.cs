@@ -107,7 +107,10 @@ public class WardenCommandsBehavior(
 
         //	Is a CT and there is no warden i.e. the queue is not open/active.
         if (!_warden.HasWarden)
-            _warden.TrySetWarden(player);
+        {
+            if (_warden.TrySetWarden(player))
+                return;
+        }
 
         _notifications.CURRENT_WARDEN(_warden.Warden).ToPlayerChat(player);
     }
