@@ -86,7 +86,7 @@ public class JihadC4Behavior(IJihadC4Notifications jihadC4Notifications) : IPlug
 
         // This print to chat requires a NextFrame.
         // Server.NextFrame(() => { });
-        jihadC4Notifications.JIHAD_C4_DROPPED.ToPlayerChat(player);
+        // jihadC4Notifications.JIHAD_C4_DROPPED.ToPlayerChat(player);
         return HookResult.Continue;
     }
 
