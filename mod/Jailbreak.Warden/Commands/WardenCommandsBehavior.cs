@@ -77,7 +77,7 @@ public class WardenCommandsBehavior(
         // If they're already in the cooldown dictionary, check if their cooldown has expired.
         if (_lastWardenCommand.TryGetValue(player, out var last))
         {
-            var cooldown = last.AddSeconds(15);
+            var cooldown = last.AddSeconds(8);
             if (DateTime.Now < cooldown)
             {
                 _generics.CommandOnCooldown(cooldown).ToPlayerChat(player);
