@@ -95,6 +95,7 @@ public class RockPaperScissors : AbstractLastRequest
 
     public override void OnEnd(LRResult result)
     {
+        state = LRState.Completed;
         if (result == LRResult.GuardWin)
         {
             prisoner.Pawn.Value!.CommitSuicide(false, true);
@@ -105,7 +106,6 @@ public class RockPaperScissors : AbstractLastRequest
         }
 
         PrintToParticipants($"Prisoner chose {GetChoice(_prisonerChoice)}, Guard chose {GetChoice(_guardChoice)}");
-        state = LRState.Completed;
     }
     
     private string GetChoice(int choice)

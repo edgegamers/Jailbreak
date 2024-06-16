@@ -67,8 +67,8 @@ public class Race(
         end.SetColor(Color.Red);
         end.Draw();
 
-        prisoner.Teleport(startLocation);
-        guard.Teleport(startLocation);
+        prisoner.Pawn.Value.Teleport(startLocation);
+        guard.Pawn.Value?.Teleport(startLocation);
 
         guard.Freeze();
         prisoner.Freeze();
@@ -119,6 +119,7 @@ public class Race(
 
     public override void OnEnd(LRResult result)
     {
+        state = LRState.Completed;
         switch (result)
         {
             case LRResult.GuardWin:
@@ -129,7 +130,6 @@ public class Race(
                 break;
         }
 
-        state = LRState.Completed;
         raceTimer?.Kill();
         start?.Remove();
         end?.Remove();
