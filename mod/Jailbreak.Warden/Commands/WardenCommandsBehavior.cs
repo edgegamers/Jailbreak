@@ -77,7 +77,7 @@ public class WardenCommandsBehavior(
         // If they're already in the cooldown dictionary, check if their cooldown has expired.
         if (_lastWardenCommand.TryGetValue(player, out var last))
         {
-            var cooldown = last.AddSeconds(15);
+            var cooldown = last.AddSeconds(8);
             if (DateTime.Now < cooldown)
             {
                 _generics.CommandOnCooldown(cooldown).ToPlayerChat(player);
@@ -107,7 +107,10 @@ public class WardenCommandsBehavior(
 
         //	Is a CT and there is no warden i.e. the queue is not open/active.
         if (!_warden.HasWarden)
-            _warden.TrySetWarden(player);
+        {
+            if (_warden.TrySetWarden(player))
+                return;
+        }
 
         _notifications.CURRENT_WARDEN(_warden.Warden).ToPlayerChat(player);
     }
