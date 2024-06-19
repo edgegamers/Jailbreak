@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
+using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Damage;
 using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.SpecialDays;
@@ -57,8 +58,10 @@ public class SpecialDayHandler(SpecialDayConfig config, IJihadC4Service jihadC4S
     [GameEventHandler]
     private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
-        _roundsSinceLastSpecialDay++;
         _roundStartTime = (int)Math.Round(Server.CurrentTime);
+        if (ServerExtensions.GetGameRules().WarmupPeriod)
+            return HookResult.Continue;
+        _roundsSinceLastSpecialDay++;
         return HookResult.Continue;
     }
 
