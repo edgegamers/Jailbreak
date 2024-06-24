@@ -20,17 +20,35 @@ public class GenericCommandNotifications : IGenericCommandNotifications, ILangua
 
     public IView PlayerNotFound(string query)
     {
-        return new SimpleView { PREFIX, $"Player '{query}' not found!" };
+        return new SimpleView
+            { PREFIX, $"{ChatColors.Red}Player '{ChatColors.LightBlue}{query}{ChatColors.Red}' not found." };
     }
 
     public IView PlayerFoundMultiple(string query)
     {
-        return new SimpleView { PREFIX, $"Multiple players found for '{query}'!" };
+        return new SimpleView
+        {
+            PREFIX,
+            $"{ChatColors.Red}Multiple players found for '{ChatColors.LightBlue}{query}{ChatColors.Red}'."
+        };
     }
 
     public IView CommandOnCooldown(DateTime cooldownEndsAt)
     {
         var seconds = (int)(cooldownEndsAt - DateTime.Now).TotalSeconds;
-        return new SimpleView { PREFIX, $"Command is on cooldown for", seconds, "seconds!" };
+        return new SimpleView
+        {
+            PREFIX, $"{ChatColors.Grey}Command is on cooldown for", seconds,
+            $"{ChatColors.Grey}seconds!"
+        };
+    }
+
+    public IView InvalidParameter(string parameter, string expected)
+    {
+        return new SimpleView
+        {
+            PREFIX,
+            $"{ChatColors.Red}Invalid parameter '{ChatColors.LightBlue}{parameter}{ChatColors.Red}', expected a(n) {ChatColors.White}{expected}{ChatColors.Red}."
+        };
     }
 }

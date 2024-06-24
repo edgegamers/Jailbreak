@@ -16,7 +16,6 @@ public static class RebelServiceExtension
         collection.AddPluginBehavior<BombRandomGrantBehavior>();
 
         collection.AddRedirect<BombNotificationsBehavior, IBombResultHook>();
-
         collection.AddPluginBehavior<RebelListener>();
     }
 }

@@ -1,4 +1,5 @@
 ﻿using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Logistics;
 using Jailbreak.Formatting.Views;
@@ -9,9 +10,12 @@ public class RaceLRMessages : IRaceLRMessages, ILanguage<Formatting.Languages.En
 {
     public IView END_RACE_INSTRUCTION => new SimpleView()
     {
-        { LastRequestMessages.PREFIX, "Type !endrace to set the end point!"}, SimpleView.NEWLINE,
-        { LastRequestMessages.PREFIX, "Type !endrace to set the end point!"}, SimpleView.NEWLINE,
-        { LastRequestMessages.PREFIX, "Type !endrace to set the end point!"}, SimpleView.NEWLINE,
+        { LastRequestMessages.PREFIX, $"Type ${ChatColors.Blue}!endrace${ChatColors.White} to set the end point!" },
+        SimpleView.NEWLINE,
+        { LastRequestMessages.PREFIX, $"Type ${ChatColors.Blue}!endrace${ChatColors.White} to set the end point!" },
+        SimpleView.NEWLINE,
+        { LastRequestMessages.PREFIX, $"Type ${ChatColors.Blue}!endrace${ChatColors.White} to set the end point!" },
+        SimpleView.NEWLINE,
     };
 
     public IView RACE_STARTING_MESSAGE(CCSPlayerController prisoner)

@@ -4,12 +4,14 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
+using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Damage;
+using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.SpecialDays;
 
 namespace Jailbreak.SpecialDay;
 
-public class SpecialDayHandler(SpecialDayConfig config) : ISpecialDayHandler, IPluginBehavior
+public class SpecialDayHandler(SpecialDayConfig config, IJihadC4Service jihadC4Service) : ISpecialDayHandler, IPluginBehavior
 {
     private int _roundsSinceLastSpecialDay = 0;
     private bool _isSpecialDayActive = false;
@@ -56,8 +58,10 @@ public class SpecialDayHandler(SpecialDayConfig config) : ISpecialDayHandler, IP
     [GameEventHandler]
     private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
-        _roundsSinceLastSpecialDay++;
         _roundStartTime = (int)Math.Round(Server.CurrentTime);
+        if (ServerExtensions.GetGameRules().WarmupPeriod)
+            return HookResult.Continue;
+        _roundsSinceLastSpecialDay++;
         return HookResult.Continue;
     }
 
@@ -91,6 +95,11 @@ public class SpecialDayHandler(SpecialDayConfig config) : ISpecialDayHandler, IP
             var item = (ISpecialDay)Activator.CreateInstance(type, _plugin, _notifications);
             if (item == null) continue;
             if (item.Name != name) continue;
+
+            if (!item.ShouldJihadC4BeEnabled)
+            {
+                jihadC4Service.ClearActiveC4s();
+            }
 
             _currentSpecialDay = item;
             _isSpecialDayActive = true;

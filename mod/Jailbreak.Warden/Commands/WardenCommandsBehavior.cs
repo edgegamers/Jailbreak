@@ -18,15 +18,14 @@ public class WardenCommandsBehavior(
     IWardenService _warden,
     IGenericCommandNotifications _generics,
     WardenConfig _config
-    ) : IPluginBehavior
+) : IPluginBehavior
 {
-
-    private readonly Dictionary<CCSPlayerController, DateTime> _lastWardenCommand = new();
+    private readonly Dictionary<CCSPlayerController, DateTime> _lastPassCommand = new();
 
     [GameEventHandler]
     public HookResult OnRoundStart(EventRoundStart ev, GameEventInfo info)
     {
-        _lastWardenCommand.Clear();
+        _lastPassCommand.Clear();
         return HookResult.Continue;
     }
 
@@ -38,28 +37,26 @@ public class WardenCommandsBehavior(
         if (player == null)
             return;
 
-        if (_warden.IsWarden(player))
+        if (!_warden.IsWarden(player)) return;
+
+        //	Handle warden pass
+        _notifications.PASS_WARDEN(player)
+            .ToAllChat()
+            .ToAllCenter();
+
+        // GetPlayers() returns valid players, no need to error check here.
+        foreach (var clients in Utilities.GetPlayers())
         {
-            //	Handle warden pass
-            _notifications.PASS_WARDEN(player)
-                .ToAllChat()
-                .ToAllCenter();
-
-            // GetPlayers() returns valid players, no need to error check here.
-            foreach (var clients in Utilities.GetPlayers())
-            {
-                clients.ExecuteClientCommand(
-                    $"play sounds/{_config.WardenPassedSoundName}");
-            }
-
-            _notifications.BECOME_NEXT_WARDEN.ToAllChat();
-
-            if (!_warden.TryRemoveWarden(true))
-                Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");
-
-            _lastWardenCommand.Clear();
-            
+            clients.ExecuteClientCommand(
+                $"play sounds/{_config.WardenPassedSoundName}");
         }
+
+        _notifications.BECOME_NEXT_WARDEN.ToAllChat();
+
+        if (!_warden.TryRemoveWarden(true))
+            Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");
+
+        _lastPassCommand[player] = DateTime.Now;
     }
 
     [ConsoleCommand("css_warden",
@@ -72,10 +69,13 @@ public class WardenCommandsBehavior(
             return;
 
         // Why add them to a cooldown list if they can't even be warden :) 
-        if (player.Team != CsTeam.CounterTerrorist || !player.PawnIsAlive) { return; }
+        if (player.Team != CsTeam.CounterTerrorist || !player.PawnIsAlive)
+        {
+            return;
+        }
 
         // If they're already in the cooldown dictionary, check if their cooldown has expired.
-        if (_lastWardenCommand.TryGetValue(player, out var last))
+        if (_lastPassCommand.TryGetValue(player, out var last))
         {
             var cooldown = last.AddSeconds(15);
             if (DateTime.Now < cooldown)
@@ -84,9 +84,6 @@ public class WardenCommandsBehavior(
                 return;
             }
         }
-        
-        // This makes an entry if the key doesn't exist (and here it doesn't).
-        _lastWardenCommand[player] = DateTime.Now;
 
         //  Queue is open ?
         if (_queue.Active)
@@ -107,7 +104,10 @@ public class WardenCommandsBehavior(
 
         //	Is a CT and there is no warden i.e. the queue is not open/active.
         if (!_warden.HasWarden)
-            _warden.TrySetWarden(player);
+        {
+            if (_warden.TrySetWarden(player))
+                return;
+        }
 
         _notifications.CURRENT_WARDEN(_warden.Warden).ToPlayerChat(player);
     }
@@ -118,14 +118,14 @@ public class WardenCommandsBehavior(
     [GameEventHandler]
     public HookResult OnWardenDeath(EventPlayerDeath @event, GameEventInfo info)
     {
-        CCSPlayerController? player = @event.Userid;
-        if (player == null) { return HookResult.Continue; }
+        var player = @event.Userid;
+        if (player == null)
+            return HookResult.Continue;
 
-        if (player != _warden.Warden) { return HookResult.Continue; }
+        if (player != _warden.Warden)
+            return HookResult.Continue;
 
-        _lastWardenCommand.Clear();
+        _lastPassCommand.Clear();
         return HookResult.Continue;
-
-    } 
-
+    }
 }

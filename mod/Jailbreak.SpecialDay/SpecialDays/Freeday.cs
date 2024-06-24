@@ -10,6 +10,7 @@ public class Freeday : ISpecialDay
 {
     public string Name => "Freeday";
     public string Description => "All prisoners and guards are allowed to roam freely.";
+    public bool ShouldJihadC4BeEnabled => true;
     private readonly ISpecialDayNotifications _notifications;
     
     public Freeday(BasePlugin plugin, ISpecialDayNotifications notifications)
