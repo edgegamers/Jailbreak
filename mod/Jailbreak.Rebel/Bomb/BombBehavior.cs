@@ -26,20 +26,25 @@ namespace Jailbreak.Rebel.Bomb;
 
 public class BombBehavior : IPluginBehavior, IBombService
 {
-	public const string C4_NAME = "rebel_c4";
-	public const float DELAY_TIME = 2.5f;
-	public const float SOUND_DELAY_TIME = 1.1f;
+	public const string C4_NAME = "the_bomb";
+	public const float DELAY_TIME = 1.0f;
+	public const float SOUND_DELAY_TIME = 0.5f;
+
+	/// <summary>
+	/// Set to true to force the bomb to stop if the bomber dies
+	/// </summary>
+	public const bool STOP_BOMB_ON_DEATH = false;
 
 	private ICoroutines _coroutines;
 	private IRichLogService _logs;
 	private IServiceProvider _provider;
 
 	private IRebelService _rebel;
-	private IJihadC4Notifications _notifications;
+	private IBombNotifications _notifications;
 
 	private readonly MemoryFunctionVoid<CBaseEntity, string, int, float, float> _emitSound;
 
-	public BombBehavior(ICoroutines coroutines, IRichLogService logs, IJihadC4Notifications notifications, IRebelService rebel, IServiceProvider provider)
+	public BombBehavior(ICoroutines coroutines, IRichLogService logs, IBombNotifications notifications, IRebelService rebel, IServiceProvider provider)
 	{
 		_coroutines = coroutines;
 		_logs = logs;
@@ -60,6 +65,7 @@ public class BombBehavior : IPluginBehavior, IBombService
 
 	private void EmitSound(CBaseEntity entity, string name)
 	{
+		//	TODO: make this a service (as it should be)
 		_emitSound.Invoke(entity, name, 100, 1, 0);
 	}
 
@@ -98,7 +104,7 @@ public class BombBehavior : IPluginBehavior, IBombService
 
 	private void OnDetonate(CCSPlayerController bomber, CC4 bomb)
 	{
-		_logs.Append(_logs.Player(bomber), "triggered THE BOMB\u2122!");
+		_logs.Append(_logs.Player(bomber), "triggered THE BOMB!");
 		_rebel.MarkRebel(bomber);
 
 		//	1. Bomb entity needs to be destroyed no matter what
@@ -112,10 +118,10 @@ public class BombBehavior : IPluginBehavior, IBombService
 		stats.SteamId = bomber.AuthorizedSteamID.ToString();
 
 		_coroutines.Round(Detonate, DELAY_TIME);
-		_notifications.PlayerDetonateC4(bomber).ToAllChat().ToAllCenter();
+		_notifications.DETONATING_BOMB(bomber).ToAllChat().ToAllCenter();
 
-		EmitSound(bomber, "C4.ExplodeWarning");
-		_coroutines.Round(() => EmitSound(bomb, "C4.ExplodeTriggerTrip"), SOUND_DELAY_TIME);
+		EmitSound(bomber, "C4.ExplodeTriggerTrip");
+		_coroutines.Round(() => EmitSound(bomb, "C4.ExplodeWarning"), SOUND_DELAY_TIME);
 
 		void ParticleSystemAt(Vector position)
 		{
@@ -154,6 +160,12 @@ public class BombBehavior : IPluginBehavior, IBombService
 			if (!bomb.IsValid || bomb.AbsOrigin == null)
 				return;
 
+			//	If we choose to stop bomb on death, we stop here
+			if (STOP_BOMB_ON_DEATH)
+				if (!bomber.IsValid || !bomber.IsReal() || !bomber.PawnIsAlive)
+					return;
+
+
 			var explosionOrigin = bomb.AbsOrigin;
 			ParticleSystemAt(explosionOrigin);
 			EmitSound(bomb, "tr.C4explode");
@@ -172,7 +184,7 @@ public class BombBehavior : IPluginBehavior, IBombService
 				float damage = DamageCurves.CircleLower(500, 500, distance);
 				int intDamage = (int)damage;
 
-				_logs.Append(bomber.IsReal() ? _logs.Player(bomber) : "(the bomber)", "hurt player", _logs.Player(victim), "with THE BOMB\u2122 for", intDamage, "damage");
+				_logs.Append(bomber.IsReal() ? _logs.Player(bomber) : "(the bomber)", "hurt player", _logs.Player(victim), "with THE BOMB for", intDamage, "damage");
 
 				stats.Damage += intDamage;
 				if (intDamage == 0)
@@ -191,11 +203,11 @@ public class BombBehavior : IPluginBehavior, IBombService
 			}
 
 			//	Lastly, always kill the bomber
-			//if (bomber.IsValid && bomber.IsReal() && bomber.PawnIsAlive)
-			//	bomber.CommitSuicide(true, true);
+			if (bomber.IsValid && bomber.IsReal() && bomber.PawnIsAlive)
+				bomber.CommitSuicide(true, true);
 
 			//	Now remove the bomb
-			//	bomb.Remove();
+			bomb.Remove();
 
 			//	Trigger hooks waiting for stats
 			TriggerHooks();
@@ -221,11 +233,12 @@ public class BombBehavior : IPluginBehavior, IBombService
 		return true;
 	}
 
-	[ConsoleCommand("css_givebomb", "Used to set the end point of a race LR")]
+#if _
+	[ConsoleCommand("css_givebomb", "Give yourself a bomb (development only!)")]
 	[CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
 	public void Command_EndRace(CCSPlayerController? executor, CommandInfo info)
 	{
 		this.TryGrant(executor);
 	}
-
+#endif
 }

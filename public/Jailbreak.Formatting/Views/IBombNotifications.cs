@@ -8,16 +8,16 @@ using System.Threading.Tasks;
 
 namespace Jailbreak.Formatting.Views;
 
-public interface IJihadC4Notifications
+public interface IBombNotifications
 {
-    public IView PlayerDetonateC4(CCSPlayerController player);
+    public IView DETONATING_BOMB(CCSPlayerController player);
 
     public IView PLAYER_RESULTS(int damage, int kills);
 
-    public IView JIHAD_C4_DROPPED { get; }
-    public IView JIHAD_C4_PICKUP { get; }
-    public IView JIHAD_C4_RECEIVED { get; }
-    public IView JIHAD_C4_USAGE { get; }
+    public IView BOMB_DROPPED { get; }
+    public IView BOMB_PICKUP { get; }
+    public IView BOMB_RECEIVED { get; }
+    public IView BOMB_USAGE { get; }
 
 
 }

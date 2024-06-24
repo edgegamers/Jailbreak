@@ -31,13 +31,13 @@ public class LanguageConfig<TDialect>
 		where TRebel : class, ILanguage<TDialect>, IRebelNotifications
 		=> _collection.AddSingleton<IRebelNotifications, TRebel>();
 
-    	public void WithJihadC4<TJihadC4>()
-        	where TJihadC4 : class, ILanguage<TDialect>, IJihadC4Notifications
-        	=> _collection.AddSingleton<IJihadC4Notifications, TJihadC4>();
-	    
+    	public void WithBomb<TBomb>()
+        	where TBomb : class, ILanguage<TDialect>, IBombNotifications
+        	=> _collection.AddSingleton<IBombNotifications, TBomb>();
+
 	    public void WithSpecialDay<TSpecialDay>()
 			where TSpecialDay : class, ILanguage<TDialect>, ISpecialDayNotifications
-		    => _collection.AddSingleton<ISpecialDayNotifications, TSpecialDay>(); 
+		    => _collection.AddSingleton<ISpecialDayNotifications, TSpecialDay>();
 
 	    public void WithLogging<TLogging>()
 		where TLogging : class, ILanguage<TDialect>, ILogMessages
@@ -54,11 +54,11 @@ public class LanguageConfig<TDialect>
 	public void WithSpecialTreatment<TSpecialTreatment>()
 		where TSpecialTreatment : class, ILanguage<TDialect>, ISpecialTreatmentNotifications
 		=> _collection.AddSingleton<ISpecialTreatmentNotifications, TSpecialTreatment>();
-	
+
 	public void WithMute<TMute>()
 		where TMute : class, ILanguage<TDialect>, IPeaceMessages
 		=> _collection.AddSingleton<IPeaceMessages, TMute>();
-	
+
 	public void WithRaceLR<TRaceLR>()
 		where TRaceLR : class, ILanguage<TDialect>, IRaceLRMessages
 		=> _collection.AddSingleton<IRaceLRMessages, TRaceLR>();

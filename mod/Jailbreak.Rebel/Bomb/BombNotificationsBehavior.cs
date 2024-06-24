@@ -9,9 +9,9 @@ namespace Jailbreak.Rebel.Bomb;
 
 public class BombNotificationsBehavior : IPluginBehavior, IBombResultHook
 {
-	private IJihadC4Notifications _notifications;
+	private IBombNotifications _notifications;
 
-	public BombNotificationsBehavior(IJihadC4Notifications notifications)
+	public BombNotificationsBehavior(IBombNotifications notifications)
 	{
 		_notifications = notifications;
 	}
@@ -29,7 +29,7 @@ public class BombNotificationsBehavior : IPluginBehavior, IBombResultHook
 		CC4 bombEntity = new CC4(weaponServices.MyWeapons.Last()!.Value!.Handle); // The last item in the weapons list is the last item the player picked up, apparently.
 
 		if (bombEntity.Globalname == BombBehavior.C4_NAME)
-			_notifications.JIHAD_C4_PICKUP
+			_notifications.BOMB_PICKUP
 				.ToPlayerChat(player)
 				.ToPlayerCenter(player);
 

@@ -6,13 +6,13 @@ using Jailbreak.Formatting.Views;
 
 namespace Jailbreak.English.Rebel;
 
-public class JihadC4Notifications : IJihadC4Notifications, ILanguage<Formatting.Languages.English>
+public class BombNotifications : IBombNotifications, ILanguage<Formatting.Languages.English>
 {
 
-    public IView JIHAD_C4_DROPPED => new SimpleView { RebelNotifications.PREFIX, "You've dropped your Bomb\u2122 :(" };
-    public IView JIHAD_C4_PICKUP => new SimpleView { RebelNotifications.PREFIX, "You've picked up The Bomb\u2122!" };
-    public IView JIHAD_C4_RECEIVED => new SimpleView { RebelNotifications.PREFIX, "You were smugged The Bomb\u2122! Use it wisely." };
-    public IView JIHAD_C4_USAGE => new SimpleView
+    public IView BOMB_DROPPED => new SimpleView { RebelNotifications.PREFIX, "You've dropped your Bomb\u2122 :(" };
+    public IView BOMB_PICKUP => new SimpleView { RebelNotifications.PREFIX, "You've picked up The Bomb\u2122!" };
+    public IView BOMB_RECEIVED => new SimpleView { RebelNotifications.PREFIX, "You were smugged The Bomb\u2122! Use it wisely." };
+    public IView BOMB_USAGE => new SimpleView
     {
 	    { RebelNotifications.PREFIX, $"To detonate The Bomb\u2122, hold it out and press {ChatColors.Yellow + "E" + ChatColors.Default}. (or +use)" }, SimpleView.NEWLINE,
 	    { RebelNotifications.PREFIX, $"The Bomb\u2122's delay is {ChatColors.Yellow + "2.5 seconds" + ChatColors.Default}." }, SimpleView.NEWLINE,
@@ -20,7 +20,7 @@ public class JihadC4Notifications : IJihadC4Notifications, ILanguage<Formatting.
 	    { RebelNotifications.PREFIX, $"You can drop The Bomb\u2122 to other players with {ChatColors.Yellow + "G" + ChatColors.Default}." }
     };
 
-    public IView PlayerDetonateC4(CCSPlayerController player)
+    public IView DETONATING_BOMB(CCSPlayerController player)
     {
         return new SimpleView { RebelNotifications.PREFIX, $"{player.PlayerName} has detonated The Bomb\u2122!" };
     }
