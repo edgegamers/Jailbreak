@@ -98,7 +98,7 @@ public class WardenBehavior(
         logs.Append(logs.Player(_warden), "is now the warden.");
 
         _unblueTimer = _parent.AddTimer(3, UnmarkPrisonersBlue);
-        mute.PeaceMute(firstWarden ? MuteReason.WARDEN_TAKEN : MuteReason.INITIAL_WARDEN);
+        mute.PeaceMute(firstWarden ? MuteReason.INITIAL_WARDEN : MuteReason.WARDEN_TAKEN);
 
         // Always store the stats of the warden b4 they became warden, in case we need to restore them later.
         var wardenPawn = _warden.PlayerPawn.Value;
