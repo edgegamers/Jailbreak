@@ -60,4 +60,17 @@ public static class ServiceCollectionExtensions
         collection.AddTransient<TConfig>(provider => provider.GetRequiredService<IConfigService>()
             .Get<TConfig>(sectionName));
     }
+
+	/// <summary>
+	/// Add a redirect that enables a singleton to be found from more than one class
+	/// </summary>
+	/// <param name="collection"></param>
+	/// <typeparam name="TFrom"></typeparam>
+	/// <typeparam name="TTo"></typeparam>
+	public static void AddRedirect<TFrom, TTo>(this IServiceCollection collection)
+		where TFrom : class, TTo
+		where TTo : class
+	{
+		collection.AddTransient<TTo>(provider => provider.GetRequiredService<TFrom>());
+	}
 }
