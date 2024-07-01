@@ -173,7 +173,7 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
         {
             MuteReason.ADMIN => baseTime,
             MuteReason.WARDEN_TAKEN => baseTime / 5,
-            MuteReason.INITIAL_WARDEN => baseTime,
+            MuteReason.INITIAL_WARDEN => (int) Math.Ceiling(baseTime / 2.0),
             MuteReason.WARDEN_INVOKED => baseTime / 2,
             _ => baseTime
         };
