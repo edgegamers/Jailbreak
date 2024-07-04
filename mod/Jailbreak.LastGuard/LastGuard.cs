@@ -25,13 +25,19 @@ public class LastGuard : ILastGuardService, IPluginBehavior
 
     public void Start(BasePlugin plugin)
     {
-        
+        plugin.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeathEvent);
+        plugin.RegisterEventHandler<EventRoundStart>(OnRoundStartEvent);
     }
 
     [GameEventHandler]
     public HookResult OnPlayerDeathEvent(EventPlayerDeath @event, GameEventInfo info)
     {
-        if (Utilities.GetPlayers().Count(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist}) == 1)
+        var aliveCts = Utilities.GetPlayers()
+            .Count(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist });
+        
+        Server.PrintToChatAll("Alive CTs: " + aliveCts);
+        
+        if (aliveCts == 1)
         {
             StartLastGuard(Utilities.GetPlayers().First(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist }));
         }
@@ -43,10 +49,9 @@ public class LastGuard : ILastGuardService, IPluginBehavior
     public HookResult OnRoundStartEvent(EventRoundStart @event, GameEventInfo info)
     {
         _canStart = Utilities.GetPlayers().Count(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist}) >= _config.MinimumCTs;
+        Server.PrintToChatAll("Can start: " + _canStart);
         return HookResult.Continue;
     }
-    
-    
     
     public int CalculateHealth()
     {
