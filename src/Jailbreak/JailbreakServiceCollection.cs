@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Core;
 using Jailbreak.Config;
 using Jailbreak.Debug;
 using Jailbreak.English.Generic;
+using Jailbreak.English.LastGuard;
 using Jailbreak.English.LastRequest;
 using Jailbreak.English.Logs;
 using Jailbreak.English.Mute;
@@ -59,6 +60,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
 			config.WithSpecialTreatment<SpecialTreatmentNotifications>();
 			config.WithMute<PeaceMessages>();
 			config.WithRaceLR<RaceLRMessages>();
+			config.WithLastGuard<LastGuardNotifications>();	
 		});
 	}
 }

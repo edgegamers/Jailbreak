@@ -62,4 +62,8 @@ public class LanguageConfig<TDialect>
 	public void WithRaceLR<TRaceLR>()
 		where TRaceLR : class, ILanguage<TDialect>, IRaceLRMessages
 		=> _collection.AddSingleton<IRaceLRMessages, TRaceLR>();
+	
+	public void WithLastGuard<TLastGuard>()
+		where TLastGuard : class, ILanguage<TDialect>, ILastGuardNotifications
+		=> _collection.AddSingleton<ILastGuardNotifications, TLastGuard>();
 }
