@@ -25,8 +25,7 @@ public class LastGuard : ILastGuardService, IPluginBehavior
 
     public void Start(BasePlugin plugin)
     {
-        plugin.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeathEvent);
-        plugin.RegisterEventHandler<EventRoundStart>(OnRoundStartEvent);
+        
     }
 
     [GameEventHandler]
