@@ -12,6 +12,7 @@ using Jailbreak.English.SpecialDay;
 using Jailbreak.English.Warden;
 using Jailbreak.Formatting.Logistics;
 using Jailbreak.Generic;
+using Jailbreak.LastGuard;
 using Jailbreak.LastRequest;
 using Jailbreak.Logs;
 using Jailbreak.Mute;
@@ -42,6 +43,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
         serviceCollection.AddJailbreakWarden();
         serviceCollection.AddJailbreakDebug();
         serviceCollection.AddJailbreakLastRequest();
+        serviceCollection.AddJailbreakLastGuard();
 
 		//	Add in english localization
 		serviceCollection.AddLanguage<Formatting.Languages.English>(config =>
