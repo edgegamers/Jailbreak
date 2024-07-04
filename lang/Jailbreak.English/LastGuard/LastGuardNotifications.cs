@@ -23,7 +23,6 @@ public class LastGuardNotifications : ILastGuardNotifications, ILanguage<Formatt
         return new SimpleView()
         {
             PREFIX,
-            $"{ChatColors.Red}Last Guard has been activated! Last guard has {ctHealth} health and T's have {tHealth} health."
-        };
+            $"{ChatColors.Red}Last Guard has been activated! Last guard has", ctHealth, "health and T's have", tHealth, "health."         };
     }
 }
