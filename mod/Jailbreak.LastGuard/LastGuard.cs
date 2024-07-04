@@ -43,7 +43,7 @@ public class LastGuard : ILastGuardService, IPluginBehavior
     [GameEventHandler]
     public HookResult OnRoundStartEvent(EventRoundStart @event, GameEventInfo info)
     {
-        canStart = Utilities.GetPlayers().Count(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist}) == 4;
+        canStart = Utilities.GetPlayers().Count(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist}) >= _config.MinimumCTs;
         return HookResult.Continue;
     }
     
