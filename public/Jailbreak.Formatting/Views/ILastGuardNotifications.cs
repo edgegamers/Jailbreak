@@ -2,8 +2,8 @@
 
 namespace Jailbreak.Formatting.Views;
 
-public class ILastGuardNotifications
+public interface ILastGuardNotifications
 {
-    public IView LG_STARTED { get; }
+    public IView LG_STARTED(int ctHealth, int tHealth);
 
 }

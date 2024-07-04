@@ -18,11 +18,12 @@ public class LastGuardNotifications : ILastGuardNotifications, ILanguage<Formatt
             Chat = true
         };
 
-    public IView LG_STARTED => new SimpleView
+    public IView LG_STARTED(int ctHealth, int tHealth)
     {
+        return new SimpleView()
         {
             PREFIX,
-            $"{ChatColors.Red}Last Guard has been activated!"
-        },
-    };
+            $"{ChatColors.Red}Last Guard has been activated! Last guard has {ctHealth} health and T's have {tHealth} health."
+        };
+    }
 }

@@ -59,7 +59,7 @@ public class LastGuard : ILastGuardService, IPluginBehavior
             if (terrorist.Health > 100) terrorist.Health = 100;
         }
         
-        return aliveTerrorists.Select(player => player.Health).Select(playerHealth => playerHealth >= 100 ? 45 : (int)(playerHealth * 0.45)).Sum();
+        return aliveTerrorists.Select(player => player.Health).Select(playerHealth => (int)(playerHealth * 0.45)).Sum();
     }
 
     public void StartLastGuard(CCSPlayerController lastGuard)
@@ -76,6 +76,6 @@ public class LastGuard : ILastGuardService, IPluginBehavior
             player.GiveNamedItem(_config.LastGuardWeapon);
         }
 
-        _notifications.LG_STARTED.ToAllCenter().ToAllChat();
+        _notifications.LG_STARTED(lastGuard.Health, aliveTerrorists.Select(plr => plr.Health).Sum()).ToAllCenter().ToAllChat();
     }
 }
