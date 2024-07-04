@@ -22,7 +22,7 @@ public class LastGuardNotifications : ILastGuardNotifications, ILanguage<Formatt
     {
         {
             PREFIX,
-            $"Last Guard has been activated!"
+            $"{ChatColors.Red}Last Guard has been activated!"
         },
     };
 }
