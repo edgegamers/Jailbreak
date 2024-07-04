@@ -15,6 +15,7 @@ public class LastGuard : ILastGuardService, IPluginBehavior
 
     private readonly LastGuardConfig _config;
     private readonly ILastGuardNotifications _notifications;
+    private bool canStart = false;
     
     public LastGuard(LastGuardConfig config, ILastGuardNotifications notifications)
     {
@@ -25,6 +26,7 @@ public class LastGuard : ILastGuardService, IPluginBehavior
     public void Start(BasePlugin plugin)
     {
         plugin.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeathEvent);
+        plugin.RegisterEventHandler<EventRoundStart>(OnRoundStartEvent);
     }
 
     [GameEventHandler]
@@ -38,6 +40,15 @@ public class LastGuard : ILastGuardService, IPluginBehavior
         return HookResult.Continue;
     }
     
+    [GameEventHandler]
+    public HookResult OnRoundStartEvent(EventRoundStart @event, GameEventInfo info)
+    {
+        canStart = Utilities.GetPlayers().Count(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist}) == 4;
+        return HookResult.Continue;
+    }
+    
+    
+    
     public int CalculateHealth()
     {
         var aliveTerrorists = Utilities.GetPlayers()
@@ -48,6 +59,7 @@ public class LastGuard : ILastGuardService, IPluginBehavior
 
     public void StartLastGuard(CCSPlayerController lastGuard)
     {
+        if (!canStart) return;
         lastGuard.Health = CalculateHealth();
 
         var aliveTerrorists = Utilities.GetPlayers()
