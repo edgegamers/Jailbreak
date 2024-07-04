@@ -64,18 +64,22 @@ public class LastGuard : ILastGuardService, IPluginBehavior
     public void StartLastGuard(CCSPlayerController lastGuard)
     {
         if (!_canStart) return;
+        
         lastGuard.Health = CalculateHealth();
-
+        
         var aliveTerrorists = Utilities.GetPlayers()
             .Where(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.Terrorist });
 
         
+        _notifications.LG_STARTED(lastGuard.Health, aliveTerrorists.Select(plr => plr.Health).Sum()).ToAllCenter().ToAllChat();
+
+        if (string.IsNullOrEmpty(_config.LastGuardWeapon)) return;
+
+        
         foreach (var player in aliveTerrorists)
         {
-            if (_config.LastGuardWeapon == null || _config.LastGuardWeapon == string.Empty) break;
             player.GiveNamedItem(_config.LastGuardWeapon);
         }
 
-        _notifications.LG_STARTED(lastGuard.Health, aliveTerrorists.Select(plr => plr.Health).Sum()).ToAllCenter().ToAllChat();
     }
 }
