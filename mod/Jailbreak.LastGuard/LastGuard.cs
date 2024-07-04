@@ -72,6 +72,7 @@ public class LastGuard : ILastGuardService, IPluginBehavior
         
         foreach (var player in aliveTerrorists)
         {
+            if (_config.LastGuardWeapon == null || _config.LastGuardWeapon == string.Empty) break;
             player.GiveNamedItem(_config.LastGuardWeapon);
         }
 
