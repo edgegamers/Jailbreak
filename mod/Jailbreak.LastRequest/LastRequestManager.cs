@@ -153,17 +153,21 @@ public class LastRequestManager(
     public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
     {
         var player = @event.Userid;
+
+        if (player == null) return HookResult.Continue;
+        
         if (!player.IsReal() || ServerExtensions.GetGameRules().WarmupPeriod)
             return HookResult.Continue;
+        
         if (IsLREnabled)
             return HookResult.Continue;
 
-        foreach (var activeLr in ActiveLRs)
+        var activeLr = ((ILastRequestManager)this).GetActiveLR(player);
+
+        if (activeLr != null || activeLr.state != LRState.Active)
         {
-            if (activeLr.prisoner == player || activeLr.guard == player) {            
-            EndLastRequest(activeLr, LRResult.TimedOut);
+            EndLastRequest(activeLr, player.Team == CsTeam.Terrorist ? LRResult.GuardWin : LRResult.PrisonerWin);
             return HookResult.Continue;
-            }
         }
         
         if (player.GetTeam() != CsTeam.Terrorist)
