@@ -53,7 +53,7 @@ public class Warday : ISpecialDay, IBlockUserDamage
 
             var index = new Random().Next(0, max);
             
-            player.PlayerPawn.Value!.Teleport(spawns[Index].AbsOrigin);
+            player.PlayerPawn.Value!.Teleport(spawns[index].AbsOrigin);
             if (player.Team == CsTeam.Terrorist) FreezeManager.FreezePlayer(player, 30);
         }
         _hasStarted = false;
