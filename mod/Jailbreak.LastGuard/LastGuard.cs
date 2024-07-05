@@ -31,6 +31,9 @@ public class LastGuard : ILastGuardService, IPluginBehavior
     [GameEventHandler]
     public HookResult OnPlayerDeathEvent(EventPlayerDeath @event, GameEventInfo info)
     {
+        var target = @event.Userid;
+        if (target == null) return HookResult.Continue;
+        if (target.Team != CsTeam.CounterTerrorist) return HookResult.Continue;
         var aliveCts = Utilities.GetPlayers()
             .Count(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist });
         
@@ -38,7 +41,7 @@ public class LastGuard : ILastGuardService, IPluginBehavior
         
         if (aliveCts == 1)
         {
-            StartLastGuard(Utilities.GetPlayers().First(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist }));
+            StartLastGuard(target);
         }
         
         return HookResult.Continue;
