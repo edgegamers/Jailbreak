@@ -1,4 +1,4 @@
-﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -12,7 +12,7 @@ namespace Jailbreak.LastGuard;
 
 public class LastGuard : ILastGuardService, IPluginBehavior
 {
-
+    
     private readonly LastGuardConfig _config;
     private readonly ILastGuardNotifications _notifications;
     private bool _canStart = false;
@@ -25,8 +25,7 @@ public class LastGuard : ILastGuardService, IPluginBehavior
 
     public void Start(BasePlugin plugin)
     {
-        plugin.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeathEvent);
-        plugin.RegisterEventHandler<EventRoundStart>(OnRoundStartEvent);
+        
     }
 
     [GameEventHandler]
@@ -60,26 +59,25 @@ public class LastGuard : ILastGuardService, IPluginBehavior
 
         foreach (var terrorist in aliveTerrorists)
         {
-            if (terrorist.Health > 100) terrorist.Health = 100;
+            if (terrorist.PlayerPawn.Value?.Health > 100) terrorist.PlayerPawn.Value.Health = 100;
         }
         
-        return aliveTerrorists.Select(player => player.Health).Select(playerHealth => (int)(playerHealth * 0.45)).Sum();
+        return aliveTerrorists.Select(player => player.PlayerPawn.Value.Health).Select(playerHealth => (int)(playerHealth * 0.45)).Sum();
     }
 
     public void StartLastGuard(CCSPlayerController lastGuard)
     {
         if (!_canStart) return;
         
-        lastGuard.Health = CalculateHealth();
+        lastGuard.PlayerPawn.Value.Health = CalculateHealth();
         
         var aliveTerrorists = Utilities.GetPlayers()
             .Where(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.Terrorist });
 
         
-        _notifications.LG_STARTED(lastGuard.Health, aliveTerrorists.Select(plr => plr.Health).Sum()).ToAllCenter().ToAllChat();
+        _notifications.LG_STARTED(lastGuard.PlayerPawn.Value.Health, aliveTerrorists.Select(plr => plr.PlayerPawn.Value).Sum()).ToAllCenter().ToAllChat();
 
         if (string.IsNullOrEmpty(_config.LastGuardWeapon)) return;
-
         
         foreach (var player in aliveTerrorists)
         {
