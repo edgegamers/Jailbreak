@@ -75,7 +75,7 @@ public class LastGuard : ILastGuardService, IPluginBehavior
             .Where(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.Terrorist });
 
         
-        _notifications.LG_STARTED(lastGuard.PlayerPawn.Value.Health, aliveTerrorists.Select(plr => plr.PlayerPawn.Value).Sum()).ToAllCenter().ToAllChat();
+        _notifications.LG_STARTED(lastGuard.PlayerPawn.Value.Health, aliveTerrorists.Select(plr => plr.PlayerPawn.Value.Health).Sum()).ToAllCenter().ToAllChat();
 
         if (string.IsNullOrEmpty(_config.LastGuardWeapon)) return;
         
