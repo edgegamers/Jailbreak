@@ -43,12 +43,17 @@ public class Warday : ISpecialDay, IBlockUserDamage
         _notifications.SD_WARDAY_STARTED
             .ToAllChat()
             .ToAllCenter();
-        var spawn = Utilities.FindAllEntitiesByDesignerName<SpawnPoint>("info_player_counterterrorist").First();
+            
+        var spawns = Utilities.FindAllEntitiesByDesignerName<SpawnPoint>("info_player_counterterrorist").ToList();
 
         foreach (var player in Utilities.GetPlayers()
                      .Where(player => player.IsReal()))
         {
-            player.PlayerPawn.Value!.Teleport(spawn.AbsOrigin);
+            var max = spawns.Count;
+
+            var index = new Random().Next(0, max);
+            
+            player.PlayerPawn.Value!.Teleport(spawns[index].AbsOrigin);
             if (player.Team == CsTeam.Terrorist) FreezeManager.FreezePlayer(player, 30);
         }
         _hasStarted = false;
