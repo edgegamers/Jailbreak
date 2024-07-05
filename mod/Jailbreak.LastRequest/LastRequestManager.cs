@@ -158,6 +158,14 @@ public class LastRequestManager(
         if (IsLREnabled)
             return HookResult.Continue;
 
+        foreach (var activeLr in ActiveLRs)
+        {
+            if (activeLr.prisoner == player || activeLr.guard == player) {            
+            EndLastRequest(activeLr, LRResult.TimedOut);
+            return HookResult.Continue;
+            }
+        }
+        
         if (player.GetTeam() != CsTeam.Terrorist)
             return HookResult.Continue;
         if (CountAlivePrisoners() > _config.PrisonersToActiveLR)
