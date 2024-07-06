@@ -9,7 +9,6 @@ using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rebel;
 using Microsoft.Extensions.Logging;
-using Jailbreak.Public.Mod.SpecialDays;
 
 namespace Jailbreak.Rebel.JihadC4;
 

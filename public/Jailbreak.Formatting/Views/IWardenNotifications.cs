@@ -38,4 +38,7 @@ public interface IWardenNotifications
     /// <returns></returns>
     public IView CURRENT_WARDEN(CCSPlayerController? player);
     public IView FIRE_COMMAND_SUCCESS(CCSPlayerController player);
+
+    public IView FIRE_WARDEN(CCSPlayerController player);
+    public IView FIRE_WARDEN(CCSPlayerController player, CCSPlayerController admin);
 }

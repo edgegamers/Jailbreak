@@ -2,11 +2,13 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
+using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Warden;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -57,6 +59,48 @@ public class WardenCommandsBehavior(
             Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");
 
         _lastPassCommand[player] = DateTime.Now;
+    }
+
+    [ConsoleCommand("css_fire", "Force the warden to pass")]
+    [CommandHelper(0, "", CommandUsage.CLIENT_ONLY)]
+    public void Command_Fire(CCSPlayerController? player, CommandInfo command)
+    {
+        if (player == null)
+            return;
+
+        if (!_warden.HasWarden || _warden.Warden == null)
+        {
+            _notifications.CURRENT_WARDEN(null).ToPlayerChat(player);
+            return;
+        }
+
+        if (!AdminManager.PlayerHasPermissions(player, "@css/ban"))
+        {
+            _generics.NoPermissionMessage("@css/ban").ToPlayerChat(player);
+            return;
+        }
+
+        foreach (var client in Utilities.GetPlayers().Where(p => p.IsReal()))
+        {
+            if (AdminManager.PlayerHasPermissions(client, "@css/chat"))
+            {
+                _notifications.FIRE_WARDEN(_warden.Warden, player).ToPlayerChat(client);
+            }
+            else
+            {
+                _notifications.FIRE_WARDEN(_warden.Warden).ToPlayerChat(client);
+            }
+
+            client.ExecuteClientCommand(
+                $"play sounds/{_config.WardenPassedSoundName}");
+        }
+
+        _notifications.BECOME_NEXT_WARDEN.ToAllChat();
+
+        _lastPassCommand[_warden.Warden] = DateTime.Now;
+        
+        if (!_warden.TryRemoveWarden(true))
+            Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");
     }
 
     [ConsoleCommand("css_warden",

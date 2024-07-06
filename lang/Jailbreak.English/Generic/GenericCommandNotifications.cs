@@ -51,4 +51,13 @@ public class GenericCommandNotifications : IGenericCommandNotifications, ILangua
             $"{ChatColors.Red}Invalid parameter '{ChatColors.LightBlue}{parameter}{ChatColors.Red}', expected a(n) {ChatColors.White}{expected}{ChatColors.Red}."
         };
     }
+
+    public IView NoPermissionMessage(string permission)
+    {
+        return new SimpleView
+        {
+            PREFIX,
+            $"{ChatColors.Red}You do not have permission to use this command. Required permission: {ChatColors.White}{permission}{ChatColors.Red}."
+        };
+    }
 }
