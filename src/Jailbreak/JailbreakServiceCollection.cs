@@ -9,7 +9,6 @@ using Jailbreak.English.LastRequest;
 using Jailbreak.English.Logs;
 using Jailbreak.English.Mute;
 using Jailbreak.English.Rebel;
-using Jailbreak.English.SpecialDay;
 using Jailbreak.English.Warden;
 using Jailbreak.Formatting.Logistics;
 using Jailbreak.Generic;
@@ -19,7 +18,6 @@ using Jailbreak.Logs;
 using Jailbreak.Mute;
 using Jailbreak.Public.Configuration;
 using Jailbreak.Rebel;
-using Jailbreak.SpecialDay;
 using Jailbreak.Warden;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -36,7 +34,6 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
         //	Do we want to make this scoped?
         //	Not sure how this will behave with multiple rounds and whatnot.
         serviceCollection.AddTransient<IConfigService, ConfigService>();
-        serviceCollection.AddSpecialDays();
         serviceCollection.AddJailbreakGeneric();
         serviceCollection.AddJailbreakLogs();
         serviceCollection.AddJailbreakRebel();
@@ -55,7 +52,6 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
 			config.WithLogging<LogMessages>();
    			config.WithRollCommand<RollCommandNotifications>();
    			config.WithJihadC4<JihadC4Notifications>();
-   			config.WithSpecialDay<SpecialDayNotifications>();
    			config.WithLastRequest<LastRequestMessages>();
 			config.WithSpecialTreatment<SpecialTreatmentNotifications>();
 			config.WithMute<PeaceMessages>();
