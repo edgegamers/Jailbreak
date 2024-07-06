@@ -15,12 +15,14 @@ public class LastGuard : ILastGuardService, IPluginBehavior
     
     private readonly LastGuardConfig _config;
     private readonly ILastGuardNotifications _notifications;
+    private readonly ILastRequestManager _lrManager;
     private bool _canStart = false;
     
-    public LastGuard(LastGuardConfig config, ILastGuardNotifications notifications)
+    public LastGuard(LastGuardConfig config, ILastGuardNotifications notifications, ILastRequestManager lrManager)
     {
         _config = config;
         _notifications = notifications;
+        _lrManager = lrManager;
     }   
 
     public void Start(BasePlugin plugin)
@@ -37,9 +39,7 @@ public class LastGuard : ILastGuardService, IPluginBehavior
         var aliveCts = Utilities.GetPlayers()
             .Count(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist }) - 1;
         
-        Server.PrintToChatAll("Alive CTs: " + aliveCts);
-
-        if (aliveCts == 1)
+        if (aliveCts == 1 && !_lrManager.IsLREnabled)
         {
             var lastGuard = Utilities.GetPlayers().First(plr => plr.IsReal() && plr != target && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist });
             
@@ -52,7 +52,6 @@ public class LastGuard : ILastGuardService, IPluginBehavior
     public HookResult OnRoundStartEvent(EventRoundStart @event, GameEventInfo info)
     {
         _canStart = Utilities.GetPlayers().Count(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist}) >= _config.MinimumCTs;
-        Server.PrintToChatAll("Can start: " + _canStart);
         return HookResult.Continue;
     }
     
