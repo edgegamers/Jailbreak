@@ -54,12 +54,12 @@ public class PeaceMessages : IPeaceMessages, ILanguage<Formatting.Languages.Engl
 
     public IView UNMUTED_GUARDS => new SimpleView()
     {
-        { PREFIX, ChatColors.Blue, "Guards", ChatColors.Grey, "have been unmuted." }
+        { PREFIX, $"{ChatColors.Blue}Guards {ChatColors.Grey}have been unmuted." }
     };
 
     public IView UNMUTED_PRISONERS => new SimpleView()
     {
-        { PREFIX, ChatColors.LightRed, "Prisoners", ChatColors.Grey, "have been unmuted." }
+        { PREFIX, $"{ChatColors.LightRed}Prisoners {ChatColors.Grey}have been unmuted." }
     };
 
     public IView MUTE_REMINDER => new SimpleView()
@@ -69,17 +69,22 @@ public class PeaceMessages : IPeaceMessages, ILanguage<Formatting.Languages.Engl
 
     public IView PEACE_REMINDER => new SimpleView()
     {
-        { PREFIX, "Peace is currently active.", ChatColors.Red, "You should only be talking if absolutely necessary!" }
+        {
+            PREFIX,
+            $"Peace is currently active. {ChatColors.Red}You should only be talking if absolutely necessary!"
+        }
     };
 
     public IView DEAD_REMINDER => new SimpleView()
     {
-        { PREFIX, ChatColors.Red, "You are dead and cannot speak!" }
+        {
+            PREFIX, $"{ChatColors.Red}You are dead and cannot speak!"
+        }
     };
 
     public IView ADMIN_DEAD_REMINDER => new SimpleView()
     {
-        { PREFIX, "You are dead.", ChatColors.Red, "should only be talking if absolutely necessary!" }
+        { PREFIX, "You are dead.", $"{ChatColors.Red}You should only be talking if absolutely necessary!" }
     };
 
     public IView PEACE_ACTIVE => new SimpleView()
