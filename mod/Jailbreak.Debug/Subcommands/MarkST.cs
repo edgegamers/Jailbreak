@@ -24,7 +24,7 @@ public class MarkST(IServiceProvider services) : AbstractCommand(services)
         var stService = Services.GetRequiredService<ISpecialTreatmentService>();
         foreach (var player in target.Players)
         {
-            stService.SetSpecialTreatment(player, stService.IsSpecialTreatment(player));
+            stService.SetSpecialTreatment(player, !stService.IsSpecialTreatment(player));
         }
 
         info.ReplyToCommand("Toggled special treatment for " + GetTargetLabel(info) + ".");

@@ -29,5 +29,6 @@ public class LastGuard(IServiceProvider services) : AbstractCommand(services)
         }
 
         lgService.StartLastGuard(target);
+        info.ReplyToCommand("Enabled LastGuard for " + target.PlayerName);
     }
 }
