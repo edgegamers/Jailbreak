@@ -37,15 +37,17 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
     }
 
     [GameEventHandler]
-    public void OnRoundStart(EventRoundStart @event, GameEventInfo info)
+    public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
         UnPeaceMute();
+        return HookResult.Continue;
     }
 
     [GameEventHandler]
-    public void OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
+    public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
     {
         UnPeaceMute();
+        return HookResult.Continue;
     }
 
     public void Dispose()
