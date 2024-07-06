@@ -71,8 +71,15 @@ public class LastGuard : ILastGuardService, IPluginBehavior
     public void StartLastGuard(CCSPlayerController lastGuard)
     {
         if (!_canStart) return;
+
+        var ctPlayerPawn = lastGuard.PlayerPawn.Value;
+
+        if (!ctPlayerPawn.IsValid) return;
+
+        var ctHealth = ctPlayerPawn.Health;
+        var ctCalcHealth = CalculateHealth();
         
-        lastGuard.PlayerPawn.Value.Health = CalculateHealth();
+        ctPlayerPawn.Health = ctHealth > ctCalcHealth ? 125 : ctCalcHealth;
         
         var aliveTerrorists = Utilities.GetPlayers()
             .Where(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.Terrorist });
