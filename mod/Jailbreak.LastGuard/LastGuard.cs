@@ -80,6 +80,8 @@ public class LastGuard : ILastGuardService, IPluginBehavior
         var ctCalcHealth = CalculateHealth();
         
         ctPlayerPawn.Health = ctHealth > ctCalcHealth ? 125 : ctCalcHealth;
+
+        Utilities.SetStateChanged(ctPlayerPawn, "CBaseEntity", "m_iHealth");
         
         var aliveTerrorists = Utilities.GetPlayers()
             .Where(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.Terrorist });
