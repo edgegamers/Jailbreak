@@ -164,7 +164,7 @@ public class LastRequestManager(
 
         var activeLr = ((ILastRequestManager)this).GetActiveLR(player);
 
-        if (activeLr != null || activeLr.state != LRState.Active)
+        if (activeLr != null && activeLr.state != LRState.Active)
         {
             EndLastRequest(activeLr, player.Team == CsTeam.Terrorist ? LRResult.GuardWin : LRResult.PrisonerWin);
             return HookResult.Continue;
