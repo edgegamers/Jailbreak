@@ -36,6 +36,18 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
         parent.RegisterListener<Listeners.OnClientVoice>(OnPlayerSpeak);
     }
 
+    [GameEventHandler]
+    public void OnRoundStart(EventRoundStart @event, GameEventInfo info)
+    {
+        UnPeaceMute();
+    }
+
+    [GameEventHandler]
+    public void OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
+    {
+        UnPeaceMute();
+    }
+
     public void Dispose()
     {
         parent.RemoveListener(OnPlayerSpeak);
