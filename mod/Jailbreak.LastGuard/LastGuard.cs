@@ -35,7 +35,7 @@ public class LastGuard : ILastGuardService, IPluginBehavior
         if (target == null) return HookResult.Continue;
         if (target.Team != CsTeam.CounterTerrorist) return HookResult.Continue;
         var aliveCts = Utilities.GetPlayers()
-            .Count(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist });
+            .Count(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist }) - 1;
         
         Server.PrintToChatAll("Alive CTs: " + aliveCts);
         
