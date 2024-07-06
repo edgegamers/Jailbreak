@@ -10,7 +10,7 @@ namespace Jailbreak.English.LastGuard;
 public class LastGuardNotifications : ILastGuardNotifications, ILanguage<Formatting.Languages.English>
 {
     public static FormatObject PREFIX =
-        new HiddenFormatObject($" {ChatColors.Blue}[{ChatColors.LightBlue}Last Guard{ChatColors.Blue}]")
+        new HiddenFormatObject($" {ChatColors.DarkRed}[{ChatColors.LightRed}Last Guard{ChatColors.DarkRed}]")
         {
             //	Hide in panorama and center text
             Plain = false,
@@ -23,6 +23,8 @@ public class LastGuardNotifications : ILastGuardNotifications, ILanguage<Formatt
         return new SimpleView()
         {
             PREFIX,
-            $"{ChatColors.Red}Last Guard has been activated! Last guard has", ctHealth, $"{ChatColors.Red}health and T's have", tHealth, $"{ChatColors.Red}health."         };
+            $"{ChatColors.Red}Last Guard has been activated! Last guard has", ctHealth,
+            $"{ChatColors.Red}health and Ts have", tHealth, $"{ChatColors.Red}health."
+        };
     }
 }

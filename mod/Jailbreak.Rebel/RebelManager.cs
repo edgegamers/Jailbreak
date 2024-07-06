@@ -14,7 +14,7 @@ namespace Jailbreak.Rebel;
 public class RebelManager(IRebelNotifications notifs, IRichLogService logs) : IPluginBehavior, IRebelService
 {
     private readonly Dictionary<CCSPlayerController, long> _rebelTimes = new();
-    
+
     public static int MAX_REBEL_TIME = 45;
 
     public void Start(BasePlugin parent)
@@ -71,7 +71,7 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs) : IP
 
     private HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
     {
-        if (@event.Userid == null) return HookResult.Continue; 
+        if (@event.Userid == null) return HookResult.Continue;
         if (_rebelTimes.ContainsKey(@event.Userid)) _rebelTimes.Remove(@event.Userid);
 
         return HookResult.Continue;
@@ -80,7 +80,7 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs) : IP
     private HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
     {
         var player = @event.Userid;
-        if (player == null) return HookResult.Continue; 
+        if (player == null) return HookResult.Continue;
         if (!player.IsReal())
             return HookResult.Continue;
         _rebelTimes.Remove(player);
@@ -116,8 +116,11 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs) : IP
 
     public void UnmarkRebel(CCSPlayerController player)
     {
-        notifs.NO_LONGER_REBEL.ToPlayerChat(player);
-        logs.Append(logs.Player(player), "is no longer a rebel.");
+        if (_rebelTimes.ContainsKey(player))
+        {
+            notifs.NO_LONGER_REBEL.ToPlayerChat(player);
+            logs.Append(logs.Player(player), "is no longer a rebel.");
+        }
 
         _rebelTimes.Remove(player);
         ApplyRebelColor(player);

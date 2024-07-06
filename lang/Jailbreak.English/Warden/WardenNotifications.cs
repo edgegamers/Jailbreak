@@ -22,8 +22,11 @@ public class WardenNotifications : IWardenNotifications, ILanguage<Formatting.La
     public IView PICKING_SHORTLY =>
         new SimpleView
         {
-            { PREFIX, "Picking a warden shortly..." }, SimpleView.NEWLINE,
-            { PREFIX, $"To enter the warden queue, type {ChatColors.Blue}!warden{ChatColors.White} in chat." }
+            { PREFIX, $"{ChatColors.Grey}Picking a warden shortly..." }, SimpleView.NEWLINE,
+            {
+                PREFIX,
+                $"{ChatColors.Grey}To enter the warden queue, type {ChatColors.Blue}!warden{ChatColors.Grey} in chat."
+            }
         };
 
     public IView NO_WARDENS =>
@@ -34,19 +37,25 @@ public class WardenNotifications : IWardenNotifications, ILanguage<Formatting.La
         };
 
     public IView WARDEN_LEFT =>
-        new SimpleView { PREFIX, "The warden has left the game!" };
+        new SimpleView { PREFIX, "The warden has left the game." };
 
     public IView WARDEN_DIED =>
-        new SimpleView { PREFIX, "The warden has died!" };
+        new SimpleView
+        {
+            PREFIX,
+            $"{ChatColors.Red}The warden has {ChatColors.DarkRed}died{ChatColors.Red}! CTs must pursue {ChatColors.Blue}!warden{ChatColors.Red}."
+        };
 
     public IView BECOME_NEXT_WARDEN =>
-        new SimpleView { PREFIX, $"Type {ChatColors.Blue}!warden{ChatColors.White} to become the next warden" };
+        new SimpleView
+            { PREFIX, $"{ChatColors.Grey}Type {ChatColors.Blue}!warden{ChatColors.Grey} to become the next warden" };
 
     public IView JOIN_RAFFLE =>
-        new SimpleView { PREFIX, "You've joined the warden raffle." };
+        new SimpleView
+            { PREFIX, $"{ChatColors.Grey}You've {ChatColors.Green}joined {ChatColors.Grey}the warden raffle." };
 
     public IView LEAVE_RAFFLE =>
-        new SimpleView { PREFIX, "You've left the warden raffle." };
+        new SimpleView { PREFIX, $"{ChatColors.Grey}You've {ChatColors.Red}left {ChatColors.Grey}the warden raffle." };
 
     public IView NOT_WARDEN =>
         new SimpleView { PREFIX, $"{ChatColors.LightRed}You are not the warden." };
@@ -56,7 +65,7 @@ public class WardenNotifications : IWardenNotifications, ILanguage<Formatting.La
 
     public IView PASS_WARDEN(CCSPlayerController player)
     {
-        return new SimpleView { PREFIX, player, "has resigned from being warden." };
+        return new SimpleView { PREFIX, player, "resigned from being warden." };
     }
 
     public IView FIRE_WARDEN(CCSPlayerController player)
@@ -66,7 +75,7 @@ public class WardenNotifications : IWardenNotifications, ILanguage<Formatting.La
 
     public IView FIRE_WARDEN(CCSPlayerController player, CCSPlayerController admin)
     {
-        return new SimpleView { PREFIX, admin, "has fired", player, "from being warden." };
+        return new SimpleView { PREFIX, admin, "fired", player, "from being warden." };
     }
 
     public IView NEW_WARDEN(CCSPlayerController player)
@@ -84,6 +93,6 @@ public class WardenNotifications : IWardenNotifications, ILanguage<Formatting.La
 
     public IView FIRE_COMMAND_SUCCESS(CCSPlayerController player)
     {
-        return new SimpleView { PREFIX, player, "has been fired and is no longer the warden." };
+        return new SimpleView { PREFIX, player, "was fired and is no longer the warden." };
     }
 }

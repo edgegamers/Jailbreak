@@ -24,7 +24,7 @@ public class PeaceMessages : IPeaceMessages, ILanguage<Formatting.Languages.Engl
         return new SimpleView()
         {
             PREFIX,
-            "Peace has been enacted by an admin for",
+            "An admin has enacted peace for",
             seconds,
             "seconds."
         };
@@ -54,34 +54,39 @@ public class PeaceMessages : IPeaceMessages, ILanguage<Formatting.Languages.Engl
 
     public IView UNMUTED_GUARDS => new SimpleView()
     {
-        { PREFIX, "Guards have been unmuted." }
+        { PREFIX, $"{ChatColors.Blue}Guards {ChatColors.Grey}have been unmuted." }
     };
 
     public IView UNMUTED_PRISONERS => new SimpleView()
     {
-        { PREFIX, "Prisoners have been unmuted." }
+        { PREFIX, $"{ChatColors.LightRed}Prisoners {ChatColors.Grey}have been unmuted." }
     };
 
     public IView MUTE_REMINDER => new SimpleView()
     {
-        { PREFIX, "You are currently muted!" }
+        { PREFIX, ChatColors.Red, "You are currently muted!" }
     };
 
     public IView PEACE_REMINDER => new SimpleView()
     {
-        { PREFIX, "Peace is currently active. You should only be talking if absolutely necessary!" }
+        {
+            PREFIX,
+            $"Peace is currently active. {ChatColors.Red}You should only be talking if absolutely necessary!"
+        }
     };
 
     public IView DEAD_REMINDER => new SimpleView()
     {
-        { PREFIX, "You are dead and cannot speak!" }
+        {
+            PREFIX, $"{ChatColors.Red}You are dead and cannot speak!"
+        }
     };
-    
+
     public IView ADMIN_DEAD_REMINDER => new SimpleView()
     {
-        { PREFIX, "You are dead and should only be talking if absolutely necessary!" }
+        { PREFIX, "You are dead.", $"{ChatColors.Red}You should only be talking if absolutely necessary!" }
     };
-    
+
     public IView PEACE_ACTIVE => new SimpleView()
     {
         { PREFIX, "Peace is currently active." }

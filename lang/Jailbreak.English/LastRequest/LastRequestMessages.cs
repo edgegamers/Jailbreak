@@ -23,17 +23,20 @@ public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.La
 
     public IView LastRequestEnabled() => new SimpleView()
     {
-        { PREFIX, "Last Request has been enabled. Type !lr to start a last request." }
+        {
+            PREFIX,
+            $"Last Request has been enabled. {ChatColors.Grey}Type {ChatColors.LightBlue}!lr{ChatColors.Grey} to start a last request."
+        }
     };
 
     public IView LastRequestDisabled() => new SimpleView()
     {
-        { PREFIX, "Last Request has been disabled." }
+        { PREFIX, $"{ChatColors.Grey}Last Request has been {ChatColors.Red}disabled{ChatColors.Grey}." }
     };
 
     public IView LastRequestNotEnabled() => new SimpleView()
     {
-        { PREFIX, "Last Request is not enabled." }
+        { PREFIX, $"{ChatColors.Red}Last Request is not enabled." }
     };
 
     public IView InvalidLastRequest(string query)
@@ -83,10 +86,14 @@ public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.La
         return new SimpleView()
         {
             PREFIX,
-            result == LRResult.PrisonerWin ? lr.prisoner : lr.guard, "won the LR."
+            (result == LRResult.GuardWin ? ChatColors.Blue : ChatColors.Red).ToString(),
+            result == LRResult.PrisonerWin ? lr.prisoner : lr.guard,
+            "won the LR."
         };
     }
 
     public IView DamageBlockedInsideLastRequest => new SimpleView { PREFIX, "You or they are in LR, damage blocked." };
-    public IView DamageBlockedNotInSameLR => new SimpleView { PREFIX, "You are not in the same LR as them, damage blocked." };
+
+    public IView DamageBlockedNotInSameLR => new SimpleView
+        { PREFIX, "You are not in the same LR as them, damage blocked." };
 }

@@ -57,7 +57,7 @@ public class GenericCommandNotifications : IGenericCommandNotifications, ILangua
         return new SimpleView
         {
             PREFIX,
-            $"{ChatColors.Red}You do not have permission to use this command. Required permission: {ChatColors.White}{permission}{ChatColors.Red}."
+            $"{ChatColors.Red}This command requires the {ChatColors.White}{permission}{ChatColors.Red} permission."
         };
     }
 }
