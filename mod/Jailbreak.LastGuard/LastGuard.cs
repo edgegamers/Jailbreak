@@ -7,6 +7,7 @@ using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastGuard;
+using Jailbreak.Public.Mod.LastRequest;
 
 namespace Jailbreak.LastGuard;
 
@@ -15,12 +16,14 @@ public class LastGuard : ILastGuardService, IPluginBehavior
     
     private readonly LastGuardConfig _config;
     private readonly ILastGuardNotifications _notifications;
+    private readonly ILastRequestManager _lrManager;
     private bool _canStart = false;
     
-    public LastGuard(LastGuardConfig config, ILastGuardNotifications notifications)
+    public LastGuard(LastGuardConfig config, ILastGuardNotifications notifications, ILastRequestManager lrManager)
     {
         _config = config;
         _notifications = notifications;
+        _lrManager = lrManager;
     }   
 
     public void Start(BasePlugin plugin)
@@ -35,15 +38,14 @@ public class LastGuard : ILastGuardService, IPluginBehavior
         if (target == null) return HookResult.Continue;
         if (target.Team != CsTeam.CounterTerrorist) return HookResult.Continue;
         var aliveCts = Utilities.GetPlayers()
-            .Count(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist });
+            .Count(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist }) - 1;
         
-        Server.PrintToChatAll("Alive CTs: " + aliveCts);
-        
-        if (aliveCts == 1)
+        if (aliveCts == 1 && !_lrManager.IsLREnabled)
         {
-            StartLastGuard(target);
+            var lastGuard = Utilities.GetPlayers().First(plr => plr.IsReal() && plr != target && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist });
+            
+            StartLastGuard(lastGuard);
         }
-        
         return HookResult.Continue;
     }
     
@@ -51,7 +53,6 @@ public class LastGuard : ILastGuardService, IPluginBehavior
     public HookResult OnRoundStartEvent(EventRoundStart @event, GameEventInfo info)
     {
         _canStart = Utilities.GetPlayers().Count(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist}) >= _config.MinimumCTs;
-        Server.PrintToChatAll("Can start: " + _canStart);
         return HookResult.Continue;
     }
     
@@ -71,8 +72,17 @@ public class LastGuard : ILastGuardService, IPluginBehavior
     public void StartLastGuard(CCSPlayerController lastGuard)
     {
         if (!_canStart) return;
+
+        var ctPlayerPawn = lastGuard.PlayerPawn.Value;
+
+        if (!ctPlayerPawn.IsValid) return;
+
+        var ctHealth = ctPlayerPawn.Health;
+        var ctCalcHealth = CalculateHealth();
         
-        lastGuard.PlayerPawn.Value.Health = CalculateHealth();
+        ctPlayerPawn.Health = ctHealth > ctCalcHealth ? 125 : ctCalcHealth;
+
+        Utilities.SetStateChanged(ctPlayerPawn, "CBaseEntity", "m_iHealth");
         
         var aliveTerrorists = Utilities.GetPlayers()
             .Where(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.Terrorist });
