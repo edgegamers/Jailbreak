@@ -37,7 +37,8 @@ public class SpecialTreatmentBehavior(
 
         _sts.Get(player).HasSpecialTreatment = true;
 
-        rebel.UnmarkRebel(player);
+        if (rebel.IsRebel(player))
+            rebel.UnmarkRebel(player);
         this.SetSpecialColor(player, /* hasSt */ true);
 
         notifications.GRANTED

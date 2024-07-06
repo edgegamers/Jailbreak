@@ -18,7 +18,7 @@ public class LastGuard(IServiceProvider services) : AbstractCommand(services)
         var lgService = Services.GetRequiredService<ILastGuardService>();
 
         var target = Utilities.GetPlayers()
-            .First(p => p.IsReal() && p is { Team: CsTeam.CounterTerrorist, PawnIsAlive: true });
+            .FirstOrDefault(p => p.IsReal() && p is { Team: CsTeam.CounterTerrorist, PawnIsAlive: true });
 
         if (info.ArgCount == 2)
         {
@@ -27,6 +27,9 @@ public class LastGuard(IServiceProvider services) : AbstractCommand(services)
                 return;
             target = targetResult.First();
         }
+
+        if (target == null)
+            return;
 
         lgService.StartLastGuard(target);
         info.ReplyToCommand("Enabled LastGuard for " + target.PlayerName);
