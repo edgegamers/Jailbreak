@@ -38,12 +38,13 @@ public class LastGuard : ILastGuardService, IPluginBehavior
             .Count(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist }) - 1;
         
         Server.PrintToChatAll("Alive CTs: " + aliveCts);
-        
+
         if (aliveCts == 1)
         {
-            StartLastGuard(target);
+            var lastGuard = Utilities.GetPlayers().First(plr => plr.IsReal() && plr != target && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist });
+            
+            StartLastGuard(lastGuard);
         }
-        
         return HookResult.Continue;
     }
     
