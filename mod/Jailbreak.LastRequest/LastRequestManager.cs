@@ -10,7 +10,6 @@ using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.SpecialDays;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 using Jailbreak.Public.Mod.Damage;
@@ -21,12 +20,10 @@ namespace Jailbreak.LastRequest;
 public class LastRequestManager(
     LastRequestConfig _config,
     ILastRequestMessages _messages,
-    IServiceProvider _provider,
-    ISpecialDayHandler sdHandler
+    IServiceProvider _provider
     )
     : ILastRequestManager, IBlockUserDamage
 {
-    private ISpecialDayHandler _sdHandler;
     private BasePlugin _parent;
     private ILastRequestFactory _factory;
 
@@ -37,7 +34,6 @@ public class LastRequestManager(
     {
         _factory = _provider.GetRequiredService<ILastRequestFactory>();
         _parent = parent;
-        _sdHandler = sdHandler;
     }
 
     [GameEventHandler(HookMode.Pre)]
@@ -175,7 +171,6 @@ public class LastRequestManager(
 
     public void EnableLR()
     {
-        if (_sdHandler.IsSpecialDayActive()) return;
         IsLREnabled = true;
         SetRoundTime(60);
 
