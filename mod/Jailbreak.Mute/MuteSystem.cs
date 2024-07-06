@@ -32,8 +32,6 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
 
         this.messages = provider.GetRequiredService<IPeaceMessages>();
         this.warden = provider.GetRequiredService<IWardenService>();
-
-        parent.RegisterListener<Listeners.OnClientVoice>(OnPlayerSpeak);
     }
 
     [GameEventHandler]

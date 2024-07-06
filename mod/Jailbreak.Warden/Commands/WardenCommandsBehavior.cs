@@ -80,12 +80,6 @@ public class WardenCommandsBehavior(
             return;
         }
 
-        //	Handle warden pass
-        _notifications.FIRE_WARDEN(player)
-            .ToAllChat()
-            .ToAllCenter();
-
-        // GetPlayers() returns valid players, no need to error check here.
         foreach (var client in Utilities.GetPlayers().Where(p => p.IsReal()))
         {
             if (AdminManager.PlayerHasPermissions(client, "@css/chat"))
@@ -103,10 +97,10 @@ public class WardenCommandsBehavior(
 
         _notifications.BECOME_NEXT_WARDEN.ToAllChat();
 
+        _lastPassCommand[_warden.Warden] = DateTime.Now;
+        
         if (!_warden.TryRemoveWarden(true))
             Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");
-
-        _lastPassCommand[_warden.Warden] = DateTime.Now;
     }
 
     [ConsoleCommand("css_warden",
