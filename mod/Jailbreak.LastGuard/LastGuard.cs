@@ -41,8 +41,8 @@ public class LastGuard : ILastGuardService, IPluginBehavior
 
         if (aliveCts == 1)
         {
-            var lastGuard = Utilities.GetPlayers().First(plr => plr != target);
-
+            var lastGuard = Utilities.GetPlayers().First(plr => plr.IsReal() && plr != target && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist });
+            
             StartLastGuard(lastGuard);
         }
         return HookResult.Continue;
