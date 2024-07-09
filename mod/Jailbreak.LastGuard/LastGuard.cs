@@ -75,8 +75,8 @@ public class LastGuard(LastGuardConfig config, ILastGuardNotifications notificat
         ctPlayerPawn.Health = ctHealth > ctCalcHealth ? 125 : ctCalcHealth;
         Utilities.SetStateChanged(ctPlayerPawn, "CBaseEntity", "m_iHealth");
 
-        foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal()))
-            player.ExecuteClientCommand("play sounds/lastct");
+        // foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal()))
+        //     player.ExecuteClientCommand("play sounds/lastct");
 
         var aliveTerrorists = Utilities.GetPlayers()
             .Where(p => p.IsReal() && p is { PawnIsAlive: true, Team: CsTeam.Terrorist }).ToList();

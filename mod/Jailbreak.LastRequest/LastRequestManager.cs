@@ -189,7 +189,7 @@ public class LastRequestManager(
 
         foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal()))
         {
-            player.ExecuteClientCommand($"play sounds/lr");
+            // player.ExecuteClientCommand($"play sounds/lr");
             if (player.Team != CsTeam.Terrorist || !player.PawnIsAlive)
                 continue;
             if (died != null && player.SteamID == died.SteamID)
