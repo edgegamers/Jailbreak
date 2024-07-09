@@ -5,34 +5,33 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 namespace Jailbreak.Public.Utils;
 
 public class FreezeManager(BasePlugin plugin) {
-  private static FreezeManager Manager;
-  private readonly Dictionary<CCSPlayerController, Timer> _frozenPlayers = [];
-  private readonly BasePlugin _plugin = plugin;
+  private static FreezeManager? _manager;
+  private readonly Dictionary<CCSPlayerController, Timer> frozenPlayers = [];
+  private readonly BasePlugin plugin = plugin;
 
   public static void CreateInstance(BasePlugin plugin) {
-    Manager = new FreezeManager(plugin);
+    _manager = new FreezeManager(plugin);
   }
 
   public static void FreezePlayer(CCSPlayerController player, int delay) {
     if (!player.IsReal()) return;
 
-    if (Manager._frozenPlayers.ContainsKey(player)) return;
+    if (_manager!.frozenPlayers.ContainsKey(player)) return;
 
     player.Freeze();
 
-    Manager._frozenPlayers.Add(player, Manager._plugin.AddTimer(delay, () => {
+    _manager.frozenPlayers.Add(player, _manager.plugin.AddTimer(delay, () => {
       player.UnFreeze();
-      Manager._frozenPlayers.Remove(player);
+      _manager.frozenPlayers.Remove(player);
     }));
   }
 
   public static void UnfreezePlayer(CCSPlayerController player) {
     if (!player.IsReal()) return;
 
-    if (!Manager._frozenPlayers.ContainsKey(player)) return;
-
-    Manager._frozenPlayers[player].Kill();
-    Manager._frozenPlayers.Remove(player);
+    if (!_manager!.frozenPlayers.TryGetValue(player, out var value)) return;
+    value.Kill();
+    _manager.frozenPlayers.Remove(player);
     player.UnFreeze();
   }
 }

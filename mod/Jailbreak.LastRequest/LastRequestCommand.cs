@@ -15,15 +15,15 @@ namespace Jailbreak.LastRequest;
 public class LastRequestCommand(ILastRequestManager manager,
   ILastRequestMessages messages, IGenericCommandNotifications generic,
   ILastRequestFactory factory) : IPluginBehavior {
-  private LastRequestMenuSelector _menuSelector;
-  private LastRequestPlayerSelector _playerSelector;
-  private BasePlugin _plugin;
+  private LastRequestMenuSelector? menuSelector;
+  private LastRequestPlayerSelector? playerSelector;
+  private BasePlugin? plugin;
 
   // css_lr <player> <LRType>
   public void Start(BasePlugin plugin) {
-    _plugin         = plugin;
-    _playerSelector = new LastRequestPlayerSelector(manager);
-    _menuSelector   = new LastRequestMenuSelector(factory);
+    this.plugin    = plugin;
+    playerSelector = new LastRequestPlayerSelector(manager);
+    menuSelector   = new LastRequestMenuSelector(factory);
   }
 
   [ConsoleCommand("css_lr", "Start a last request as a prisoner")]
@@ -46,7 +46,7 @@ public class LastRequestCommand(ILastRequestManager manager,
       return;
     }
 
-    if (!_playerSelector.WouldHavePlayers()) {
+    if (!playerSelector!.WouldHavePlayers()) {
       info.ReplyToCommand("There are no players available to LR.");
       return;
     }
@@ -57,8 +57,8 @@ public class LastRequestCommand(ILastRequestManager manager,
     }
 
     if (info.ArgCount == 1) {
-      MenuManager.OpenCenterHtmlMenu(_plugin, executor,
-        _menuSelector.GetMenu());
+      MenuManager.OpenCenterHtmlMenu(plugin!, executor,
+        menuSelector!.GetMenu());
       return;
     }
 
@@ -70,8 +70,8 @@ public class LastRequestCommand(ILastRequestManager manager,
     }
 
     if (info.ArgCount == 2) {
-      MenuManager.OpenCenterHtmlMenu(_plugin, executor,
-        _playerSelector.CreateMenu(executor,
+      MenuManager.OpenCenterHtmlMenu(plugin!, executor,
+        playerSelector.CreateMenu(executor,
           str => "css_lr " + type + " #" + str));
       return;
     }

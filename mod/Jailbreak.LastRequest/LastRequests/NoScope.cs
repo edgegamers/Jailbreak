@@ -25,11 +25,11 @@ public class NoScope(BasePlugin plugin, ILastRequestManager manager,
 
     if (prisoner.PlayerPawn.Value == null || guard.PlayerPawn.Value == null)
       return;
-    DisableScope(prisoner);
-    DisableScope(guard);
+    disableScope(prisoner);
+    disableScope(guard);
   }
 
-  private void DisableScope(CCSPlayerController player) {
+  private void disableScope(CCSPlayerController player) {
     if (!player.IsReal()) return;
     var pawn = player.PlayerPawn.Value;
     if (pawn == null || !pawn.IsValid) return;

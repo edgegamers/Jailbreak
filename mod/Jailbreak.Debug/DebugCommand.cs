@@ -12,16 +12,16 @@ namespace Jailbreak.Debug;
 ///   The debug command allows for Developers to debug and force certain actions/gamestates.
 /// </summary>
 public class DebugCommand(IServiceProvider serviceProvider) : IPluginBehavior {
-  private readonly Dictionary<string, AbstractCommand> _commands = new();
-  private BasePlugin? _plugin;
+  private readonly Dictionary<string, AbstractCommand> commands = new();
+  private BasePlugin? plugin;
 
   public void Start(BasePlugin parent) {
-    _plugin = parent;
-    _commands.Add("markrebel", new MarkRebel(serviceProvider));
-    _commands.Add("pardon", new Pardon(serviceProvider));
-    _commands.Add("lr", new Subcommands.LastRequest(serviceProvider, _plugin));
-    _commands.Add("st", new MarkST(serviceProvider));
-    _commands.Add("lg", new LastGuard(serviceProvider));
+    plugin = parent;
+    commands.Add("markrebel", new MarkRebel(serviceProvider));
+    commands.Add("pardon", new Pardon(serviceProvider));
+    commands.Add("lr", new Subcommands.LastRequest(serviceProvider, plugin));
+    commands.Add("st", new MarkST(serviceProvider));
+    commands.Add("lg", new LastGuard(serviceProvider));
   }
 
   [RequiresPermissions("@css/root")]
@@ -30,11 +30,11 @@ public class DebugCommand(IServiceProvider serviceProvider) : IPluginBehavior {
     if (executor == null) return;
 
     if (info.ArgCount == 1) {
-      foreach (var command in _commands) info.ReplyToCommand(command.Key);
+      foreach (var command in commands) info.ReplyToCommand(command.Key);
       return;
     }
 
-    if (!_commands.TryGetValue(info.GetArg(1), out var subcommand)) {
+    if (!commands.TryGetValue(info.GetArg(1), out var subcommand)) {
       info.ReplyToCommand("Invalid subcommand");
       return;
     }

@@ -14,7 +14,7 @@ public class GlobalStateTracker : BaseStateTracker, IPluginBehavior {
   /// <param name="info"></param>
   [GameEventHandler]
   public HookResult OnDisconnect(EventPlayerDisconnect ev, GameEventInfo info) {
-    Reset(ev.Userid);
+    if (ev.Userid != null) Reset(ev.Userid);
     return HookResult.Continue;
   }
 

@@ -13,11 +13,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestManager(LastRequestConfig _config,
-  ILastRequestMessages _messages, IServiceProvider _provider)
+public class LastRequestManager(LastRequestConfig config,
+  ILastRequestMessages messages, IServiceProvider provider)
   : ILastRequestManager, IBlockUserDamage {
-  private ILastRequestFactory _factory;
-  private BasePlugin _parent;
+  private ILastRequestFactory? factory;
 
   public bool ShouldBlockDamage(CCSPlayerController player,
     CCSPlayerController? attacker, EventPlayerHurt @event) {
@@ -34,7 +33,7 @@ public class LastRequestManager(LastRequestConfig _config,
 
     if (playerLR == null != (attackerLR == null)) {
       // One of them is in an LR
-      _messages.DamageBlockedInsideLastRequest.ToPlayerCenter(attacker);
+      messages.DamageBlockedInsideLastRequest.ToPlayerCenter(attacker);
       return true;
     }
 
@@ -46,7 +45,7 @@ public class LastRequestManager(LastRequestConfig _config,
       // Same LR, allow damage
       return false;
 
-    _messages.DamageBlockedNotInSameLR.ToPlayerCenter(attacker);
+    messages.DamageBlockedNotInSameLR.ToPlayerCenter(attacker);
     return true;
   }
 
@@ -56,16 +55,15 @@ public class LastRequestManager(LastRequestConfig _config,
     new List<AbstractLastRequest>();
 
   public void Start(BasePlugin parent) {
-    _factory = _provider.GetRequiredService<ILastRequestFactory>();
-    _parent  = parent;
+    factory = provider.GetRequiredService<ILastRequestFactory>();
   }
 
   public void DisableLR() { IsLREnabled = false; }
 
   public void EnableLR(CCSPlayerController? died = null) {
-    _messages.LastRequestEnabled().ToAllChat();
+    messages.LastRequestEnabled().ToAllChat();
     IsLREnabled = true;
-    SetRoundTime(60);
+    setRoundTime(60);
 
     foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal())) {
       // player.ExecuteClientCommand($"play sounds/lr");
@@ -78,7 +76,7 @@ public class LastRequestManager(LastRequestConfig _config,
   public bool InitiateLastRequest(CCSPlayerController prisoner,
     CCSPlayerController guard, LRType type) {
     try {
-      var lr = _factory.CreateLastRequest(prisoner, guard, type);
+      var lr = factory!.CreateLastRequest(prisoner, guard, type);
       lr.Setup();
       ActiveLRs.Add(lr);
 
@@ -96,7 +94,7 @@ public class LastRequestManager(LastRequestConfig _config,
         Utilities.SetStateChanged(guard.Pawn.Value, "CBaseEntity", "m_iHealth");
       }
 
-      _messages.InformLastRequest(lr).ToAllChat();
+      messages.InformLastRequest(lr).ToAllChat();
       return true;
     } catch (ArgumentException e) {
       Console.WriteLine(e);
@@ -106,8 +104,8 @@ public class LastRequestManager(LastRequestConfig _config,
 
   public bool EndLastRequest(AbstractLastRequest lr, LRResult result) {
     if (result is LRResult.GuardWin or LRResult.PrisonerWin) {
-      AddRoundTime(30);
-      _messages.LastRequestDecided(lr, result).ToAllChat();
+      addRoundTime(30);
+      messages.LastRequestDecided(lr, result).ToAllChat();
     }
 
     lr.OnEnd(result);
@@ -138,20 +136,21 @@ public class LastRequestManager(LastRequestConfig _config,
 
     if (ServerExtensions.GetGameRules().WarmupPeriod)
       return HookResult.Continue;
-    if (CountAlivePrisoners() > _config.PrisonersToActiveLR) {
+    if (countAlivePrisoners() > config.PrisonersToActiveLR) {
       IsLREnabled = false;
       return HookResult.Continue;
     }
 
     IsLREnabled = true;
-    _messages.LastRequestEnabled().ToAllChat();
+    messages.LastRequestEnabled().ToAllChat();
     return HookResult.Continue;
   }
 
   [GameEventHandler]
   public HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info) {
     var player = @event.Userid;
-    if (!player.IsReal() || ServerExtensions.GetGameRules().WarmupPeriod)
+    if (player == null || !player.IsReal()
+      || ServerExtensions.GetGameRules().WarmupPeriod)
       return HookResult.Continue;
 
     if (IsLREnabled) {
@@ -168,7 +167,7 @@ public class LastRequestManager(LastRequestConfig _config,
 
     if (player.GetTeam() != CsTeam.Terrorist) return HookResult.Continue;
 
-    if (CountAlivePrisoners() - 1 > _config.PrisonersToActiveLR)
+    if (countAlivePrisoners() - 1 > config.PrisonersToActiveLR)
       return HookResult.Continue;
 
     EnableLR(player);
@@ -198,35 +197,28 @@ public class LastRequestManager(LastRequestConfig _config,
     }
 
     if (player.GetTeam() != CsTeam.Terrorist) return HookResult.Continue;
-    if (CountAlivePrisoners() > _config.PrisonersToActiveLR)
+    if (countAlivePrisoners() > config.PrisonersToActiveLR)
       return HookResult.Continue;
 
     EnableLR();
     return HookResult.Continue;
   }
 
-  private int GetCurrentRoundTime() {
-    var gamerules = ServerExtensions.GetGameRules();
-    var timeleft = gamerules.RoundStartTime + gamerules.RoundTime
-      - Server.CurrentTime;
-    return (int)timeleft;
-  }
-
-  private int GetCurrentTimeElapsed() {
+  private int getCurrentTimeElapsed() {
     var gamerules  = ServerExtensions.GetGameRules();
     var freezeTime = gamerules.FreezeTime;
     return (int)(Server.CurrentTime - gamerules.RoundStartTime - freezeTime);
   }
 
-  private void SetRoundTime(int time) {
+  private void setRoundTime(int time) {
     var gamerules = ServerExtensions.GetGameRules();
-    gamerules.RoundTime = GetCurrentTimeElapsed() + time;
+    gamerules.RoundTime = getCurrentTimeElapsed() + time;
 
     Utilities.SetStateChanged(ServerExtensions.GetGameRulesProxy(),
       "CCSGameRulesProxy", "m_pGameRules");
   }
 
-  private void AddRoundTime(int time) {
+  private void addRoundTime(int time) {
     var gamerules = ServerExtensions.GetGameRules();
     gamerules.RoundTime += time;
 
@@ -234,11 +226,11 @@ public class LastRequestManager(LastRequestConfig _config,
       "CCSGameRulesProxy", "m_pGameRules");
   }
 
-  private int CountAlivePrisoners() {
-    return Utilities.GetPlayers().Count(CountsToLR);
+  private int countAlivePrisoners() {
+    return Utilities.GetPlayers().Count(prisonerCountsToLR);
   }
 
-  private bool CountsToLR(CCSPlayerController player) {
+  private bool prisonerCountsToLR(CCSPlayerController player) {
     if (!player.IsReal()) return false;
     if (!player.PawnIsAlive) return false;
     return player.GetTeam() == CsTeam.Terrorist;

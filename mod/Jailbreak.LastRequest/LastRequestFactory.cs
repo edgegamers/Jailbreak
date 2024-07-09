@@ -8,22 +8,22 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jailbreak.LastRequest;
 
 public class LastRequestFactory(ILastRequestManager manager,
-  IServiceProvider _services) : ILastRequestFactory {
-  private BasePlugin _plugin;
+  IServiceProvider services) : ILastRequestFactory {
+  private BasePlugin? plugin;
 
-  public void Start(BasePlugin parent) { _plugin = parent; }
+  public void Start(BasePlugin parent) { plugin = parent; }
 
   public AbstractLastRequest CreateLastRequest(CCSPlayerController prisoner,
     CCSPlayerController guard, LRType type) {
     return type switch {
-      LRType.KnifeFight => new KnifeFight(_plugin, manager, prisoner, guard),
-      LRType.GunToss    => new GunToss(_plugin, manager, prisoner, guard),
-      LRType.NoScope    => new NoScope(_plugin, manager, prisoner, guard),
-      LRType.RockPaperScissors => new RockPaperScissors(_plugin, manager,
+      LRType.KnifeFight => new KnifeFight(plugin!, manager, prisoner, guard),
+      LRType.GunToss    => new GunToss(plugin!, manager, prisoner, guard),
+      LRType.NoScope    => new NoScope(plugin!, manager, prisoner, guard),
+      LRType.RockPaperScissors => new RockPaperScissors(plugin!, manager,
         prisoner, guard),
-      LRType.Coinflip => new Coinflip(_plugin, manager, prisoner, guard),
-      LRType.Race => new Race(_plugin, manager, prisoner, guard,
-        _services.GetRequiredService<IRaceLRMessages>()),
+      LRType.Coinflip => new Coinflip(plugin!, manager, prisoner, guard),
+      LRType.Race => new Race(plugin!, manager, prisoner, guard,
+        services.GetRequiredService<IRaceLRMessages>()),
       _ => throw new ArgumentException("Invalid last request type: " + type,
         nameof(type))
     };

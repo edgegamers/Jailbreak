@@ -17,11 +17,9 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
   IRaceLRMessages messages)
   : TeleportingRequest(plugin, manager, prisoner, guard) {
   private DateTime raceStart;
-
   private Timer? raceTimer;
-
   private BeamCircle? start, end;
-  private Vector startLocation, endLocation;
+  private Vector? startLocation, endLocation;
   public override LRType type => LRType.Race;
 
   public override void Setup() {
@@ -41,8 +39,9 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
 
     messages.RACE_STARTING_MESSAGE(prisoner).ToPlayerChat(guard);
 
-    startLocation = prisoner.Pawn.Value.AbsOrigin.Clone();
+    startLocation = prisoner.Pawn?.Value?.AbsOrigin?.Clone();
 
+    if (startLocation == null) return;
     start = new BeamCircle(plugin, startLocation, 20, 16);
     start.SetColor(Color.Aqua);
     start.Draw();
@@ -52,13 +51,14 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
   public override void Execute() {
     state = LRState.Active;
 
-    endLocation = prisoner.Pawn.Value.AbsOrigin.Clone();
+    endLocation = prisoner.Pawn?.Value?.AbsOrigin?.Clone();
 
+    if (endLocation == null) return;
     end = new BeamCircle(plugin, endLocation, 10, 32);
     end.SetColor(Color.Red);
     end.Draw();
 
-    prisoner.Pawn.Value.Teleport(startLocation);
+    prisoner.Pawn?.Value?.Teleport(startLocation);
     guard.Pawn.Value?.Teleport(startLocation);
 
     guard.Freeze();
@@ -71,10 +71,10 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
 
     raceStart = DateTime.Now;
 
-    raceTimer = plugin.AddTimer(0.1f, Tick, TimerFlags.REPEAT);
+    raceTimer = plugin.AddTimer(0.1f, tick, TimerFlags.REPEAT);
   }
 
-  private void Tick() {
+  private void tick() {
     if (prisoner.AbsOrigin == null || guard.AbsOrigin == null) return;
     var requiredDistance       = getRequiredDistance();
     var requiredDistanceSqured = MathF.Pow(requiredDistance, 2);

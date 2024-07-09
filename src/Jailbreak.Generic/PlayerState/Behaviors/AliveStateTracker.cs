@@ -9,8 +9,7 @@ public class AliveStateTracker : BaseStateTracker, IPluginBehavior {
 
   [GameEventHandler]
   public HookResult OnDeath(EventPlayerDeath ev, GameEventInfo info) {
-    Reset(ev.Userid);
-
+    if (ev.Userid != null) Reset(ev.Userid);
     return HookResult.Continue;
   }
 }

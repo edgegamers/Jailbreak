@@ -10,13 +10,13 @@ namespace Jailbreak.Config;
 ///   A service to load and parse configuration files.
 /// </summary>
 public class ConfigService : IConfigService {
-  private readonly ILogger<ConfigService> _logger;
+  private readonly ILogger<ConfigService> logger;
 
   /// <summary>
   ///   Constructor
   /// </summary>
   /// <param name="logger"></param>
-  public ConfigService(ILogger<ConfigService> logger) { _logger = logger; }
+  public ConfigService(ILogger<ConfigService> logger) { this.logger = logger; }
 
   /// <summary>
   /// </summary>
@@ -29,32 +29,32 @@ public class ConfigService : IConfigService {
       Path.Combine(Server.GameDirectory, IConfigService.ConfigPath);
 
     if (!File.Exists(jsonPath))
-      return Fail<T>(fail, "Config file does not exist");
+      return fail<T>(fail, "Config file does not exist");
 
     var jsonText = File.ReadAllText(jsonPath);
 
     var jsonObject = JsonNode.Parse(jsonText);
     if (jsonObject == null)
-      return Fail<T>(fail, $"Unable to parse configuration file at {jsonPath}");
+      return fail<T>(fail, $"Unable to parse configuration file at {jsonPath}");
 
     var configObject = jsonObject[path];
     if (configObject == null)
-      return Fail<T>(fail, $"Unable to navigate to config section {path}");
+      return fail<T>(fail, $"Unable to navigate to config section {path}");
 
     var config = configObject.Deserialize<T>();
     if (config == null)
-      return Fail<T>(fail,
+      return fail<T>(fail,
         $"Unable to deserialize ({configObject.ToJsonString()}) into {typeof(T).FullName}.");
 
     return config;
   }
 
-  private T Fail<T>(bool fail, string message) where T : class, new() {
+  private T fail<T>(bool fail, string message) where T : class, new() {
     //	We would be returning default.
     //	Check if caller wants us to cry and scream instead.
     if (fail) throw new InvalidOperationException(message);
 
-    _logger.LogWarning(
+    logger.LogWarning(
       "[Config] Tripped load fail state with message: {@Message}", message);
 
     return new T();

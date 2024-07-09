@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jailbreak.Debug.Subcommands;
 
 public abstract class AbstractCommand(IServiceProvider services) {
-  private readonly IGenericCommandNotifications _lang =
+  private readonly IGenericCommandNotifications lang =
     services.GetRequiredService<IGenericCommandNotifications>();
 
   protected readonly IServiceProvider Services = services;
@@ -40,7 +40,7 @@ public abstract class AbstractCommand(IServiceProvider services) {
 
     if (!matches.Any()) {
       if (command.CallingPlayer != null)
-        _lang.PlayerNotFound(command.GetArg(argIndex))
+        lang.PlayerNotFound(command.GetArg(argIndex))
          .ToPlayerChat(command.CallingPlayer);
       return null;
     }
@@ -52,7 +52,7 @@ public abstract class AbstractCommand(IServiceProvider services) {
       return matches;
 
     if (command.CallingPlayer != null)
-      _lang.PlayerFoundMultiple(command.GetArg(argIndex))
+      lang.PlayerFoundMultiple(command.GetArg(argIndex))
        .ToPlayerChat(command.CallingPlayer);
     return null;
   }
@@ -70,14 +70,14 @@ public abstract class AbstractCommand(IServiceProvider services) {
 
     if (!matches.Any()) {
       if (command.CallingPlayer != null)
-        _lang.PlayerNotFound(command.GetArg(argIndex))
+        lang.PlayerNotFound(command.GetArg(argIndex))
          .ToPlayerChat(command.CallingPlayer);
       return null;
     }
 
     if (matches.Count() > 1) {
       if (command.CallingPlayer != null)
-        _lang.PlayerFoundMultiple(command.GetArg(argIndex))
+        lang.PlayerFoundMultiple(command.GetArg(argIndex))
          .ToPlayerChat(command.CallingPlayer);
       return null;
     }
@@ -132,7 +132,7 @@ public abstract class AbstractCommand(IServiceProvider services) {
 }
 
 public static class CommandExtensions {
-  internal static bool CanTarget(this CCSPlayerController controller,
+  public static bool CanTarget(this CCSPlayerController controller,
     CCSPlayerController target) {
     if (!target.IsValid) return false;
     if (target.Connected != PlayerConnectedState.PlayerConnected) return false;

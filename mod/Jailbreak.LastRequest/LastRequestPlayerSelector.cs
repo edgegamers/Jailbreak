@@ -7,16 +7,8 @@ using Jailbreak.Public.Mod.LastRequest;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestPlayerSelector {
-  private readonly ILastRequestManager _lrManager;
-  private readonly bool debug;
-
-  public LastRequestPlayerSelector(ILastRequestManager manager,
-    bool debug = false) {
-    _lrManager = manager;
-    this.debug = debug;
-  }
-
+public class LastRequestPlayerSelector(ILastRequestManager manager,
+  bool debug = false) {
   public CenterHtmlMenu CreateMenu(CCSPlayerController player,
     Func<string?, string> command) {
     var menu = new CenterHtmlMenu(command.Invoke("[Player]"));
@@ -27,8 +19,8 @@ public class LastRequestPlayerSelector {
         || target.Team != CsTeam.CounterTerrorist && !debug)
         continue;
       menu.AddMenuOption(target.PlayerName,
-        (selector, _) => OnSelect(player, command, target.UserId.ToString()),
-        !debug && _lrManager.IsInLR(target));
+        (_, _) => OnSelect(player, command, target.UserId.ToString()),
+        !debug && manager.IsInLR(target));
     }
 
     return menu;
