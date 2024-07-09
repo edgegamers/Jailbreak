@@ -36,16 +36,16 @@ public class MuteSystem(IServiceProvider provider)
 
     switch (reason) {
       case MuteReason.ADMIN:
-        messages!.PEACE_ENACTED_BY_ADMIN(duration).ToAllChat();
+        messages!.PeaceEnactedByAdmin(duration).ToAllChat();
         break;
       case MuteReason.WARDEN_TAKEN:
-        messages!.GENERAL_PEACE_ENACTED(duration).ToAllChat();
+        messages!.GeneralPeaceEnacted(duration).ToAllChat();
         break;
       case MuteReason.WARDEN_INVOKED:
-        messages!.WARDEN_ENACTED_PEACE(duration).ToAllChat();
+        messages!.WardenEnactedPeace(duration).ToAllChat();
         break;
       case MuteReason.INITIAL_WARDEN:
-        messages!.GENERAL_PEACE_ENACTED(duration).ToAllChat();
+        messages!.GeneralPeaceEnacted(duration).ToAllChat();
         break;
     }
 
@@ -100,7 +100,7 @@ public class MuteSystem(IServiceProvider provider)
       }))
       unmute(player);
 
-    messages!.UNMUTED_GUARDS.ToAllChat();
+    messages!.UnmutedGuards.ToAllChat();
     guardTimer = null;
   }
 
@@ -110,7 +110,7 @@ public class MuteSystem(IServiceProvider provider)
         && player is { Team: CsTeam.Terrorist, PawnIsAlive: true }))
       unmute(player);
 
-    messages!.UNMUTED_PRISONERS.ToAllChat();
+    messages!.UnmutedPrisoners.ToAllChat();
     prisonerTimer = null;
   }
 
@@ -143,7 +143,7 @@ public class MuteSystem(IServiceProvider provider)
     var player = Utilities.GetPlayerFromSlot(playerSlot);
     if (player == null || !player.IsReal()) return;
 
-    if (warden.IsWarden(player)) {
+    if (warden!.IsWarden(player)) {
       // Always let the warden speak
       unmute(player);
       return;
@@ -151,14 +151,14 @@ public class MuteSystem(IServiceProvider provider)
 
     if (!player.PawnIsAlive && !bypassMute(player)) {
       // Normal players can't speak when dead
-      messages.DEAD_REMINDER.ToPlayerCenter(player);
+      messages!.DeadReminder.ToPlayerCenter(player);
       mute(player);
       return;
     }
 
     if (isMuted(player)) {
       // Remind any muted players they're muted
-      messages.MUTE_REMINDER.ToPlayerCenter(player);
+      messages!.MuteReminder.ToPlayerCenter(player);
       return;
     }
 
@@ -168,11 +168,11 @@ public class MuteSystem(IServiceProvider provider)
         if (player.Team == CsTeam.CounterTerrorist
           && DateTime.Now >= ctPeaceEnd)
           return;
-        messages.PEACE_REMINDER.ToPlayerCenter(player);
+        messages!.PeaceReminder.ToPlayerCenter(player);
       }
 
       if (!player.PawnIsAlive)
-        messages.ADMIN_DEAD_REMINDER.ToPlayerCenter(player);
+        messages!.AdminDeadReminder.ToPlayerCenter(player);
     }
   }
 

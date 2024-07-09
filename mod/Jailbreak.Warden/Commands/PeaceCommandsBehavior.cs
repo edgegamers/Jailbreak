@@ -17,7 +17,7 @@ public class PeaceCommandsBehavior(IWardenService warden, IMuteService mute,
     "Invokes a peace period where only the warden can talk")]
   public void Command_Peace(CCSPlayerController? executor, CommandInfo info) {
     if (mute.IsPeaceEnabled()) {
-      if (executor != null) messages.PEACE_ACTIVE.ToPlayerChat(executor);
+      if (executor != null) messages.PeaceActive.ToPlayerChat(executor);
       return;
     }
 

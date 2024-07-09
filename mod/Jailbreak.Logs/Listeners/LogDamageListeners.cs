@@ -1,6 +1,5 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
-using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.Logging;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
@@ -11,7 +10,6 @@ public class LogDamageListeners : IPluginBehavior {
   private readonly IRichLogService logs;
 
   public LogDamageListeners(IRichLogService logs) { this.logs = logs; }
-
 
   [GameEventHandler]
   public HookResult OnGrenadeThrown(EventGrenadeThrown @event,

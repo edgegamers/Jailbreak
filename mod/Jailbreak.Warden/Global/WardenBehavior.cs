@@ -33,12 +33,13 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   private readonly ISet<CCSPlayerController> bluePrisoners =
     new HashSet<CCSPlayerController>();
 
+  private bool firstWarden;
+
   private BasePlugin? parent;
   private PreWardenStats? preWardenStats;
   private Timer? unblueTimer;
-  private bool firstWarden;
 
-  public void Start(BasePlugin parent) { this.parent = parent; }
+  public void Start(BasePlugin basePlugin) { parent = basePlugin; }
 
   /// <summary>
   ///   Get the current warden, if there is one.

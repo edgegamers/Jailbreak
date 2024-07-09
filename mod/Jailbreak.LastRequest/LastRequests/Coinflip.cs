@@ -7,10 +7,6 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 namespace Jailbreak.LastRequest.LastRequests;
 
 public class Coinflip : AbstractLastRequest {
-  private readonly ChatMenu menu;
-  private readonly Random rnd;
-  private Timer? timeout;
-
   private readonly string[] events = [
     "A glint of silver flashes through the air...", "The coin does a 180...!",
     "Gravity seems so much heavier...", "A quiet clink is heard...",
@@ -22,6 +18,10 @@ public class Coinflip : AbstractLastRequest {
     "Woosh woosh woosh", "banana rotate"
   ];
 
+  private readonly ChatMenu menu;
+  private readonly Random rnd;
+  private Timer? timeout;
+
   public Coinflip(BasePlugin plugin, ILastRequestManager manager,
     CCSPlayerController prisoner, CCSPlayerController guard) : base(plugin,
     manager, prisoner, guard) {
@@ -31,24 +31,24 @@ public class Coinflip : AbstractLastRequest {
     menu.AddMenuOption("Tails", (_, _) => decide(false, true));
   }
 
-  public override LRType type => LRType.COINFLIP;
+  public override LRType Type => LRType.COINFLIP;
 
   public override void Setup() {
-    state = LRState.Pending;
-    menu.Title = "Heads or Tails? - " + prisoner.PlayerName + " vs "
-      + guard.PlayerName;
+    State = LRState.PENDING;
+    menu.Title = "Heads or Tails? - " + Prisoner.PlayerName + " vs "
+      + Guard.PlayerName;
     Execute();
   }
 
   public override void Execute() {
-    state = LRState.Active;
-    MenuManager.OpenChatMenu(guard, menu);
+    State = LRState.ACTIVE;
+    MenuManager.OpenChatMenu(Guard, menu);
 
-    timeout = plugin.AddTimer(10, () => {
-      if (state != LRState.Active) return;
-      MenuManager.CloseActiveMenu(guard);
+    timeout = Plugin.AddTimer(10, () => {
+      if (State != LRState.ACTIVE) return;
+      MenuManager.CloseActiveMenu(Guard);
       var choice = rnd.Next(2) == 1;
-      guard.PrintToChat(
+      Guard.PrintToChat(
         $"You failed to choose in time, defaulting to {(choice ? "Heads" : "Tails")}");
       decide(choice, true);
     });
@@ -57,30 +57,30 @@ public class Coinflip : AbstractLastRequest {
   private void decide(bool heads, bool print) {
     timeout?.Kill();
     if (print) {
-      MenuManager.CloseActiveMenu(guard);
+      MenuManager.CloseActiveMenu(Guard);
       PrintToParticipants(
-        $"{guard.PlayerName} chose {(heads ? "Heads" : "Tails")}... flipping...");
-      state = LRState.Active;
+        $"{Guard.PlayerName} chose {(heads ? "Heads" : "Tails")}... flipping...");
+      State = LRState.ACTIVE;
     }
 
-    plugin.AddTimer(2, () => {
+    Plugin.AddTimer(2, () => {
       if (rnd.Next(4) == 0) {
         PrintToParticipants(events[rnd.Next(events.Length)]);
-        plugin.AddTimer(2, () => decide(heads, false));
+        Plugin.AddTimer(2, () => decide(heads, false));
       } else {
         var side = rnd.Next(2) == 1;
         PrintToParticipants($"The coin lands on {(side ? "Heads" : "Tails")}!");
-        manager.EndLastRequest(this,
-          side == heads ? LRResult.GuardWin : LRResult.PrisonerWin);
+        Manager.EndLastRequest(this,
+          side == heads ? LRResult.GUARD_WIN : LRResult.PRISONER_WIN);
       }
     });
   }
 
   public override void OnEnd(LRResult result) {
-    state = LRState.Completed;
-    if (result == LRResult.PrisonerWin)
-      guard.Pawn.Value?.CommitSuicide(false, true);
+    State = LRState.COMPLETED;
+    if (result == LRResult.PRISONER_WIN)
+      Guard.Pawn.Value?.CommitSuicide(false, true);
     else
-      prisoner.Pawn.Value?.CommitSuicide(false, true);
+      Prisoner.Pawn.Value?.CommitSuicide(false, true);
   }
 }

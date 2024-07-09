@@ -1,5 +1,4 @@
-﻿using Jailbreak.Formatting.Views;
-using Jailbreak.Formatting.Views.Logging;
+﻿using Jailbreak.Formatting.Views.Logging;
 using Jailbreak.Logs.Listeners;
 using Jailbreak.Logs.Tags;
 using Jailbreak.Public.Extensions;

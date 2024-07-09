@@ -1,9 +1,9 @@
 ﻿namespace Jailbreak.Formatting.Core;
 
 public class FormatWriter {
-  private readonly List<FormatObject[]> _lines = new();
+  private readonly List<FormatObject[]> lines = new();
 
-  public IEnumerable<FormatObject[]> Lines => _lines;
+  public IEnumerable<FormatObject[]> Lines => lines;
 
   public IEnumerable<string> Chat
     => Lines.Select(
@@ -19,7 +19,7 @@ public class FormatWriter {
 
 
   public FormatWriter Line(params FormatObject[] args) {
-    _lines.Add(args);
+    lines.Add(args);
 
     return this;
   }

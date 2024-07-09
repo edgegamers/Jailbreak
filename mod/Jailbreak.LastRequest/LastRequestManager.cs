@@ -41,7 +41,7 @@ public class LastRequestManager(LastRequestConfig config,
     // verify they're in same LR
     if (playerLR == null) return false;
 
-    if (playerLR.prisoner.Equals(attacker) || playerLR.guard.Equals(attacker))
+    if (playerLR.Prisoner.Equals(attacker) || playerLR.Guard.Equals(attacker))
       // Same LR, allow damage
       return false;
 
@@ -54,7 +54,7 @@ public class LastRequestManager(LastRequestConfig config,
   public IList<AbstractLastRequest> ActiveLRs { get; } =
     new List<AbstractLastRequest>();
 
-  public void Start(BasePlugin parent) {
+  public void Start(BasePlugin basePlugin) {
     factory = provider.GetRequiredService<ILastRequestFactory>();
   }
 
@@ -103,7 +103,7 @@ public class LastRequestManager(LastRequestConfig config,
   }
 
   public bool EndLastRequest(AbstractLastRequest lr, LRResult result) {
-    if (result is LRResult.GuardWin or LRResult.PrisonerWin) {
+    if (result is LRResult.GUARD_WIN or LRResult.PRISONER_WIN) {
       addRoundTime(30);
       messages.LastRequestDecided(lr, result).ToAllChat();
     }
@@ -123,7 +123,7 @@ public class LastRequestManager(LastRequestConfig config,
   public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
     if (IsLREnabled)
       foreach (var lr in ActiveLRs)
-        EndLastRequest(lr, LRResult.TimedOut);
+        EndLastRequest(lr, LRResult.TIMED_OUT);
 
     IsLREnabled = false;
     return HookResult.Continue;
@@ -156,10 +156,10 @@ public class LastRequestManager(LastRequestConfig config,
     if (IsLREnabled) {
       // Handle active LRs
       var activeLr = ((ILastRequestManager)this).GetActiveLR(player);
-      if (activeLr != null && activeLr.state != LRState.Completed) {
-        var isPrisoner = activeLr.prisoner.Slot == player.Slot;
+      if (activeLr != null && activeLr.State != LRState.COMPLETED) {
+        var isPrisoner = activeLr.Prisoner.Slot == player.Slot;
         EndLastRequest(activeLr,
-          isPrisoner ? LRResult.GuardWin : LRResult.PrisonerWin);
+          isPrisoner ? LRResult.GUARD_WIN : LRResult.PRISONER_WIN);
       }
 
       return HookResult.Continue;
@@ -188,11 +188,11 @@ public class LastRequestManager(LastRequestConfig config,
 
     var activeLr = ((ILastRequestManager)this).GetActiveLR(player);
 
-    if (activeLr != null && activeLr.state != LRState.Active) {
+    if (activeLr != null && activeLr.State != LRState.ACTIVE) {
       EndLastRequest(activeLr,
         player.Team == CsTeam.Terrorist ?
-          LRResult.GuardWin :
-          LRResult.PrisonerWin);
+          LRResult.GUARD_WIN :
+          LRResult.PRISONER_WIN);
       return HookResult.Continue;
     }
 

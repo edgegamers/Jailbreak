@@ -20,62 +20,62 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
   private Timer? raceTimer;
   private BeamCircle? start, end;
   private Vector? startLocation, endLocation;
-  public override LRType type => LRType.RACE;
+  public override LRType Type => LRType.RACE;
 
   public override void Setup() {
     base.Setup();
 
-    prisoner.RemoveWeapons();
+    Prisoner.RemoveWeapons();
 
-    guard.RemoveWeapons();
-    guard.GiveNamedItem("weapon_knife");
+    Guard.RemoveWeapons();
+    Guard.GiveNamedItem("weapon_knife");
 
-    plugin.AddTimer(3, () => {
-      if (state != LRState.Pending) return;
-      prisoner.GiveNamedItem("weapon_knife");
+    Plugin.AddTimer(3, () => {
+      if (State != LRState.PENDING) return;
+      Prisoner.GiveNamedItem("weapon_knife");
     });
 
-    messages.END_RACE_INSTRUCTION.ToPlayerChat(prisoner);
+    messages.EndRaceInstruction.ToPlayerChat(Prisoner);
 
-    messages.RACE_STARTING_MESSAGE(prisoner).ToPlayerChat(guard);
+    messages.RaceStartingMessage(Prisoner).ToPlayerChat(Guard);
 
-    startLocation = prisoner.Pawn?.Value?.AbsOrigin?.Clone();
+    startLocation = Prisoner.Pawn?.Value?.AbsOrigin?.Clone();
 
     if (startLocation == null) return;
-    start = new BeamCircle(plugin, startLocation, 20, 16);
+    start = new BeamCircle(Plugin, startLocation, 20, 16);
     start.SetColor(Color.Aqua);
     start.Draw();
   }
 
   // Called when the prisoner types !endrace
   public override void Execute() {
-    state = LRState.Active;
+    State = LRState.ACTIVE;
 
-    endLocation = prisoner.Pawn?.Value?.AbsOrigin?.Clone();
+    endLocation = Prisoner.Pawn?.Value?.AbsOrigin?.Clone();
 
     if (endLocation == null) return;
-    end = new BeamCircle(plugin, endLocation, 10, 32);
+    end = new BeamCircle(Plugin, endLocation, 10, 32);
     end.SetColor(Color.Red);
     end.Draw();
 
-    prisoner.Pawn?.Value?.Teleport(startLocation);
-    guard.Pawn.Value?.Teleport(startLocation);
+    Prisoner.Pawn?.Value?.Teleport(startLocation);
+    Guard.Pawn.Value?.Teleport(startLocation);
 
-    guard.Freeze();
-    prisoner.Freeze();
+    Guard.Freeze();
+    Prisoner.Freeze();
 
-    plugin.AddTimer(1, () => {
-      guard.UnFreeze();
-      prisoner.UnFreeze();
+    Plugin.AddTimer(1, () => {
+      Guard.UnFreeze();
+      Prisoner.UnFreeze();
     });
 
     raceStart = DateTime.Now;
 
-    raceTimer = plugin.AddTimer(0.1f, tick, TimerFlags.REPEAT);
+    raceTimer = Plugin.AddTimer(0.1f, tick, TimerFlags.REPEAT);
   }
 
   private void tick() {
-    if (prisoner.AbsOrigin == null || guard.AbsOrigin == null) return;
+    if (Prisoner.AbsOrigin == null || Guard.AbsOrigin == null) return;
     var requiredDistance       = getRequiredDistance();
     var requiredDistanceSqured = MathF.Pow(requiredDistance, 2);
 
@@ -83,18 +83,18 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
     end?.Update();
 
     if (endLocation == null) return;
-    var guardDist = guard.Pawn?.Value?.AbsOrigin?.Clone()
+    var guardDist = Guard.Pawn?.Value?.AbsOrigin?.Clone()
      .DistanceSquared(endLocation);
 
     if (guardDist < requiredDistanceSqured) {
-      manager.EndLastRequest(this, LRResult.GuardWin);
+      Manager.EndLastRequest(this, LRResult.GUARD_WIN);
       return;
     }
 
-    var prisonerDist = prisoner.Pawn?.Value?.AbsOrigin?.Clone()
+    var prisonerDist = Prisoner.Pawn?.Value?.AbsOrigin?.Clone()
      .DistanceSquared(endLocation);
     if (prisonerDist < requiredDistanceSqured)
-      manager.EndLastRequest(this, LRResult.PrisonerWin);
+      Manager.EndLastRequest(this, LRResult.PRISONER_WIN);
   }
 
   // https://www.desmos.com/calculator/e1qwgpmtmz
@@ -105,13 +105,13 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
   }
 
   public override void OnEnd(LRResult result) {
-    state = LRState.Completed;
+    State = LRState.COMPLETED;
     switch (result) {
-      case LRResult.GuardWin:
-        prisoner.Pawn.Value?.CommitSuicide(false, true);
+      case LRResult.GUARD_WIN:
+        Prisoner.Pawn.Value?.CommitSuicide(false, true);
         break;
-      case LRResult.PrisonerWin:
-        guard.Pawn.Value?.CommitSuicide(false, true);
+      case LRResult.PRISONER_WIN:
+        Guard.Pawn.Value?.CommitSuicide(false, true);
         break;
     }
 

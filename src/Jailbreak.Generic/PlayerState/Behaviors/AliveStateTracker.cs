@@ -5,7 +5,7 @@ using Jailbreak.Public.Behaviors;
 namespace Jailbreak.Generic.PlayerState.Behaviors;
 
 public class AliveStateTracker : BaseStateTracker, IPluginBehavior {
-  public void Start(BasePlugin parent) { }
+  public void Start(BasePlugin basePlugin) { }
 
   [GameEventHandler]
   public HookResult OnDeath(EventPlayerDeath ev, GameEventInfo info) {

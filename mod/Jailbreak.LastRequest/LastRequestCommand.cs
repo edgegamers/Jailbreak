@@ -20,10 +20,10 @@ public class LastRequestCommand(ILastRequestManager manager,
   private BasePlugin? plugin;
 
   // css_lr <player> <LRType>
-  public void Start(BasePlugin plugin) {
-    this.plugin    = plugin;
-    playerSelector = new LastRequestPlayerSelector(manager);
-    menuSelector   = new LastRequestMenuSelector(factory);
+  public void Start(BasePlugin basePlugin) {
+    plugin         = basePlugin;
+    playerSelector = new LastRequestPlayerSelector(manager, plugin);
+    menuSelector   = new LastRequestMenuSelector(factory, plugin);
   }
 
   [ConsoleCommand("css_lr", "Start a last request as a prisoner")]

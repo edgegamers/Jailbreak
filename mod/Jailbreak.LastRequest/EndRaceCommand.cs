@@ -14,12 +14,12 @@ public class EndRaceCommand(ILastRequestManager lrManager) : IPluginBehavior {
     if (executor == null) return;
     var lr = lrManager.GetActiveLR(executor);
 
-    if (lr is not { type: LRType.RACE }) {
+    if (lr is not { Type: LRType.RACE }) {
       info.ReplyToCommand("You must be in a race LR to use this command.");
       return;
     }
 
-    if (lr.state != LRState.Pending) {
+    if (lr.State != LRState.PENDING) {
       info.ReplyToCommand(
         "You must be in the pending state to use this command.");
       return;

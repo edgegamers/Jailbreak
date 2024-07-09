@@ -53,7 +53,7 @@ public class
     queueInactive = true;
   }
 
-  public void Start(BasePlugin parent) { }
+  public void Start(BasePlugin basePlugin) { }
 
   public void Dispose() { }
 

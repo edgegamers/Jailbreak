@@ -16,26 +16,26 @@ public abstract class WeaponizedRequest(BasePlugin plugin,
     base.Setup();
 
     // Strip weapons, teleport T to CT
-    prisoner.RemoveWeapons();
-    guard.RemoveWeapons();
+    Prisoner.RemoveWeapons();
+    Guard.RemoveWeapons();
     for (var i = 3; i >= 1; i--) {
       var copy = i;
-      plugin.AddTimer(3 - i, () => { PrintToParticipants($"{copy}..."); });
+      Plugin.AddTimer(3 - i, () => { PrintToParticipants($"{copy}..."); });
     }
 
-    plugin.AddTimer(3, Execute);
+    Plugin.AddTimer(3, Execute);
   }
 
   public override void OnEnd(LRResult result) {
     switch (result) {
-      case LRResult.GuardWin:
-        prisoner.Pawn.Value?.CommitSuicide(false, true);
+      case LRResult.GUARD_WIN:
+        Prisoner.Pawn.Value?.CommitSuicide(false, true);
         break;
-      case LRResult.PrisonerWin:
-        guard.Pawn.Value?.CommitSuicide(false, true);
+      case LRResult.PRISONER_WIN:
+        Guard.Pawn.Value?.CommitSuicide(false, true);
         break;
     }
 
-    state = LRState.Completed;
+    State = LRState.COMPLETED;
   }
 }

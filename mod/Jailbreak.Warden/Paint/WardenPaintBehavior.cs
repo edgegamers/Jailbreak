@@ -15,9 +15,9 @@ public class WardenPaintBehavior : IPluginBehavior {
 
   public WardenPaintBehavior(IWardenService warden) { wardenService = warden; }
 
-  public void Start(BasePlugin parent) {
-    this.parent = parent;
-    parent.RegisterListener<Listeners.OnTick>(paint);
+  public void Start(BasePlugin basePlugin) {
+    parent = basePlugin;
+    basePlugin.RegisterListener<Listeners.OnTick>(paint);
   }
 
   private void paint() {
@@ -69,11 +69,11 @@ public class WardenPaintBehavior : IPluginBehavior {
     var eyeVector = new Vector((float)(Math.Cos(yaw) * Math.Cos(pitch)),
       (float)(Math.Sin(yaw) * Math.Cos(pitch)), (float)-Math.Sin(pitch));
 
-    return FindFloorIntersection(cameraOrigin, eyeVector,
+    return findFloorIntersection(cameraOrigin, eyeVector,
       new Vector(eyeAngle.X, eyeAngle.Y, eyeAngle.Z), pawn.AbsOrigin.Z);
   }
 
-  private Vector? FindFloorIntersection(Vector start, Vector worldAngles,
+  private Vector? findFloorIntersection(Vector start, Vector worldAngles,
     Vector rotationAngles, float z) {
     var pitch =
       rotationAngles

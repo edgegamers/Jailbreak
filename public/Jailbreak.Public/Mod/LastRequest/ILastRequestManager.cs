@@ -19,7 +19,7 @@ public interface ILastRequestManager : IPluginBehavior {
 
   public AbstractLastRequest? GetActiveLR(CCSPlayerController player) {
     return ActiveLRs.FirstOrDefault(lr
-      => lr.guard.Slot == player.Slot || lr.prisoner.Slot == player.Slot);
+      => lr.Guard.Slot == player.Slot || lr.Prisoner.Slot == player.Slot);
   }
 
   public void EnableLR(CCSPlayerController? died = null);

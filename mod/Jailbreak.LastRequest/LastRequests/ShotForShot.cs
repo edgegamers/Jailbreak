@@ -11,20 +11,20 @@ public class ShotForShot(BasePlugin plugin, ILastRequestManager manager,
   CCSPlayerController prisoner, CCSPlayerController guard)
   : WeaponizedRequest(plugin, manager, prisoner, guard) {
   private CCSPlayerController? whosShot;
-  public override LRType type => LRType.SHOT_FOR_SHOT;
+  public override LRType Type => LRType.SHOT_FOR_SHOT;
 
   public override void Setup() {
-    plugin.RegisterEventHandler<EventPlayerShoot>(OnPlayerShoot);
+    Plugin.RegisterEventHandler<EventPlayerShoot>(OnPlayerShoot);
     base.Setup();
 
-    whosShot = new Random().Next(2) == 0 ? prisoner : guard;
+    whosShot = new Random().Next(2) == 0 ? Prisoner : Guard;
     PrintToParticipants(whosShot.PlayerName + " will shoot first.");
-    prisoner.GiveNamedItem("weapon_deagle");
-    guard.GiveNamedItem("weapon_deagle");
+    Prisoner.GiveNamedItem("weapon_deagle");
+    Guard.GiveNamedItem("weapon_deagle");
 
-    var weapon = findWeapon(prisoner, "weapon_deagle");
+    var weapon = findWeapon(Prisoner, "weapon_deagle");
     if (weapon != null) setAmmoAmount(weapon, 0, 0);
-    weapon = findWeapon(guard, "weapon_deagle");
+    weapon = findWeapon(Guard, "weapon_deagle");
     if (weapon != null) setAmmoAmount(weapon, 0, 0);
   }
 
@@ -52,46 +52,46 @@ public class ShotForShot(BasePlugin plugin, ILastRequestManager manager,
   }
 
   public override void Execute() {
-    state = LRState.Active;
+    State = LRState.ACTIVE;
     if (whosShot == null) return;
     var deagle = findWeapon(whosShot, "weapon_deagle");
     if (deagle != null) setAmmoAmount(deagle, 1, 0);
 
-    plugin.AddTimer(30, () => {
-      if (state != LRState.Active) return;
-      prisoner.GiveNamedItem("weapon_knife");
-      guard.GiveNamedItem("weapon_knife");
+    Plugin.AddTimer(30, () => {
+      if (State != LRState.ACTIVE) return;
+      Prisoner.GiveNamedItem("weapon_knife");
+      Guard.GiveNamedItem("weapon_knife");
     });
-    plugin.AddTimer(60, () => {
-      if (state != LRState.Active) return;
+    Plugin.AddTimer(60, () => {
+      if (State != LRState.ACTIVE) return;
       PrintToParticipants("Time's Up!");
-      var result = guard.Health > prisoner.Health ?
-        LRResult.GuardWin :
-        LRResult.PrisonerWin;
-      if (guard.Health == prisoner.Health) {
+      var result = Guard.Health > Prisoner.Health ?
+        LRResult.GUARD_WIN :
+        LRResult.PRISONER_WIN;
+      if (Guard.Health == Prisoner.Health) {
         PrintToParticipants("Even health, since " + whosShot.PlayerName
           + " had the shot last, they lose.");
-        result = whosShot.Slot == prisoner.Slot ?
-          LRResult.GuardWin :
-          LRResult.PrisonerWin;
+        result = whosShot.Slot == Prisoner.Slot ?
+          LRResult.GUARD_WIN :
+          LRResult.PRISONER_WIN;
       } else { PrintToParticipants("Health was the deciding factor. "); }
 
-      if (result == LRResult.GuardWin)
-        prisoner.Pawn.Value?.CommitSuicide(false, true);
+      if (result == LRResult.GUARD_WIN)
+        Prisoner.Pawn.Value?.CommitSuicide(false, true);
       else
-        guard.Pawn.Value?.CommitSuicide(false, true);
+        Guard.Pawn.Value?.CommitSuicide(false, true);
     }, TimerFlags.STOP_ON_MAPCHANGE);
   }
 
   private HookResult OnPlayerShoot(EventPlayerShoot @event,
     GameEventInfo info) {
-    if (state != LRState.Active) return HookResult.Continue;
+    if (State != LRState.ACTIVE) return HookResult.Continue;
 
     var player = @event.Userid;
     if (player == null || whosShot == null || !player.IsReal())
       return HookResult.Continue;
 
-    if (player.Slot != prisoner.Slot && player.Slot != guard.Slot)
+    if (player.Slot != Prisoner.Slot && player.Slot != Guard.Slot)
       return HookResult.Continue;
     if (player.Slot != whosShot.Slot) {
       PrintToParticipants(player.PlayerName + " cheated.");
@@ -100,7 +100,7 @@ public class ShotForShot(BasePlugin plugin, ILastRequestManager manager,
     }
 
     PrintToParticipants(player.PlayerName + " has shot.");
-    var opponent = player.Slot == prisoner.Slot ? guard : prisoner;
+    var opponent = player.Slot == Prisoner.Slot ? Guard : Prisoner;
     opponent.PrintToChat("Your shot");
     var deagle = findWeapon(opponent, "weapon_deagle");
     if (deagle != null) setAmmoAmount(deagle, 1, 0);
@@ -109,7 +109,7 @@ public class ShotForShot(BasePlugin plugin, ILastRequestManager manager,
   }
 
   public override void OnEnd(LRResult result) {
-    plugin.RemoveListener(OnPlayerShoot);
-    state = LRState.Completed;
+    Plugin.RemoveListener(OnPlayerShoot);
+    State = LRState.COMPLETED;
   }
 }

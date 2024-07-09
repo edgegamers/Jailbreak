@@ -13,12 +13,12 @@ public class BeamCircle : BeamedShape {
     this.radius = radius;
     lines       = new BeamLine[resolution];
 
-    offsets = GenerateOffsets();
+    offsets = generateOffsets();
   }
 
   private float degToRadian(float d) { return (float)(d * (Math.PI / 180)); }
 
-  private Vector[] GenerateOffsets() {
+  private Vector[] generateOffsets() {
     var newOffsets = new Vector[lines.Length];
     var angle      = 360f / lines.Length;
     for (var i = 0; i < lines.Length; i++) {
@@ -49,6 +49,6 @@ public class BeamCircle : BeamedShape {
 
   public void SetRadius(float radius) {
     this.radius = radius;
-    offsets     = GenerateOffsets();
+    offsets     = generateOffsets();
   }
 }

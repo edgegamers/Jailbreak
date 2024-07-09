@@ -60,31 +60,31 @@ public class LastRequestMessages : ILastRequestMessages,
   public IView InformLastRequest(AbstractLastRequest lr) {
     return new SimpleView {
       PREFIX,
-      lr.prisoner,
+      lr.Prisoner,
       "is preparing a",
-      lr.type.ToFriendlyString(),
+      lr.Type.ToFriendlyString(),
       "Last Request against",
-      lr.guard
+      lr.Guard
     };
   }
 
   public IView AnnounceLastRequest(AbstractLastRequest lr) {
     return new SimpleView {
       PREFIX,
-      lr.prisoner,
+      lr.Prisoner,
       "is doing a",
-      lr.type.ToFriendlyString(),
+      lr.Type.ToFriendlyString(),
       "Last Request against",
-      lr.guard
+      lr.Guard
     };
   }
 
   public IView LastRequestDecided(AbstractLastRequest lr, LRResult result) {
     return new SimpleView {
       PREFIX,
-      (result == LRResult.GuardWin ? ChatColors.Blue : ChatColors.Red)
+      (result == LRResult.GUARD_WIN ? ChatColors.Blue : ChatColors.Red)
      .ToString(),
-      result == LRResult.PrisonerWin ? lr.prisoner : lr.guard,
+      result == LRResult.PRISONER_WIN ? lr.Prisoner : lr.Guard,
       "won the LR."
     };
   }

@@ -11,7 +11,7 @@ public class LastRequestFactory(ILastRequestManager manager,
   IServiceProvider services) : ILastRequestFactory {
   private BasePlugin? plugin;
 
-  public void Start(BasePlugin parent) { plugin = parent; }
+  public void Start(BasePlugin basePlugin) { plugin = basePlugin; }
 
   public AbstractLastRequest CreateLastRequest(CCSPlayerController prisoner,
     CCSPlayerController guard, LRType type) {
@@ -31,13 +31,13 @@ public class LastRequestFactory(ILastRequestManager manager,
 
   public bool IsValidType(LRType type) {
     return type switch {
-      LRType.KNIFE_FIGHT        => true,
-      LRType.GUN_TOSS           => true,
-      LRType.NO_SCOPE           => true,
+      LRType.KNIFE_FIGHT         => true,
+      LRType.GUN_TOSS            => true,
+      LRType.NO_SCOPE            => true,
       LRType.ROCK_PAPER_SCISSORS => true,
-      LRType.COINFLIP          => true,
-      LRType.RACE              => true,
-      _                        => false
+      LRType.COINFLIP            => true,
+      LRType.RACE                => true,
+      _                          => false
     };
   }
 }

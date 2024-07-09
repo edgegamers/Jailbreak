@@ -8,7 +8,7 @@ namespace Jailbreak.English.LastRequest;
 
 public class RaceLRMessages : IRaceLRMessages,
   ILanguage<Formatting.Languages.English> {
-  public IView END_RACE_INSTRUCTION
+  public IView EndRaceInstruction
     => new SimpleView {
       {
         LastRequestMessages.PREFIX,
@@ -25,7 +25,7 @@ public class RaceLRMessages : IRaceLRMessages,
       SimpleView.NEWLINE
     };
 
-  public IView RACE_STARTING_MESSAGE(CCSPlayerController prisoner) {
+  public IView RaceStartingMessage(CCSPlayerController prisoner) {
     return new SimpleView {
       {
         LastRequestMessages.PREFIX, prisoner,

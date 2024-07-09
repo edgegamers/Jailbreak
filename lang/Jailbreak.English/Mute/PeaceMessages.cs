@@ -15,30 +15,30 @@ public class PeaceMessages : IPeaceMessages,
       Plain = false, Panorama = false, Chat = true
     };
 
-  public IView PEACE_ENACTED_BY_ADMIN(int seconds) {
+  public IView PeaceEnactedByAdmin(int seconds) {
     return new SimpleView {
       PREFIX, "An admin has enacted peace for", seconds, "seconds."
     };
   }
 
-  public IView WARDEN_ENACTED_PEACE(int seconds) {
+  public IView WardenEnactedPeace(int seconds) {
     return new SimpleView {
       PREFIX, "Warden has enacted peace for", seconds, "seconds."
     };
   }
 
-  public IView GENERAL_PEACE_ENACTED(int seconds) {
+  public IView GeneralPeaceEnacted(int seconds) {
     return new SimpleView {
       PREFIX, "Peace has been enacted for", seconds, "seconds."
     };
   }
 
-  public IView UNMUTED_GUARDS
+  public IView UnmutedGuards
     => new SimpleView {
       { PREFIX, $"{ChatColors.Blue}Guards {ChatColors.Grey}have been unmuted." }
     };
 
-  public IView UNMUTED_PRISONERS
+  public IView UnmutedPrisoners
     => new SimpleView {
       {
         PREFIX,
@@ -46,12 +46,12 @@ public class PeaceMessages : IPeaceMessages,
       }
     };
 
-  public IView MUTE_REMINDER
+  public IView MuteReminder
     => new SimpleView {
       { PREFIX, ChatColors.Red, "You are currently muted!" }
     };
 
-  public IView PEACE_REMINDER
+  public IView PeaceReminder
     => new SimpleView {
       {
         PREFIX,
@@ -59,12 +59,12 @@ public class PeaceMessages : IPeaceMessages,
       }
     };
 
-  public IView DEAD_REMINDER
+  public IView DeadReminder
     => new SimpleView {
       { PREFIX, $"{ChatColors.Red}You are dead and cannot speak!" }
     };
 
-  public IView ADMIN_DEAD_REMINDER
+  public IView AdminDeadReminder
     => new SimpleView {
       {
         PREFIX, "You are dead.",
@@ -72,6 +72,6 @@ public class PeaceMessages : IPeaceMessages,
       }
     };
 
-  public IView PEACE_ACTIVE
+  public IView PeaceActive
     => new SimpleView { { PREFIX, "Peace is currently active." } };
 }

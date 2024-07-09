@@ -16,13 +16,13 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
   public static readonly int MAX_REBEL_TIME = 45;
   private readonly Dictionary<CCSPlayerController, long> rebelTimes = new();
 
-  public void Start(BasePlugin parent) {
-    parent.RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
-    parent.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
-    parent.RegisterEventHandler<EventRoundStart>(OnRoundStart);
-    parent.RegisterListener<Listeners.OnTick>(OnTick);
+  public void Start(BasePlugin basePlugin) {
+    basePlugin.RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
+    basePlugin.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
+    basePlugin.RegisterEventHandler<EventRoundStart>(OnRoundStart);
+    basePlugin.RegisterListener<Listeners.OnTick>(OnTick);
 
-    parent.AddTimer(1f, () => {
+    basePlugin.AddTimer(1f, () => {
       foreach (var player in GetActiveRebels()) {
         if (!player.IsReal()) continue;
 

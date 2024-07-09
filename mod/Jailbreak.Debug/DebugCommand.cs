@@ -15,8 +15,8 @@ public class DebugCommand(IServiceProvider serviceProvider) : IPluginBehavior {
   private readonly Dictionary<string, AbstractCommand> commands = new();
   private BasePlugin? plugin;
 
-  public void Start(BasePlugin parent) {
-    plugin = parent;
+  public void Start(BasePlugin basePlugin) {
+    plugin = basePlugin;
     commands.Add("markrebel", new MarkRebel(serviceProvider));
     commands.Add("pardon", new Pardon(serviceProvider));
     commands.Add("lr", new Subcommands.LastRequest(serviceProvider, plugin));

@@ -7,14 +7,14 @@ namespace Jailbreak.LastRequest.LastRequests;
 public class KnifeFight(BasePlugin plugin, ILastRequestManager manager,
   CCSPlayerController prisoner, CCSPlayerController guard)
   : WeaponizedRequest(plugin, manager, prisoner, guard) {
-  public override LRType type => LRType.KNIFE_FIGHT;
+  public override LRType Type => LRType.KNIFE_FIGHT;
 
   public override void Execute() {
     PrintToParticipants("Go!");
-    prisoner.GiveNamedItem("weapon_knife");
-    guard.GiveNamedItem("weapon_knife");
-    state = LRState.Active;
+    Prisoner.GiveNamedItem("weapon_knife");
+    Guard.GiveNamedItem("weapon_knife");
+    State = LRState.ACTIVE;
   }
 
-  public override void OnEnd(LRResult result) { state = LRState.Completed; }
+  public override void OnEnd(LRResult result) { State = LRState.COMPLETED; }
 }

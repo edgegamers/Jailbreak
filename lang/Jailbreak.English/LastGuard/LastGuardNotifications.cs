@@ -9,7 +9,7 @@ namespace Jailbreak.English.LastGuard;
 
 public class LastGuardNotifications : ILastGuardNotifications,
   ILanguage<Formatting.Languages.English> {
-  public readonly static FormatObject PREFIX =
+  public static readonly FormatObject PREFIX =
     new HiddenFormatObject(
       $" {ChatColors.DarkRed}[{ChatColors.LightRed}Last Guard{ChatColors.DarkRed}]") {
       //	Hide in panorama and center text

@@ -4,7 +4,7 @@ using Jailbreak.Formatting.Base;
 namespace Jailbreak.Formatting.Views;
 
 public interface IRaceLRMessages {
-  public IView END_RACE_INSTRUCTION { get; }
+  public IView EndRaceInstruction { get; }
 
-  public IView RACE_STARTING_MESSAGE(CCSPlayerController prisoner);
+  public IView RaceStartingMessage(CCSPlayerController prisoner);
 }

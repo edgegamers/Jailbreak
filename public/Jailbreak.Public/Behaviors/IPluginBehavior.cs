@@ -11,5 +11,5 @@ public interface IPluginBehavior : IDisposable {
   /// <summary>
   ///   Tells the plugin that it will be starting imminently
   /// </summary>
-  void Start(BasePlugin parent) { }
+  void Start(BasePlugin basePlugin) { }
 }

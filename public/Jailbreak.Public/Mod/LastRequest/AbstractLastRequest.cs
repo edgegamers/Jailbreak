@@ -6,17 +6,17 @@ namespace Jailbreak.Public.Mod.LastRequest;
 public abstract class AbstractLastRequest(BasePlugin plugin,
   ILastRequestManager manager, CCSPlayerController prisoner,
   CCSPlayerController guard) {
-  protected ILastRequestManager manager = manager;
-  protected BasePlugin plugin = plugin;
-  public CCSPlayerController prisoner { get; protected set; } = prisoner;
-  public CCSPlayerController guard { get; protected set; } = guard;
-  public abstract LRType type { get; }
+  protected readonly ILastRequestManager Manager = manager;
+  protected readonly BasePlugin Plugin = plugin;
+  public CCSPlayerController Prisoner { get; protected set; } = prisoner;
+  public CCSPlayerController Guard { get; protected set; } = guard;
+  public abstract LRType Type { get; }
 
-  public LRState state { get; protected set; }
+  public LRState State { get; protected set; }
 
   public void PrintToParticipants(string message) {
-    prisoner.PrintToChat(message);
-    guard.PrintToChat(message);
+    Prisoner.PrintToChat(message);
+    Guard.PrintToChat(message);
   }
 
   public abstract void Setup();

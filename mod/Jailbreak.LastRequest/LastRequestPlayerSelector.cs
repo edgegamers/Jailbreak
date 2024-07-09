@@ -8,10 +8,10 @@ using Jailbreak.Public.Mod.LastRequest;
 namespace Jailbreak.LastRequest;
 
 public class LastRequestPlayerSelector(ILastRequestManager manager,
-  bool debug = false) {
+  BasePlugin plugin, bool debug = false) {
   public CenterHtmlMenu CreateMenu(CCSPlayerController player,
     Func<string?, string> command) {
-    var menu = new CenterHtmlMenu(command.Invoke("[Player]"));
+    var menu = new CenterHtmlMenu(command.Invoke("[Player]"), plugin);
 
     foreach (var target in Utilities.GetPlayers()) {
       if (!target.IsReal()) continue;

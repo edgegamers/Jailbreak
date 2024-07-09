@@ -10,23 +10,23 @@ namespace Jailbreak.LastRequest.LastRequests;
 public class NoScope(BasePlugin plugin, ILastRequestManager manager,
   CCSPlayerController prisoner, CCSPlayerController guard)
   : WeaponizedRequest(plugin, manager, prisoner, guard) {
-  public override LRType type => LRType.NO_SCOPE;
+  public override LRType Type => LRType.NO_SCOPE;
 
   public override void Setup() {
     base.Setup();
 
-    plugin.RegisterListener<Listeners.OnTick>(OnTick);
+    Plugin.RegisterListener<Listeners.OnTick>(OnTick);
   }
 
   private void OnTick() {
-    if (state != LRState.Active) return;
+    if (State != LRState.ACTIVE) return;
 
-    if (!prisoner.IsReal() || !guard.IsReal()) return;
+    if (!Prisoner.IsReal() || !Guard.IsReal()) return;
 
-    if (prisoner.PlayerPawn.Value == null || guard.PlayerPawn.Value == null)
+    if (Prisoner.PlayerPawn.Value == null || Guard.PlayerPawn.Value == null)
       return;
-    disableScope(prisoner);
-    disableScope(guard);
+    disableScope(Prisoner);
+    disableScope(Guard);
   }
 
   private void disableScope(CCSPlayerController player) {
@@ -42,33 +42,33 @@ public class NoScope(BasePlugin plugin, ILastRequestManager manager,
 
   public override void Execute() {
     PrintToParticipants("Go!");
-    prisoner.GiveNamedItem("weapon_ssg08");
-    guard.GiveNamedItem("weapon_ssg08");
-    state = LRState.Active;
+    Prisoner.GiveNamedItem("weapon_ssg08");
+    Guard.GiveNamedItem("weapon_ssg08");
+    State = LRState.ACTIVE;
 
-    plugin.AddTimer(30, () => {
-      if (state != LRState.Active) return;
-      prisoner.GiveNamedItem("weapon_knife");
-      guard.GiveNamedItem("weapon_knife");
+    Plugin.AddTimer(30, () => {
+      if (State != LRState.ACTIVE) return;
+      Prisoner.GiveNamedItem("weapon_knife");
+      Guard.GiveNamedItem("weapon_knife");
     }, TimerFlags.STOP_ON_MAPCHANGE);
 
-    plugin.AddTimer(60, () => {
-      if (state != LRState.Active) return;
+    Plugin.AddTimer(60, () => {
+      if (State != LRState.ACTIVE) return;
 
-      manager.EndLastRequest(this,
-        guard.Health > prisoner.Health ?
-          LRResult.GuardWin :
-          LRResult.PrisonerWin);
+      Manager.EndLastRequest(this,
+        Guard.Health > Prisoner.Health ?
+          LRResult.GUARD_WIN :
+          LRResult.PRISONER_WIN);
     }, TimerFlags.STOP_ON_MAPCHANGE);
   }
 
   public override void OnEnd(LRResult result) {
-    state = LRState.Completed;
-    plugin.RemoveListener(OnTick);
+    State = LRState.COMPLETED;
+    Plugin.RemoveListener(OnTick);
 
-    if (result != LRResult.GuardWin && result != LRResult.PrisonerWin) return;
+    if (result != LRResult.GUARD_WIN && result != LRResult.PRISONER_WIN) return;
 
-    var winner = result == LRResult.GuardWin ? guard : prisoner;
+    var winner = result == LRResult.GUARD_WIN ? Guard : Prisoner;
 
     winner.RemoveWeapons();
     winner.GiveNamedItem("weapon_knife");

@@ -1,7 +1,6 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
-using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.Logging;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;

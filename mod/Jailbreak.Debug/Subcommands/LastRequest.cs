@@ -23,10 +23,10 @@ public class LastRequest : AbstractCommand {
     base(services) {
     this.plugin    = plugin;
     manager        = services.GetRequiredService<ILastRequestManager>();
-    playerSelector = new LastRequestPlayerSelector(manager, true);
+    playerSelector = new LastRequestPlayerSelector(manager, plugin, true);
     menuSelector = new LastRequestMenuSelector(
       services.GetRequiredService<ILastRequestFactory>(),
-      type => "css_debug lastrequest " + type);
+      type => "css_debug lastrequest " + type, plugin);
     messages = services.GetRequiredService<ILastRequestMessages>();
   }
 
