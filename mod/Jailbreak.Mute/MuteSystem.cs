@@ -19,33 +19,33 @@ public class MuteSystem(IServiceProvider provider)
   private DateTime ctPeaceEnd = DateTime.MinValue;
   private DateTime lastPeace = DateTime.MinValue;
 
-  private IPeaceMessages messages;
-  private BasePlugin parent;
+  private IPeaceMessages? messages;
+  private BasePlugin? parent;
   private DateTime peaceEnd = DateTime.MinValue;
 
   private Timer? prisonerTimer, guardTimer;
-  private IWardenService warden;
+  private IWardenService? warden;
 
   public void PeaceMute(MuteReason reason) {
-    var duration   = GetPeaceDuration(reason);
+    var duration   = getPeaceDuration(reason);
     var ctDuration = Math.Min(10, duration);
     foreach (var player in Utilities.GetPlayers()
      .Where(player => player.IsReal()))
-      if (!warden.IsWarden(player))
+      if (!warden!.IsWarden(player))
         mute(player);
 
     switch (reason) {
       case MuteReason.ADMIN:
-        messages.PEACE_ENACTED_BY_ADMIN(duration).ToAllChat();
+        messages!.PEACE_ENACTED_BY_ADMIN(duration).ToAllChat();
         break;
       case MuteReason.WARDEN_TAKEN:
-        messages.GENERAL_PEACE_ENACTED(duration).ToAllChat();
+        messages!.GENERAL_PEACE_ENACTED(duration).ToAllChat();
         break;
       case MuteReason.WARDEN_INVOKED:
-        messages.WARDEN_ENACTED_PEACE(duration).ToAllChat();
+        messages!.WARDEN_ENACTED_PEACE(duration).ToAllChat();
         break;
       case MuteReason.INITIAL_WARDEN:
-        messages.GENERAL_PEACE_ENACTED(duration).ToAllChat();
+        messages!.GENERAL_PEACE_ENACTED(duration).ToAllChat();
         break;
     }
 
@@ -56,8 +56,8 @@ public class MuteSystem(IServiceProvider provider)
     guardTimer?.Kill();
     prisonerTimer?.Kill();
 
-    guardTimer    = parent.AddTimer(ctDuration, unmuteGuards);
-    prisonerTimer = parent.AddTimer(duration, unmutePrisoners);
+    guardTimer    = parent!.AddTimer(ctDuration, unmuteGuards);
+    prisonerTimer = parent!.AddTimer(duration, unmutePrisoners);
   }
 
   public void UnPeaceMute() {
@@ -70,16 +70,16 @@ public class MuteSystem(IServiceProvider provider)
 
   public DateTime GetLastPeace() { return lastPeace; }
 
-  public void Start(BasePlugin parent) {
-    this.parent = parent;
+  public void Start(BasePlugin basePlugin) {
+    parent = basePlugin;
 
     messages = provider.GetRequiredService<IPeaceMessages>();
     warden   = provider.GetRequiredService<IWardenService>();
 
-    parent.RegisterListener<Listeners.OnClientVoice>(OnPlayerSpeak);
+    basePlugin.RegisterListener<Listeners.OnClientVoice>(OnPlayerSpeak);
   }
 
-  public void Dispose() { parent.RemoveListener(OnPlayerSpeak); }
+  public void Dispose() { parent!.RemoveListener(OnPlayerSpeak); }
 
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
@@ -100,7 +100,7 @@ public class MuteSystem(IServiceProvider provider)
       }))
       unmute(player);
 
-    messages.UNMUTED_GUARDS.ToAllChat();
+    messages!.UNMUTED_GUARDS.ToAllChat();
     guardTimer = null;
   }
 
@@ -110,11 +110,11 @@ public class MuteSystem(IServiceProvider provider)
         && player is { Team: CsTeam.Terrorist, PawnIsAlive: true }))
       unmute(player);
 
-    messages.UNMUTED_PRISONERS.ToAllChat();
+    messages!.UNMUTED_PRISONERS.ToAllChat();
     prisonerTimer = null;
   }
 
-  private int GetPeaceDuration(MuteReason reason) {
+  private int getPeaceDuration(MuteReason reason) {
     var prisoners = Utilities.GetPlayers()
      .Count(c
         => c.IsReal() && c is { Team: CsTeam.Terrorist, PawnIsAlive: true });

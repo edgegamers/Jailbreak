@@ -13,41 +13,41 @@ namespace Jailbreak.Warden.SpecialTreatment;
 public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
   IRebelService rebel, ISpecialTreatmentNotifications notifications)
   : IPluginBehavior, ISpecialTreatmentService {
-  private readonly IPlayerState<SpecialTreatmentState> _sts =
+  private readonly IPlayerState<SpecialTreatmentState> sts =
     factory.Round<SpecialTreatmentState>();
 
   public bool IsSpecialTreatment(CCSPlayerController player) {
-    return _sts.Get(player).HasSpecialTreatment;
+    return sts.Get(player).HasSpecialTreatment;
   }
 
   public void Grant(CCSPlayerController player) {
     //  Player is already granted ST
     if (IsSpecialTreatment(player)) return;
 
-    _sts.Get(player).HasSpecialTreatment = true;
+    sts.Get(player).HasSpecialTreatment = true;
 
     if (rebel.IsRebel(player)) rebel.UnmarkRebel(player);
-    SetSpecialColor(player, /* hasSt */ true);
+    setSpecialColor(player, /* hasSt */ true);
 
-    notifications.GRANTED.ToPlayerChat(player).ToPlayerCenter(player);
+    notifications.Granted.ToPlayerChat(player).ToPlayerCenter(player);
 
-    notifications.GRANTED_TO(player).ToAllChat();
+    notifications.GrantedTo(player).ToAllChat();
   }
 
   public void Revoke(CCSPlayerController player) {
     //  Player is already revoked
     if (!IsSpecialTreatment(player)) return;
 
-    _sts.Get(player).HasSpecialTreatment = false;
+    sts.Get(player).HasSpecialTreatment = false;
 
-    SetSpecialColor(player, false);
+    setSpecialColor(player, false);
 
-    notifications.REVOKED.ToPlayerChat(player).ToPlayerCenter(player);
+    notifications.Revoked.ToPlayerChat(player).ToPlayerCenter(player);
 
-    notifications.REVOKED_FROM(player).ToAllChat();
+    notifications.RevokedFrom(player).ToAllChat();
   }
 
-  private void SetSpecialColor(CCSPlayerController player, bool hasSt) {
+  private void setSpecialColor(CCSPlayerController player, bool hasSt) {
     if (!player.IsValid || player.Pawn.Value == null) return;
 
     var color = hasSt ?

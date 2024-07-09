@@ -9,45 +9,45 @@ using Jailbreak.Public.Mod.Warden;
 namespace Jailbreak.Warden.Paint;
 
 public class WardenPaintBehavior : IPluginBehavior {
-  private readonly IWardenService _warden;
-  private Vector? _lastPosition;
-  private BasePlugin? _parent;
+  private readonly IWardenService wardenService;
+  private Vector? lastPosition;
+  private BasePlugin? parent;
 
-  public WardenPaintBehavior(IWardenService warden) { _warden = warden; }
+  public WardenPaintBehavior(IWardenService warden) { wardenService = warden; }
 
   public void Start(BasePlugin parent) {
-    _parent = parent;
-    parent.RegisterListener<Listeners.OnTick>(Paint);
+    this.parent = parent;
+    parent.RegisterListener<Listeners.OnTick>(paint);
   }
 
-  private void Paint() {
-    if (!_warden.HasWarden) return;
+  private void paint() {
+    if (!wardenService.HasWarden) return;
 
-    var warden = _warden.Warden;
+    var warden = wardenService.Warden;
     if (warden == null || !warden.IsReal()) return;
 
     if ((warden.Buttons & PlayerButtons.Use) == 0) return;
 
-    var position = FindFloorIntersection(warden);
+    var position = findFloorIntersection(warden);
     if (position == null) return;
 
-    var start = _lastPosition ?? position;
+    var start = lastPosition ?? position;
     start = start.Clone();
 
-    if (_lastPosition != null
-      && position.DistanceSquared(_lastPosition) < 25 * 25)
+    if (lastPosition != null
+      && position.DistanceSquared(lastPosition) < 25 * 25)
       return;
 
-    _lastPosition = position;
+    lastPosition = position;
     if (start.DistanceSquared(position) > 150 * 150) start = position;
 
-    if (_parent == null)
+    if (parent == null)
       throw new NullReferenceException("Parent plugin is null");
 
-    new BeamLine(_parent, start.Clone(), position.Clone()).Draw(30f);
+    new BeamLine(parent, start.Clone(), position.Clone()).Draw(30f);
   }
 
-  private Vector? FindFloorIntersection(CCSPlayerController player) {
+  private Vector? findFloorIntersection(CCSPlayerController player) {
     if (player.Pawn.Value == null || player.PlayerPawn.Value == null)
       return null;
     var pawn       = player.Pawn.Value;
@@ -84,11 +84,11 @@ public class WardenPaintBehavior : IPluginBehavior {
 
     // var angleA = ToRadians(90);
     var sideB  = start.Z - z;
-    var angleC = ToRadians(pitch);
+    var angleC = toRadians(pitch);
 
 
     var angleB = 180 - 90 - pitch;
-    var sideA = sideB * MathF.Sin(ToRadians(90)) / MathF.Sin(ToRadians(angleB));
+    var sideA = sideB * MathF.Sin(toRadians(90)) / MathF.Sin(toRadians(angleB));
     var sideC = MathF.Sqrt(sideB * sideB + sideA * sideA
       - 2 * sideB * sideA * MathF.Cos(angleC));
 
@@ -99,7 +99,7 @@ public class WardenPaintBehavior : IPluginBehavior {
     return destination;
   }
 
-  private static float ToRadians(float angle) {
+  private static float toRadians(float angle) {
     return (float)(Math.PI / 180) * angle;
   }
 }

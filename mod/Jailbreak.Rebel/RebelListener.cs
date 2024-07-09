@@ -13,11 +13,11 @@ public class RebelListener(IRebelService rebelService,
   [GameEventHandler]
   public HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info) {
     var player = @event.Userid;
-    if (!player.IsReal()) return HookResult.Continue;
+    if (player == null || !player.IsReal()) return HookResult.Continue;
     if (player.GetTeam() != CsTeam.CounterTerrorist) return HookResult.Continue;
 
     var attacker = @event.Attacker;
-    if (!attacker.IsReal()) return HookResult.Continue;
+    if (attacker == null || !attacker.IsReal()) return HookResult.Continue;
 
     if (attacker.GetTeam() != CsTeam.Terrorist) return HookResult.Continue;
 

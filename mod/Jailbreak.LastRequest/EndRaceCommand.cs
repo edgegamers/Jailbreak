@@ -14,7 +14,7 @@ public class EndRaceCommand(ILastRequestManager lrManager) : IPluginBehavior {
     if (executor == null) return;
     var lr = lrManager.GetActiveLR(executor);
 
-    if (lr is not { type: LRType.Race }) {
+    if (lr is not { type: LRType.RACE }) {
       info.ReplyToCommand("You must be in a race LR to use this command.");
       return;
     }

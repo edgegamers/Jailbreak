@@ -12,16 +12,16 @@ using Jailbreak.Public.Mod.Warden;
 
 namespace Jailbreak.Warden.Commands;
 
-public class WardenCommandsBehavior(IWardenNotifications _notifications,
-  IWardenSelectionService _queue, IWardenService _warden,
-  IGenericCommandNotifications _generics, WardenConfig _config)
+public class WardenCommandsBehavior(IWardenNotifications notifications,
+  IWardenSelectionService queue, IWardenService warden,
+  IGenericCommandNotifications generics, WardenConfig config)
   : IPluginBehavior {
-  private readonly Dictionary<CCSPlayerController, DateTime> _lastPassCommand =
+  private readonly Dictionary<CCSPlayerController, DateTime> lastPassCommand =
     new();
 
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart ev, GameEventInfo info) {
-    _lastPassCommand.Clear();
+    lastPassCommand.Clear();
     return HookResult.Continue;
   }
 
@@ -31,22 +31,22 @@ public class WardenCommandsBehavior(IWardenNotifications _notifications,
   public void Command_Pass(CCSPlayerController? player, CommandInfo command) {
     if (player == null) return;
 
-    if (!_warden.IsWarden(player)) return;
+    if (!warden.IsWarden(player)) return;
 
     //	Handle warden pass
-    _notifications.PASS_WARDEN(player).ToAllChat().ToAllCenter();
+    notifications.PASS_WARDEN(player).ToAllChat().ToAllCenter();
 
     // GetPlayers() returns valid players, no need to error check here.
     foreach (var clients in Utilities.GetPlayers())
       clients.ExecuteClientCommand(
-        $"play sounds/{_config.WardenPassedSoundName}");
+        $"play sounds/{config.WardenPassedSoundName}");
 
-    _notifications.BECOME_NEXT_WARDEN.ToAllChat();
+    notifications.BECOME_NEXT_WARDEN.ToAllChat();
 
-    if (!_warden.TryRemoveWarden(true))
+    if (!warden.TryRemoveWarden(true))
       Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");
 
-    _lastPassCommand[player] = DateTime.Now;
+    lastPassCommand[player] = DateTime.Now;
   }
 
   [ConsoleCommand("css_fire", "Force the warden to pass")]
@@ -54,31 +54,31 @@ public class WardenCommandsBehavior(IWardenNotifications _notifications,
   public void Command_Fire(CCSPlayerController? player, CommandInfo command) {
     if (player == null) return;
 
-    if (!_warden.HasWarden || _warden.Warden == null) {
-      _notifications.CURRENT_WARDEN(null).ToPlayerChat(player);
+    if (!warden.HasWarden || warden.Warden == null) {
+      notifications.CURRENT_WARDEN(null).ToPlayerChat(player);
       return;
     }
 
     if (!AdminManager.PlayerHasPermissions(player, "@css/ban")) {
-      _generics.NoPermissionMessage("@css/ban").ToPlayerChat(player);
+      generics.NoPermissionMessage("@css/ban").ToPlayerChat(player);
       return;
     }
 
     foreach (var client in Utilities.GetPlayers().Where(p => p.IsReal())) {
       if (AdminManager.PlayerHasPermissions(client, "@css/chat"))
-        _notifications.FIRE_WARDEN(_warden.Warden, player).ToPlayerChat(client);
+        notifications.FIRE_WARDEN(warden.Warden, player).ToPlayerChat(client);
       else
-        _notifications.FIRE_WARDEN(_warden.Warden).ToPlayerChat(client);
+        notifications.FIRE_WARDEN(warden.Warden).ToPlayerChat(client);
 
       client.ExecuteClientCommand(
-        $"play sounds/{_config.WardenPassedSoundName}");
+        $"play sounds/{config.WardenPassedSoundName}");
     }
 
-    _notifications.BECOME_NEXT_WARDEN.ToAllChat();
+    notifications.BECOME_NEXT_WARDEN.ToAllChat();
 
-    _lastPassCommand[_warden.Warden] = DateTime.Now;
+    lastPassCommand[warden.Warden] = DateTime.Now;
 
-    if (!_warden.TryRemoveWarden(true))
+    if (!warden.TryRemoveWarden(true))
       Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");
   }
 
@@ -94,35 +94,35 @@ public class WardenCommandsBehavior(IWardenNotifications _notifications,
     if (player.Team != CsTeam.CounterTerrorist || !player.PawnIsAlive) return;
 
     // If they're already in the cooldown dictionary, check if their cooldown has expired.
-    if (_lastPassCommand.TryGetValue(player, out var last)) {
+    if (lastPassCommand.TryGetValue(player, out var last)) {
       var cooldown = last.AddSeconds(15);
       if (DateTime.Now < cooldown) {
-        _generics.CommandOnCooldown(cooldown).ToPlayerChat(player);
+        generics.CommandOnCooldown(cooldown).ToPlayerChat(player);
         return;
       }
     }
 
     //  Queue is open ?
-    if (_queue.Active) {
-      if (!_queue.InQueue(player)) {
-        if (_queue.TryEnter(player))
-          _notifications.JOIN_RAFFLE.ToPlayerChat(player);
+    if (queue.Active) {
+      if (!queue.InQueue(player)) {
+        if (queue.TryEnter(player))
+          notifications.JOIN_RAFFLE.ToPlayerChat(player);
         return;
       }
 
-      if (_queue.InQueue(player))
-        if (_queue.TryExit(player))
-          _notifications.LEAVE_RAFFLE.ToPlayerChat(player);
+      if (queue.InQueue(player))
+        if (queue.TryExit(player))
+          notifications.LEAVE_RAFFLE.ToPlayerChat(player);
 
       return;
     }
 
     //	Is a CT and there is no warden i.e. the queue is not open/active.
-    if (!_warden.HasWarden)
-      if (_warden.TrySetWarden(player))
+    if (!warden.HasWarden)
+      if (warden.TrySetWarden(player))
         return;
 
-    _notifications.CURRENT_WARDEN(_warden.Warden).ToPlayerChat(player);
+    notifications.CURRENT_WARDEN(warden.Warden).ToPlayerChat(player);
   }
 
   /// <summary>
@@ -133,9 +133,9 @@ public class WardenCommandsBehavior(IWardenNotifications _notifications,
     var player = @event.Userid;
     if (player == null) return HookResult.Continue;
 
-    if (player != _warden.Warden) return HookResult.Continue;
+    if (player != warden.Warden) return HookResult.Continue;
 
-    _lastPassCommand.Clear();
+    lastPassCommand.Clear();
     return HookResult.Continue;
   }
 }

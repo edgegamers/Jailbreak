@@ -20,7 +20,7 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
   private Timer? raceTimer;
   private BeamCircle? start, end;
   private Vector? startLocation, endLocation;
-  public override LRType type => LRType.Race;
+  public override LRType type => LRType.RACE;
 
   public override void Setup() {
     base.Setup();
@@ -82,7 +82,8 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
     end?.SetRadius(requiredDistance / 2);
     end?.Update();
 
-    var guardDist = guard.Pawn.Value.AbsOrigin.Clone()
+    if (endLocation == null) return;
+    var guardDist = guard.Pawn?.Value?.AbsOrigin?.Clone()
      .DistanceSquared(endLocation);
 
     if (guardDist < requiredDistanceSqured) {
@@ -90,7 +91,7 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
       return;
     }
 
-    var prisonerDist = prisoner.Pawn.Value.AbsOrigin.Clone()
+    var prisonerDist = prisoner.Pawn?.Value?.AbsOrigin?.Clone()
      .DistanceSquared(endLocation);
     if (prisonerDist < requiredDistanceSqured)
       manager.EndLastRequest(this, LRResult.PrisonerWin);

@@ -13,7 +13,7 @@ public static class EntityIOExtensions {
     var index      = (int)pawn.Index;
     var playerPawn = Utilities.GetEntityFromIndex<CCSPlayerPawn>(index);
 
-    if (!playerPawn.IsValid) return false;
+    if (playerPawn == null || !playerPawn.IsValid) return false;
 
     if (!playerPawn.OriginalController.IsValid) return false;
 

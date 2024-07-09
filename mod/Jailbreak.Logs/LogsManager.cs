@@ -5,69 +5,68 @@ using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Objects;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.Logging;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.Logs;
 
 namespace Jailbreak.Logs;
 
-public class LogsManager : IPluginBehavior, ILogService, IRichLogService {
-  private readonly List<IView> _logMessages = new();
-  private readonly ILogMessages _messages;
+public class LogsManager : IPluginBehavior, IRichLogService {
+  private readonly List<IView> logMessages = [];
+  private readonly ILogMessages messages;
 
-  private readonly IRichPlayerTag _richPlayerTag;
+  private readonly IRichPlayerTag richPlayerTag;
 
-  public LogsManager(IServiceProvider serviceProvider, ILogMessages messages,
-    IRichPlayerTag richPlayerTag) {
-    _messages      = messages;
-    _richPlayerTag = richPlayerTag;
+  public LogsManager(ILogMessages messages, IRichPlayerTag richPlayerTag) {
+    this.messages      = messages;
+    this.richPlayerTag = richPlayerTag;
   }
 
   public void Append(string message) {
-    _logMessages.Add(_messages.CREATE_LOG(message));
+    logMessages.Add(messages.CREATE_LOG(message));
   }
 
   public IEnumerable<string> GetMessages() {
-    return _logMessages.SelectMany(view => view.ToWriter().Plain);
+    return logMessages.SelectMany(view => view.ToWriter().Plain);
   }
 
-  public void Clear() { _logMessages.Clear(); }
+  public void Clear() { logMessages.Clear(); }
 
   public void PrintLogs(CCSPlayerController? player) {
     if (player == null || !player.IsReal()) {
-      _messages.BEGIN_JAILBREAK_LOGS.ToServerConsole();
-      foreach (var log in _logMessages) log.ToServerConsole();
-      _messages.END_JAILBREAK_LOGS.ToServerConsole();
+      messages.BeginJailbreakLogs.ToServerConsole();
+      foreach (var log in logMessages) log.ToServerConsole();
+      messages.EndJailbreakLogs.ToServerConsole();
 
       return;
     }
 
 
-    _messages.BEGIN_JAILBREAK_LOGS.ToPlayerConsole(player);
-    foreach (var log in _logMessages) log.ToPlayerConsole(player);
-    _messages.END_JAILBREAK_LOGS.ToPlayerConsole(player);
+    messages.BeginJailbreakLogs.ToPlayerConsole(player);
+    foreach (var log in logMessages) log.ToPlayerConsole(player);
+    messages.EndJailbreakLogs.ToPlayerConsole(player);
   }
 
   public void Append(params FormatObject[] objects) {
-    _logMessages.Add(_messages.CREATE_LOG(objects));
+    logMessages.Add(messages.CREATE_LOG(objects));
   }
 
   public FormatObject Player(CCSPlayerController playerController) {
     return new TreeFormatObject {
       playerController,
       $"[{playerController.UserId}]",
-      _richPlayerTag.Rich(playerController)
+      richPlayerTag.Rich(playerController)
     };
   }
 
   [GameEventHandler]
   public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
-    _messages.BEGIN_JAILBREAK_LOGS.ToServerConsole().ToAllConsole();
+    messages.BeginJailbreakLogs.ToServerConsole().ToAllConsole();
 
     //  By default, print all logs to player consoles at the end of the round.
-    foreach (var log in _logMessages) log.ToServerConsole().ToAllConsole();
+    foreach (var log in logMessages) log.ToServerConsole().ToAllConsole();
 
-    _messages.END_JAILBREAK_LOGS.ToServerConsole().ToAllConsole();
+    messages.EndJailbreakLogs.ToServerConsole().ToAllConsole();
 
     return HookResult.Continue;
   }

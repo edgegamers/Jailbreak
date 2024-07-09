@@ -9,23 +9,10 @@ using Jailbreak.Public.Mod.Warden;
 
 namespace Jailbreak.Warden.Commands;
 
-public class SpecialTreatmentCommandsBehavior : IPluginBehavior {
-  private readonly IGenericCommandNotifications _generic;
-  private readonly ISpecialTreatmentService _specialTreatment;
-  private readonly IWardenService _warden;
-  private readonly IWardenNotifications _wardenNotifs;
-
-  public SpecialTreatmentCommandsBehavior(IWardenService warden,
-    ISpecialTreatmentService specialTreatment,
-    IGenericCommandNotifications generic,
-    ISpecialTreatmentNotifications notifications,
-    IWardenNotifications wardenNotifs) {
-    _warden           = warden;
-    _specialTreatment = specialTreatment;
-    _generic          = generic;
-    _wardenNotifs     = wardenNotifs;
-  }
-
+public class SpecialTreatmentCommandsBehavior(IWardenService warden,
+  ISpecialTreatmentService specialTreatment,
+  IGenericCommandNotifications generic, IWardenNotifications wardenNotifs)
+  : IPluginBehavior {
   [ConsoleCommand("css_treat",
     "Grant or revoke special treatment from a player")]
   [ConsoleCommand("css_st", "Grant or revoke special treatment from a player")]
@@ -33,8 +20,8 @@ public class SpecialTreatmentCommandsBehavior : IPluginBehavior {
   public void Command_Toggle(CCSPlayerController? player, CommandInfo command) {
     if (player == null) return;
 
-    if (!_warden.IsWarden(player)) {
-      _wardenNotifs.NOT_WARDEN.ToPlayerChat(player).ToPlayerConsole(player);
+    if (!warden.IsWarden(player)) {
+      wardenNotifs.NOT_WARDEN.ToPlayerChat(player).ToPlayerConsole(player);
       return;
     }
 
@@ -48,14 +35,14 @@ public class SpecialTreatmentCommandsBehavior : IPluginBehavior {
      .ToList();
 
     if (eligible.Count == 0) {
-      _generic.PlayerNotFound(command.GetArg(1))
+      generic.PlayerNotFound(command.GetArg(1))
        .ToPlayerChat(player)
        .ToPlayerConsole(player);
       return;
     }
 
     if (eligible.Count != 1) {
-      _generic.PlayerFoundMultiple(command.GetArg(1))
+      generic.PlayerFoundMultiple(command.GetArg(1))
        .ToPlayerChat(player)
        .ToPlayerConsole(player);
       return;
@@ -64,7 +51,7 @@ public class SpecialTreatmentCommandsBehavior : IPluginBehavior {
     //	One target, mark as ST.
     var special = eligible.First();
 
-    _specialTreatment.SetSpecialTreatment(special,
-      !_specialTreatment.IsSpecialTreatment(special));
+    specialTreatment.SetSpecialTreatment(special,
+      !specialTreatment.IsSpecialTreatment(special));
   }
 }

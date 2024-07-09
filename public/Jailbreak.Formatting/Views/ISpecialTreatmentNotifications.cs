@@ -4,11 +4,11 @@ using Jailbreak.Formatting.Base;
 namespace Jailbreak.Formatting.Views;
 
 public interface ISpecialTreatmentNotifications {
-  public IView GRANTED { get; }
+  public IView Granted { get; }
 
-  public IView REVOKED { get; }
+  public IView Revoked { get; }
 
-  public IView GRANTED_TO(CCSPlayerController player);
+  public IView GrantedTo(CCSPlayerController player);
 
-  public IView REVOKED_FROM(CCSPlayerController player);
+  public IView RevokedFrom(CCSPlayerController player);
 }

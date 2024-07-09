@@ -12,7 +12,7 @@ public class MagForMag(BasePlugin plugin, ILastRequestManager manager,
   : WeaponizedRequest(plugin, manager, prisoner, guard) {
   private const int BULLET_COUNT = 7;
   private CCSPlayerController? whosShot;
-  public override LRType type => LRType.GunToss;
+  public override LRType type => LRType.GUN_TOSS;
 
   public override void Setup() {
     plugin.RegisterEventHandler<EventPlayerShoot>(OnPlayerShoot);

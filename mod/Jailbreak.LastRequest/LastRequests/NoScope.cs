@@ -10,7 +10,7 @@ namespace Jailbreak.LastRequest.LastRequests;
 public class NoScope(BasePlugin plugin, ILastRequestManager manager,
   CCSPlayerController prisoner, CCSPlayerController guard)
   : WeaponizedRequest(plugin, manager, prisoner, guard) {
-  public override LRType type => LRType.NoScope;
+  public override LRType type => LRType.NO_SCOPE;
 
   public override void Setup() {
     base.Setup();
@@ -64,7 +64,7 @@ public class NoScope(BasePlugin plugin, ILastRequestManager manager,
 
   public override void OnEnd(LRResult result) {
     state = LRState.Completed;
-    plugin.RemoveListener("OnTick", OnTick);
+    plugin.RemoveListener(OnTick);
 
     if (result != LRResult.GuardWin && result != LRResult.PrisonerWin) return;
 

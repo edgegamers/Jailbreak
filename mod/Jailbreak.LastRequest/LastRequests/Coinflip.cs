@@ -31,7 +31,7 @@ public class Coinflip : AbstractLastRequest {
     menu.AddMenuOption("Tails", (_, _) => decide(false, true));
   }
 
-  public override LRType type => LRType.Coinflip;
+  public override LRType type => LRType.COINFLIP;
 
   public override void Setup() {
     state = LRState.Pending;

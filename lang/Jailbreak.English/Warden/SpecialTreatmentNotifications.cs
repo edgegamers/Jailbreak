@@ -17,19 +17,19 @@ public class SpecialTreatmentNotifications : ISpecialTreatmentNotifications,
       Plain = false, Panorama = false, Chat = true
     };
 
-  public IView GRANTED
+  public IView Granted
     => new SimpleView {
       PREFIX,
       $"You now have {ChatColors.Green}special treatment{ChatColors.White}!"
     };
 
-  public IView REVOKED
+  public IView Revoked
     => new SimpleView {
       PREFIX,
       $"Your special treatment was {ChatColors.Red}removed{ChatColors.White}."
     };
 
-  public IView GRANTED_TO(CCSPlayerController player) {
+  public IView GrantedTo(CCSPlayerController player) {
     return new SimpleView {
       PREFIX,
       player,
@@ -37,7 +37,7 @@ public class SpecialTreatmentNotifications : ISpecialTreatmentNotifications,
     };
   }
 
-  public IView REVOKED_FROM(CCSPlayerController player) {
+  public IView RevokedFrom(CCSPlayerController player) {
     return new SimpleView {
       PREFIX,
       player,

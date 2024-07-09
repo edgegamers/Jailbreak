@@ -8,11 +8,11 @@ using Jailbreak.Public.Extensions;
 namespace Jailbreak.Formatting.Views;
 
 public interface ILogMessages {
-  public IView BEGIN_JAILBREAK_LOGS { get; }
+  public IView BeginJailbreakLogs { get; }
 
-  public IView END_JAILBREAK_LOGS { get; }
+  public IView EndJailbreakLogs { get; }
 
-  public FormatObject TIME() {
+  public FormatObject Time() {
     var gamerules = ServerExtensions.GetGameRules();
     var start     = gamerules.RoundStartTime;
     var current   = Server.CurrentTime;
@@ -25,6 +25,6 @@ public interface ILogMessages {
   }
 
   public IView CREATE_LOG(params FormatObject[] objects) {
-    return new SimpleView { TIME(), objects };
+    return new SimpleView { Time(), objects };
   }
 }

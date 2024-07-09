@@ -10,8 +10,8 @@ namespace Jailbreak.LastRequest.LastRequests;
 public class ShotForShot(BasePlugin plugin, ILastRequestManager manager,
   CCSPlayerController prisoner, CCSPlayerController guard)
   : WeaponizedRequest(plugin, manager, prisoner, guard) {
-  private CCSPlayerController whosShot;
-  public override LRType type => LRType.ShotForShot;
+  private CCSPlayerController? whosShot;
+  public override LRType type => LRType.SHOT_FOR_SHOT;
 
   public override void Setup() {
     plugin.RegisterEventHandler<EventPlayerShoot>(OnPlayerShoot);
@@ -22,13 +22,13 @@ public class ShotForShot(BasePlugin plugin, ILastRequestManager manager,
     prisoner.GiveNamedItem("weapon_deagle");
     guard.GiveNamedItem("weapon_deagle");
 
-    var weapon = FindWeapon(prisoner, "weapon_deagle");
+    var weapon = findWeapon(prisoner, "weapon_deagle");
     if (weapon != null) setAmmoAmount(weapon, 0, 0);
-    weapon = FindWeapon(guard, "weapon_deagle");
+    weapon = findWeapon(guard, "weapon_deagle");
     if (weapon != null) setAmmoAmount(weapon, 0, 0);
   }
 
-  private static CBasePlayerWeapon? FindWeapon(CCSPlayerController player,
+  private static CBasePlayerWeapon? findWeapon(CCSPlayerController player,
     string name) {
     if (!player.IsReal()) return null;
 
@@ -53,7 +53,8 @@ public class ShotForShot(BasePlugin plugin, ILastRequestManager manager,
 
   public override void Execute() {
     state = LRState.Active;
-    var deagle = FindWeapon(whosShot, "weapon_deagle");
+    if (whosShot == null) return;
+    var deagle = findWeapon(whosShot, "weapon_deagle");
     if (deagle != null) setAmmoAmount(deagle, 1, 0);
 
     plugin.AddTimer(30, () => {
@@ -87,7 +88,8 @@ public class ShotForShot(BasePlugin plugin, ILastRequestManager manager,
     if (state != LRState.Active) return HookResult.Continue;
 
     var player = @event.Userid;
-    if (!player.IsReal()) return HookResult.Continue;
+    if (player == null || whosShot == null || !player.IsReal())
+      return HookResult.Continue;
 
     if (player.Slot != prisoner.Slot && player.Slot != guard.Slot)
       return HookResult.Continue;
@@ -100,14 +102,14 @@ public class ShotForShot(BasePlugin plugin, ILastRequestManager manager,
     PrintToParticipants(player.PlayerName + " has shot.");
     var opponent = player.Slot == prisoner.Slot ? guard : prisoner;
     opponent.PrintToChat("Your shot");
-    var deagle = FindWeapon(opponent, "weapon_deagle");
+    var deagle = findWeapon(opponent, "weapon_deagle");
     if (deagle != null) setAmmoAmount(deagle, 1, 0);
     whosShot = opponent;
     return HookResult.Continue;
   }
 
   public override void OnEnd(LRResult result) {
-    plugin.RemoveListener("player_shoot", OnPlayerShoot);
+    plugin.RemoveListener(OnPlayerShoot);
     state = LRState.Completed;
   }
 }

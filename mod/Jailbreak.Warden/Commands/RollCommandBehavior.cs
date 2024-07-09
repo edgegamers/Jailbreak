@@ -12,7 +12,7 @@ public class RollCommandBehavior(IWardenService warden,
   IRollCommandNotications notifications,
   IWardenNotifications wardenNotifications,
   IGenericCommandNotifications generics) : IPluginBehavior {
-  private readonly Random _rng = new();
+  private readonly Random rng = new();
 
   [ConsoleCommand("css_roll",
     "Roll a number between min and max. If no min and max are provided, it will default to 0 and 10.")]
@@ -40,6 +40,6 @@ public class RollCommandBehavior(IWardenService warden,
       }
     }
 
-    notifications.Roll(_rng.Next(min, max)).ToAllChat();
+    notifications.Roll(rng.Next(min, max)).ToAllChat();
   }
 }

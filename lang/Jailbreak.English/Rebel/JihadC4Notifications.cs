@@ -8,15 +8,15 @@ namespace Jailbreak.English.Rebel;
 public class JihadC4Notifications : IJihadC4Notifications,
   ILanguage<Formatting.Languages.English> {
   // public IView JIHAD_C4_DROPPED => new SimpleView { RebelNotifications.PREFIX, "You dropped your Jihad C4!" };
-  public IView JIHAD_C4_PICKUP
+  public IView JihadC4Pickup
     => new SimpleView {
       RebelNotifications.PREFIX, "You picked up a Jihad C4!"
     };
 
-  public IView JIHAD_C4_RECEIVED
+  public IView JihadC4Received
     => new SimpleView { RebelNotifications.PREFIX, "You received a Jihad C4!" };
 
-  public IView JIHAD_C4_USAGE1
+  public IView JihadC4Usage1
     => new SimpleView {
       RebelNotifications.PREFIX,
       $"To detonate it, hold it out and press {ChatColors.Yellow + "E" + ChatColors.Default}."

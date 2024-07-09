@@ -16,6 +16,6 @@ public class RebelNotifications : IRebelNotifications,
       Plain = false, Panorama = false, Chat = true
     };
 
-  public IView NO_LONGER_REBEL
+  public IView NoLongerRebel
     => new SimpleView { PREFIX, "You are no longer a rebel." };
 }

@@ -5,6 +5,7 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.Logging;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Mute;
@@ -17,27 +18,27 @@ namespace Jailbreak.Warden.Global;
 
 // By making it a struct we ensure values from the CCSPlayerPawn are passed by VALUE.
 internal struct PreWardenStats(int armorValue, int health, int maxHealth,
-  bool hadHealthshot, bool hadHelmetArmor) {
-  public int armorValue = armorValue;
-  public int health = health;
-  public int maxHealth = maxHealth;
-  public bool hadHealthshot = hadHealthshot;
-  public bool hadHelmetArmor = hadHelmetArmor;
+  bool headHealthShot, bool hadHelmetArmor) {
+  public readonly int ArmorValue = armorValue;
+  public readonly int Health = health;
+  public readonly int MaxHealth = maxHealth;
+  public readonly bool HeadHealthShot = headHealthShot;
+  public readonly bool HadHelmetArmor = hadHelmetArmor;
 }
 
 public class WardenBehavior(ILogger<WardenBehavior> logger,
   IWardenNotifications notifications, IRichLogService logs,
   ISpecialTreatmentService specialTreatment, IRebelService rebels,
   WardenConfig config, IMuteService mute) : IPluginBehavior, IWardenService {
-  private readonly ISet<CCSPlayerController> _bluePrisoners =
+  private readonly ISet<CCSPlayerController> bluePrisoners =
     new HashSet<CCSPlayerController>();
 
-  private BasePlugin _parent;
-  private PreWardenStats? _preWardenStats;
-  private Timer? _unblueTimer;
+  private BasePlugin? parent;
+  private PreWardenStats? preWardenStats;
+  private Timer? unblueTimer;
   private bool firstWarden;
 
-  public void Start(BasePlugin parent) { _parent = parent; }
+  public void Start(BasePlugin parent) { this.parent = parent; }
 
   /// <summary>
   ///   Get the current warden, if there is one.
@@ -79,7 +80,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
     logs.Append(logs.Player(Warden), "is now the warden.");
 
-    _unblueTimer = _parent.AddTimer(3, UnmarkPrisonersBlue);
+    unblueTimer = parent!.AddTimer(3, unmarkPrisonersBlue);
     mute.PeaceMute(firstWarden ?
       MuteReason.INITIAL_WARDEN :
       MuteReason.WARDEN_TAKEN);
@@ -93,14 +94,14 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
       var hasHealthshot = playerHasHealthshot(Warden);
       var hasHelmet     = playerHasHelmetArmor(Warden);
-      _preWardenStats = new PreWardenStats(wardenPawn.ArmorValue,
+      preWardenStats = new PreWardenStats(wardenPawn.ArmorValue,
         wardenPawn.Health, wardenPawn.MaxHealth, hasHealthshot, hasHelmet);
 
       if (!hasHelmet) Warden.GiveNamedItem("item_assaultsuit");
 
-      SetWardenStats(wardenPawn, 125, 125, 100);
+      setWardenStats(wardenPawn, 125, 125, 100);
       if (!hasHealthshot) Warden.GiveNamedItem("weapon_healthshot");
-    } else { _preWardenStats = null; }
+    } else { preWardenStats = null; }
 
     return true;
   }
@@ -125,23 +126,23 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     if (wardenPawn == null) return false;
 
     // if isPass we restore their old health values or their current health, whichever is less.
-    if (isPass && _preWardenStats != null) {
+    if (isPass && preWardenStats != null) {
       // Regardless of if the above if statement is true or false, we want to restore the player's previous stats.
-      SetWardenStats(wardenPawn,
-        Math.Min(wardenPawn.ArmorValue, _preWardenStats.Value.armorValue),
-        Math.Min(wardenPawn.Health, _preWardenStats.Value.health),
-        Math.Min(wardenPawn.MaxHealth, _preWardenStats.Value.maxHealth));
+      setWardenStats(wardenPawn,
+        Math.Min(wardenPawn.ArmorValue, preWardenStats.Value.ArmorValue),
+        Math.Min(wardenPawn.Health, preWardenStats.Value.Health),
+        Math.Min(wardenPawn.MaxHealth, preWardenStats.Value.MaxHealth));
 
       /* This code makes sure people can't abuse the first warden's buff by removing it if they pass. */
       var itemServices = itemServicesOrNull(Warden);
       if (itemServices == null) return false;
 
-      if (!_preWardenStats.Value.hadHelmetArmor) itemServices.HasHelmet = false;
+      if (!preWardenStats.Value.HadHelmetArmor) itemServices.HasHelmet = false;
 
       Utilities.SetStateChanged(wardenPawn, "CBasePlayerPawn",
         "m_pItemServices");
 
-      if (!_preWardenStats.Value.hadHealthshot)
+      if (!preWardenStats.Value.HeadHealthShot)
         playerHasHealthshot(Warden, true);
     }
 
@@ -154,7 +155,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     if (!((IWardenService)this).IsWarden(ev.Userid)) return HookResult.Continue;
 
     mute.UnPeaceMute();
-    ProcessWardenDeath();
+    processWardenDeath();
     return HookResult.Continue;
   }
 
@@ -164,11 +165,11 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     if (!((IWardenService)this).IsWarden(player)) return HookResult.Continue;
 
     mute.UnPeaceMute();
-    ProcessWardenDeath();
+    processWardenDeath();
     return HookResult.Continue;
   }
 
-  private void ProcessWardenDeath() {
+  private void processWardenDeath() {
     if (!TryRemoveWarden())
       logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
@@ -183,29 +184,29 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
     notifications.BECOME_NEXT_WARDEN.ToAllChat();
 
-    _unblueTimer
+    unblueTimer
     ?.Kill(); // If the warden dies withing 3 seconds of becoming warden, we need to cancel the unblue timer
-    MarkPrisonersBlue();
+    markPrisonersBlue();
   }
 
-  private void UnmarkPrisonersBlue() {
-    foreach (var player in _bluePrisoners) {
+  private void unmarkPrisonersBlue() {
+    foreach (var player in bluePrisoners) {
       if (!player.IsReal()) continue;
       var pawn = player.Pawn.Value;
       if (pawn == null) continue;
-      if (IgnoreColor(player)) continue;
+      if (ignoreColor(player)) continue;
       pawn.RenderMode = RenderMode_t.kRenderNormal;
       pawn.Render     = Color.FromArgb(254, 255, 255, 255);
       Utilities.SetStateChanged(pawn, "CBaseModelEntity", "m_clrRender");
     }
 
-    _bluePrisoners.Clear();
+    bluePrisoners.Clear();
   }
 
-  private void MarkPrisonersBlue() {
+  private void markPrisonersBlue() {
     foreach (var player in Utilities.GetPlayers()) {
       if (!player.IsReal() || player.Team != CsTeam.Terrorist) continue;
-      if (IgnoreColor(player)) continue;
+      if (ignoreColor(player)) continue;
 
       var pawn = player.Pawn.Value;
       if (pawn == null) continue;
@@ -213,11 +214,11 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       pawn.Render     = Color.FromArgb(254, 0, 0, 255);
       Utilities.SetStateChanged(pawn, "CBaseModelEntity", "m_clrRender");
 
-      _bluePrisoners.Add(player);
+      bluePrisoners.Add(player);
     }
   }
 
-  private bool IgnoreColor(CCSPlayerController player) {
+  private bool ignoreColor(CCSPlayerController player) {
     if (specialTreatment.IsSpecialTreatment(player)) return true;
     if (rebels.IsRebel(player)) return true;
     return false;
@@ -246,7 +247,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       null;
   }
 
-  private void SetWardenStats(CCSPlayerPawn wardenPawn, int armor = -1,
+  private void setWardenStats(CCSPlayerPawn wardenPawn, int armor = -1,
     int health = -1, int maxHealth = -1) {
     if (armor != -1) {
       wardenPawn.ArmorValue = armor;
@@ -266,7 +267,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
   private bool playerHasHelmetArmor(CCSPlayerController player) {
     var itemServices = itemServicesOrNull(player);
-    return itemServices != null ? itemServices.HasHelmet : false;
+    return itemServices is { HasHelmet: true };
   }
 
   private bool playerHasHealthshot(CCSPlayerController player,
@@ -295,8 +296,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart ev, GameEventInfo info) {
-    firstWarden     = true;
-    _preWardenStats = null;
+    firstWarden    = true;
+    preWardenStats = null;
 
     var ctArmorValue = getBalance() switch {
       0  => 50,  // Balanced teams

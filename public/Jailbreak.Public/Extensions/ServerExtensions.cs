@@ -26,6 +26,6 @@ public static class ServerExtensions {
     //	From killstr3ak
     return Utilities
      .FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules")
-     .First()!;
+     .First();
   }
 }

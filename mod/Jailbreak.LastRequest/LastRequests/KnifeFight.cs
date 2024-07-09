@@ -7,7 +7,7 @@ namespace Jailbreak.LastRequest.LastRequests;
 public class KnifeFight(BasePlugin plugin, ILastRequestManager manager,
   CCSPlayerController prisoner, CCSPlayerController guard)
   : WeaponizedRequest(plugin, manager, prisoner, guard) {
-  public override LRType type => LRType.KnifeFight;
+  public override LRType type => LRType.KNIFE_FIGHT;
 
   public override void Execute() {
     PrintToParticipants("Go!");

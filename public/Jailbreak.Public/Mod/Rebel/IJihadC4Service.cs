@@ -13,6 +13,7 @@ public interface IJihadC4Service {
   ///   Tries to detonate the jihad c4, relative to the player's position and after the specified delay.
   /// </summary>
   /// <param name="player"></param>
+  /// <param name="delay"></param>
   /// <param name="bombEntity"></param>
   void StartDetonationAttempt(CCSPlayerController player, float delay,
     CC4 bombEntity);

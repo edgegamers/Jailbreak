@@ -16,13 +16,13 @@ public class LastRequestFactory(ILastRequestManager manager,
   public AbstractLastRequest CreateLastRequest(CCSPlayerController prisoner,
     CCSPlayerController guard, LRType type) {
     return type switch {
-      LRType.KnifeFight => new KnifeFight(plugin!, manager, prisoner, guard),
-      LRType.GunToss    => new GunToss(plugin!, manager, prisoner, guard),
-      LRType.NoScope    => new NoScope(plugin!, manager, prisoner, guard),
-      LRType.RockPaperScissors => new RockPaperScissors(plugin!, manager,
+      LRType.KNIFE_FIGHT => new KnifeFight(plugin!, manager, prisoner, guard),
+      LRType.GUN_TOSS    => new GunToss(plugin!, manager, prisoner, guard),
+      LRType.NO_SCOPE    => new NoScope(plugin!, manager, prisoner, guard),
+      LRType.ROCK_PAPER_SCISSORS => new RockPaperScissors(plugin!, manager,
         prisoner, guard),
-      LRType.Coinflip => new Coinflip(plugin!, manager, prisoner, guard),
-      LRType.Race => new Race(plugin!, manager, prisoner, guard,
+      LRType.COINFLIP => new Coinflip(plugin!, manager, prisoner, guard),
+      LRType.RACE => new Race(plugin!, manager, prisoner, guard,
         services.GetRequiredService<IRaceLRMessages>()),
       _ => throw new ArgumentException("Invalid last request type: " + type,
         nameof(type))
@@ -31,12 +31,12 @@ public class LastRequestFactory(ILastRequestManager manager,
 
   public bool IsValidType(LRType type) {
     return type switch {
-      LRType.KnifeFight        => true,
-      LRType.GunToss           => true,
-      LRType.NoScope           => true,
-      LRType.RockPaperScissors => true,
-      LRType.Coinflip          => true,
-      LRType.Race              => true,
+      LRType.KNIFE_FIGHT        => true,
+      LRType.GUN_TOSS           => true,
+      LRType.NO_SCOPE           => true,
+      LRType.ROCK_PAPER_SCISSORS => true,
+      LRType.COINFLIP          => true,
+      LRType.RACE              => true,
       _                        => false
     };
   }

@@ -18,7 +18,7 @@ public class RockPaperScissors : AbstractLastRequest {
       chatMenu.AddMenuOption(option, OnSelect);
   }
 
-  public override LRType type => LRType.RockPaperScissors;
+  public override LRType type => LRType.ROCK_PAPER_SCISSORS;
 
   public override void Setup() {
     chatMenu.Title =
@@ -88,10 +88,10 @@ public class RockPaperScissors : AbstractLastRequest {
       guard.Pawn.Value!.CommitSuicide(false, true);
 
     PrintToParticipants(
-      $"Prisoner chose {GetChoice(prisonerChoice)}, Guard chose {GetChoice(guardChoice)}");
+      $"Prisoner chose {getChoice(prisonerChoice)}, Guard chose {getChoice(guardChoice)}");
   }
 
-  private string GetChoice(int choice) {
+  private string getChoice(int choice) {
     return choice switch {
       0 => "Rock",
       1 => "Paper",
