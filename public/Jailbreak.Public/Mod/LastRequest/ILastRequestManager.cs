@@ -22,6 +22,6 @@ public interface ILastRequestManager : IPluginBehavior
         return ActiveLRs.FirstOrDefault(lr => lr.guard.Slot == player.Slot || lr.prisoner.Slot == player.Slot);
     }
 
-    public void EnableLR();
+    public void EnableLR(CCSPlayerController? died = null);
     public void DisableLR();
 }
