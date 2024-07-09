@@ -67,13 +67,13 @@ public class LastGuard(LastGuardConfig config, ILastGuardNotifications notificat
     {
         var guardPlayerPawn = lastGuard.PlayerPawn.Value;
 
-        if (ctPlayerPawn == null || !ctPlayerPawn.IsValid) return;
+        if (guardPlayerPawn == null || !guardPlayerPawn.IsValid) return;
 
-        var guardHealth = ctPlayerPawn.Health;
+        var guardHealth = guardPlayerPawn.Health;
         var guardCalcHealth = CalculateHealth();
 
-        ctPlayerPawn.Health = ctHealth > ctCalcHealth ? 125 : ctCalcHealth;
-        Utilities.SetStateChanged(ctPlayerPawn, "CBaseEntity", "m_iHealth");
+        ctPlayerPawn.Health = guardHealth > guardCalcHealth ? 125 : guardHealth;
+        Utilities.SetStateChanged(guardPlayerPawn, "CBaseEntity", "m_iHealth");
 
         // foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal()))
         //     player.ExecuteClientCommand("play sounds/lastct");
