@@ -1,5 +1,8 @@
 ﻿using System.Collections.Immutable;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Capabilities;
+
+using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Utils;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +18,7 @@ public class Jailbreak : BasePlugin
     private IReadOnlyList<IPluginBehavior>? _extensions;
 
     private readonly IServiceProvider _provider;
-    private IServiceScope? _scope;
+    private IServiceScope? _scope = null;
 
     /// <summary>
     /// The Jailbreak plugin.
@@ -38,8 +41,6 @@ public class Jailbreak : BasePlugin
     /// <inheritdoc />
     public override void Load(bool hotReload)
     {
-
-        // Precache particles needed for features like Jihad C4, temp disabled
         RegisterListener<Listeners.OnServerPrecacheResources>((manifest) =>
         {
             manifest.AddResource("particles/explosions_fx/explosion_c4_500.vpcf");
@@ -70,6 +71,15 @@ public class Jailbreak : BasePlugin
             Logger.LogInformation("[Jailbreak] Loaded behavior {@Behavior}", extension.GetType().FullName);
         }
 
+        //	Expose the scope to other plugins
+        Capabilities.RegisterPluginCapability(API.Provider, () =>
+        {
+	        if (this._scope == null)
+		        throw new InvalidOperationException("Jailbreak does not have a running scope! Is the jailbreak plugin loaded?");
+
+	        return this._scope.ServiceProvider;
+        });
+
         base.Load(hotReload);
     }
 
@@ -85,6 +95,7 @@ public class Jailbreak : BasePlugin
         //	Dispose of original extensions scope
         //	When loading again we will get a new scope to avoid leaking state.
         _scope?.Dispose();
+        _scope = null;
 
         base.Unload(hotReload);
     }
