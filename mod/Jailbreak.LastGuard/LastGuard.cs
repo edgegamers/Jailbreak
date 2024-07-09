@@ -72,7 +72,7 @@ public class LastGuard(LastGuardConfig config, ILastGuardNotifications notificat
         var guardHealth = guardPlayerPawn.Health;
         var guardCalcHealth = CalculateHealth();
 
-        ctPlayerPawn.Health = guardHealth > guardCalcHealth ? 125 : guardHealth;
+        guardPlayerPawn.Health = guardHealth > guardCalcHealth ? 125 : guardHealth;
         Utilities.SetStateChanged(guardPlayerPawn, "CBaseEntity", "m_iHealth");
 
         // foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal()))
