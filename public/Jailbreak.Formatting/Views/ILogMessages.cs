@@ -7,31 +7,24 @@ using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.Formatting.Views;
 
-public interface ILogMessages
-{
-    public IView BEGIN_JAILBREAK_LOGS { get; }
+public interface ILogMessages {
+  public IView BEGIN_JAILBREAK_LOGS { get; }
 
-    public IView END_JAILBREAK_LOGS { get; }
+  public IView END_JAILBREAK_LOGS { get; }
 
-    public FormatObject TIME()
-    {
-        var gamerules = ServerExtensions.GetGameRules();
-        var start = gamerules.RoundStartTime;
-        var current = Server.CurrentTime;
-        var elapsed = current - start;
+  public FormatObject TIME() {
+    var gamerules = ServerExtensions.GetGameRules();
+    var start     = gamerules.RoundStartTime;
+    var current   = Server.CurrentTime;
+    var elapsed   = current - start;
 
-        var minutes = Math.Floor(elapsed / 60f).ToString("00");
-        var seconds = Math.Floor(elapsed % 60).ToString("00");
+    var minutes = Math.Floor(elapsed / 60f).ToString("00");
+    var seconds = Math.Floor(elapsed % 60).ToString("00");
 
-        return new StringFormatObject($"[{minutes}:{seconds}]", ChatColors.Gold);
-    }
+    return new StringFormatObject($"[{minutes}:{seconds}]", ChatColors.Gold);
+  }
 
-    public IView CREATE_LOG(params FormatObject[] objects)
-    {
-        return new SimpleView
-        {
-            TIME(),
-            objects
-        };
-    }
+  public IView CREATE_LOG(params FormatObject[] objects) {
+    return new SimpleView { TIME(), objects };
+  }
 }

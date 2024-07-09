@@ -1,6 +1,5 @@
 namespace Jailbreak.LastRequest;
 
-public class LastRequestConfig
-{
-    public int PrisonersToActiveLR { get; set; } = 2;
+public class LastRequestConfig {
+  public int PrisonersToActiveLR { get; set; } = 2;
 }

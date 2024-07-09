@@ -5,24 +5,20 @@ using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
-public abstract class TeleportingRequest(
-    BasePlugin plugin,
-    ILastRequestManager manager,
-    CCSPlayerController prisoner,
-    CCSPlayerController guard) : AbstractLastRequest(plugin, manager, prisoner, guard)
-{
-    public override void Setup()
-    {
-        state = LRState.Pending;
+public abstract class TeleportingRequest(BasePlugin plugin,
+  ILastRequestManager manager, CCSPlayerController prisoner,
+  CCSPlayerController guard)
+  : AbstractLastRequest(plugin, manager, prisoner, guard) {
+  public override void Setup() {
+    state = LRState.Pending;
 
-        guard.Teleport(prisoner);
+    guard.Teleport(prisoner);
 
-        guard.Freeze();
-        prisoner.Freeze();
-        plugin.AddTimer(1, () =>
-        {
-            guard.UnFreeze();
-            prisoner.UnFreeze();
-        });
-    }
+    guard.Freeze();
+    prisoner.Freeze();
+    plugin.AddTimer(1, () => {
+      guard.UnFreeze();
+      prisoner.UnFreeze();
+    });
+  }
 }

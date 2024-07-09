@@ -1,12 +1,11 @@
 ﻿namespace Jailbreak.Public.Mod.Mute;
 
-public interface IMuteService
-{
-    void PeaceMute(MuteReason reason);
+public interface IMuteService {
+  void PeaceMute(MuteReason reason);
 
-    void UnPeaceMute();
+  void UnPeaceMute();
 
-    bool IsPeaceEnabled();
+  bool IsPeaceEnabled();
 
-    DateTime GetLastPeace();
+  DateTime GetLastPeace();
 }

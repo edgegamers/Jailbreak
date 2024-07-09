@@ -2,7 +2,6 @@
 
 namespace Jailbreak.Formatting.Views;
 
-public interface IRollCommandNotications
-{
-    IView Roll(int roll);
+public interface IRollCommandNotications {
+  IView Roll(int roll);
 }

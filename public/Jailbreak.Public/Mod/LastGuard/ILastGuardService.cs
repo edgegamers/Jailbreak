@@ -2,8 +2,7 @@
 
 namespace Jailbreak.Public.Mod.LastGuard;
 
-public interface ILastGuardService
-{
-    int CalculateHealth();
-    void StartLastGuard(CCSPlayerController lastGuard);
+public interface ILastGuardService {
+  int CalculateHealth();
+  void StartLastGuard(CCSPlayerController lastGuard);
 }

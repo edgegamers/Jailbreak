@@ -4,11 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.LastGuard;
 
-public static class RebelServiceExtension
-{
-    public static void AddJailbreakLastGuard(this IServiceCollection collection)
-    {
-        collection.AddConfig<LastGuardConfig>("lastguard");
-        collection.AddPluginBehavior<ILastGuardService, LastGuard>();
-    }
+public static class RebelServiceExtension {
+  public static void AddJailbreakLastGuard(this IServiceCollection collection) {
+    collection.AddConfig<LastGuardConfig>("lastguard");
+    collection.AddPluginBehavior<ILastGuardService, LastGuard>();
+  }
 }

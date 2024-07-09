@@ -4,17 +4,13 @@ using Jailbreak.Public.Behaviors;
 
 namespace Jailbreak.Generic.PlayerState.Behaviors;
 
-public class AliveStateTracker : BaseStateTracker, IPluginBehavior
-{
-    public void Start(BasePlugin parent)
-    {
-    }
+public class AliveStateTracker : BaseStateTracker, IPluginBehavior {
+  public void Start(BasePlugin parent) { }
 
-    [GameEventHandler]
-    public HookResult OnDeath(EventPlayerDeath ev, GameEventInfo info)
-    {
-        Reset(ev.Userid);
+  [GameEventHandler]
+  public HookResult OnDeath(EventPlayerDeath ev, GameEventInfo info) {
+    Reset(ev.Userid);
 
-        return HookResult.Continue;
-    }
+    return HookResult.Continue;
+  }
 }
