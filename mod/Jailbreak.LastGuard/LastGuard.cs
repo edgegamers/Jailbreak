@@ -65,12 +65,12 @@ public class LastGuard(LastGuardConfig config, ILastGuardNotifications notificat
 
     public void StartLastGuard(CCSPlayerController lastGuard)
     {
-        var ctPlayerPawn = lastGuard.PlayerPawn.Value;
+        var guardPlayerPawn = lastGuard.PlayerPawn.Value;
 
         if (ctPlayerPawn == null || !ctPlayerPawn.IsValid) return;
 
-        var ctHealth = ctPlayerPawn.Health;
-        var ctCalcHealth = CalculateHealth();
+        var guardHealth = ctPlayerPawn.Health;
+        var guardCalcHealth = CalculateHealth();
 
         ctPlayerPawn.Health = ctHealth > ctCalcHealth ? 125 : ctCalcHealth;
         Utilities.SetStateChanged(ctPlayerPawn, "CBaseEntity", "m_iHealth");
@@ -81,10 +81,9 @@ public class LastGuard(LastGuardConfig config, ILastGuardNotifications notificat
         var aliveTerrorists = Utilities.GetPlayers()
             .Where(p => p.IsReal() && p is { PawnIsAlive: true, Team: CsTeam.Terrorist }).ToList();
 
-        var guardHp = lastGuard.PlayerPawn?.Value?.Health ?? 0;
         var prisonerHp = aliveTerrorists.Sum(prisoner => prisoner.PlayerPawn?.Value?.Health ?? 0);
 
-        notifications.LG_STARTED(guardHp, prisonerHp).ToAllCenter().ToAllChat();
+        notifications.LG_STARTED(guardHealth, prisonerHp).ToAllCenter().ToAllChat();
 
         if (string.IsNullOrEmpty(config.LastGuardWeapon)) return;
 
