@@ -10,7 +10,6 @@ using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.SpecialDays;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 using Jailbreak.Public.Mod.Damage;
@@ -21,12 +20,10 @@ namespace Jailbreak.LastRequest;
 public class LastRequestManager(
     LastRequestConfig _config,
     ILastRequestMessages _messages,
-    IServiceProvider _provider,
-    ISpecialDayHandler sdHandler
-    )
+    IServiceProvider _provider
+)
     : ILastRequestManager, IBlockUserDamage
 {
-    private ISpecialDayHandler _sdHandler;
     private BasePlugin _parent;
     private ILastRequestFactory _factory;
 
@@ -37,7 +34,6 @@ public class LastRequestManager(
     {
         _factory = _provider.GetRequiredService<ILastRequestFactory>();
         _parent = parent;
-        _sdHandler = sdHandler;
     }
 
     [GameEventHandler(HookMode.Pre)]
@@ -83,6 +79,7 @@ public class LastRequestManager(
             // Same LR, allow damage
             return false;
         }
+
         _messages.DamageBlockedNotInSameLR.ToPlayerCenter(attacker);
         return true;
     }
@@ -105,6 +102,7 @@ public class LastRequestManager(
         {
             MenuManager.CloseActiveMenu(player);
         }
+
         if (ServerExtensions.GetGameRules().WarmupPeriod)
             return HookResult.Continue;
         if (CountAlivePrisoners() > _config.PrisonersToActiveLR)
@@ -144,8 +142,7 @@ public class LastRequestManager(
         if (CountAlivePrisoners() - 1 > _config.PrisonersToActiveLR)
             return HookResult.Continue;
 
-        EnableLR();
-        _messages.LastRequestEnabled().ToAllChat();
+        EnableLR(player);
         return HookResult.Continue;
     }
 
@@ -153,10 +150,22 @@ public class LastRequestManager(
     public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
     {
         var player = @event.Userid;
+
+        if (player == null) return HookResult.Continue;
+
         if (!player.IsReal() || ServerExtensions.GetGameRules().WarmupPeriod)
             return HookResult.Continue;
+
         if (IsLREnabled)
             return HookResult.Continue;
+
+        var activeLr = ((ILastRequestManager)this).GetActiveLR(player);
+
+        if (activeLr != null && activeLr.state != LRState.Active)
+        {
+            EndLastRequest(activeLr, player.Team == CsTeam.Terrorist ? LRResult.GuardWin : LRResult.PrisonerWin);
+            return HookResult.Continue;
+        }
 
         if (player.GetTeam() != CsTeam.Terrorist)
             return HookResult.Continue;
@@ -164,7 +173,6 @@ public class LastRequestManager(
             return HookResult.Continue;
 
         EnableLR();
-        _messages.LastRequestEnabled().ToAllChat();
         return HookResult.Continue;
     }
 
@@ -173,15 +181,18 @@ public class LastRequestManager(
         IsLREnabled = false;
     }
 
-    public void EnableLR()
+    public void EnableLR(CCSPlayerController? died = null)
     {
-        if (_sdHandler.IsSpecialDayActive()) return;
+        _messages.LastRequestEnabled().ToAllChat();
         IsLREnabled = true;
         SetRoundTime(60);
 
-        foreach (var player in Utilities.GetPlayers())
+        foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal()))
         {
-            if (!player.IsReal() || player.Team != CsTeam.Terrorist || !player.PawnIsAlive)
+            // player.ExecuteClientCommand($"play sounds/lr");
+            if (player.Team != CsTeam.Terrorist || !player.PawnIsAlive)
+                continue;
+            if (died != null && player.SteamID == died.SteamID)
                 continue;
             player.ExecuteClientCommandFromServer("css_lr");
         }

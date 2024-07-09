@@ -22,6 +22,8 @@ public class DebugCommand(IServiceProvider serviceProvider) : IPluginBehavior
         _commands.Add("markrebel", new MarkRebel(serviceProvider));
         _commands.Add("pardon", new Pardon(serviceProvider));
         _commands.Add("lr", new Subcommands.LastRequest(serviceProvider, _plugin));
+        _commands.Add("st", new MarkST(serviceProvider));
+        _commands.Add("lg", new LastGuard(serviceProvider));
     }
 
     [RequiresPermissions("@css/root")]
