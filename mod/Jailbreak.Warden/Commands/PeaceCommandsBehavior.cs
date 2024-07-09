@@ -28,7 +28,7 @@ public class PeaceCommandsBehavior(
             return;
         }
 
-        bool fromWarden = executor != null && warden.IsWarden(executor);
+        var fromWarden = executor != null && warden.IsWarden(executor);
 
         if (executor == null || AdminManager.PlayerHasPermissions(executor, "@css/cheats"))
         {

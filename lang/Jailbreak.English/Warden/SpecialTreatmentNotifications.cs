@@ -16,7 +16,7 @@ public class SpecialTreatmentNotifications : ISpecialTreatmentNotifications, ILa
             //	Hide in panorama and center text
             Plain = false,
             Panorama = false,
-            Chat = true,
+            Chat = true
         };
 
     public IView GRANTED =>

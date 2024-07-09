@@ -32,13 +32,13 @@ public class WardenSelectionBehavior : IPluginBehavior, IWardenSelectionService
     /// </summary>
     private readonly IPlayerState<QueueState> _queue;
 
+    private readonly IWardenService _warden;
+
     /// <summary>
     ///     Whether or not to use the queue.
     ///     When true, the queue should be skipped and turn to first-come-first-serve.
     /// </summary>
     private bool _queueInactive;
-
-    private readonly IWardenService _warden;
 
     public WardenSelectionBehavior(IPlayerStateFactory factory, IWardenService warden,
         IWardenNotifications notifications, ILogger<WardenSelectionBehavior> logger, ICoroutines coroutines)

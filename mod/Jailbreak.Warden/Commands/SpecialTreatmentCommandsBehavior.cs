@@ -11,11 +11,10 @@ namespace Jailbreak.Warden.Commands;
 
 public class SpecialTreatmentCommandsBehavior : IPluginBehavior
 {
-    private IWardenService _warden;
-    private ISpecialTreatmentService _specialTreatment;
-
-    private IGenericCommandNotifications _generic;
-    private IWardenNotifications _wardenNotifs;
+    private readonly IGenericCommandNotifications _generic;
+    private readonly ISpecialTreatmentService _specialTreatment;
+    private readonly IWardenService _warden;
+    private readonly IWardenNotifications _wardenNotifs;
 
     public SpecialTreatmentCommandsBehavior(IWardenService warden, ISpecialTreatmentService specialTreatment,
         IGenericCommandNotifications generic, ISpecialTreatmentNotifications notifications,
@@ -42,10 +41,8 @@ public class SpecialTreatmentCommandsBehavior : IPluginBehavior
         }
 
         if (command.ArgCount == 1)
-        {
             // TODO: Pop up menu of prisoners to toggle ST for
             return;
-        }
 
         var targets = command.GetArgTargetResult(1);
         var eligible = targets

@@ -1,6 +1,5 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
-
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
@@ -15,7 +14,6 @@ public class LogDamageListeners : IPluginBehavior
     {
         _logs = logs;
     }
-
 
 
     [GameEventHandler]
@@ -39,30 +37,22 @@ public class LogDamageListeners : IPluginBehavior
             return HookResult.Continue;
         var attacker = @event.Attacker;
 
-        bool isWorld = attacker == null || !attacker.IsReal();
-        int health = @event.DmgHealth;
+        var isWorld = attacker == null || !attacker.IsReal();
+        var health = @event.DmgHealth;
 
         if (isWorld)
         {
             if (health > 0)
-            {
-                _logs.Append($"The world hurt", _logs.Player(player), $"for {health} damage");
-            }
+                _logs.Append("The world hurt", _logs.Player(player), $"for {health} damage");
             else
-            {
                 _logs.Append("The world killed", _logs.Player(player));
-            }
         }
         else
         {
             if (health > 0)
-            {
-                _logs.Append( _logs.Player(attacker), "hurt", _logs.Player(player), $"for {health} damage");
-            }
+                _logs.Append(_logs.Player(attacker), "hurt", _logs.Player(player), $"for {health} damage");
             else
-            {
                 _logs.Append(_logs.Player(attacker!), "killed", _logs.Player(player));
-            }
         }
 
         return HookResult.Continue;

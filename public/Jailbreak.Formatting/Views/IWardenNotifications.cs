@@ -1,5 +1,6 @@
 ﻿using CounterStrikeSharp.API.Core;
 using Jailbreak.Formatting.Base;
+
 // ReSharper disable InconsistentNaming
 
 namespace Jailbreak.Formatting.Views;
@@ -37,6 +38,7 @@ public interface IWardenNotifications
     /// <param name="player"></param>
     /// <returns></returns>
     public IView CURRENT_WARDEN(CCSPlayerController? player);
+
     public IView FIRE_COMMAND_SUCCESS(CCSPlayerController player);
 
     public IView FIRE_WARDEN(CCSPlayerController player);

@@ -1,4 +1,3 @@
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
 using Jailbreak.Public.Mod.LastRequest;
@@ -11,6 +10,26 @@ public class Coinflip : AbstractLastRequest
 {
     private readonly ChatMenu _menu;
     private readonly Random _rnd;
+
+    private readonly string[] events =
+    {
+        "A glint of silver flashes through the air...",
+        "The coin does a 180...!",
+        "Gravity seems so much heavier...",
+        "A quiet clink is heard...",
+        "An arrow hits the coin!",
+        "The coin is shot in mid-air.",
+        "The answer is 42",
+        "And yet...",
+        "A sliver of copper falls off...",
+        "Lucky number 7...",
+        "The coin lands on its side!",
+        "A bald eagle soars above",
+        "There wasn't enough room for the two of ya anyways...",
+        "Woosh woosh woosh",
+        "banana rotate"
+    };
+
     private Timer _timeout;
 
     public Coinflip(BasePlugin plugin, ILastRequestManager manager, CCSPlayerController prisoner,
@@ -56,6 +75,7 @@ public class Coinflip : AbstractLastRequest
             PrintToParticipants($"{guard.PlayerName} chose {(heads ? "Heads" : "Tails")}... flipping...");
             state = LRState.Active;
         }
+
         plugin.AddTimer(2, () =>
         {
             if (_rnd.Next(4) == 0)
@@ -71,25 +91,6 @@ public class Coinflip : AbstractLastRequest
             }
         });
     }
-
-    private readonly string[] events =
-    {
-        "A glint of silver flashes through the air...",
-        "The coin does a 180...!",
-        "Gravity seems so much heavier...",
-        "A quiet clink is heard...",
-        "An arrow hits the coin!",
-        "The coin is shot in mid-air.",
-        "The answer is 42",
-        "And yet...",
-        "A sliver of copper falls off...",
-        "Lucky number 7...",
-        "The coin lands on its side!",
-        "A bald eagle soars above",
-        "There wasn't enough room for the two of ya anyways...",
-        "Woosh woosh woosh",
-        "banana rotate"
-    };
 
     public override void OnEnd(LRResult result)
     {

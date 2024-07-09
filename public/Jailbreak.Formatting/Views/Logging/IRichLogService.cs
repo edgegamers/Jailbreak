@@ -1,5 +1,4 @@
 ﻿using CounterStrikeSharp.API.Core;
-
 using Jailbreak.Formatting.Core;
 using Jailbreak.Public.Mod.Logs;
 
@@ -7,7 +6,7 @@ namespace Jailbreak.Formatting.Views;
 
 public interface IRichLogService : ILogService
 {
-	void Append(params FormatObject[] objects);
+    void Append(params FormatObject[] objects);
 
-	FormatObject Player(CCSPlayerController playerController);
+    FormatObject Player(CCSPlayerController playerController);
 }

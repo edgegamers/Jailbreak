@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.Design;
-using CounterStrikeSharp.API;
+﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
@@ -10,7 +9,6 @@ using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Warden;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Warden.Commands;
 
@@ -48,10 +46,8 @@ public class WardenCommandsBehavior(
 
         // GetPlayers() returns valid players, no need to error check here.
         foreach (var clients in Utilities.GetPlayers())
-        {
             clients.ExecuteClientCommand(
                 $"play sounds/{_config.WardenPassedSoundName}");
-        }
 
         _notifications.BECOME_NEXT_WARDEN.ToAllChat();
 
@@ -83,13 +79,9 @@ public class WardenCommandsBehavior(
         foreach (var client in Utilities.GetPlayers().Where(p => p.IsReal()))
         {
             if (AdminManager.PlayerHasPermissions(client, "@css/chat"))
-            {
                 _notifications.FIRE_WARDEN(_warden.Warden, player).ToPlayerChat(client);
-            }
             else
-            {
                 _notifications.FIRE_WARDEN(_warden.Warden).ToPlayerChat(client);
-            }
 
             client.ExecuteClientCommand(
                 $"play sounds/{_config.WardenPassedSoundName}");
@@ -98,7 +90,7 @@ public class WardenCommandsBehavior(
         _notifications.BECOME_NEXT_WARDEN.ToAllChat();
 
         _lastPassCommand[_warden.Warden] = DateTime.Now;
-        
+
         if (!_warden.TryRemoveWarden(true))
             Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");
     }
@@ -113,10 +105,7 @@ public class WardenCommandsBehavior(
             return;
 
         // Why add them to a cooldown list if they can't even be warden :) 
-        if (player.Team != CsTeam.CounterTerrorist || !player.PawnIsAlive)
-        {
-            return;
-        }
+        if (player.Team != CsTeam.CounterTerrorist || !player.PawnIsAlive) return;
 
         // If they're already in the cooldown dictionary, check if their cooldown has expired.
         if (_lastPassCommand.TryGetValue(player, out var last))
@@ -148,16 +137,14 @@ public class WardenCommandsBehavior(
 
         //	Is a CT and there is no warden i.e. the queue is not open/active.
         if (!_warden.HasWarden)
-        {
             if (_warden.TrySetWarden(player))
                 return;
-        }
 
         _notifications.CURRENT_WARDEN(_warden.Warden).ToPlayerChat(player);
     }
 
     /// <summary>
-    /// If the player who just died was the warden, clear the claim cooldown dictionary, so other CT's can claim!
+    ///     If the player who just died was the warden, clear the claim cooldown dictionary, so other CT's can claim!
     /// </summary>
     [GameEventHandler]
     public HookResult OnWardenDeath(EventPlayerDeath @event, GameEventInfo info)

@@ -18,11 +18,6 @@ public class SpecialTreatmentBehavior(
 {
     private readonly IPlayerState<SpecialTreatmentState> _sts = factory.Round<SpecialTreatmentState>();
 
-    private class SpecialTreatmentState
-    {
-        public bool HasSpecialTreatment { get; set; } = false;
-    }
-
     public bool IsSpecialTreatment(CCSPlayerController player)
     {
         return _sts.Get(player)
@@ -39,7 +34,7 @@ public class SpecialTreatmentBehavior(
 
         if (rebel.IsRebel(player))
             rebel.UnmarkRebel(player);
-        this.SetSpecialColor(player, /* hasSt */ true);
+        SetSpecialColor(player, /* hasSt */ true);
 
         notifications.GRANTED
             .ToPlayerChat(player)
@@ -57,7 +52,7 @@ public class SpecialTreatmentBehavior(
 
         _sts.Get(player).HasSpecialTreatment = false;
 
-        this.SetSpecialColor(player, false);
+        SetSpecialColor(player, false);
 
         notifications.REVOKED
             .ToPlayerChat(player)
@@ -79,5 +74,10 @@ public class SpecialTreatmentBehavior(
         player.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
         player.Pawn.Value.Render = color;
         Utilities.SetStateChanged(player.Pawn.Value, "CBaseModelEntity", "m_clrRender");
+    }
+
+    private class SpecialTreatmentState
+    {
+        public bool HasSpecialTreatment { get; set; }
     }
 }

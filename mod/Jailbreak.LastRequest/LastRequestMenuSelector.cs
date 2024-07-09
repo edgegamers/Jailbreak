@@ -1,5 +1,4 @@
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Menu;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
@@ -8,10 +7,10 @@ namespace Jailbreak.LastRequest;
 
 public class LastRequestMenuSelector
 {
-    private readonly CenterHtmlMenu _menu;
     private readonly Func<LRType, string> _command;
+    private readonly CenterHtmlMenu _menu;
 
-    public LastRequestMenuSelector(ILastRequestFactory factory) : this(factory, (lr) => "css_lr " + ((int)lr))
+    public LastRequestMenuSelector(ILastRequestFactory factory) : this(factory, lr => "css_lr " + (int)lr)
     {
     }
 
@@ -35,6 +34,6 @@ public class LastRequestMenuSelector
     private void OnSelectLR(CCSPlayerController player, LRType lr)
     {
         MenuManager.CloseActiveMenu(player);
-        player.ExecuteClientCommandFromServer(this._command.Invoke(lr));
+        player.ExecuteClientCommandFromServer(_command.Invoke(lr));
     }
 }

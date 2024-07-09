@@ -1,6 +1,3 @@
-using CounterStrikeSharp.API.Core;
-using Microsoft.Extensions.Logging.Abstractions;
-
 namespace Jailbreak.Public.Mod.LastRequest.Enums;
 
 public enum LRType

@@ -15,14 +15,14 @@ public interface ISpecialTreatmentService
     }
 
     /// <summary>
-    /// Give this player ST for the rest of the round
+    ///     Give this player ST for the rest of the round
     /// </summary>
     /// <param name="player"></param>
     public void Grant(CCSPlayerController player);
 
     /// <summary>
-    /// Revoke the player's special treatment for the current round
-    /// Does nothing if not ST.
+    ///     Revoke the player's special treatment for the current round
+    ///     Does nothing if not ST.
     /// </summary>
     /// <param name="player"></param>
     public void Revoke(CCSPlayerController player);

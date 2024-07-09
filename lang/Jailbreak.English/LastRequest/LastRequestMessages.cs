@@ -21,27 +21,36 @@ public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.La
             Chat = true
         };
 
-    public IView LastRequestEnabled() => new SimpleView()
+    public IView LastRequestEnabled()
     {
+        return new SimpleView
         {
-            PREFIX,
-            $"Last Request has been enabled. {ChatColors.Grey}Type {ChatColors.LightBlue}!lr{ChatColors.Grey} to start a last request."
-        }
-    };
+            {
+                PREFIX,
+                $"Last Request has been enabled. {ChatColors.Grey}Type {ChatColors.LightBlue}!lr{ChatColors.Grey} to start a last request."
+            }
+        };
+    }
 
-    public IView LastRequestDisabled() => new SimpleView()
+    public IView LastRequestDisabled()
     {
-        { PREFIX, $"{ChatColors.Grey}Last Request has been {ChatColors.Red}disabled{ChatColors.Grey}." }
-    };
+        return new SimpleView
+        {
+            { PREFIX, $"{ChatColors.Grey}Last Request has been {ChatColors.Red}disabled{ChatColors.Grey}." }
+        };
+    }
 
-    public IView LastRequestNotEnabled() => new SimpleView()
+    public IView LastRequestNotEnabled()
     {
-        { PREFIX, $"{ChatColors.Red}Last Request is not enabled." }
-    };
+        return new SimpleView
+        {
+            { PREFIX, $"{ChatColors.Red}Last Request is not enabled." }
+        };
+    }
 
     public IView InvalidLastRequest(string query)
     {
-        return new SimpleView()
+        return new SimpleView
         {
             PREFIX,
             "Invalid Last Request: ",
@@ -51,7 +60,7 @@ public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.La
 
     public IView InvalidPlayerChoice(CCSPlayerController player, string reason)
     {
-        return new SimpleView()
+        return new SimpleView
         {
             PREFIX,
             "Invalid player choice: ",
@@ -63,7 +72,7 @@ public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.La
 
     public IView InformLastRequest(AbstractLastRequest lr)
     {
-        return new SimpleView()
+        return new SimpleView
         {
             PREFIX,
             lr.prisoner, "is preparing a", lr.type.ToFriendlyString(),
@@ -73,7 +82,7 @@ public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.La
 
     public IView AnnounceLastRequest(AbstractLastRequest lr)
     {
-        return new SimpleView()
+        return new SimpleView
         {
             PREFIX,
             lr.prisoner, "is doing a", lr.type.ToFriendlyString(),
@@ -83,7 +92,7 @@ public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.La
 
     public IView LastRequestDecided(AbstractLastRequest lr, LRResult result)
     {
-        return new SimpleView()
+        return new SimpleView
         {
             PREFIX,
             (result == LRResult.GuardWin ? ChatColors.Blue : ChatColors.Red).ToString(),

@@ -6,16 +6,14 @@ using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.Logs;
 using Jailbreak.Public.Mod.Rebel;
 
 namespace Jailbreak.Rebel;
 
 public class RebelManager(IRebelNotifications notifs, IRichLogService logs) : IPluginBehavior, IRebelService
 {
-    private readonly Dictionary<CCSPlayerController, long> _rebelTimes = new();
-
     public static int MAX_REBEL_TIME = 45;
+    private readonly Dictionary<CCSPlayerController, long> _rebelTimes = new();
 
     public void Start(BasePlugin parent)
     {
@@ -43,6 +41,39 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs) : IP
         }, TimerFlags.REPEAT);
     }
 
+    public ISet<CCSPlayerController> GetActiveRebels()
+    {
+        return _rebelTimes.Keys.ToHashSet();
+    }
+
+    public long GetRebelTimeLeft(CCSPlayerController player)
+    {
+        if (_rebelTimes.TryGetValue(player, out var time)) return time - DateTimeOffset.Now.ToUnixTimeSeconds();
+
+        return 0;
+    }
+
+    public bool MarkRebel(CCSPlayerController player, long time = 30)
+    {
+        if (!_rebelTimes.ContainsKey(player)) logs.Append(logs.Player(player), "is now a rebel.");
+
+        _rebelTimes[player] = DateTimeOffset.Now.ToUnixTimeSeconds() + time;
+        ApplyRebelColor(player);
+        return true;
+    }
+
+    public void UnmarkRebel(CCSPlayerController player)
+    {
+        if (_rebelTimes.ContainsKey(player))
+        {
+            notifs.NO_LONGER_REBEL.ToPlayerChat(player);
+            logs.Append(logs.Player(player), "is no longer a rebel.");
+        }
+
+        _rebelTimes.Remove(player);
+        ApplyRebelColor(player);
+    }
+
     private void OnTick()
     {
         foreach (var player in GetActiveRebels())
@@ -56,7 +87,7 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs) : IP
         }
     }
 
-    HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
+    private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
         _rebelTimes.Clear();
         foreach (var player in Utilities.GetPlayers())
@@ -85,45 +116,6 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs) : IP
             return HookResult.Continue;
         _rebelTimes.Remove(player);
         return HookResult.Continue;
-    }
-
-    public ISet<CCSPlayerController> GetActiveRebels()
-    {
-        return _rebelTimes.Keys.ToHashSet();
-    }
-
-    public long GetRebelTimeLeft(CCSPlayerController player)
-    {
-        if (_rebelTimes.TryGetValue(player, out long time))
-        {
-            return time - DateTimeOffset.Now.ToUnixTimeSeconds();
-        }
-
-        return 0;
-    }
-
-    public bool MarkRebel(CCSPlayerController player, long time = 30)
-    {
-        if (!_rebelTimes.ContainsKey(player))
-        {
-            logs.Append(logs.Player(player), "is now a rebel.");
-        }
-
-        _rebelTimes[player] = DateTimeOffset.Now.ToUnixTimeSeconds() + time;
-        ApplyRebelColor(player);
-        return true;
-    }
-
-    public void UnmarkRebel(CCSPlayerController player)
-    {
-        if (_rebelTimes.ContainsKey(player))
-        {
-            notifs.NO_LONGER_REBEL.ToPlayerChat(player);
-            logs.Append(logs.Player(player), "is no longer a rebel.");
-        }
-
-        _rebelTimes.Remove(player);
-        ApplyRebelColor(player);
     }
 
     // https://www.desmos.com/calculator/g2v6vvg7ax

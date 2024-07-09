@@ -1,5 +1,4 @@
-﻿using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Utils;
+﻿using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Logistics;
 using Jailbreak.Formatting.Views;
@@ -11,7 +10,12 @@ public class JihadC4Notifications : IJihadC4Notifications, ILanguage<Formatting.
     // public IView JIHAD_C4_DROPPED => new SimpleView { RebelNotifications.PREFIX, "You dropped your Jihad C4!" };
     public IView JIHAD_C4_PICKUP => new SimpleView { RebelNotifications.PREFIX, "You picked up a Jihad C4!" };
     public IView JIHAD_C4_RECEIVED => new SimpleView { RebelNotifications.PREFIX, "You received a Jihad C4!" };
-    public IView JIHAD_C4_USAGE1 => new SimpleView { RebelNotifications.PREFIX, $"To detonate it, hold it out and press {ChatColors.Yellow + "E" + ChatColors.Default}." };
+
+    public IView JIHAD_C4_USAGE1 => new SimpleView
+    {
+        RebelNotifications.PREFIX,
+        $"To detonate it, hold it out and press {ChatColors.Yellow + "E" + ChatColors.Default}."
+    };
     // public IView JIHAD_C4_USAGE2 => new SimpleView { RebelNotifications.PREFIX, $"You can drop the C4 to other players with {ChatColors.Yellow + "G" + ChatColors.Default}." };
 
 

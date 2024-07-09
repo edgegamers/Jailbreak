@@ -1,8 +1,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Timers;
-using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
@@ -16,8 +14,8 @@ public class ShotForShot(
     CCSPlayerController guard)
     : WeaponizedRequest(plugin, manager, prisoner, guard)
 {
-    public override LRType type => LRType.ShotForShot;
     private CCSPlayerController whosShot;
+    public override LRType type => LRType.ShotForShot;
 
     public override void Setup()
     {
@@ -37,7 +35,7 @@ public class ShotForShot(
             setAmmoAmount(weapon, 0, 0);
     }
 
-    private static CBasePlayerWeapon? FindWeapon(CCSPlayerController player, String name)
+    private static CBasePlayerWeapon? FindWeapon(CCSPlayerController player, string name)
     {
         if (!player.IsReal())
             return null;

@@ -9,13 +9,13 @@ public abstract class AbstractLastRequest(
     CCSPlayerController prisoner,
     CCSPlayerController guard)
 {
+    protected ILastRequestManager manager = manager;
+    protected BasePlugin plugin = plugin;
     public CCSPlayerController prisoner { get; protected set; } = prisoner;
     public CCSPlayerController guard { get; protected set; } = guard;
     public abstract LRType type { get; }
 
     public LRState state { get; protected set; }
-    protected BasePlugin plugin = plugin;
-    protected ILastRequestManager manager = manager;
 
     public void PrintToParticipants(string message)
     {

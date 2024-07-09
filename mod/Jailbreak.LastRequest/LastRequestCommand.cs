@@ -1,7 +1,6 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Commands.Targeting;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
@@ -10,7 +9,6 @@ using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
-using Microsoft.Extensions.DependencyModel;
 
 namespace Jailbreak.LastRequest;
 
@@ -86,7 +84,7 @@ public class LastRequestCommand(
         if (info.ArgCount == 2)
         {
             MenuManager.OpenCenterHtmlMenu(_plugin, executor,
-                _playerSelector.CreateMenu(executor, (str) => "css_lr " + type + " #" + str));
+                _playerSelector.CreateMenu(executor, str => "css_lr " + type + " #" + str));
             return;
         }
 
@@ -121,17 +119,15 @@ public class LastRequestCommand(
             messages.InvalidPlayerChoice(player, "They're already in an LR!");
             return;
         }
-        
+
         //One final check in case they got the menu open in the last round
         if (!manager.IsLREnabled)
         {
             messages.LastRequestNotEnabled().ToPlayerChat(executor);
             return;
         }
-        
+
         if (!manager.InitiateLastRequest(executor, player, (LRType)type))
-        {
             info.ReplyToCommand("An error occurred while initiating the last request. Please try again later.");
-        }
     }
 }

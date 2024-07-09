@@ -14,9 +14,9 @@ public class WardenMarkerBehavior : IPluginBehavior
     private const float MinRadius = 60f, MaxRadius = 360f;
     private readonly IWardenService _warden;
 
-    private BeamCircle? _marker;
-
     private Vector? _currentPos;
+
+    private BeamCircle? _marker;
     private long _placementTime;
     private float _radius = MinRadius;
 

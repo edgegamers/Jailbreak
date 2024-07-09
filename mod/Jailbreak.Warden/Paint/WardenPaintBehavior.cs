@@ -10,8 +10,8 @@ namespace Jailbreak.Warden.Paint;
 
 public class WardenPaintBehavior : IPluginBehavior
 {
-    private Vector? _lastPosition;
     private readonly IWardenService _warden;
+    private Vector? _lastPosition;
     private BasePlugin? _parent;
 
     public WardenPaintBehavior(IWardenService warden)
@@ -48,9 +48,9 @@ public class WardenPaintBehavior : IPluginBehavior
         _lastPosition = position;
         if (start.DistanceSquared(position) > 150 * 150) start = position;
 
-        if(_parent == null)
+        if (_parent == null)
             throw new NullReferenceException("Parent plugin is null");
-        
+
         new BeamLine(_parent, start.Clone(), position.Clone()).Draw(30f);
     }
 
@@ -62,7 +62,7 @@ public class WardenPaintBehavior : IPluginBehavior
         var playerPawn = player.PlayerPawn.Value;
         if (pawn == null || !pawn.IsValid || !playerPawn.IsValid || pawn.CameraServices == null)
             return null;
-        if(pawn.AbsOrigin == null)
+        if (pawn.AbsOrigin == null)
             return null;
 
         var camera = pawn.CameraServices;
@@ -88,7 +88,7 @@ public class WardenPaintBehavior : IPluginBehavior
         pitch = 90 - pitch;
         if (pitch >= 90)
             return null;
-        
+
         // var angleA = ToRadians(90);
         var sideB = start.Z - z;
         var angleC = ToRadians(pitch);

@@ -29,7 +29,7 @@ public class RebelListener(IRebelService rebelService, ILastRequestManager lastR
 
         if (lastRequestManager.IsInLR(attacker))
             return HookResult.Continue;
-        
+
         rebelService.MarkRebel(attacker);
         return HookResult.Continue;
     }

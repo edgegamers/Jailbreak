@@ -9,7 +9,7 @@ namespace Jailbreak.Debug;
 
 // css_debug [subcommand] [args] -> subcommand [args]
 /// <summary>
-/// The debug command allows for Developers to debug and force certain actions/gamestates.
+///     The debug command allows for Developers to debug and force certain actions/gamestates.
 /// </summary>
 public class DebugCommand(IServiceProvider serviceProvider) : IPluginBehavior
 {

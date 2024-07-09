@@ -1,7 +1,4 @@
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Core.Attributes.Registration;
-using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 
@@ -22,7 +19,7 @@ public class KnifeFight(
         PrintToParticipants("Go!");
         prisoner.GiveNamedItem("weapon_knife");
         guard.GiveNamedItem("weapon_knife");
-        this.state = LRState.Active;
+        state = LRState.Active;
     }
 
     public override void OnEnd(LRResult result)

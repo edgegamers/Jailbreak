@@ -16,44 +16,15 @@ namespace Jailbreak.Mute;
 
 public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteService
 {
-    private BasePlugin parent;
-    private DateTime lastPeace = DateTime.MinValue;
-    private DateTime peaceEnd = DateTime.MinValue;
     private DateTime ctPeaceEnd = DateTime.MinValue;
+    private DateTime lastPeace = DateTime.MinValue;
 
     private IPeaceMessages messages;
-    private IWardenService warden;
+    private BasePlugin parent;
+    private DateTime peaceEnd = DateTime.MinValue;
 
     private Timer? prisonerTimer, guardTimer;
-
-    public void Start(BasePlugin parent)
-    {
-        this.parent = parent;
-
-        messages = provider.GetRequiredService<IPeaceMessages>();
-        warden = provider.GetRequiredService<IWardenService>();
-        
-        parent.RegisterListener<Listeners.OnClientVoice>(OnPlayerSpeak);
-    }
-
-    [GameEventHandler]
-    public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
-    {
-        UnPeaceMute();
-        return HookResult.Continue;
-    }
-
-    [GameEventHandler]
-    public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
-    {
-        UnPeaceMute();
-        return HookResult.Continue;
-    }
-
-    public void Dispose()
-    {
-        parent.RemoveListener(OnPlayerSpeak);
-    }
+    private IWardenService warden;
 
     public void PeaceMute(MuteReason reason)
     {
@@ -90,6 +61,54 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
         prisonerTimer = parent.AddTimer(duration, unmutePrisoners);
     }
 
+    public void UnPeaceMute()
+    {
+        if (guardTimer != null)
+            unmuteGuards();
+
+        if (prisonerTimer != null)
+            unmutePrisoners();
+    }
+
+    public bool IsPeaceEnabled()
+    {
+        return DateTime.Now < peaceEnd;
+    }
+
+    public DateTime GetLastPeace()
+    {
+        return lastPeace;
+    }
+
+    public void Start(BasePlugin parent)
+    {
+        this.parent = parent;
+
+        messages = provider.GetRequiredService<IPeaceMessages>();
+        warden = provider.GetRequiredService<IWardenService>();
+
+        parent.RegisterListener<Listeners.OnClientVoice>(OnPlayerSpeak);
+    }
+
+    public void Dispose()
+    {
+        parent.RemoveListener(OnPlayerSpeak);
+    }
+
+    [GameEventHandler]
+    public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
+    {
+        UnPeaceMute();
+        return HookResult.Continue;
+    }
+
+    [GameEventHandler]
+    public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
+    {
+        UnPeaceMute();
+        return HookResult.Continue;
+    }
+
     private void unmuteGuards()
     {
         foreach (var player in Utilities.GetPlayers()
@@ -110,15 +129,6 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
 
         messages.UNMUTED_PRISONERS.ToAllChat();
         prisonerTimer = null;
-    }
-
-    public void UnPeaceMute()
-    {
-        if (guardTimer != null)
-            unmuteGuards();
-
-        if (prisonerTimer != null)
-            unmutePrisoners();
     }
 
     private int GetPeaceDuration(MuteReason reason)
@@ -148,16 +158,6 @@ public class MuteSystem(IServiceProvider provider) : IPluginBehavior, IMuteServi
     private void unmute(CCSPlayerController player)
     {
         player.VoiceFlags &= ~VoiceFlags.Muted;
-    }
-
-    public bool IsPeaceEnabled()
-    {
-        return DateTime.Now < peaceEnd;
-    }
-
-    public DateTime GetLastPeace()
-    {
-        return lastPeace;
     }
 
     private void OnPlayerSpeak(int playerSlot)

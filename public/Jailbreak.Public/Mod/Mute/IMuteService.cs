@@ -1,6 +1,4 @@
-﻿using CounterStrikeSharp.API.Core;
-
-namespace Jailbreak.Public.Mod.Mute;
+﻿namespace Jailbreak.Public.Mod.Mute;
 
 public interface IMuteService
 {

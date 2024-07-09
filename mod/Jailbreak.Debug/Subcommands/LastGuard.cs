@@ -3,9 +3,6 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastGuard;
-using Jailbreak.Public.Mod.Rebel;
-using Jailbreak.Public.Mod.Warden;
-using Jailbreak.Rebel;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Debug.Subcommands;

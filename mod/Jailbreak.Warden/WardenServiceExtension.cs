@@ -6,7 +6,6 @@ using Jailbreak.Warden.Markers;
 using Jailbreak.Warden.Paint;
 using Jailbreak.Warden.Selection;
 using Jailbreak.Warden.SpecialTreatment;
-
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Warden;

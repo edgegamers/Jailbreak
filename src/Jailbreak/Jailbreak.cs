@@ -1,7 +1,6 @@
 ﻿using System.Collections.Immutable;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Capabilities;
-
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Utils;
@@ -15,13 +14,12 @@ namespace Jailbreak;
 /// </summary>
 public class Jailbreak : BasePlugin
 {
-    private IReadOnlyList<IPluginBehavior>? _extensions;
-
     private readonly IServiceProvider _provider;
-    private IServiceScope? _scope = null;
+    private IReadOnlyList<IPluginBehavior>? _extensions;
+    private IServiceScope? _scope;
 
     /// <summary>
-    /// The Jailbreak plugin.
+    ///     The Jailbreak plugin.
     /// </summary>
     /// <param name="provider"></param>
     public Jailbreak(IServiceProvider provider)
@@ -41,14 +39,14 @@ public class Jailbreak : BasePlugin
     /// <inheritdoc />
     public override void Load(bool hotReload)
     {
-        RegisterListener<Listeners.OnServerPrecacheResources>((manifest) =>
+        RegisterListener<Listeners.OnServerPrecacheResources>(manifest =>
         {
             manifest.AddResource("particles/explosions_fx/explosion_c4_500.vpcf");
             manifest.AddResource("soundevents/soundevents_jb.vsndevts");
             manifest.AddResource("sounds/explosion.vsnd");
             manifest.AddResource("sounds/jihad.vsnd");
         });
-        
+
         //  Load Managers
         FreezeManager.CreateInstance(this);
 
@@ -74,10 +72,11 @@ public class Jailbreak : BasePlugin
         //	Expose the scope to other plugins
         Capabilities.RegisterPluginCapability(API.Provider, () =>
         {
-	        if (this._scope == null)
-		        throw new InvalidOperationException("Jailbreak does not have a running scope! Is the jailbreak plugin loaded?");
+            if (_scope == null)
+                throw new InvalidOperationException(
+                    "Jailbreak does not have a running scope! Is the jailbreak plugin loaded?");
 
-	        return this._scope.ServiceProvider;
+            return _scope.ServiceProvider;
         });
 
         base.Load(hotReload);

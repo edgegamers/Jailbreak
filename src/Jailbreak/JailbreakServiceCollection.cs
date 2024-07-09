@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API.Core;
 using Jailbreak.Config;
 using Jailbreak.Debug;
 using Jailbreak.English.Generic;
@@ -43,20 +41,20 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak>
         serviceCollection.AddJailbreakLastRequest();
         serviceCollection.AddJailbreakLastGuard();
 
-		//	Add in english localization
-		serviceCollection.AddLanguage<Formatting.Languages.English>(config =>
-		{
-			config.WithGenericCommand<GenericCommandNotifications>();
-			config.WithWarden<WardenNotifications>();
-			config.WithRebel<RebelNotifications>();
-			config.WithLogging<LogMessages>();
-   			config.WithRollCommand<RollCommandNotifications>();
-   			config.WithJihadC4<JihadC4Notifications>();
-   			config.WithLastRequest<LastRequestMessages>();
-			config.WithSpecialTreatment<SpecialTreatmentNotifications>();
-			config.WithMute<PeaceMessages>();
-			config.WithRaceLR<RaceLRMessages>();
-			config.WithLastGuard<LastGuardNotifications>();	
-		});
-	}
+        //	Add in english localization
+        serviceCollection.AddLanguage<Formatting.Languages.English>(config =>
+        {
+            config.WithGenericCommand<GenericCommandNotifications>();
+            config.WithWarden<WardenNotifications>();
+            config.WithRebel<RebelNotifications>();
+            config.WithLogging<LogMessages>();
+            config.WithRollCommand<RollCommandNotifications>();
+            config.WithJihadC4<JihadC4Notifications>();
+            config.WithLastRequest<LastRequestMessages>();
+            config.WithSpecialTreatment<SpecialTreatmentNotifications>();
+            config.WithMute<PeaceMessages>();
+            config.WithRaceLR<RaceLRMessages>();
+            config.WithLastGuard<LastGuardNotifications>();
+        });
+    }
 }

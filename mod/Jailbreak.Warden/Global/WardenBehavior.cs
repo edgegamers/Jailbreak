@@ -2,7 +2,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
-using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
@@ -17,7 +16,7 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 namespace Jailbreak.Warden.Global;
 
 // By making it a struct we ensure values from the CCSPlayerPawn are passed by VALUE.
-struct PreWardenStats(int armorValue, int health, int maxHealth, bool hadHealthshot, bool hadHelmetArmor)
+internal struct PreWardenStats(int armorValue, int health, int maxHealth, bool hadHealthshot, bool hadHelmetArmor)
 {
     public int armorValue = armorValue;
     public int health = health;
@@ -36,13 +35,11 @@ public class WardenBehavior(
     IMuteService mute)
     : IPluginBehavior, IWardenService
 {
-    private ISet<CCSPlayerController> _bluePrisoners = new HashSet<CCSPlayerController>();
+    private readonly ISet<CCSPlayerController> _bluePrisoners = new HashSet<CCSPlayerController>();
     private BasePlugin _parent;
+    private PreWardenStats? _preWardenStats;
     private Timer? _unblueTimer;
-    private bool firstWarden = false;
-    private PreWardenStats? _preWardenStats = null;
-    private bool _hasWarden;
-    private CCSPlayerController? _warden;
+    private bool firstWarden;
 
     public void Start(BasePlugin parent)
     {
@@ -50,18 +47,18 @@ public class WardenBehavior(
     }
 
     /// <summary>
-    /// Get the current warden, if there is one.
+    ///     Get the current warden, if there is one.
     /// </summary>
-    public CCSPlayerController? Warden => _warden;
+    public CCSPlayerController? Warden { get; private set; }
 
     /// <summary>
-    /// Whether or not a warden is currently assigned
+    ///     Whether or not a warden is currently assigned
     /// </summary>
-    public bool HasWarden => _hasWarden;
+    public bool HasWarden { get; private set; }
 
     public bool TrySetWarden(CCSPlayerController controller)
     {
-        if (_hasWarden)
+        if (HasWarden)
             return false;
 
         //	Verify player is a CT
@@ -72,56 +69,51 @@ public class WardenBehavior(
 
         mute.UnPeaceMute();
 
-        _hasWarden = true;
-        _warden = controller;
+        HasWarden = true;
+        Warden = controller;
 
 
-        if (_warden.Pawn.Value != null)
+        if (Warden.Pawn.Value != null)
         {
-            _warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
-            _warden.Pawn.Value.Render = Color.FromArgb(254, 0, 0, 255);
-            Utilities.SetStateChanged(_warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
+            Warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
+            Warden.Pawn.Value.Render = Color.FromArgb(254, 0, 0, 255);
+            Utilities.SetStateChanged(Warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
         }
 
-        notifications.NEW_WARDEN(_warden)
+        notifications.NEW_WARDEN(Warden)
             .ToAllChat()
             .ToAllCenter();
 
-        _warden.PlayerName = "[WARDEN] " + _warden.PlayerName;
+        Warden.PlayerName = "[WARDEN] " + Warden.PlayerName;
 
         foreach (var player in Utilities.GetPlayers().Where(player => player.IsReal()))
-        {
             player.ExecuteClientCommand(
                 $"play sounds/{config.WardenNewSoundName}");
-        }
 
-        logs.Append(logs.Player(_warden), "is now the warden.");
+        logs.Append(logs.Player(Warden), "is now the warden.");
 
         _unblueTimer = _parent.AddTimer(3, UnmarkPrisonersBlue);
         mute.PeaceMute(firstWarden ? MuteReason.INITIAL_WARDEN : MuteReason.WARDEN_TAKEN);
 
         // Always store the stats of the warden b4 they became warden, in case we need to restore them later.
-        var wardenPawn = _warden.PlayerPawn.Value;
-        if (wardenPawn == null)
-        {
-            return false;
-        }
+        var wardenPawn = Warden.PlayerPawn.Value;
+        if (wardenPawn == null) return false;
 
         if (firstWarden)
         {
             firstWarden = false;
 
-            var hasHealthshot = playerHasHealthshot(_warden);
-            var hasHelmet = playerHasHelmetArmor(_warden);
+            var hasHealthshot = playerHasHealthshot(Warden);
+            var hasHelmet = playerHasHelmetArmor(Warden);
             _preWardenStats = new PreWardenStats(wardenPawn.ArmorValue, wardenPawn.Health, wardenPawn.MaxHealth,
                 hasHealthshot, hasHelmet);
 
             if (!hasHelmet)
-                _warden.GiveNamedItem("item_assaultsuit");
+                Warden.GiveNamedItem("item_assaultsuit");
 
             SetWardenStats(wardenPawn, 125, 125, 100);
             if (!hasHealthshot)
-                _warden.GiveNamedItem("weapon_healthshot");
+                Warden.GiveNamedItem("weapon_healthshot");
         }
         else
         {
@@ -133,27 +125,24 @@ public class WardenBehavior(
 
     public bool TryRemoveWarden(bool isPass = false)
     {
-        if (!_hasWarden)
+        if (!HasWarden)
             return false;
 
         mute.UnPeaceMute();
 
-        _hasWarden = false;
+        HasWarden = false;
 
-        if (_warden != null && _warden.Pawn.Value != null)
+        if (Warden != null && Warden.Pawn.Value != null)
         {
-            _warden.PlayerName = _warden.PlayerName.Replace("[WARDEN] ", "");
-            _warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
-            _warden.Pawn.Value.Render = Color.FromArgb(254, 255, 255, 255);
-            Utilities.SetStateChanged(_warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
-            logs.Append(logs.Player(_warden), "is no longer the warden.");
+            Warden.PlayerName = Warden.PlayerName.Replace("[WARDEN] ", "");
+            Warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
+            Warden.Pawn.Value.Render = Color.FromArgb(254, 255, 255, 255);
+            Utilities.SetStateChanged(Warden.Pawn.Value, "CBaseModelEntity", "m_clrRender");
+            logs.Append(logs.Player(Warden), "is no longer the warden.");
         }
 
-        CCSPlayerPawn? wardenPawn = _warden!.PlayerPawn.Value;
-        if (wardenPawn == null)
-        {
-            return false;
-        }
+        var wardenPawn = Warden!.PlayerPawn.Value;
+        if (wardenPawn == null) return false;
 
         // if isPass we restore their old health values or their current health, whichever is less.
         if (isPass && _preWardenStats != null)
@@ -166,26 +155,17 @@ public class WardenBehavior(
             );
 
             /* This code makes sure people can't abuse the first warden's buff by removing it if they pass. */
-            CCSPlayer_ItemServices? itemServices = itemServicesOrNull(_warden);
-            if (itemServices == null)
-            {
-                return false;
-            }
+            var itemServices = itemServicesOrNull(Warden);
+            if (itemServices == null) return false;
 
-            if (!_preWardenStats.Value.hadHelmetArmor)
-            {
-                itemServices.HasHelmet = false;
-            }
+            if (!_preWardenStats.Value.hadHelmetArmor) itemServices.HasHelmet = false;
 
             Utilities.SetStateChanged(wardenPawn, "CBasePlayerPawn", "m_pItemServices");
 
-            if (!_preWardenStats.Value.hadHealthshot)
-            {
-                playerHasHealthshot(_warden, true);
-            }
+            if (!_preWardenStats.Value.hadHealthshot) playerHasHealthshot(Warden, true);
         }
 
-        _warden = null;
+        Warden = null;
         return true;
     }
 
@@ -214,7 +194,7 @@ public class WardenBehavior(
 
     private void ProcessWardenDeath()
     {
-        if (!this.TryRemoveWarden())
+        if (!TryRemoveWarden())
             logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
         //	Warden died!
@@ -257,7 +237,7 @@ public class WardenBehavior(
 
     private void MarkPrisonersBlue()
     {
-        foreach (CCSPlayerController player in Utilities.GetPlayers())
+        foreach (var player in Utilities.GetPlayers())
         {
             if (!player.IsReal() || player.Team != CsTeam.Terrorist)
                 continue;
@@ -290,7 +270,7 @@ public class WardenBehavior(
         var tCount = Utilities.GetPlayers().Count(p => p.Team == CsTeam.Terrorist);
 
         // Casting to a float ensures if we're diving by zero, we get infinity instead of an error.
-        var ratio = ((float)tCount / config.TerroristRatio) - ctCount;
+        var ratio = (float)tCount / config.TerroristRatio - ctCount;
 
         return ratio switch
         {
@@ -302,8 +282,8 @@ public class WardenBehavior(
 
     private CCSPlayer_ItemServices? itemServicesOrNull(CCSPlayerController player)
     {
-        CPlayer_ItemServices? itemServices = player.PlayerPawn.Value?.ItemServices;
-        return (itemServices != null) ? new CCSPlayer_ItemServices(itemServices.Handle) : null;
+        var itemServices = player.PlayerPawn.Value?.ItemServices;
+        return itemServices != null ? new CCSPlayer_ItemServices(itemServices.Handle) : null;
     }
 
     private void SetWardenStats(CCSPlayerPawn wardenPawn, int armor = -1, int health = -1, int maxHealth = -1)
@@ -329,27 +309,21 @@ public class WardenBehavior(
 
     private bool playerHasHelmetArmor(CCSPlayerController player)
     {
-        CCSPlayer_ItemServices? itemServices = itemServicesOrNull(player);
-        return (itemServices != null) ? itemServices.HasHelmet : false;
+        var itemServices = itemServicesOrNull(player);
+        return itemServices != null ? itemServices.HasHelmet : false;
     }
 
     private bool playerHasHealthshot(CCSPlayerController player, bool removeIfHas = false)
     {
-        CCSPlayerPawn? playerPawn = player.PlayerPawn.Value;
-        if (playerPawn == null || playerPawn.WeaponServices == null)
-        {
-            return false;
-        }
+        var playerPawn = player.PlayerPawn.Value;
+        if (playerPawn == null || playerPawn.WeaponServices == null) return false;
 
         foreach (var weapon in playerPawn.WeaponServices.MyWeapons)
         {
             if (weapon.Value == null) continue;
             if (weapon.Value.DesignerName.Equals("weapon_healthshot"))
             {
-                if (removeIfHas)
-                {
-                    weapon.Value.Remove();
-                }
+                if (removeIfHas) weapon.Value.Remove();
 
                 return true;
             }
@@ -361,7 +335,7 @@ public class WardenBehavior(
     [GameEventHandler]
     public HookResult OnRoundEnd(EventRoundEnd ev, GameEventInfo info)
     {
-        this.TryRemoveWarden();
+        TryRemoveWarden();
         mute.UnPeaceMute();
         return HookResult.Continue;
     }
@@ -372,7 +346,7 @@ public class WardenBehavior(
         firstWarden = true;
         _preWardenStats = null;
 
-        int ctArmorValue = getBalance() switch
+        var ctArmorValue = getBalance() switch
         {
             0 => 50, // Balanced teams
             1 => 100, // Ts outnumber CTs
@@ -384,7 +358,7 @@ public class WardenBehavior(
         foreach (var guardController in Utilities.GetPlayers()
                      .Where(p => p.IsReal() && p is { Team: CsTeam.CounterTerrorist, PawnIsAlive: true }))
         {
-            CCSPlayerPawn? guardPawn = guardController.PlayerPawn.Value;
+            var guardPawn = guardController.PlayerPawn.Value;
             if (guardPawn == null)
                 continue;
 
@@ -401,7 +375,7 @@ public class WardenBehavior(
         if (!((IWardenService)this).IsWarden(ev.Userid))
             return HookResult.Continue;
 
-        if (!this.TryRemoveWarden())
+        if (!TryRemoveWarden())
             logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
 

@@ -14,9 +14,9 @@ namespace Jailbreak.Debug.Subcommands;
 public class LastRequest : AbstractCommand
 {
     private readonly ILastRequestManager _manager;
-    private readonly LastRequestPlayerSelector _playerSelector;
     private readonly LastRequestMenuSelector _menuSelector;
     private readonly ILastRequestMessages _messages;
+    private readonly LastRequestPlayerSelector _playerSelector;
 
     private readonly BasePlugin _plugin;
 
@@ -26,7 +26,7 @@ public class LastRequest : AbstractCommand
         _manager = services.GetRequiredService<ILastRequestManager>();
         _playerSelector = new LastRequestPlayerSelector(_manager, true);
         _menuSelector = new LastRequestMenuSelector(services.GetRequiredService<ILastRequestFactory>(),
-            (type) => "css_debug lastrequest " + type);
+            type => "css_debug lastrequest " + type);
         _messages = services.GetRequiredService<ILastRequestMessages>();
     }
 
@@ -43,7 +43,6 @@ public class LastRequest : AbstractCommand
         }
 
         if (info.ArgCount == 2)
-        {
             switch (info.GetArg(1).ToLower())
             {
                 case "enable":
@@ -55,7 +54,6 @@ public class LastRequest : AbstractCommand
                     info.ReplyToCommand("Last Request disabled.");
                     return;
             }
-        }
 
         var type = LRTypeExtensions.FromString(info.GetArg(1));
         if (type is null)
@@ -67,7 +65,7 @@ public class LastRequest : AbstractCommand
         if (info.ArgCount == 2)
         {
             MenuManager.OpenCenterHtmlMenu(_plugin, executor,
-                _playerSelector.CreateMenu(executor, (str) => "css_debug lastrequest " + type + " #" + str));
+                _playerSelector.CreateMenu(executor, str => "css_debug lastrequest " + type + " #" + str));
             return;
         }
 

@@ -1,15 +1,12 @@
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Utils;
-using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
 /// <summary>
-/// Represents a Last Request that involves direct PvP combat.
-///
-/// Automatically strips weapons, counts down, and calls Execute after 4 seconds.
+///     Represents a Last Request that involves direct PvP combat.
+///     Automatically strips weapons, counts down, and calls Execute after 4 seconds.
 /// </summary>
 public abstract class WeaponizedRequest(
     BasePlugin plugin,

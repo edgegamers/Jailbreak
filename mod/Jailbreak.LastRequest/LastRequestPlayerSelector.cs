@@ -4,14 +4,13 @@ using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
-using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest;
 
 public class LastRequestPlayerSelector
 {
-    private ILastRequestManager _lrManager;
-    private bool debug;
+    private readonly ILastRequestManager _lrManager;
+    private readonly bool debug;
 
     public LastRequestPlayerSelector(ILastRequestManager manager, bool debug = false)
     {
@@ -21,13 +20,13 @@ public class LastRequestPlayerSelector
 
     public CenterHtmlMenu CreateMenu(CCSPlayerController player, Func<string?, string> command)
     {
-        CenterHtmlMenu menu = new CenterHtmlMenu(command.Invoke("[Player]"));
+        var menu = new CenterHtmlMenu(command.Invoke("[Player]"));
 
         foreach (var target in Utilities.GetPlayers())
         {
             if (!target.IsReal())
                 continue;
-            if (!target.PawnIsAlive || target.Team != CsTeam.CounterTerrorist && !debug)
+            if (!target.PawnIsAlive || (target.Team != CsTeam.CounterTerrorist && !debug))
                 continue;
             menu.AddMenuOption(target.PlayerName,
                 (selector, _) =>
@@ -39,8 +38,11 @@ public class LastRequestPlayerSelector
         return menu;
     }
 
-    public bool WouldHavePlayers() => Utilities.GetPlayers()
-        .Any(p => p.IsReal() && p is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist });
+    public bool WouldHavePlayers()
+    {
+        return Utilities.GetPlayers()
+            .Any(p => p.IsReal() && p is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist });
+    }
 
     private void OnSelect(CCSPlayerController player, Func<string?, string> command, string? value)
     {

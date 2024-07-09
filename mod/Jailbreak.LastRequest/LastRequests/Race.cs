@@ -1,6 +1,4 @@
 ﻿using System.Drawing;
-using System.Xml.Schema;
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -21,13 +19,13 @@ public class Race(
     CCSPlayerController guard,
     IRaceLRMessages messages) : TeleportingRequest(plugin, manager, prisoner, guard)
 {
-    public override LRType type => LRType.Race;
+    private DateTime raceStart;
+
+    private Timer? raceTimer;
 
     private BeamCircle? start, end;
     private Vector startLocation, endLocation;
-
-    private Timer? raceTimer;
-    private DateTime raceStart;
+    public override LRType type => LRType.Race;
 
     public override void Setup()
     {
@@ -103,10 +101,7 @@ public class Race(
         }
 
         var prisonerDist = prisoner.Pawn.Value.AbsOrigin.Clone().DistanceSquared(endLocation);
-        if (prisonerDist < requiredDistanceSqured)
-        {
-            manager.EndLastRequest(this, LRResult.PrisonerWin);
-        }
+        if (prisonerDist < requiredDistanceSqured) manager.EndLastRequest(this, LRResult.PrisonerWin);
     }
 
     // https://www.desmos.com/calculator/e1qwgpmtmz

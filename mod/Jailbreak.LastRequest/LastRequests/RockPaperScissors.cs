@@ -8,7 +8,7 @@ namespace Jailbreak.LastRequest.LastRequests;
 
 public class RockPaperScissors : AbstractLastRequest
 {
-    private ChatMenu _chatMenu;
+    private readonly ChatMenu _chatMenu;
     private int _prisonerChoice = -1, _guardChoice = -1;
 
     public RockPaperScissors(BasePlugin plugin, ILastRequestManager manager, CCSPlayerController prisoner,
@@ -18,6 +18,8 @@ public class RockPaperScissors : AbstractLastRequest
         foreach (var option in new[] { "Rock", "Paper", "Scissors" })
             _chatMenu.AddMenuOption(option, OnSelect);
     }
+
+    public override LRType type => LRType.RockPaperScissors;
 
     public override void Setup()
     {
@@ -33,7 +35,7 @@ public class RockPaperScissors : AbstractLastRequest
             return;
         MenuManager.CloseActiveMenu(player);
 
-        int choice = Array.IndexOf(new[] { "Rock", "Paper", "Scissors" }, option.Text);
+        var choice = Array.IndexOf(new[] { "Rock", "Paper", "Scissors" }, option.Text);
 
         if (player.Slot == prisoner.Slot)
             _prisonerChoice = choice;
@@ -57,14 +59,12 @@ public class RockPaperScissors : AbstractLastRequest
         if (state != LRState.Active)
             return;
 
-        if (_prisonerChoice == 0 && _guardChoice == 2 || _prisonerChoice == 1 && _guardChoice == 0 ||
-            _prisonerChoice == 2 && _guardChoice == 1)
+        if ((_prisonerChoice == 0 && _guardChoice == 2) || (_prisonerChoice == 1 && _guardChoice == 0) ||
+            (_prisonerChoice == 2 && _guardChoice == 1))
             manager.EndLastRequest(this, LRResult.PrisonerWin);
         else
             manager.EndLastRequest(this, LRResult.GuardWin);
     }
-
-    public override LRType type => LRType.RockPaperScissors;
 
     public override void Execute()
     {
@@ -80,34 +80,23 @@ public class RockPaperScissors : AbstractLastRequest
         if (state != LRState.Active)
             return;
         if (_prisonerChoice != -1)
-        {
             manager.EndLastRequest(this, LRResult.PrisonerWin);
-        }
         else if (_guardChoice != -1)
-        {
             manager.EndLastRequest(this, LRResult.GuardWin);
-        }
         else
-        {
             manager.EndLastRequest(this, LRResult.TimedOut);
-        }
     }
 
     public override void OnEnd(LRResult result)
     {
         state = LRState.Completed;
         if (result == LRResult.GuardWin)
-        {
             prisoner.Pawn.Value!.CommitSuicide(false, true);
-        }
-        else if (result == LRResult.PrisonerWin)
-        {
-            guard.Pawn.Value!.CommitSuicide(false, true);
-        }
+        else if (result == LRResult.PrisonerWin) guard.Pawn.Value!.CommitSuicide(false, true);
 
         PrintToParticipants($"Prisoner chose {GetChoice(_prisonerChoice)}, Guard chose {GetChoice(_guardChoice)}");
     }
-    
+
     private string GetChoice(int choice)
     {
         return choice switch

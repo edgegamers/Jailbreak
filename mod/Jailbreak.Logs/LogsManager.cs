@@ -1,8 +1,5 @@
-﻿using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
-using CounterStrikeSharp.API.Modules.Utils;
-
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Extensions;
@@ -11,64 +8,20 @@ using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Logs;
-using Jailbreak.Public.Mod.Rebel;
-using Jailbreak.Public.Mod.Warden;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Logs;
 
 public class LogsManager : IPluginBehavior, ILogService, IRichLogService
 {
     private readonly List<IView> _logMessages = new();
+    private readonly ILogMessages _messages;
 
-    private IRichPlayerTag _richPlayerTag;
-    private ILogMessages _messages;
+    private readonly IRichPlayerTag _richPlayerTag;
 
     public LogsManager(IServiceProvider serviceProvider, ILogMessages messages, IRichPlayerTag richPlayerTag)
     {
         _messages = messages;
         _richPlayerTag = richPlayerTag;
-    }
-
-    [GameEventHandler]
-    public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
-    {
-        _messages.BEGIN_JAILBREAK_LOGS
-            .ToServerConsole()
-            .ToAllConsole();
-
-        //  By default, print all logs to player consoles at the end of the round.
-        foreach (var log in _logMessages)
-            log.ToServerConsole()
-                .ToAllConsole();
-
-        _messages.END_JAILBREAK_LOGS
-            .ToServerConsole()
-            .ToAllConsole();
-
-        return HookResult.Continue;
-    }
-
-    [GameEventHandler]
-    public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
-    {
-        Clear();
-        return HookResult.Continue;
-    }
-
-    public void Append(params FormatObject[] objects)
-    {
-        _logMessages.Add(_messages.CREATE_LOG(objects));
-    }
-
-    public FormatObject Player(CCSPlayerController playerController)
-    {
-        return new TreeFormatObject()
-        {
-            playerController,
-            $"[{playerController.UserId}]",
-            _richPlayerTag.Rich(playerController)
-        };
     }
 
     public void Append(string message)
@@ -107,5 +60,46 @@ public class LogsManager : IPluginBehavior, ILogService, IRichLogService
             log.ToPlayerConsole(player);
         _messages.END_JAILBREAK_LOGS
             .ToPlayerConsole(player);
+    }
+
+    public void Append(params FormatObject[] objects)
+    {
+        _logMessages.Add(_messages.CREATE_LOG(objects));
+    }
+
+    public FormatObject Player(CCSPlayerController playerController)
+    {
+        return new TreeFormatObject
+        {
+            playerController,
+            $"[{playerController.UserId}]",
+            _richPlayerTag.Rich(playerController)
+        };
+    }
+
+    [GameEventHandler]
+    public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
+    {
+        _messages.BEGIN_JAILBREAK_LOGS
+            .ToServerConsole()
+            .ToAllConsole();
+
+        //  By default, print all logs to player consoles at the end of the round.
+        foreach (var log in _logMessages)
+            log.ToServerConsole()
+                .ToAllConsole();
+
+        _messages.END_JAILBREAK_LOGS
+            .ToServerConsole()
+            .ToAllConsole();
+
+        return HookResult.Continue;
+    }
+
+    [GameEventHandler]
+    public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
+    {
+        Clear();
+        return HookResult.Continue;
     }
 }

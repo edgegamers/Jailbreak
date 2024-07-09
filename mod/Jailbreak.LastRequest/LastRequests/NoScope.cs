@@ -57,7 +57,7 @@ public class NoScope(
         PrintToParticipants("Go!");
         prisoner.GiveNamedItem("weapon_ssg08");
         guard.GiveNamedItem("weapon_ssg08");
-        this.state = LRState.Active;
+        state = LRState.Active;
 
         plugin.AddTimer(30, () =>
         {
@@ -76,14 +76,14 @@ public class NoScope(
 
     public override void OnEnd(LRResult result)
     {
-        this.state = LRState.Completed;
+        state = LRState.Completed;
         plugin.RemoveListener("OnTick", OnTick);
-        
-        if(result != LRResult.GuardWin && result != LRResult.PrisonerWin)
+
+        if (result != LRResult.GuardWin && result != LRResult.PrisonerWin)
             return;
 
         var winner = result == LRResult.GuardWin ? guard : prisoner;
-        
+
         winner.RemoveWeapons();
         winner.GiveNamedItem("weapon_knife");
         winner.GiveNamedItem("weapon_ak47");

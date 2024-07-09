@@ -87,8 +87,7 @@ public class WardenNotifications : IWardenNotifications, ILanguage<Formatting.La
     {
         if (player is not null)
             return new SimpleView { PREFIX, "The warden is", player, "." };
-        else
-            return new SimpleView { PREFIX, "There is no warden." };
+        return new SimpleView { PREFIX, "There is no warden." };
     }
 
     public IView FIRE_COMMAND_SUCCESS(CCSPlayerController player)

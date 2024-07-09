@@ -1,9 +1,9 @@
 ﻿using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
-using Jailbreak.Formatting.Logistics;
-using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Core;
+using Jailbreak.Formatting.Logistics;
 using Jailbreak.Formatting.Objects;
+using Jailbreak.Formatting.Views;
 
 namespace Jailbreak.English.LastGuard;
 
@@ -20,7 +20,7 @@ public class LastGuardNotifications : ILastGuardNotifications, ILanguage<Formatt
 
     public IView LG_STARTED(int ctHealth, int tHealth)
     {
-        return new SimpleView()
+        return new SimpleView
         {
             PREFIX,
             $"{ChatColors.Red}Last Guard has been activated! Last guard has", ctHealth,
