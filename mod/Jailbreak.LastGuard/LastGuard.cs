@@ -33,11 +33,11 @@ public class LastGuard(LastGuardConfig config, ILastGuardNotifications notificat
     private void checkLastGuard(CCSPlayerController? poi)
     {
         if (poi == null) return;
-        if (poi.Team != CsTeam.CounterTerrorist) ;
+        if (poi.Team != CsTeam.CounterTerrorist) return;
         var aliveCts = Utilities.GetPlayers()
             .Count(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist }) - 1;
 
-        if (aliveCts != 1 || lrManager.IsLREnabled) ;
+        if (aliveCts != 1 || lrManager.IsLREnabled) return;
         var lastGuard = Utilities.GetPlayers().First(plr =>
             plr.IsReal() && plr != poi && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist });
 
