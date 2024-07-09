@@ -6,6 +6,7 @@ using Jailbreak.Formatting.Views;
 
 namespace Jailbreak.English.LastRequest;
 
+// ReSharper disable ClassNeverInstantiated.Global
 public class RaceLRMessages : IRaceLRMessages,
   ILanguage<Formatting.Languages.English> {
   public IView EndRaceInstruction

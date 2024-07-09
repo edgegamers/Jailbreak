@@ -49,6 +49,7 @@ public class ConfigService : IConfigService {
     return config;
   }
 
+  // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Local
   private T fail<T>(bool fail, string message) where T : class, new() {
     //	We would be returning default.
     //	Check if caller wants us to cry and scream instead.

@@ -11,7 +11,7 @@ public class BeamLine(BasePlugin plugin, Vector position, Vector end)
   private Color color = Color.White;
   private float width = 1f;
 
-  public void SetColor(Color color) { this.color = color; }
+  public void SetColor(Color _color) { color = _color; }
 
   public Color GetColor() { return color; }
 
@@ -43,7 +43,7 @@ public class BeamLine(BasePlugin plugin, Vector position, Vector end)
     beam = null;
   }
 
-  public void SetWidth(float width) { this.width = width; }
+  public void SetWidth(float _width) { width = _width; }
 
   public float GetWidth() { return width; }
 }

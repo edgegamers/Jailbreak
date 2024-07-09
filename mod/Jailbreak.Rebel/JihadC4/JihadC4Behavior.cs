@@ -17,6 +17,7 @@ public class JihadC4Behavior(IJihadC4Notifications jihadC4Notifications,
 
   // EmitSound(CBaseEntity* pEnt, const char* sSoundName, int nPitch, float flVolume, float flDelay)
   private readonly MemoryFunctionVoid<CBaseEntity, string, int, float, float>
+    // ReSharper disable once InconsistentNaming
     CBaseEntity_EmitSoundParamsLinux = new(
       "48 B8 ? ? ? ? ? ? ? ? 55 48 89 E5 41 55 41 54 49 89 FC 53 48 89 F3"); // LINUX ONLY.
 

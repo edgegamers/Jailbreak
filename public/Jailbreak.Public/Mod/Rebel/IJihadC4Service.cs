@@ -24,5 +24,6 @@ public interface IJihadC4Service {
   /// </summary>
   void TryGiveC4ToRandomTerrorist();
 
+  // ReSharper disable once InconsistentNaming
   void ClearActiveC4s();
 }
