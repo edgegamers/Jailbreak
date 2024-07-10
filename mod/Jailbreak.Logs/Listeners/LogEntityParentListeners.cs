@@ -43,14 +43,12 @@ public class LogEntityParentListeners
         if (!newParent.IsValid) //a.k.a parent is world
         {
             _logs.Append(_logs.Player(weaponOwner), $"dropped their {weaponEntity.ToFriendlyString}");
+            return;
         }
 
-        if (newParent.IsValid)
-        {
-            var weaponPickerUpper = Utilities.GetEntityFromIndex<CCSPlayerController>((int)(newParent.Index));
-            if (weaponPickerUpper == null) return;
+        var weaponPickerUpper = Utilities.GetEntityFromIndex<CCSPlayerController>((int)(newParent.Index));
+        if (weaponPickerUpper == null) return;
 
-            _logs.Append(_logs.Player(weaponPickerUpper), "picked up", _logs.Player(weaponOwner), $"'s {weaponEntity.ToFriendlyString}");
-        }
+        _logs.Append(_logs.Player(weaponPickerUpper), "picked up", _logs.Player(weaponOwner), $"'s {weaponEntity.ToFriendlyString}");
     }
 }
