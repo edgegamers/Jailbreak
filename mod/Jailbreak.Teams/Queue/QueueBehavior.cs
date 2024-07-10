@@ -23,8 +23,6 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
     private readonly IPlayerState<QueueState> _state;
     private BasePlugin _parent;
 
-    private readonly Dictionary<CCSPlayerController, DateTime> _lastCommandUsage = new();
-
     public QueueBehavior(IPlayerStateFactory factory, IRatioNotifications notifications, ILogger<QueueBehavior> logger)
     {
         _logger = logger;
@@ -40,16 +38,6 @@ public class QueueBehavior : IGuardQueue, IPluginBehavior
 
         if (player.GetTeam() == CsTeam.CounterTerrorist)
             return false;
-
-        if (_lastCommandUsage.TryGetValue(player, out var lastUsage))
-        {
-            var timeNextUsage = lastUsage.AddSeconds(10);
-            if (timeNextUsage > DateTime.Now)
-            {
-                _generics.CommandOnCooldown(timeNextUsage).ToPlayerChat(player);
-                return false;
-            }
-        }
 
         var state = _state.Get(player);
         state.Position = ++_counter;
