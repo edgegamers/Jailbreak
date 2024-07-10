@@ -69,10 +69,9 @@ public class LastGuard(LastGuardConfig config, ILastGuardNotifications notificat
 
         if (guardPlayerPawn == null || !guardPlayerPawn.IsValid) return;
 
-        var guardHealth = guardPlayerPawn.Health;
         var guardCalcHealth = CalculateHealth();
 
-        guardPlayerPawn.Health = guardHealth > guardCalcHealth ? 125 : guardHealth;
+        guardPlayerPawn.Health = guardCalcHealth;
         Utilities.SetStateChanged(guardPlayerPawn, "CBaseEntity", "m_iHealth");
 
         // foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal()))
@@ -83,7 +82,7 @@ public class LastGuard(LastGuardConfig config, ILastGuardNotifications notificat
 
         var prisonerHp = aliveTerrorists.Sum(prisoner => prisoner.PlayerPawn?.Value?.Health ?? 0);
 
-        notifications.LG_STARTED(guardHealth, prisonerHp).ToAllCenter().ToAllChat();
+        notifications.LG_STARTED(guardCalcHealth, prisonerHp).ToAllCenter().ToAllChat();
 
         if (string.IsNullOrEmpty(config.LastGuardWeapon)) return;
 
