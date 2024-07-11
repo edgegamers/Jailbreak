@@ -56,6 +56,7 @@ public class LogEntityParentListeners(IRichLogService logs) : IPluginBehavior {
     if (weaponPickerUpper == weaponOwner)
     {
         logs.Append(weaponPickerUpper, $"picked up their {weaponEntity.ToFriendlyString()}");
+        return;
     }
     logs.Append(weaponPickerUpper, "picked up", logs.Player(weaponOwner), $"{weaponEntity.ToFriendlyString()}");
   }
