@@ -24,19 +24,27 @@ public class LogEntityParentListeners(IRichLogService logs) : IPluginBehavior {
      .RegisterListener<
         CounterStrikeSharp.API.Core.Listeners.OnEntityParentChanged>(
         OnEntityParentChanged);
+
+    _parent
+     .RegisterListener<
+        CounterStrikeSharp.API.Core.Listeners.OnEntityParentChanged>(
+        OnEntityParentChanged);
   }
 
-        parent.RegisterListener<CounterStrikeSharp.API.Core.Listeners.OnEntityParentChanged>(OnEntityParentChanged);
-    }
-    public void OnEntityParentChanged(CEntityInstance affectedEntity, CEntityInstance newParent)
-    {
-        if (!affectedEntity.IsValid || !weaponStrings.Contains(affectedEntity.DesignerName)) return;
+  public void OnEntityParentChanged(CEntityInstance affectedEntity,
+    CEntityInstance newParent) {
+    if (!affectedEntity.IsValid
+      || !WEAPON_STRINGS.Contains(affectedEntity.DesignerName))
+      return;
 
-        var weaponEntity = Utilities.GetEntityFromIndex<CCSWeaponBase>((int)affectedEntity.Index);
-        if (weaponEntity == null || weaponEntity.PrevOwner.Get().OriginalController.Get() == null) return;
+    var weaponEntity =
+      Utilities.GetEntityFromIndex<CCSWeaponBase>((int)affectedEntity.Index);
+    if (weaponEntity == null
+      || weaponEntity.PrevOwner.Get().OriginalController.Get() == null)
+      return;
 
-        var weaponOwner = weaponEntity.PrevOwner.Get().OriginalController.Get();
-        if (weaponOwner == null) return;
+    var weaponOwner = weaponEntity.PrevOwner.Get().OriginalController.Get();
+    if (weaponOwner == null) return;
 
     if (!newParent.IsValid) //a.k.a parent is world
     {
@@ -45,9 +53,12 @@ public class LogEntityParentListeners(IRichLogService logs) : IPluginBehavior {
       return;
     }
 
-        var weaponPickerUpper = Utilities.GetEntityFromIndex<CCSPlayerPawn>((int)newParent.Index).OriginalController.Get();
-        if (weaponPickerUpper == null) return;
+    var weaponPickerUpper = Utilities
+     .GetEntityFromIndex<CCSPlayerPawn>((int)newParent.Index)
+     .OriginalController.Get();
+    if (weaponPickerUpper == null) return;
 
-        _logs.Append(_logs.Player(weaponPickerUpper), "picked up", _logs.Player(weaponOwner), $"'s {weaponEntity.ToFriendlyString()}");
-    }
+    logs.Append(logs.Player(weaponPickerUpper), "picked up",
+      logs.Player(weaponOwner), $"'s {weaponEntity.ToFriendlyString()}");
+  }
 }
