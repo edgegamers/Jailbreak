@@ -1,11 +1,12 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.Logs.Listeners;
 
-public class LogEntityParentListeners
+public class LogEntityParentListeners : IPluginBehavior
 {
     private readonly IRichLogService _logs;
     private BasePlugin parent;
