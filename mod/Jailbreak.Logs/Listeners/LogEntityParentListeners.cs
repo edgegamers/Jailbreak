@@ -44,7 +44,7 @@ public class LogEntityParentListeners(IRichLogService logs) : IPluginBehavior {
     if (!newParent.IsValid) // a.k.a parent is world
     {
       logs.Append(logs.Player(weaponOwner),
-        $"dropped their {weaponEntity.ToFriendlyString}");
+        $"dropped their {weaponEntity.ToFriendlyString()}");
       return;
     }
 
@@ -53,7 +53,11 @@ public class LogEntityParentListeners(IRichLogService logs) : IPluginBehavior {
     ?.OriginalController.Get();
     if (weaponPickerUpper == null) return;
 
-    logs.Append(weaponPickerUpper, "picked up",
-      logs.Player(weaponOwner), $"'s {weaponEntity.ToFriendlyString()}");
+    if (weaponPickerUpper == weaponOwner)
+    {
+        logs.Append(weaponPickerUpper, $"picked up their {weaponEntity.ToFriendlyString()}");
+        return;
+    }
+    logs.Append(weaponPickerUpper, "picked up", logs.Player(weaponOwner), $"{weaponEntity.ToFriendlyString()}");
   }
 }
