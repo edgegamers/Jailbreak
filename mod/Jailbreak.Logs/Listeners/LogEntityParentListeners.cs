@@ -28,12 +28,13 @@ public class LogEntityParentListeners : IPluginBehavior
         parent.RegisterListener<CounterStrikeSharp.API.Core.Listeners.OnEntityParentChanged>(OnEntityParentChanged);
         Server.PrintToChatAll("Debug 1");
     }
-    public void Dispose()
+    /*public void Dispose()
     {
         parent.RemoveListener("OnEntityParentChanged", OnEntityParentChanged);
-    }
+    }*/
     public void OnEntityParentChanged(CEntityInstance affectedEntity, CEntityInstance newParent)
     {
+        Server.PrintToChatAll("Debug 7");
         if (!affectedEntity.IsValid || !weaponStrings.Contains(affectedEntity.DesignerName)) return;
 
         var weaponEntity = Utilities.GetEntityFromIndex<CCSWeaponBase>((int)affectedEntity.Index);

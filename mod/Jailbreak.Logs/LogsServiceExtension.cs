@@ -18,9 +18,10 @@ public static class LogsServiceExtension
 
 	   services.AddPluginBehavior<LogEntityListeners>();
 	   services.AddPluginBehavior<LogDamageListeners>();
+       services.AddPluginBehavior<LogEntityParentListeners>();
 
-	   //	PlayerTagHelper is a lower-level class that avoids dependency loops.
-	   services.AddTransient<IRichPlayerTag, PlayerTagHelper>();
+        //	PlayerTagHelper is a lower-level class that avoids dependency loops.
+       services.AddTransient<IRichPlayerTag, PlayerTagHelper>();
 	   services.AddTransient<IPlayerTag, PlayerTagHelper>();
    }
 }
