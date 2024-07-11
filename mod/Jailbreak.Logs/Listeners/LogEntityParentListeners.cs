@@ -38,8 +38,10 @@ public class LogEntityParentListeners : IPluginBehavior
         var weaponEntity = Utilities.GetEntityFromIndex<CCSWeaponBase>((int)affectedEntity.Index);
         if (weaponEntity == null || weaponEntity.PrevOwner == null) return;
 
-        var weaponOwner = Utilities.GetEntityFromIndex<CCSPlayerController>((int)weaponEntity.PrevOwner.Index); 
+        var weaponOwner = Utilities.GetEntityFromIndex<CCSPlayerController>((int)weaponEntity.PrevOwner.Index);
         if (weaponOwner == null) return;
+        Server.PrintToChatAll($"{weaponOwner.PlayerName}");
+        Server.PrintToChatAll($"{(int)weaponEntity.PrevOwner.Index}");
 
         if (!newParent.IsValid) //a.k.a parent is world
         {
@@ -47,7 +49,7 @@ public class LogEntityParentListeners : IPluginBehavior
             return;
         }
 
-        var weaponPickerUpper = Utilities.GetEntityFromIndex<CCSPlayerController>((int)(newParent.Index));
+        var weaponPickerUpper = Utilities.GetEntityFromIndex<CCSPlayerController>((int)newParent.Index);
         if (weaponPickerUpper == null) return;
 
         _logs.Append(_logs.Player(weaponPickerUpper), "picked up", _logs.Player(weaponOwner), $"'s {weaponEntity.ToFriendlyString}");
