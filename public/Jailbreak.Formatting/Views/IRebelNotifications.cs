@@ -2,7 +2,6 @@
 
 namespace Jailbreak.Formatting.Views;
 
-public interface IRebelNotifications
-{
-    public IView NO_LONGER_REBEL { get; }
+public interface IRebelNotifications {
+  public IView NoLongerRebel { get; }
 }

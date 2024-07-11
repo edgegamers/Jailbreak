@@ -2,18 +2,16 @@
 
 namespace Jailbreak.Public.Mod.Rebel;
 
-public interface IRebelService
-{
-    ISet<CCSPlayerController> GetActiveRebels();
+public interface IRebelService {
+  ISet<CCSPlayerController> GetActiveRebels();
 
-    bool IsRebel(CCSPlayerController player)
-    {
-        return GetRebelTimeLeft(player) > 0;
-    }
+  bool IsRebel(CCSPlayerController player) {
+    return GetRebelTimeLeft(player) > 0;
+  }
 
-    long GetRebelTimeLeft(CCSPlayerController player);
+  long GetRebelTimeLeft(CCSPlayerController player);
 
-    bool MarkRebel(CCSPlayerController player, long time = 30);
+  bool MarkRebel(CCSPlayerController player, long time = 30);
 
-    void UnmarkRebel(CCSPlayerController player);
+  void UnmarkRebel(CCSPlayerController player);
 }

@@ -7,48 +7,50 @@ using Jailbreak.Formatting.Views;
 
 namespace Jailbreak.English.Generic;
 
-public class GenericCommandNotifications : IGenericCommandNotifications, ILanguage<Formatting.Languages.English>
-{
-    public static FormatObject PREFIX =
-        new HiddenFormatObject($" {ChatColors.DarkRed}[{ChatColors.LightRed}JB{ChatColors.DarkRed}]")
-        {
-            //	Hide in panorama and center text
-            Plain = false,
-            Panorama = false,
-            Chat = true
-        };
+public class GenericCommandNotifications : IGenericCommandNotifications,
+  ILanguage<Formatting.Languages.English> {
+  private static readonly FormatObject PREFIX =
+    new HiddenFormatObject(
+      $" {ChatColors.DarkRed}[{ChatColors.LightRed}JB{ChatColors.DarkRed}]") {
+      //	Hide in panorama and center text
+      Plain = false, Panorama = false, Chat = true
+    };
 
-    public IView PlayerNotFound(string query)
-    {
-        return new SimpleView
-            { PREFIX, $"{ChatColors.Red}Player '{ChatColors.LightBlue}{query}{ChatColors.Red}' not found." };
-    }
+  public IView PlayerNotFound(string query) {
+    return new SimpleView {
+      PREFIX,
+      $"{ChatColors.Red}Player '{ChatColors.LightBlue}{query}{ChatColors.Red}' not found."
+    };
+  }
 
-    public IView PlayerFoundMultiple(string query)
-    {
-        return new SimpleView
-        {
-            PREFIX,
-            $"{ChatColors.Red}Multiple players found for '{ChatColors.LightBlue}{query}{ChatColors.Red}'."
-        };
-    }
+  public IView PlayerFoundMultiple(string query) {
+    return new SimpleView {
+      PREFIX,
+      $"{ChatColors.Red}Multiple players found for '{ChatColors.LightBlue}{query}{ChatColors.Red}'."
+    };
+  }
 
-    public IView CommandOnCooldown(DateTime cooldownEndsAt)
-    {
-        var seconds = (int)(cooldownEndsAt - DateTime.Now).TotalSeconds;
-        return new SimpleView
-        {
-            PREFIX, $"{ChatColors.Grey}Command is on cooldown for", seconds,
-            $"{ChatColors.Grey}seconds!"
-        };
-    }
+  public IView CommandOnCooldown(DateTime cooldownEndsAt) {
+    var seconds = (int)(cooldownEndsAt - DateTime.Now).TotalSeconds;
+    return new SimpleView {
+      PREFIX,
+      $"{ChatColors.Grey}Command is on cooldown for",
+      seconds,
+      $"{ChatColors.Grey}seconds!"
+    };
+  }
 
-    public IView InvalidParameter(string parameter, string expected)
-    {
-        return new SimpleView
-        {
-            PREFIX,
-            $"{ChatColors.Red}Invalid parameter '{ChatColors.LightBlue}{parameter}{ChatColors.Red}', expected a(n) {ChatColors.White}{expected}{ChatColors.Red}."
-        };
-    }
+  public IView InvalidParameter(string parameter, string expected) {
+    return new SimpleView {
+      PREFIX,
+      $"{ChatColors.Red}Invalid parameter '{ChatColors.LightBlue}{parameter}{ChatColors.Red}', expected a(n) {ChatColors.White}{expected}{ChatColors.Red}."
+    };
+  }
+
+  public IView NoPermissionMessage(string permission) {
+    return new SimpleView {
+      PREFIX,
+      $"{ChatColors.Red}This command requires the {ChatColors.White}{permission}{ChatColors.Red} permission."
+    };
+  }
 }

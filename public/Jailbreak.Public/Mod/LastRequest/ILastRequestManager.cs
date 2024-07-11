@@ -4,24 +4,24 @@ using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.Public.Mod.LastRequest;
 
-public interface ILastRequestManager : IPluginBehavior
-{
-    public bool IsLREnabled { get; set; }
-    public IList<AbstractLastRequest> ActiveLRs { get; }
+public interface ILastRequestManager : IPluginBehavior {
+  public bool IsLREnabled { get; set; }
+  public IList<AbstractLastRequest> ActiveLRs { get; }
 
-    bool InitiateLastRequest(CCSPlayerController prisoner, CCSPlayerController guard, LRType lrType);
-    bool EndLastRequest(AbstractLastRequest lr, LRResult result);
+  bool InitiateLastRequest(CCSPlayerController prisoner,
+    CCSPlayerController guard, LRType lrType);
 
-    public bool IsInLR(CCSPlayerController player)
-    {
-        return GetActiveLR(player) != null;
-    }
+  bool EndLastRequest(AbstractLastRequest lr, LRResult result);
 
-    public AbstractLastRequest? GetActiveLR(CCSPlayerController player)
-    {
-        return ActiveLRs.FirstOrDefault(lr => lr.guard.Slot == player.Slot || lr.prisoner.Slot == player.Slot);
-    }
+  public bool IsInLR(CCSPlayerController player) {
+    return GetActiveLR(player) != null;
+  }
 
-    public void EnableLR();
-    public void DisableLR();
+  public AbstractLastRequest? GetActiveLR(CCSPlayerController player) {
+    return ActiveLRs.FirstOrDefault(lr
+      => lr.Guard.Slot == player.Slot || lr.Prisoner.Slot == player.Slot);
+  }
+
+  public void EnableLR(CCSPlayerController? died = null);
+  public void DisableLR();
 }

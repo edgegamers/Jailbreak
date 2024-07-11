@@ -7,16 +7,15 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Generic;
 
-public static class GenericServiceExtension
-{
-    public static void AddJailbreakGeneric(this IServiceCollection serviceCollection)
-    {
-        serviceCollection.AddPluginBehavior<AliveStateTracker>();
-        serviceCollection.AddPluginBehavior<GlobalStateTracker>();
-        serviceCollection.AddPluginBehavior<RoundStateTracker>();
+public static class GenericServiceExtension {
+  public static void AddJailbreakGeneric(
+    this IServiceCollection serviceCollection) {
+    serviceCollection.AddPluginBehavior<AliveStateTracker>();
+    serviceCollection.AddPluginBehavior<GlobalStateTracker>();
+    serviceCollection.AddPluginBehavior<RoundStateTracker>();
 
-        serviceCollection.AddTransient<IPlayerStateFactory, PlayerStateFactory>();
+    serviceCollection.AddTransient<IPlayerStateFactory, PlayerStateFactory>();
 
-        serviceCollection.AddPluginBehavior<ICoroutines, CoroutineManager>();
-    }
+    serviceCollection.AddPluginBehavior<ICoroutines, CoroutineManager>();
+  }
 }

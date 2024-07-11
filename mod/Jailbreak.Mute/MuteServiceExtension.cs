@@ -4,10 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Mute;
 
-public static class MuteServiceExtension
-{
-    public static void AddJailbreakMute(this IServiceCollection services)
-    {
-        services.AddPluginBehavior<IMuteService, MuteSystem>();
-    }
+public static class MuteServiceExtension {
+  public static void AddJailbreakMute(this IServiceCollection services) {
+    services.AddPluginBehavior<IMuteService, MuteSystem>();
+  }
 }
