@@ -27,21 +27,15 @@ public class LogEntityParentListeners : IPluginBehavior
 
         parent.RegisterListener<CounterStrikeSharp.API.Core.Listeners.OnEntityParentChanged>(OnEntityParentChanged);
     }
-    /*public void Dispose()
-    {
-        parent.RemoveListener("OnEntityParentChanged", OnEntityParentChanged);
-    }*/
     public void OnEntityParentChanged(CEntityInstance affectedEntity, CEntityInstance newParent)
     {
         if (!affectedEntity.IsValid || !weaponStrings.Contains(affectedEntity.DesignerName)) return;
 
         var weaponEntity = Utilities.GetEntityFromIndex<CCSWeaponBase>((int)affectedEntity.Index);
-        if (weaponEntity == null || weaponEntity.PrevOwner == null) return;
+        if (weaponEntity == null || weaponEntity.PrevOwner.Get().OriginalController.Get() == null) return;
 
-        var weaponOwner = Utilities.GetEntityFromIndex<CCSPlayerController>((int)weaponEntity.PrevOwner.Index);
+        var weaponOwner = weaponEntity.PrevOwner.Get().OriginalController.Get();
         if (weaponOwner == null) return;
-        Server.PrintToChatAll($"{weaponOwner.PlayerName}");
-        Server.PrintToChatAll($"{(int)weaponEntity.PrevOwner.Index}");
 
         if (!newParent.IsValid) //a.k.a parent is world
         {
@@ -49,9 +43,9 @@ public class LogEntityParentListeners : IPluginBehavior
             return;
         }
 
-        var weaponPickerUpper = Utilities.GetEntityFromIndex<CCSPlayerController>((int)newParent.Index);
+        var weaponPickerUpper = Utilities.GetEntityFromIndex<CCSPlayerPawn>((int)newParent.Index).OriginalController.Get();
         if (weaponPickerUpper == null) return;
 
-        _logs.Append(_logs.Player(weaponPickerUpper), "picked up", _logs.Player(weaponOwner), $"'s {weaponEntity.ToFriendlyString}");
+        _logs.Append(_logs.Player(weaponPickerUpper), "picked up", _logs.Player(weaponOwner), $"'s {weaponEntity.ToFriendlyString()}");
     }
 }
