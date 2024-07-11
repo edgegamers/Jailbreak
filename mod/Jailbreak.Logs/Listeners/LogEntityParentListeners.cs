@@ -1,6 +1,5 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.Logging;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
@@ -8,7 +7,6 @@ using Jailbreak.Public.Extensions;
 namespace Jailbreak.Logs.Listeners;
 
 public class LogEntityParentListeners(IRichLogService logs) : IPluginBehavior {
-  
   private BasePlugin parent = null!;
 
   private static readonly string[] WEAPON_STRINGS = [
