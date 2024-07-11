@@ -7,8 +7,6 @@ using Jailbreak.Public.Extensions;
 namespace Jailbreak.Logs.Listeners;
 
 public class LogEntityParentListeners(IRichLogService logs) : IPluginBehavior {
-  private BasePlugin parent = null!;
-
   private static readonly string[] WEAPON_STRINGS = [
     "weapon_ak47", "weapon_aug", "weapon_awp", "weapon_bizon", "weapon_cz75a",
     "weapon_deagle", "weapon_famas", "weapon_fiveseven", "weapon_g3sg1",
@@ -22,8 +20,6 @@ public class LogEntityParentListeners(IRichLogService logs) : IPluginBehavior {
   ];
 
   public void Start(BasePlugin _parent) {
-    parent = _parent;
-
     _parent
      .RegisterListener<
         CounterStrikeSharp.API.Core.Listeners.OnEntityParentChanged>(
