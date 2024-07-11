@@ -24,11 +24,6 @@ public class LogEntityParentListeners(IRichLogService logs) : IPluginBehavior {
      .RegisterListener<
         CounterStrikeSharp.API.Core.Listeners.OnEntityParentChanged>(
         OnEntityParentChanged);
-
-    _parent
-     .RegisterListener<
-        CounterStrikeSharp.API.Core.Listeners.OnEntityParentChanged>(
-        OnEntityParentChanged);
   }
 
   public void OnEntityParentChanged(CEntityInstance affectedEntity,
@@ -40,13 +35,13 @@ public class LogEntityParentListeners(IRichLogService logs) : IPluginBehavior {
     var weaponEntity =
       Utilities.GetEntityFromIndex<CCSWeaponBase>((int)affectedEntity.Index);
     if (weaponEntity == null
-      || weaponEntity.PrevOwner.Get().OriginalController.Get() == null)
+      || weaponEntity.PrevOwner.Get()?.OriginalController.Get() == null)
       return;
 
-    var weaponOwner = weaponEntity.PrevOwner.Get().OriginalController.Get();
+    var weaponOwner = weaponEntity.PrevOwner.Get()?.OriginalController.Get();
     if (weaponOwner == null) return;
 
-    if (!newParent.IsValid) //a.k.a parent is world
+    if (!newParent.IsValid) // a.k.a parent is world
     {
       logs.Append(logs.Player(weaponOwner),
         $"dropped their {weaponEntity.ToFriendlyString}");
@@ -55,10 +50,10 @@ public class LogEntityParentListeners(IRichLogService logs) : IPluginBehavior {
 
     var weaponPickerUpper = Utilities
      .GetEntityFromIndex<CCSPlayerPawn>((int)newParent.Index)
-     .OriginalController.Get();
+    ?.OriginalController.Get();
     if (weaponPickerUpper == null) return;
 
-    logs.Append(logs.Player(weaponPickerUpper), "picked up",
+    logs.Append(weaponPickerUpper, "picked up",
       logs.Player(weaponOwner), $"'s {weaponEntity.ToFriendlyString()}");
   }
 }
