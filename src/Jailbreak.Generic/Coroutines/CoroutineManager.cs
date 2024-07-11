@@ -7,26 +7,22 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.Generic.Coroutines;
 
-public class CoroutineManager : ICoroutines, IPluginBehavior
-{
-    private readonly List<Timer> _destroyOnRoundEnd = new();
+public class CoroutineManager : ICoroutines, IPluginBehavior {
+  private readonly List<Timer> destroyOnRoundEnd = [];
 
-    public void Round(Action callback, float time = 10)
-    {
-        var timer = New(callback, time);
-        _destroyOnRoundEnd.Add(timer);
-    }
+  public void Round(Action callback, float time = 10) {
+    var timer = create(callback, time);
+    destroyOnRoundEnd.Add(timer);
+  }
 
-    private Timer New(Action callback, float time = 10)
-    {
-        return new Timer(time, callback, TimerFlags.STOP_ON_MAPCHANGE);
-    }
+  private Timer create(Action callback, float time = 10) {
+    return new Timer(time, callback, TimerFlags.STOP_ON_MAPCHANGE);
+  }
 
-    [GameEventHandler]
-    public HookResult OnRoundEnd(EventRoundEnd ev, GameEventInfo info)
-    {
-        _destroyOnRoundEnd.ForEach(timer => timer.Kill());
+  [GameEventHandler]
+  public HookResult OnRoundEnd(EventRoundEnd ev, GameEventInfo info) {
+    destroyOnRoundEnd.ForEach(timer => timer.Kill());
 
-        return HookResult.Continue;
-    }
+    return HookResult.Continue;
+  }
 }

@@ -9,70 +9,59 @@ using Jailbreak.Public.Mod.Warden;
 
 namespace Jailbreak.Warden.Markers;
 
-public class WardenMarkerBehavior : IPluginBehavior
-{
-    private const float MinRadius = 60f, MaxRadius = 360f;
-    private readonly IWardenService _warden;
+public class WardenMarkerBehavior : IPluginBehavior {
+  private const float MIN_RADIUS = 60f, MAX_RADIUS = 360f;
+  private readonly IWardenService warden;
 
-    private BeamCircle? _marker;
+  private Vector? currentPos;
 
-    private Vector? _currentPos;
-    private long _placementTime;
-    private float _radius = MinRadius;
+  private BeamCircle? marker;
+  private long placementTime;
+  private float radius = MIN_RADIUS;
 
-    public WardenMarkerBehavior(IWardenService warden)
-    {
-        _warden = warden;
-    }
+  public WardenMarkerBehavior(IWardenService warden) { this.warden = warden; }
 
-    public void Start(BasePlugin plugin)
-    {
-        _marker = new BeamCircle(plugin, new Vector(), 60f, (int)Math.PI * 15);
-        plugin.AddCommandListener("player_ping", CommandListener_PlayerPing);
-    }
+  public void Start(BasePlugin basePlugin) {
+    marker = new BeamCircle(basePlugin, new Vector(), 60f, (int)Math.PI * 15);
+    basePlugin.AddCommandListener("player_ping", CommandListener_PlayerPing);
+  }
 
-    [GameEventHandler]
-    public HookResult OnPing(EventPlayerPing @event, GameEventInfo info)
-    {
-        var player = @event.Userid;
+  [GameEventHandler]
+  public HookResult OnPing(EventPlayerPing @event, GameEventInfo info) {
+    var player = @event.Userid;
 
-        if (!_warden.IsWarden(player))
-            return HookResult.Handled;
-        var vec = new Vector(@event.X, @event.Y, @event.Z);
+    if (!warden.IsWarden(player)) return HookResult.Handled;
+    var vec = new Vector(@event.X, @event.Y, @event.Z);
 
-        if (_currentPos != null)
-        {
-            var distance = _currentPos.Distance(vec);
-            var timeElapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - _placementTime;
-            if (timeElapsed < 500)
-            {
-                if (distance <= MaxRadius * 1.5)
-                {
-                    distance = Math.Clamp(distance, MinRadius, MaxRadius);
-                    _marker?.SetRadius(distance);
-                    _marker?.Update();
-                    _radius = distance;
-                    return HookResult.Handled;
-                }
-            }
-            else if (distance <= _radius)
-            {
-                _marker?.Remove();
-                return HookResult.Handled;
-            }
+    if (currentPos != null) {
+      var distance = currentPos.Distance(vec);
+      var timeElapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        - placementTime;
+      if (timeElapsed < 500) {
+        if (distance <= MAX_RADIUS * 1.5) {
+          distance = Math.Clamp(distance, MIN_RADIUS, MAX_RADIUS);
+          marker?.SetRadius(distance);
+          marker?.Update();
+          radius = distance;
+          return HookResult.Handled;
         }
-
-        _radius = MinRadius;
-        _currentPos = vec;
-        _placementTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        _marker?.Move(vec);
-        _marker?.SetRadius(_radius);
-        _marker?.Update();
+      } else if (distance <= radius) {
+        marker?.Remove();
         return HookResult.Handled;
+      }
     }
 
-    private HookResult CommandListener_PlayerPing(CCSPlayerController? player, CommandInfo info)
-    {
-        return _warden.IsWarden(player) ? HookResult.Continue : HookResult.Handled;
-    }
+    radius        = MIN_RADIUS;
+    currentPos    = vec;
+    placementTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    marker?.Move(vec);
+    marker?.SetRadius(radius);
+    marker?.Update();
+    return HookResult.Handled;
+  }
+
+  private HookResult CommandListener_PlayerPing(CCSPlayerController? player,
+    CommandInfo info) {
+    return warden.IsWarden(player) ? HookResult.Continue : HookResult.Handled;
+  }
 }

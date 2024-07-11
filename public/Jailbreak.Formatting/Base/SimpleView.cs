@@ -1,70 +1,49 @@
 ﻿using System.Collections;
-
 using Jailbreak.Formatting.Core;
 
 namespace Jailbreak.Formatting.Base;
 
-public class SimpleView : IView, IEnumerable<IList<FormatObject>>
-{
-	public struct Newline
-	{
+public class SimpleView : IView, IEnumerable<IList<FormatObject>> {
+  public static readonly Newline NEWLINE = new();
 
-	}
+  private readonly List<List<FormatObject>> lines = new();
 
-	public static Newline NEWLINE = new Newline();
+  public IEnumerator<IList<FormatObject>> GetEnumerator() {
+    return lines.GetEnumerator();
+  }
 
-	private List<List<FormatObject>> _lines = new();
+  IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
-	public SimpleView()
-	{
+  public void Render(FormatWriter writer) {
+    foreach (var formatObjects in lines) writer.Line(formatObjects.ToArray());
+  }
 
-	}
+  /// <summary>
+  ///   Add an item to the end of the last row in this SimpleView
+  ///   Eg, { abc, 123, weee } is all one row
+  /// </summary>
+  /// <param name="item"></param>
+  public void Add(FormatObject item) {
+    if (lines.Count == 0) lines.Add(new List<FormatObject>());
 
-	/// <summary>
-	/// Add an item to the end of the last row in this SimpleView
-	/// Eg, { abc, 123, weee } is all one row
-	/// </summary>
-	/// <param name="item"></param>
-	public void Add(FormatObject item)
-	{
-		if (_lines.Count == 0)
-			_lines.Add(new List<FormatObject>());
+    lines[lines.Count - 1].Add(item);
+  }
 
-		_lines[_lines.Count - 1].Add(item);
-	}
+  /// <summary>
+  ///   Add multiple items at a time to this SimpleView
+  /// </summary>
+  /// <param name="line"></param>
+  public void Add(params FormatObject[] line) {
+    if (lines.Count == 0) lines.Add(new List<FormatObject>());
 
-	/// <summary>
-	/// Add multiple items at a time to this SimpleView
-	/// </summary>
-	/// <param name="line"></param>
-	public void Add(params FormatObject[] line)
-	{
-		if (_lines.Count == 0)
-			_lines.Add(new List<FormatObject>());
+    lines[lines.Count - 1].AddRange(line);
+  }
 
-		_lines[_lines.Count - 1].AddRange(line);
-	}
+  /// <summary>
+  ///   Add a new line to this SimpleView
+  /// </summary>
+  /// <param name="newline"></param>
+  public void Add(Newline newline) { lines.Add(new List<FormatObject>()); }
 
-	/// <summary>
-	/// Add a new line to this SimpleView
-	/// </summary>
-	/// <param name="newline"></param>
-	public void Add(Newline newline)
-	{
-		_lines.Add(new List<FormatObject>());
-	}
-
-	public void Render(FormatWriter writer)
-	{
-		foreach (var formatObjects in _lines)
-			writer.Line(formatObjects.ToArray());
-	}
-
-	public IEnumerator<IList<FormatObject>> GetEnumerator()
-		=> _lines.GetEnumerator();
-
-	IEnumerator IEnumerable.GetEnumerator()
-	{
-		return GetEnumerator();
-	}
+  public struct Newline { }
 }

@@ -1,27 +1,24 @@
-﻿using CounterStrikeSharp.API.Core;
-using Jailbreak.Formatting.Base;
+﻿using Jailbreak.Formatting.Base;
 
 namespace Jailbreak.Formatting.Views;
 
-public interface IPeaceMessages
-{
-    public IView PEACE_ENACTED_BY_ADMIN(int seconds);
+public interface IPeaceMessages {
+  public IView UnmutedGuards { get; }
 
-    public IView WARDEN_ENACTED_PEACE(int seconds);
+  public IView UnmutedPrisoners { get; }
 
-    public IView GENERAL_PEACE_ENACTED(int seconds);
+  public IView MuteReminder { get; }
 
-    public IView UNMUTED_GUARDS { get; }
+  public IView PeaceReminder { get; }
 
-    public IView UNMUTED_PRISONERS { get; }
+  public IView DeadReminder { get; }
 
-    public IView MUTE_REMINDER { get; }
-    
-    public IView PEACE_REMINDER { get; }
+  public IView AdminDeadReminder { get; }
 
-    public IView DEAD_REMINDER { get; }
-    
-    public IView ADMIN_DEAD_REMINDER { get; }
-    
-    public IView PEACE_ACTIVE { get; }
+  public IView PeaceActive { get; }
+  public IView PeaceEnactedByAdmin(int seconds);
+
+  public IView WardenEnactedPeace(int seconds);
+
+  public IView GeneralPeaceEnacted(int seconds);
 }
