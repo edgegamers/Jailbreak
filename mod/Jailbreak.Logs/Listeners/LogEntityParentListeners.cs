@@ -26,7 +26,6 @@ public class LogEntityParentListeners : IPluginBehavior
         this.parent = parent;
 
         parent.RegisterListener<CounterStrikeSharp.API.Core.Listeners.OnEntityParentChanged>(OnEntityParentChanged);
-        Server.PrintToChatAll("Listener Registered");
     }
     public void Dispose()
     {
@@ -34,35 +33,23 @@ public class LogEntityParentListeners : IPluginBehavior
     }
     public void OnEntityParentChanged(CEntityInstance affectedEntity, CEntityInstance newParent)
     {
-        Server.PrintToChatAll("Function Called");
         if (!affectedEntity.IsValid || !weaponStrings.Contains(affectedEntity.DesignerName)) return;
 
         var weaponEntity = Utilities.GetEntityFromIndex<CCSWeaponBase>((int)affectedEntity.Index);
-        if (weaponEntity == null)
+        if (weaponEntity == null) return;
+
+        var weaponOwner = Utilities.GetEntityFromIndex<CCSPlayerController>((int)weaponEntity.PrevOwner.Index);
+        if (weaponOwner == null) return;
+
+        if (!newParent.IsValid) //a.k.a parent is world
         {
-            Server.PrintToChatAll("weaponEntity null");
-            return;
-        }
-        var weaponOwner = Utilities.GetEntityFromIndex<CCSPlayerController>((int)weaponEntity.PrevOwner.Get().Index);
-        if (weaponOwner == null)
-        {
-            Server.PrintToChatAll("weaponOwner null");
-            return;
-        }
-            if (!newParent.IsValid) //a.k.a parent is world
-        {
-            Server.PrintToChatAll("log drop");
             _logs.Append(_logs.Player(weaponOwner), $"dropped their {weaponEntity.ToFriendlyString}");
             return;
         }
 
         var weaponPickerUpper = Utilities.GetEntityFromIndex<CCSPlayerController>((int)(newParent.Index));
-        if (weaponPickerUpper == null)
-        {
-            Server.PrintToChatAll("weaponPickerUpper null");
-            return;
-        }
-        Server.PrintToChatAll("Log pickup");
+        if (weaponPickerUpper == null) return;
+
         _logs.Append(_logs.Player(weaponPickerUpper), "picked up", _logs.Player(weaponOwner), $"'s {weaponEntity.ToFriendlyString}");
     }
 }
