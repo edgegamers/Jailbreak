@@ -26,6 +26,7 @@ public class LogEntityParentListeners : IPluginBehavior
         this.parent = parent;
 
         parent.RegisterListener<CounterStrikeSharp.API.Core.Listeners.OnEntityParentChanged>(OnEntityParentChanged);
+        Server.PrintToChatAll("Debug 1");
     }
     public void Dispose()
     {
@@ -36,20 +37,32 @@ public class LogEntityParentListeners : IPluginBehavior
         if (!affectedEntity.IsValid || !weaponStrings.Contains(affectedEntity.DesignerName)) return;
 
         var weaponEntity = Utilities.GetEntityFromIndex<CCSWeaponBase>((int)affectedEntity.Index);
-        if (weaponEntity == null) return;
+        if (weaponEntity == null)
+        {
+            Server.PrintToChatAll("Debug 2");
+            return;
+        }
 
-        var weaponOwner = Utilities.GetEntityFromIndex<CCSPlayerController>((int)weaponEntity.PrevOwner.Index);
-        if (weaponOwner == null) return;
+        var weaponOwner = Utilities.GetEntityFromIndex<CCSPlayerController>((int)weaponEntity.PrevOwner.Get().Index);
+        if (weaponOwner == null) {
+            Server.PrintToChatAll("Debug 3");
+            return;
+        }
 
         if (!newParent.IsValid) //a.k.a parent is world
         {
             _logs.Append(_logs.Player(weaponOwner), $"dropped their {weaponEntity.ToFriendlyString}");
+            Server.PrintToChatAll("Debug 4");
             return;
         }
 
         var weaponPickerUpper = Utilities.GetEntityFromIndex<CCSPlayerController>((int)(newParent.Index));
-        if (weaponPickerUpper == null) return;
-
+        if (weaponPickerUpper == null)
+        {
+            Server.PrintToChatAll("Debug 5");
+            return;
+        }
+        Server.PrintToChatAll("Debug 6");
         _logs.Append(_logs.Player(weaponPickerUpper), "picked up", _logs.Player(weaponOwner), $"'s {weaponEntity.ToFriendlyString}");
     }
 }
