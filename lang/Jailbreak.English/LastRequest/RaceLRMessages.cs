@@ -34,4 +34,20 @@ public class RaceLRMessages : IRaceLRMessages,
       }
     };
   }
+
+  public IView NotInRaceLR()
+    => new SimpleView {
+      {
+        LastRequestMessages.PREFIX,
+        $"You must be in a race {ChatColors.Blue + "!lr" + ChatColors.White} to use this command"
+      }
+    };
+
+  public IView NotInPendingState()
+    => new SimpleView {
+      {
+        LastRequestMessages.PREFIX,
+        "You must be in the pending state to use this command."
+      }
+    };
 }

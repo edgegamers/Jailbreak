@@ -17,7 +17,7 @@ public class WardenNotifications : IWardenNotifications,
       Plain = false, Panorama = false, Chat = true
     };
 
-  public IView PICKING_SHORTLY
+  public IView PickingShortly
     => new SimpleView {
       { PREFIX, $"{ChatColors.Grey}Picking a warden shortly..." },
       SimpleView.NEWLINE, {
@@ -26,59 +26,59 @@ public class WardenNotifications : IWardenNotifications,
       }
     };
 
-  public IView NO_WARDENS
+  public IView NoWardens
     => new SimpleView {
       PREFIX,
       $"No wardens in queue! The next player to run {ChatColors.Blue}!warden{ChatColors.White} will become a warden."
     };
 
-  public IView WARDEN_LEFT
+  public IView WardenLeft
     => new SimpleView { PREFIX, "The warden has left the game." };
 
-  public IView WARDEN_DIED
+  public IView WardenDied
     => new SimpleView {
       PREFIX,
       $"{ChatColors.Red}The warden has {ChatColors.DarkRed}died{ChatColors.Red}! CTs must pursue {ChatColors.Blue}!warden{ChatColors.Red}."
     };
 
-  public IView BECOME_NEXT_WARDEN
+  public IView BecomeNextWarden
     => new SimpleView {
       PREFIX,
       $"{ChatColors.Grey}Type {ChatColors.Blue}!warden{ChatColors.Grey} to become the next warden"
     };
 
-  public IView JOIN_RAFFLE
+  public IView JoinRaffle
     => new SimpleView {
       PREFIX,
       $"{ChatColors.Grey}You've {ChatColors.Green}joined {ChatColors.Grey}the warden raffle."
     };
 
-  public IView LEAVE_RAFFLE
+  public IView LeaveRaffle
     => new SimpleView {
       PREFIX,
       $"{ChatColors.Grey}You've {ChatColors.Red}left {ChatColors.Grey}the warden raffle."
     };
 
-  public IView NOT_WARDEN
+  public IView NotWarden
     => new SimpleView {
       PREFIX, $"{ChatColors.LightRed}You are not the warden."
     };
 
-  public IView FIRE_COMMAND_FAILED
+  public IView FireCommandFailed
     => new SimpleView {
       PREFIX, "The fire command has failed to work for some unknown reason..."
     };
 
-  public IView PASS_WARDEN(CCSPlayerController player) {
+  public IView PassWarden(CCSPlayerController player) {
     return new SimpleView { PREFIX, player, "resigned from being warden." };
   }
 
-  public IView FIRE_WARDEN(CCSPlayerController player) {
+  public IView FireWarden(CCSPlayerController player) {
     return new SimpleView { PREFIX, player, "was fired from being warden." };
   }
 
-  public IView FIRE_WARDEN(CCSPlayerController player,
-    CCSPlayerController admin) {
+  public IView
+    FireWarden(CCSPlayerController player, CCSPlayerController admin) {
     return new SimpleView {
       PREFIX,
       admin,
@@ -88,17 +88,17 @@ public class WardenNotifications : IWardenNotifications,
     };
   }
 
-  public IView NEW_WARDEN(CCSPlayerController player) {
+  public IView NewWarden(CCSPlayerController player) {
     return new SimpleView { PREFIX, player, "is now the warden!" };
   }
 
-  public IView CURRENT_WARDEN(CCSPlayerController? player) {
-    if (player is not null)
-      return new SimpleView { PREFIX, "The warden is", player, "." };
-    return new SimpleView { PREFIX, "There is no warden." };
+  public IView CurrentWarden(CCSPlayerController? player) {
+    return player is not null ?
+      new SimpleView { PREFIX, "The warden is", player, "." } :
+      new SimpleView { PREFIX, "There is no warden." };
   }
 
-  public IView FIRE_COMMAND_SUCCESS(CCSPlayerController player) {
+  public IView FireCommandSuccess(CCSPlayerController player) {
     return new SimpleView {
       PREFIX, player, "was fired and is no longer the warden."
     };

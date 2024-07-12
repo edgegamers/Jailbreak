@@ -71,7 +71,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
         "m_clrRender");
     }
 
-    notifications.NEW_WARDEN(Warden).ToAllChat().ToAllCenter();
+    notifications.NewWarden(Warden).ToAllChat().ToAllCenter();
 
     Warden.PlayerName = "[WARDEN] " + Warden.PlayerName;
 
@@ -175,7 +175,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
     //	Warden died!
-    notifications.WARDEN_DIED.ToAllChat().ToAllCenter();
+    notifications.WardenDied.ToAllChat().ToAllCenter();
 
     foreach (var player in Utilities.GetPlayers()) {
       if (!player.IsReal()) continue;
@@ -183,7 +183,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
         $"play sounds/{config.WardenKilledSoundName}");
     }
 
-    notifications.BECOME_NEXT_WARDEN.ToAllChat();
+    notifications.BecomeNextWarden.ToAllChat();
 
     unblueTimer
     ?.Kill(); // If the warden dies withing 3 seconds of becoming warden, we need to cancel the unblue timer
@@ -331,7 +331,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
 
-    notifications.WARDEN_LEFT.ToAllChat().ToAllCenter();
+    notifications.WardenLeft.ToAllChat().ToAllCenter();
 
     foreach (var player in Utilities.GetPlayers()) {
       if (!player.IsReal()) continue;
@@ -339,7 +339,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
         $"play sounds/{config.WardenPassedSoundName}");
     }
 
-    notifications.BECOME_NEXT_WARDEN.ToAllChat();
+    notifications.BecomeNextWarden.ToAllChat();
 
     return HookResult.Continue;
   }

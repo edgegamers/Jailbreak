@@ -21,7 +21,7 @@ public class SpecialTreatmentCommandsBehavior(IWardenService warden,
     if (player == null) return;
 
     if (!warden.IsWarden(player)) {
-      wardenNotifs.NOT_WARDEN.ToPlayerChat(player).ToPlayerConsole(player);
+      wardenNotifs.NotWarden.ToPlayerChat(player).ToPlayerConsole(player);
       return;
     }
 

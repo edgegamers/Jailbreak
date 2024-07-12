@@ -8,12 +8,10 @@ using Jailbreak.Public.Mod.Warden;
 
 namespace Jailbreak.Warden.Paint;
 
-public class WardenPaintBehavior : IPluginBehavior {
-  private readonly IWardenService wardenService;
+public class WardenPaintBehavior(IWardenService wardenService)
+  : IPluginBehavior {
   private Vector? lastPosition;
   private BasePlugin? parent;
-
-  public WardenPaintBehavior(IWardenService warden) { wardenService = warden; }
 
   public void Start(BasePlugin basePlugin) {
     parent = basePlugin;

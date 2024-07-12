@@ -27,7 +27,7 @@ public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
     sts.Get(player).HasSpecialTreatment = true;
 
     if (rebel.IsRebel(player)) rebel.UnmarkRebel(player);
-    setSpecialColor(player, /* hasSt */ true);
+    setSpecialColor(player, true);
 
     notifications.Granted.ToPlayerChat(player).ToPlayerCenter(player);
 

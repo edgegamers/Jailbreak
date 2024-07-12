@@ -34,14 +34,14 @@ public class WardenCommandsBehavior(IWardenNotifications notifications,
     if (!warden.IsWarden(player)) return;
 
     //	Handle warden pass
-    notifications.PASS_WARDEN(player).ToAllChat().ToAllCenter();
+    notifications.PassWarden(player).ToAllChat().ToAllCenter();
 
     // GetPlayers() returns valid players, no need to error check here.
     foreach (var clients in Utilities.GetPlayers())
       clients.ExecuteClientCommand(
         $"play sounds/{config.WardenPassedSoundName}");
 
-    notifications.BECOME_NEXT_WARDEN.ToAllChat();
+    notifications.BecomeNextWarden.ToAllChat();
 
     if (!warden.TryRemoveWarden(true))
       Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");
@@ -55,7 +55,7 @@ public class WardenCommandsBehavior(IWardenNotifications notifications,
     if (player == null) return;
 
     if (!warden.HasWarden || warden.Warden == null) {
-      notifications.CURRENT_WARDEN(null).ToPlayerChat(player);
+      notifications.CurrentWarden(null).ToPlayerChat(player);
       return;
     }
 
@@ -66,15 +66,15 @@ public class WardenCommandsBehavior(IWardenNotifications notifications,
 
     foreach (var client in Utilities.GetPlayers().Where(p => p.IsReal())) {
       if (AdminManager.PlayerHasPermissions(client, "@css/chat"))
-        notifications.FIRE_WARDEN(warden.Warden, player).ToPlayerChat(client);
+        notifications.FireWarden(warden.Warden, player).ToPlayerChat(client);
       else
-        notifications.FIRE_WARDEN(warden.Warden).ToPlayerChat(client);
+        notifications.FireWarden(warden.Warden).ToPlayerChat(client);
 
       client.ExecuteClientCommand(
         $"play sounds/{config.WardenPassedSoundName}");
     }
 
-    notifications.BECOME_NEXT_WARDEN.ToAllChat();
+    notifications.BecomeNextWarden.ToAllChat();
 
     lastPassCommand[warden.Warden] = DateTime.Now;
 
@@ -106,13 +106,13 @@ public class WardenCommandsBehavior(IWardenNotifications notifications,
     if (queue.Active) {
       if (!queue.InQueue(player)) {
         if (queue.TryEnter(player))
-          notifications.JOIN_RAFFLE.ToPlayerChat(player);
+          notifications.JoinRaffle.ToPlayerChat(player);
         return;
       }
 
       if (queue.InQueue(player))
         if (queue.TryExit(player))
-          notifications.LEAVE_RAFFLE.ToPlayerChat(player);
+          notifications.LeaveRaffle.ToPlayerChat(player);
 
       return;
     }
@@ -122,7 +122,7 @@ public class WardenCommandsBehavior(IWardenNotifications notifications,
       if (warden.TrySetWarden(player))
         return;
 
-    notifications.CURRENT_WARDEN(warden.Warden).ToPlayerChat(player);
+    notifications.CurrentWarden(warden.Warden).ToPlayerChat(player);
   }
 
   /// <summary>

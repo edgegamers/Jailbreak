@@ -9,17 +9,14 @@ using Jailbreak.Public.Mod.Warden;
 
 namespace Jailbreak.Warden.Markers;
 
-public class WardenMarkerBehavior : IPluginBehavior {
+public class WardenMarkerBehavior(IWardenService warden) : IPluginBehavior {
   private const float MIN_RADIUS = 60f, MAX_RADIUS = 360f;
-  private readonly IWardenService warden;
 
   private Vector? currentPos;
 
   private BeamCircle? marker;
   private long placementTime;
   private float radius = MIN_RADIUS;
-
-  public WardenMarkerBehavior(IWardenService warden) { this.warden = warden; }
 
   public void Start(BasePlugin basePlugin) {
     marker = new BeamCircle(basePlugin, new Vector(), 60f, (int)Math.PI * 15);

@@ -32,7 +32,7 @@ public class PeaceCommandsBehavior(IWardenService warden, IMuteService mute,
 
     if (!warden.IsWarden(executor)
       && !AdminManager.PlayerHasPermissions(executor, "@css/chat")) {
-      notifications.NOT_WARDEN.ToPlayerChat(executor);
+      notifications.NotWarden.ToPlayerChat(executor);
       return;
     }
 

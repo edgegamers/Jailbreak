@@ -11,19 +11,12 @@ using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.Logs;
 
-public class LogsManager : IPluginBehavior, IRichLogService {
+public class LogsManager(ILogMessages messages, IRichPlayerTag richPlayerTag)
+  : IPluginBehavior, IRichLogService {
   private readonly List<IView> logMessages = [];
-  private readonly ILogMessages messages;
-
-  private readonly IRichPlayerTag richPlayerTag;
-
-  public LogsManager(ILogMessages messages, IRichPlayerTag richPlayerTag) {
-    this.messages      = messages;
-    this.richPlayerTag = richPlayerTag;
-  }
 
   public void Append(string message) {
-    logMessages.Add(messages.CREATE_LOG(message));
+    logMessages.Add(messages.CreateLog(message));
   }
 
   public IEnumerable<string> GetMessages() {
@@ -37,7 +30,6 @@ public class LogsManager : IPluginBehavior, IRichLogService {
       messages.BeginJailbreakLogs.ToServerConsole();
       foreach (var log in logMessages) log.ToServerConsole();
       messages.EndJailbreakLogs.ToServerConsole();
-
       return;
     }
 
@@ -48,7 +40,7 @@ public class LogsManager : IPluginBehavior, IRichLogService {
   }
 
   public void Append(params FormatObject[] objects) {
-    logMessages.Add(messages.CREATE_LOG(objects));
+    logMessages.Add(messages.CreateLog(objects));
   }
 
   public FormatObject Player(CCSPlayerController playerController) {
@@ -67,7 +59,6 @@ public class LogsManager : IPluginBehavior, IRichLogService {
     foreach (var log in logMessages) log.ToServerConsole().ToAllConsole();
 
     messages.EndJailbreakLogs.ToServerConsole().ToAllConsole();
-
     return HookResult.Continue;
   }
 

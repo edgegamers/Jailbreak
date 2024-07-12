@@ -13,13 +13,12 @@ public class LastRequestPlayerSelector(ILastRequestManager manager,
     Func<string?, string> command) {
     var menu = new CenterHtmlMenu(command.Invoke("[Player]"), plugin);
 
-    foreach (var target in Utilities.GetPlayers()) {
-      if (!target.IsReal()) continue;
-      if (!target.PawnIsAlive
-        || target.Team != CsTeam.CounterTerrorist && !debug)
-        continue;
+    foreach (var target in Utilities.GetPlayers()
+     .Where(target => target.IsReal())
+     .Where(target => target.PawnIsAlive
+        && (target.Team == CsTeam.CounterTerrorist || debug))) {
       menu.AddMenuOption(target.PlayerName,
-        (_, _) => OnSelect(player, command, target.UserId.ToString()),
+        (_, _) => onSelect(player, command, target.UserId.ToString()),
         !debug && manager.IsInLR(target));
     }
 
@@ -33,7 +32,7 @@ public class LastRequestPlayerSelector(ILastRequestManager manager,
       });
   }
 
-  private void OnSelect(CCSPlayerController player,
+  private void onSelect(CCSPlayerController player,
     Func<string?, string> command, string? value) {
     MenuManager.CloseActiveMenu(player);
     player.ExecuteClientCommandFromServer(command.Invoke(value));

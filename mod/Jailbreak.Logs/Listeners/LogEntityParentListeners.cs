@@ -53,11 +53,13 @@ public class LogEntityParentListeners(IRichLogService logs) : IPluginBehavior {
     ?.OriginalController.Get();
     if (weaponPickerUpper == null) return;
 
-    if (weaponPickerUpper == weaponOwner)
-    {
-        logs.Append(weaponPickerUpper, $"picked up their {weaponEntity.ToFriendlyString()}");
-        return;
+    if (weaponPickerUpper == weaponOwner) {
+      logs.Append(weaponPickerUpper,
+        $"picked up their {weaponEntity.ToFriendlyString()}");
+      return;
     }
-    logs.Append(weaponPickerUpper, "picked up", logs.Player(weaponOwner), $"{weaponEntity.ToFriendlyString()}");
+
+    logs.Append(weaponPickerUpper, "picked up", logs.Player(weaponOwner),
+      $"{weaponEntity.ToFriendlyString()}");
   }
 }
