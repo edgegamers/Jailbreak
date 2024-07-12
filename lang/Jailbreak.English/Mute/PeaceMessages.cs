@@ -17,13 +17,13 @@ public class PeaceMessages : IPeaceMessages,
 
   public IView PeaceEnactedByAdmin(int seconds) {
     return new SimpleView {
-      PREFIX, "An admin has enacted peace for", seconds, "seconds."
+      PREFIX, "An admin enacted peace for", seconds, "seconds."
     };
   }
 
   public IView WardenEnactedPeace(int seconds) {
     return new SimpleView {
-      PREFIX, "Warden has enacted peace for", seconds, "seconds."
+      PREFIX, "Warden enacted peace for", seconds, "seconds."
     };
   }
 

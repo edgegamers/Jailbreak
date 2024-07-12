@@ -16,4 +16,6 @@ public interface ILastRequestMessages {
   public IView InformLastRequest(AbstractLastRequest lr);
   public IView AnnounceLastRequest(AbstractLastRequest lr);
   public IView LastRequestDecided(AbstractLastRequest lr, LRResult result);
+  public IView CannotLR(string reason);
+  public IView CannotLR(CCSPlayerController player, string reason);
 }

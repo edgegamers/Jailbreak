@@ -31,28 +31,29 @@ public class LastRequestCommand(ILastRequestManager manager,
   public void Command_LastRequest(CCSPlayerController? executor,
     CommandInfo info) {
     if (executor == null || !executor.IsReal()) return;
-    if (executor.Team != CsTeam.Terrorist) {
-      info.ReplyToCommand("You must be a terrorist to LR.");
-      return;
-    }
-
-    if (!executor.PawnIsAlive) {
-      info.ReplyToCommand("You must be alive to LR.");
-      return;
-    }
-
     if (!manager.IsLREnabled) {
       messages.LastRequestNotEnabled().ToPlayerChat(executor);
       return;
     }
 
+    if (executor.Team != CsTeam.Terrorist) {
+      messages.CannotLR("You are not a Prisoner").ToPlayerChat(executor);
+      return;
+    }
+
+    if (!executor.PawnIsAlive) {
+      messages.CannotLR("You are not alive").ToPlayerChat(executor);
+      return;
+    }
+
+
     if (!playerSelector!.WouldHavePlayers()) {
-      info.ReplyToCommand("There are no players available to LR.");
+      messages.CannotLR("No players available to LR").ToPlayerChat(executor);
       return;
     }
 
     if (manager.IsInLR(executor)) {
-      info.ReplyToCommand("You are already in an LR!");
+      messages.CannotLR("You are already in an LR").ToPlayerChat(executor);
       return;
     }
 
@@ -89,23 +90,18 @@ public class LastRequestCommand(ILastRequestManager manager,
 
     var player = target.Players.First();
     if (player.Team != CsTeam.CounterTerrorist) {
-      messages.InvalidPlayerChoice(player, "They're not on CT!");
+      messages.CannotLR(player, "They are not a Guard").ToPlayerChat(executor);
       return;
     }
 
     if (!player.PawnIsAlive) {
-      messages.InvalidPlayerChoice(player, "They're not alive!");
+      messages.CannotLR(player, "They are not alive").ToPlayerChat(executor);
       return;
     }
 
     if (manager.IsInLR(player)) {
-      messages.InvalidPlayerChoice(player, "They're already in an LR!");
-      return;
-    }
-
-    //One final check in case they got the menu open in the last round
-    if (!manager.IsLREnabled) {
-      messages.LastRequestNotEnabled().ToPlayerChat(executor);
+      messages.CannotLR(player, "They are already in an LR")
+       .ToPlayerChat(executor);
       return;
     }
 

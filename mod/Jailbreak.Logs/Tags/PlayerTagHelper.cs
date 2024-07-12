@@ -10,21 +10,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Logs.Tags;
 
-public class PlayerTagHelper : IRichPlayerTag {
-  private readonly Lazy<IRebelService> rebelService;
-  private readonly Lazy<ISpecialTreatmentService> stService;
-  private readonly Lazy<IWardenService> wardenService;
+public class PlayerTagHelper(IServiceProvider provider) : IRichPlayerTag {
+  private readonly Lazy<IRebelService> rebelService =
+    new(provider.GetRequiredService<IRebelService>);
 
-  public PlayerTagHelper(IServiceProvider provider) {
-    //  Lazy-load dependencies to avoid loops, since we are a lower-level class.
-    wardenService =
-      new Lazy<IWardenService>(provider.GetRequiredService<IWardenService>);
-    rebelService =
-      new Lazy<IRebelService>(provider.GetRequiredService<IRebelService>);
-    stService =
-      new Lazy<ISpecialTreatmentService>(provider
-       .GetRequiredService<ISpecialTreatmentService>);
-  }
+  private readonly Lazy<ISpecialTreatmentService> stService =
+    new(provider.GetRequiredService<ISpecialTreatmentService>);
+
+  private readonly Lazy<IWardenService> wardenService =
+    new(provider.GetRequiredService<IWardenService>);
+
+  //  Lazy-load dependencies to avoid loops, since we are a lower-level class.
 
   public FormatObject Rich(CCSPlayerController player) {
     if (wardenService.Value.IsWarden(player))

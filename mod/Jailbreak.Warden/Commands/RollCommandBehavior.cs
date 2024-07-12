@@ -21,7 +21,7 @@ public class RollCommandBehavior(IWardenService warden,
     if (player == null) return;
 
     if (!warden.IsWarden(player)) {
-      wardenNotifications.NOT_WARDEN.ToPlayerChat(player);
+      wardenNotifications.NotWarden.ToPlayerChat(player);
       return;
     }
 

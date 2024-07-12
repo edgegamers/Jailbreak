@@ -33,7 +33,7 @@ public class SpecialTreatmentNotifications : ISpecialTreatmentNotifications,
     return new SimpleView {
       PREFIX,
       player,
-      $"now has {ChatColors.Grey}Special Treatment{ChatColors.White}!"
+      $"now has {ChatColors.Green}Special Treatment{ChatColors.White}!"
     };
   }
 

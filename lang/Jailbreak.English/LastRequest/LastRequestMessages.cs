@@ -89,6 +89,22 @@ public class LastRequestMessages : ILastRequestMessages,
     };
   }
 
+  public IView CannotLR(string reason) {
+    return new SimpleView {
+      PREFIX,
+      $"{ChatColors.Red}You cannot LR: {ChatColors.White + reason + ChatColors.Red}."
+    };
+  }
+
+  public IView CannotLR(CCSPlayerController player, string reason) {
+    return new SimpleView {
+      PREFIX,
+      ChatColors.Red + "You cannot LR",
+      player,
+      ": " + ChatColors.White + reason + ChatColors.Red + "."
+    };
+  }
+
   public IView DamageBlockedInsideLastRequest
     => new SimpleView { PREFIX, "You or they are in LR, damage blocked." };
 

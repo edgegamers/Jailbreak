@@ -24,7 +24,7 @@ public interface ILogMessages {
     return new StringFormatObject($"[{minutes}:{seconds}]", ChatColors.Gold);
   }
 
-  public IView CREATE_LOG(params FormatObject[] objects) {
+  public IView CreateLog(params FormatObject[] objects) {
     return new SimpleView { Time(), objects };
   }
 }

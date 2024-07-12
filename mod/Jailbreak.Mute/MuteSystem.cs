@@ -162,18 +162,16 @@ public class MuteSystem(IServiceProvider provider)
       return;
     }
 
-    if (bypassMute(player)) {
-      // Warn admins if they're not muted
-      if (IsPeaceEnabled()) {
-        if (player.Team == CsTeam.CounterTerrorist
-          && DateTime.Now >= ctPeaceEnd)
-          return;
-        messages!.PeaceReminder.ToPlayerCenter(player);
-      }
+    if (!bypassMute(player)) return;
 
-      if (!player.PawnIsAlive)
-        messages!.AdminDeadReminder.ToPlayerCenter(player);
+    // Warn admins if they're not muted
+    if (IsPeaceEnabled()) {
+      if (player.Team == CsTeam.CounterTerrorist && DateTime.Now >= ctPeaceEnd)
+        return;
+      messages!.PeaceReminder.ToPlayerCenter(player);
     }
+
+    if (!player.PawnIsAlive) messages!.AdminDeadReminder.ToPlayerCenter(player);
   }
 
   private bool isMuted(CCSPlayerController player) {

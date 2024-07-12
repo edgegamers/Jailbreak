@@ -82,7 +82,7 @@ public class
     //	Enable the warden queue
     queueInactive = false;
 
-    notifications.PICKING_SHORTLY.ToAllChat();
+    notifications.PickingShortly.ToAllChat();
 
     //	Start a timer to pick the warden in 7 seconds
     ScheduleChooseWarden();
@@ -109,7 +109,7 @@ public class
       eligible);
 
     if (eligible.Count == 0) {
-      notifications.NO_WARDENS.ToAllChat();
+      notifications.NoWardens.ToAllChat();
       queueInactive = true;
 
       return;

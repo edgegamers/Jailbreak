@@ -75,14 +75,11 @@ public abstract class AbstractCommand(IServiceProvider services) {
       return null;
     }
 
-    if (matches.Count() > 1) {
-      if (command.CallingPlayer != null)
-        lang.PlayerFoundMultiple(command.GetArg(argIndex))
-         .ToPlayerChat(command.CallingPlayer);
-      return null;
-    }
-
-    return matches;
+    if (matches.Count() <= 1) return matches;
+    if (command.CallingPlayer != null)
+      lang.PlayerFoundMultiple(command.GetArg(argIndex))
+       .ToPlayerChat(command.CallingPlayer);
+    return null;
   }
 
   protected string GetTargetLabel(WrappedInfo info, int argIndex = 1) {
@@ -126,7 +123,7 @@ public abstract class AbstractCommand(IServiceProvider services) {
 
   protected string GetTargetLabels(CommandInfo info, int argIndex = 1) {
     var label = GetTargetLabel(info, argIndex);
-    if (label.ToLower().EndsWith("s")) return label + "'";
+    if (label.ToLower().EndsWith('s')) return label + "'";
     return label + "'s";
   }
 }

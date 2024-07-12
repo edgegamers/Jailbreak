@@ -31,14 +31,13 @@ public class LastRequestManager(LastRequestConfig config,
       // Neither of them is in an LR
       return false;
 
-    if (playerLR == null != (attackerLR == null)) {
+    if ((playerLR == null) != (attackerLR == null)) {
       // One of them is in an LR
       messages.DamageBlockedInsideLastRequest.ToPlayerCenter(attacker);
       return true;
     }
 
-    // Both of them are in LR
-    // verify they're in same LR
+    // Both of them are in LR, verify they're in same LR
     if (playerLR == null) return false;
 
     if (playerLR.Prisoner.Equals(attacker) || playerLR.Guard.Equals(attacker))
@@ -75,31 +74,25 @@ public class LastRequestManager(LastRequestConfig config,
 
   public bool InitiateLastRequest(CCSPlayerController prisoner,
     CCSPlayerController guard, LRType type) {
-    try {
-      var lr = factory!.CreateLastRequest(prisoner, guard, type);
-      lr.Setup();
-      ActiveLRs.Add(lr);
+    var lr = factory!.CreateLastRequest(prisoner, guard, type);
+    lr.Setup();
+    ActiveLRs.Add(lr);
 
-      if (prisoner.Pawn.Value != null) {
-        prisoner.Pawn.Value.Health            = 100;
-        prisoner.PlayerPawn.Value!.ArmorValue = 0;
-        Utilities.SetStateChanged(prisoner.Pawn.Value, "CBaseEntity",
-          "m_iHealth");
-      }
-
-
-      if (guard.Pawn.Value != null) {
-        guard.Pawn.Value.Health            = 100;
-        guard.PlayerPawn.Value!.ArmorValue = 0;
-        Utilities.SetStateChanged(guard.Pawn.Value, "CBaseEntity", "m_iHealth");
-      }
-
-      messages.InformLastRequest(lr).ToAllChat();
-      return true;
-    } catch (ArgumentException e) {
-      Console.WriteLine(e);
-      return false;
+    if (prisoner.Pawn.Value != null) {
+      prisoner.Pawn.Value.Health            = 100;
+      prisoner.PlayerPawn.Value!.ArmorValue = 0;
+      Utilities.SetStateChanged(prisoner.Pawn.Value, "CBaseEntity",
+        "m_iHealth");
     }
+
+    if (guard.Pawn.Value != null) {
+      guard.Pawn.Value.Health            = 100;
+      guard.PlayerPawn.Value!.ArmorValue = 0;
+      Utilities.SetStateChanged(guard.Pawn.Value, "CBaseEntity", "m_iHealth");
+    }
+
+    messages.InformLastRequest(lr).ToAllChat();
+    return true;
   }
 
   public bool EndLastRequest(AbstractLastRequest lr, LRResult result) {
@@ -156,11 +149,11 @@ public class LastRequestManager(LastRequestConfig config,
     if (IsLREnabled) {
       // Handle active LRs
       var activeLr = ((ILastRequestManager)this).GetActiveLR(player);
-      if (activeLr != null && activeLr.State != LRState.COMPLETED) {
-        var isPrisoner = activeLr.Prisoner.Slot == player.Slot;
-        EndLastRequest(activeLr,
-          isPrisoner ? LRResult.GUARD_WIN : LRResult.PRISONER_WIN);
-      }
+      if (activeLr == null || activeLr.State == LRState.COMPLETED)
+        return HookResult.Continue;
+      var isPrisoner = activeLr.Prisoner.Slot == player.Slot;
+      EndLastRequest(activeLr,
+        isPrisoner ? LRResult.GUARD_WIN : LRResult.PRISONER_WIN);
 
       return HookResult.Continue;
     }
@@ -184,15 +177,15 @@ public class LastRequestManager(LastRequestConfig config,
     if (!player.IsReal() || ServerExtensions.GetGameRules().WarmupPeriod)
       return HookResult.Continue;
 
-    if (IsLREnabled) return HookResult.Continue;
+    if (IsLREnabled) {
+      var activeLr = ((ILastRequestManager)this).GetActiveLR(player);
+      if (activeLr != null) {
+        EndLastRequest(activeLr,
+          player.Team == CsTeam.Terrorist ?
+            LRResult.GUARD_WIN :
+            LRResult.PRISONER_WIN);
+      }
 
-    var activeLr = ((ILastRequestManager)this).GetActiveLR(player);
-
-    if (activeLr != null && activeLr.State != LRState.ACTIVE) {
-      EndLastRequest(activeLr,
-        player.Team == CsTeam.Terrorist ?
-          LRResult.GUARD_WIN :
-          LRResult.PRISONER_WIN);
       return HookResult.Continue;
     }
 

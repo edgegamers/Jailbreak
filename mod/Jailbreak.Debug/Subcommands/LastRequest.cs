@@ -35,22 +35,25 @@ public class LastRequest : AbstractCommand {
     WrappedInfo info) {
     if (executor == null || !executor.IsReal()) return;
 
-    if (info.ArgCount == 1) {
-      MenuManager.OpenCenterHtmlMenu(plugin, executor, menuSelector.GetMenu());
-      return;
-    }
+    switch (info.ArgCount) {
+      case 1:
+        MenuManager.OpenCenterHtmlMenu(plugin, executor,
+          menuSelector.GetMenu());
+        return;
+      case 2:
+        switch (info.GetArg(1).ToLower()) {
+          case "enable":
+            manager.EnableLR();
+            info.ReplyToCommand("Last Request enabled.");
+            return;
+          case "disable":
+            manager.DisableLR();
+            info.ReplyToCommand("Last Request disabled.");
+            return;
+        }
 
-    if (info.ArgCount == 2)
-      switch (info.GetArg(1).ToLower()) {
-        case "enable":
-          manager.EnableLR();
-          info.ReplyToCommand("Last Request enabled.");
-          return;
-        case "disable":
-          manager.DisableLR();
-          info.ReplyToCommand("Last Request disabled.");
-          return;
-      }
+        break;
+    }
 
     var type = LRTypeExtensions.FromString(info.GetArg(1));
     if (type is null) {
@@ -69,7 +72,7 @@ public class LastRequest : AbstractCommand {
     if (fromPlayer == null) return;
 
     switch (info.ArgCount) {
-      case 3 when executor != null: {
+      case 3: {
         if (executor.Team == CsTeam.Terrorist)
           manager.InitiateLastRequest(executor, fromPlayer.First(), type.Value);
         else // They aren't necessarily on different teams, but this is debug so that's OK
