@@ -1,111 +1,70 @@
-﻿using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
-using CounterStrikeSharp.API.Modules.Utils;
-
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Objects;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.Logging;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.Logs;
-using Jailbreak.Public.Mod.Rebel;
-using Jailbreak.Public.Mod.Warden;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Logs;
 
-public class LogsManager : IPluginBehavior, ILogService, IRichLogService
-{
-    private readonly List<IView> _logMessages = new();
+public class LogsManager(ILogMessages messages, IRichPlayerTag richPlayerTag)
+  : IPluginBehavior, IRichLogService {
+  private readonly List<IView> logMessages = [];
 
-    private IRichPlayerTag _richPlayerTag;
-    private ILogMessages _messages;
+  public void Append(string message) {
+    logMessages.Add(messages.CreateLog(message));
+  }
 
-    public LogsManager(IServiceProvider serviceProvider, ILogMessages messages, IRichPlayerTag richPlayerTag)
-    {
-        _messages = messages;
-        _richPlayerTag = richPlayerTag;
+  public IEnumerable<string> GetMessages() {
+    return logMessages.SelectMany(view => view.ToWriter().Plain);
+  }
+
+  public void Clear() { logMessages.Clear(); }
+
+  public void PrintLogs(CCSPlayerController? player) {
+    if (player == null || !player.IsReal()) {
+      messages.BeginJailbreakLogs.ToServerConsole();
+      foreach (var log in logMessages) log.ToServerConsole();
+      messages.EndJailbreakLogs.ToServerConsole();
+      return;
     }
 
-    [GameEventHandler]
-    public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
-    {
-        _messages.BEGIN_JAILBREAK_LOGS
-            .ToServerConsole()
-            .ToAllConsole();
 
-        //  By default, print all logs to player consoles at the end of the round.
-        foreach (var log in _logMessages)
-            log.ToServerConsole()
-                .ToAllConsole();
+    messages.BeginJailbreakLogs.ToPlayerConsole(player);
+    foreach (var log in logMessages) log.ToPlayerConsole(player);
+    messages.EndJailbreakLogs.ToPlayerConsole(player);
+  }
 
-        _messages.END_JAILBREAK_LOGS
-            .ToServerConsole()
-            .ToAllConsole();
+  public void Append(params FormatObject[] objects) {
+    logMessages.Add(messages.CreateLog(objects));
+  }
 
-        return HookResult.Continue;
-    }
+  public FormatObject Player(CCSPlayerController playerController) {
+    return new TreeFormatObject {
+      playerController,
+      $"[{playerController.UserId}]",
+      richPlayerTag.Rich(playerController)
+    };
+  }
 
-    [GameEventHandler]
-    public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
-    {
-        Clear();
-        return HookResult.Continue;
-    }
+  [GameEventHandler]
+  public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
+    messages.BeginJailbreakLogs.ToServerConsole().ToAllConsole();
 
-    public void Append(params FormatObject[] objects)
-    {
-        _logMessages.Add(_messages.CREATE_LOG(objects));
-    }
+    //  By default, print all logs to player consoles at the end of the round.
+    foreach (var log in logMessages) log.ToServerConsole().ToAllConsole();
 
-    public FormatObject Player(CCSPlayerController playerController)
-    {
-        return new TreeFormatObject()
-        {
-            playerController,
-            $"[{playerController.UserId}]",
-            _richPlayerTag.Rich(playerController)
-        };
-    }
+    messages.EndJailbreakLogs.ToServerConsole().ToAllConsole();
+    return HookResult.Continue;
+  }
 
-    public void Append(string message)
-    {
-        _logMessages.Add(_messages.CREATE_LOG(message));
-    }
-
-    public IEnumerable<string> GetMessages()
-    {
-        return _logMessages.SelectMany(view => view.ToWriter().Plain);
-    }
-
-    public void Clear()
-    {
-        _logMessages.Clear();
-    }
-
-    public void PrintLogs(CCSPlayerController? player)
-    {
-        if (player == null || !player.IsReal())
-        {
-            _messages.BEGIN_JAILBREAK_LOGS
-                .ToServerConsole();
-            foreach (var log in _logMessages)
-                log.ToServerConsole();
-            _messages.END_JAILBREAK_LOGS
-                .ToServerConsole();
-
-            return;
-        }
-
-
-        _messages.BEGIN_JAILBREAK_LOGS
-            .ToPlayerConsole(player);
-        foreach (var log in _logMessages)
-            log.ToPlayerConsole(player);
-        _messages.END_JAILBREAK_LOGS
-            .ToPlayerConsole(player);
-    }
+  [GameEventHandler]
+  public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
+    Clear();
+    return HookResult.Continue;
+  }
 }

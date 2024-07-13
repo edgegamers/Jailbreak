@@ -1,110 +1,93 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Core;
 using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.Formatting.Extensions;
 
-public static class ViewExtensions
-{
+public static class ViewExtensions {
+  public static FormatWriter ToWriter(this IView view) {
+    var writer = new FormatWriter();
 
-    public static FormatWriter ToWriter(this IView view)
-    {
-        var writer = new FormatWriter();
+    view.Render(writer);
 
-        view.Render(writer);
+    return writer;
+  }
 
-        return writer;
-    }
+  public static IView ToServerConsole(this IView view) {
+    var writer = view.ToWriter();
 
-    public static IView ToServerConsole(this IView view)
-    {
-        var writer = view.ToWriter();
+    foreach (var s in writer.Plain) Server.PrintToConsole(s);
 
-        foreach (string s in writer.Plain)
-        {
-            Server.PrintToConsole(s);
-        }
+    return view;
+  }
 
-        return view;
-    }
+  public static IView ToAllConsole(this IView view) {
+    Utilities.GetPlayers().ForEach(player => view.ToPlayerConsole(player));
 
-    #region Individual
+    return view;
+  }
 
-    public static IView ToPlayerConsole(this IView view, CCSPlayerController player)
-    {
-        if (!player.IsReal() || player.IsBot)
-            return view;
+  public static IView ToAllChat(this IView view) {
+    Utilities.GetPlayers().ForEach(player => view.ToPlayerChat(player));
 
-        var writer = view.ToWriter();
+    return view;
+  }
 
-        foreach (var writerLine in writer.Plain)
-            player.PrintToConsole(writerLine);
+  public static IView ToAllCenter(this IView view) {
+    Utilities.GetPlayers().ForEach(player => view.ToPlayerCenter(player));
 
-        return view;
-    }
+    return view;
+  }
 
-    public static IView ToPlayerChat(this IView view, CCSPlayerController player)
-    {
-        if (!player.IsReal() || player.IsBot)
-            return view;
+  #region Individual
 
-        var writer = view.ToWriter();
+  public static IView ToPlayerConsole(this IView view,
+    CCSPlayerController player) {
+    if (!player.IsReal() || player.IsBot) return view;
 
-        foreach (var writerLine in writer.Chat)
-            player.PrintToChat(writerLine);
+    var writer = view.ToWriter();
 
-        return view;
-    }
+    foreach (var writerLine in writer.Plain) player.PrintToConsole(writerLine);
 
-    public static IView ToPlayerCenter(this IView view, CCSPlayerController player)
-    {
-        if (!player.IsReal() || player.IsBot)
-            return view;
+    return view;
+  }
 
-        var writer = view.ToWriter();
-        var merged = string.Join('\n', writer.Plain);
+  public static IView ToPlayerChat(this IView view,
+    CCSPlayerController player) {
+    if (!player.IsReal() || player.IsBot) return view;
 
-        player.PrintToCenter(merged);
+    var writer = view.ToWriter();
 
-        return view;
-    }
+    foreach (var writerLine in writer.Chat) player.PrintToChat(writerLine);
 
-    public static IView ToPlayerCenterHtml(this IView view, CCSPlayerController player)
-    {
-        if (!player.IsReal() || player.IsBot)
-            return view;
+    return view;
+  }
 
-        var writer = view.ToWriter();
-        var merged = string.Join('\n', writer.Panorama);
+  public static IView ToPlayerCenter(this IView view,
+    CCSPlayerController player) {
+    if (!player.IsReal() || player.IsBot) return view;
 
-        player.PrintToCenterHtml(merged);
+    var writer = view.ToWriter();
+    var merged = string.Join('\n', writer.Plain);
 
-        return view;
-    }
+    player.PrintToCenter(merged);
 
-    #endregion
+    return view;
+  }
 
-    public static IView ToAllConsole(this IView view)
-    {
-        Utilities.GetPlayers().ForEach(player => view.ToPlayerConsole(player));
+  public static IView ToPlayerCenterHtml(this IView view,
+    CCSPlayerController player) {
+    if (!player.IsReal() || player.IsBot) return view;
 
-        return view;
-    }
+    var writer = view.ToWriter();
+    var merged = string.Join('\n', writer.Panorama);
 
-    public static IView ToAllChat(this IView view)
-    {
-        Utilities.GetPlayers().ForEach(player => view.ToPlayerChat(player));
+    player.PrintToCenterHtml(merged);
 
-        return view;
-    }
+    return view;
+  }
 
-    public static IView ToAllCenter(this IView view)
-    {
-        Utilities.GetPlayers().ForEach(player => view.ToPlayerCenter(player));
-
-        return view;
-    }
+  #endregion
 }

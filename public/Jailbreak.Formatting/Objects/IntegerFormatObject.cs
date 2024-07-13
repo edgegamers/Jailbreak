@@ -1,32 +1,14 @@
-﻿using CounterStrikeSharp.API.Modules.Utils;
-using Jailbreak.Formatting.Core;
+﻿using Jailbreak.Formatting.Core;
 
 namespace Jailbreak.Formatting.Objects;
 
-public class IntegerFormatObject : FormatObject
-{
-    private readonly char _chatColor;
+public class IntegerFormatObject(int value, char chatColor = '\x09')
+  : FormatObject {
+  public int Value { get; } = value;
 
-    public IntegerFormatObject(int value, char chatColor = '\x09')
-    {
-        Value = value;
-        _chatColor = chatColor;
-    }
+  public override string ToChat() { return $"{chatColor}{Value.ToString()}"; }
 
-    public int Value { get; }
+  public override string ToPanorama() { return Value.ToString(); }
 
-    public override string ToChat()
-    {
-        return $"{_chatColor}{Value.ToString()}";
-    }
-
-    public override string ToPanorama()
-    {
-        return Value.ToString();
-    }
-
-    public override string ToPlain()
-    {
-        return Value.ToString();
-    }
+  public override string ToPlain() { return Value.ToString(); }
 }

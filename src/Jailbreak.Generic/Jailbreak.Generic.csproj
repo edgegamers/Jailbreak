@@ -7,11 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CounterStrikeSharp.API" Version="1.0.233" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj" />
+        <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj"/>
     </ItemGroup>
 
 </Project>

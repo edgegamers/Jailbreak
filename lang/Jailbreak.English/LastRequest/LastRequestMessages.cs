@@ -10,90 +10,106 @@ using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.English.LastRequest;
 
-public class LastRequestMessages : ILastRequestMessages, ILanguage<Formatting.Languages.English>
-{
-    public static FormatObject PREFIX =
-        new HiddenFormatObject($" {ChatColors.DarkRed}[{ChatColors.LightRed}LR{ChatColors.DarkRed}]")
-        {
-            //	Hide in panorama and center text
-            Plain = false,
-            Panorama = false,
-            Chat = true
-        };
-
-    public IView LastRequestEnabled() => new SimpleView()
-    {
-        {
-            PREFIX,
-            $"Last Request has been enabled. {ChatColors.Grey}Type {ChatColors.LightBlue}!lr{ChatColors.Grey} to start a last request."
-        }
+public class LastRequestMessages : ILastRequestMessages,
+  ILanguage<Formatting.Languages.English> {
+  public static readonly FormatObject PREFIX =
+    new HiddenFormatObject(
+      $" {ChatColors.DarkRed}[{ChatColors.LightRed}LR{ChatColors.DarkRed}]") {
+      //	Hide in panorama and center text
+      Plain = false, Panorama = false, Chat = true
     };
 
-    public IView LastRequestDisabled() => new SimpleView()
-    {
-        { PREFIX, $"{ChatColors.Grey}Last Request has been {ChatColors.Red}disabled{ChatColors.Grey}." }
+  public IView LastRequestEnabled() {
+    return new SimpleView {
+      {
+        PREFIX,
+        $"Last Request has been enabled. {ChatColors.Grey}Type {ChatColors.LightBlue}!lr{ChatColors.Grey} to start a last request."
+      }
     };
+  }
 
-    public IView LastRequestNotEnabled() => new SimpleView()
-    {
-        { PREFIX, $"{ChatColors.Red}Last Request is not enabled." }
+  public IView LastRequestDisabled() {
+    return new SimpleView {
+      {
+        PREFIX,
+        $"{ChatColors.Grey}Last Request has been {ChatColors.Red}disabled{ChatColors.Grey}."
+      }
     };
+  }
 
-    public IView InvalidLastRequest(string query)
-    {
-        return new SimpleView()
-        {
-            PREFIX,
-            "Invalid Last Request: ",
-            query
-        };
-    }
+  public IView LastRequestNotEnabled() {
+    return new SimpleView {
+      { PREFIX, $"{ChatColors.Red}Last Request is not enabled." }
+    };
+  }
 
-    public IView InvalidPlayerChoice(CCSPlayerController player, string reason)
-    {
-        return new SimpleView()
-        {
-            PREFIX,
-            "Invalid player choice: ",
-            player,
-            " Reason: ",
-            reason
-        };
-    }
+  public IView InvalidLastRequest(string query) {
+    return new SimpleView { PREFIX, "Invalid Last Request: ", query };
+  }
 
-    public IView InformLastRequest(AbstractLastRequest lr)
-    {
-        return new SimpleView()
-        {
-            PREFIX,
-            lr.prisoner, "is preparing a", lr.type.ToFriendlyString(),
-            "Last Request against", lr.guard
-        };
-    }
+  public IView InvalidPlayerChoice(CCSPlayerController player, string reason) {
+    return new SimpleView {
+      PREFIX,
+      "Invalid player choice: ",
+      player,
+      " Reason: ",
+      reason
+    };
+  }
 
-    public IView AnnounceLastRequest(AbstractLastRequest lr)
-    {
-        return new SimpleView()
-        {
-            PREFIX,
-            lr.prisoner, "is doing a", lr.type.ToFriendlyString(),
-            "Last Request against", lr.guard
-        };
-    }
+  public IView InformLastRequest(AbstractLastRequest lr) {
+    return new SimpleView {
+      PREFIX,
+      lr.Prisoner,
+      "is preparing a",
+      lr.Type.ToFriendlyString(),
+      "Last Request against",
+      lr.Guard
+    };
+  }
 
-    public IView LastRequestDecided(AbstractLastRequest lr, LRResult result)
-    {
-        return new SimpleView()
-        {
-            PREFIX,
-            (result == LRResult.GuardWin ? ChatColors.Blue : ChatColors.Red).ToString(),
-            result == LRResult.PrisonerWin ? lr.prisoner : lr.guard,
-            "won the LR."
-        };
-    }
+  public IView AnnounceLastRequest(AbstractLastRequest lr) {
+    return new SimpleView {
+      PREFIX,
+      lr.Prisoner,
+      "is doing a",
+      lr.Type.ToFriendlyString(),
+      "Last Request against",
+      lr.Guard
+    };
+  }
 
-    public IView DamageBlockedInsideLastRequest => new SimpleView { PREFIX, "You or they are in LR, damage blocked." };
+  public IView LastRequestDecided(AbstractLastRequest lr, LRResult result) {
+    return new SimpleView {
+      PREFIX,
+      (result == LRResult.GUARD_WIN ? ChatColors.Blue : ChatColors.Red)
+     .ToString(),
+      result == LRResult.PRISONER_WIN ? lr.Prisoner : lr.Guard,
+      "won the LR."
+    };
+  }
 
-    public IView DamageBlockedNotInSameLR => new SimpleView
-        { PREFIX, "You are not in the same LR as them, damage blocked." };
+  public IView CannotLR(string reason) {
+    return new SimpleView {
+      PREFIX,
+      $"{ChatColors.Red}You cannot LR: {ChatColors.White + reason + ChatColors.Red}."
+    };
+  }
+
+  public IView CannotLR(CCSPlayerController player, string reason) {
+    return new SimpleView {
+      PREFIX,
+      ChatColors.Red + "You cannot LR",
+      player,
+      ": " + ChatColors.White + reason + ChatColors.Red + "."
+    };
+  }
+
+  public IView DamageBlockedInsideLastRequest
+    => new SimpleView { PREFIX, "You or they are in LR, damage blocked." };
+
+  public IView DamageBlockedNotInSameLR
+    => new SimpleView {
+      PREFIX, "You are not in the same LR as them, damage blocked."
+    };
 }

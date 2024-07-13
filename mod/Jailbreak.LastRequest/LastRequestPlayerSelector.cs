@@ -4,47 +4,37 @@ using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
-using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestPlayerSelector
-{
-    private ILastRequestManager _lrManager;
-    private bool debug;
+public class LastRequestPlayerSelector(ILastRequestManager manager,
+  BasePlugin plugin, bool debug = false) {
+  public CenterHtmlMenu CreateMenu(CCSPlayerController player,
+    Func<string?, string> command) {
+    var menu = new CenterHtmlMenu(command.Invoke("[Player]"), plugin);
 
-    public LastRequestPlayerSelector(ILastRequestManager manager, bool debug = false)
-    {
-        _lrManager = manager;
-        this.debug = debug;
+    foreach (var target in Utilities.GetPlayers()
+     .Where(target => target.IsReal())
+     .Where(target => target.PawnIsAlive
+        && (target.Team == CsTeam.CounterTerrorist || debug))) {
+      menu.AddMenuOption(target.PlayerName,
+        (_, _) => onSelect(player, command, target.UserId.ToString()),
+        !debug && manager.IsInLR(target));
     }
 
-    public CenterHtmlMenu CreateMenu(CCSPlayerController player, Func<string?, string> command)
-    {
-        CenterHtmlMenu menu = new CenterHtmlMenu(command.Invoke("[Player]"));
+    return menu;
+  }
 
-        foreach (var target in Utilities.GetPlayers())
-        {
-            if (!target.IsReal())
-                continue;
-            if (!target.PawnIsAlive || target.Team != CsTeam.CounterTerrorist && !debug)
-                continue;
-            menu.AddMenuOption(target.PlayerName,
-                (selector, _) =>
-                    OnSelect(player, command, target.UserId.ToString()),
-                !debug && _lrManager.IsInLR(target)
-            );
-        }
+  public bool WouldHavePlayers() {
+    return Utilities.GetPlayers()
+     .Any(p => p.IsReal() && p is {
+        PawnIsAlive: true, Team: CsTeam.CounterTerrorist
+      });
+  }
 
-        return menu;
-    }
-
-    public bool WouldHavePlayers() => Utilities.GetPlayers()
-        .Any(p => p.IsReal() && p is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist });
-
-    private void OnSelect(CCSPlayerController player, Func<string?, string> command, string? value)
-    {
-        MenuManager.CloseActiveMenu(player);
-        player.ExecuteClientCommandFromServer(command.Invoke(value));
-    }
+  private void onSelect(CCSPlayerController player,
+    Func<string?, string> command, string? value) {
+    MenuManager.CloseActiveMenu(player);
+    player.ExecuteClientCommandFromServer(command.Invoke(value));
+  }
 }

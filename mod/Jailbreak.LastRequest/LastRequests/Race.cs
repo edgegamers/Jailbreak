@@ -1,6 +1,4 @@
 ﻿using System.Drawing;
-using System.Xml.Schema;
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -14,124 +12,111 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
-public class Race(
-    BasePlugin plugin,
-    ILastRequestManager manager,
-    CCSPlayerController prisoner,
-    CCSPlayerController guard,
-    IRaceLRMessages messages) : TeleportingRequest(plugin, manager, prisoner, guard)
-{
-    public override LRType type => LRType.Race;
+public class Race(BasePlugin plugin, ILastRequestManager manager,
+  CCSPlayerController prisoner, CCSPlayerController guard,
+  IRaceLRMessages messages)
+  : TeleportingRequest(plugin, manager, prisoner, guard) {
+  private DateTime raceStart;
+  private Timer? raceTimer;
+  private BeamCircle? start, end;
+  private Vector? startLocation, endLocation;
+  public override LRType Type => LRType.RACE;
 
-    private BeamCircle? start, end;
-    private Vector startLocation, endLocation;
+  public override void Setup() {
+    base.Setup();
 
-    private Timer? raceTimer;
-    private DateTime raceStart;
+    Prisoner.RemoveWeapons();
 
-    public override void Setup()
-    {
-        base.Setup();
+    Guard.RemoveWeapons();
+    Guard.GiveNamedItem("weapon_knife");
 
-        prisoner.RemoveWeapons();
+    Plugin.AddTimer(3, () => {
+      if (State != LRState.PENDING) return;
+      Prisoner.GiveNamedItem("weapon_knife");
+    });
 
-        guard.RemoveWeapons();
-        guard.GiveNamedItem("weapon_knife");
+    messages.EndRaceInstruction.ToPlayerChat(Prisoner);
 
-        plugin.AddTimer(3, () =>
-        {
-            if (state != LRState.Pending)
-                return;
-            prisoner.GiveNamedItem("weapon_knife");
-        });
+    messages.RaceStartingMessage(Prisoner).ToPlayerChat(Guard);
 
-        messages.END_RACE_INSTRUCTION.ToPlayerChat(prisoner);
+    startLocation = Prisoner.Pawn?.Value?.AbsOrigin?.Clone();
 
-        messages.RACE_STARTING_MESSAGE(prisoner).ToPlayerChat(guard);
+    if (startLocation == null) return;
+    start = new BeamCircle(Plugin, startLocation, 20, 16);
+    start.SetColor(Color.Aqua);
+    start.Draw();
+  }
 
-        startLocation = prisoner.Pawn.Value.AbsOrigin.Clone();
+  // Called when the prisoner types !endrace
+  public override void Execute() {
+    State = LRState.ACTIVE;
 
-        start = new BeamCircle(plugin, startLocation, 20, 16);
-        start.SetColor(Color.Aqua);
-        start.Draw();
+    endLocation = Prisoner.Pawn?.Value?.AbsOrigin?.Clone();
+
+    if (endLocation == null) return;
+    end = new BeamCircle(Plugin, endLocation, 10, 32);
+    end.SetColor(Color.Red);
+    end.Draw();
+
+    Prisoner.Pawn?.Value?.Teleport(startLocation);
+    Guard.Pawn.Value?.Teleport(startLocation);
+
+    Guard.Freeze();
+    Prisoner.Freeze();
+
+    Plugin.AddTimer(1, () => {
+      Guard.UnFreeze();
+      Prisoner.UnFreeze();
+    });
+
+    raceStart = DateTime.Now;
+
+    raceTimer = Plugin.AddTimer(0.1f, tick, TimerFlags.REPEAT);
+  }
+
+  private void tick() {
+    if (Prisoner.AbsOrigin == null || Guard.AbsOrigin == null) return;
+    var requiredDistance       = getRequiredDistance();
+    var requiredDistanceSqured = MathF.Pow(requiredDistance, 2);
+
+    end?.SetRadius(requiredDistance / 2);
+    end?.Update();
+
+    if (endLocation == null) return;
+    var guardDist = Guard.Pawn?.Value?.AbsOrigin?.Clone()
+     .DistanceSquared(endLocation);
+
+    if (guardDist < requiredDistanceSqured) {
+      Manager.EndLastRequest(this, LRResult.GUARD_WIN);
+      return;
     }
 
-    // Called when the prisoner types !endrace
-    public override void Execute()
-    {
-        state = LRState.Active;
+    var prisonerDist = Prisoner.Pawn?.Value?.AbsOrigin?.Clone()
+     .DistanceSquared(endLocation);
+    if (prisonerDist < requiredDistanceSqured)
+      Manager.EndLastRequest(this, LRResult.PRISONER_WIN);
+  }
 
-        endLocation = prisoner.Pawn.Value.AbsOrigin.Clone();
+  // https://www.desmos.com/calculator/e1qwgpmtmz
+  private float getRequiredDistance() {
+    var elapsedSeconds = (DateTime.Now - raceStart).TotalSeconds;
 
-        end = new BeamCircle(plugin, endLocation, 10, 32);
-        end.SetColor(Color.Red);
-        end.Draw();
+    return (float)(10 + elapsedSeconds + Math.Pow(elapsedSeconds, 2.9) / 5000);
+  }
 
-        prisoner.Pawn.Value.Teleport(startLocation);
-        guard.Pawn.Value?.Teleport(startLocation);
-
-        guard.Freeze();
-        prisoner.Freeze();
-
-        plugin.AddTimer(1, () =>
-        {
-            guard.UnFreeze();
-            prisoner.UnFreeze();
-        });
-
-        raceStart = DateTime.Now;
-
-        raceTimer = plugin.AddTimer(0.1f, Tick, TimerFlags.REPEAT);
+  public override void OnEnd(LRResult result) {
+    State = LRState.COMPLETED;
+    switch (result) {
+      case LRResult.GUARD_WIN:
+        Prisoner.Pawn.Value?.CommitSuicide(false, true);
+        break;
+      case LRResult.PRISONER_WIN:
+        Guard.Pawn.Value?.CommitSuicide(false, true);
+        break;
     }
 
-    private void Tick()
-    {
-        if (prisoner.AbsOrigin == null || guard.AbsOrigin == null)
-            return;
-        var requiredDistance = getRequiredDistance();
-        var requiredDistanceSqured = MathF.Pow(requiredDistance, 2);
-
-        end?.SetRadius(requiredDistance / 2);
-        end?.Update();
-
-        var guardDist = guard.Pawn.Value.AbsOrigin.Clone().DistanceSquared(endLocation);
-
-        if (guardDist < requiredDistanceSqured)
-        {
-            manager.EndLastRequest(this, LRResult.GuardWin);
-            return;
-        }
-
-        var prisonerDist = prisoner.Pawn.Value.AbsOrigin.Clone().DistanceSquared(endLocation);
-        if (prisonerDist < requiredDistanceSqured)
-        {
-            manager.EndLastRequest(this, LRResult.PrisonerWin);
-        }
-    }
-
-    // https://www.desmos.com/calculator/e1qwgpmtmz
-    private float getRequiredDistance()
-    {
-        var elapsedSeconds = (DateTime.Now - raceStart).TotalSeconds;
-
-        return (float)(10 + elapsedSeconds + Math.Pow(elapsedSeconds, 2.9) / 5000);
-    }
-
-    public override void OnEnd(LRResult result)
-    {
-        state = LRState.Completed;
-        switch (result)
-        {
-            case LRResult.GuardWin:
-                prisoner.Pawn.Value?.CommitSuicide(false, true);
-                break;
-            case LRResult.PrisonerWin:
-                guard.Pawn.Value?.CommitSuicide(false, true);
-                break;
-        }
-
-        raceTimer?.Kill();
-        start?.Remove();
-        end?.Remove();
-    }
+    raceTimer?.Kill();
+    start?.Remove();
+    end?.Remove();
+  }
 }

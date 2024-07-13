@@ -11,86 +11,94 @@ using Jailbreak.Public.Mod.LastRequest;
 
 namespace Jailbreak.LastGuard;
 
-public class LastGuard(LastGuardConfig config, ILastGuardNotifications notifications, ILastRequestManager lrManager)
-    : ILastGuardService, IPluginBehavior
-{
-    private bool _canStart;
+public class LastGuard(LastGuardConfig config,
+  ILastGuardNotifications notifications, ILastRequestManager lrManager)
+  : ILastGuardService, IPluginBehavior {
+  private bool canStart;
 
-    [GameEventHandler]
-    public HookResult OnPlayerDeathEvent(EventPlayerDeath @event, GameEventInfo info)
-    {
-        checkLastGuard(@event.Userid);
-        return HookResult.Continue;
-    }
+  public int CalculateHealth() {
+    var aliveTerrorists = Utilities.GetPlayers()
+     .Where(plr
+        => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.Terrorist })
+     .ToList();
 
-    [GameEventHandler]
-    public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
-    {
-        checkLastGuard(@event.Userid);
-        return HookResult.Continue;
-    }
+    return aliveTerrorists
+     .Select(player => player.PlayerPawn?.Value?.Health ?? 0)
+     .Select(playerHealth => (int)(Math.Min(playerHealth, 200) * 0.8))
+     .Sum();
+  }
 
-    private void checkLastGuard(CCSPlayerController? poi)
-    {
-        if (poi == null) return;
-        if (poi.Team != CsTeam.CounterTerrorist) return;
-        var aliveCts = Utilities.GetPlayers()
-            .Count(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist }) - 1;
+  public void StartLastGuard(CCSPlayerController lastGuard) {
+    var guardPlayerPawn = lastGuard.PlayerPawn.Value;
 
-        if (aliveCts != 1 || lrManager.IsLREnabled) return;
-        var lastGuard = Utilities.GetPlayers().First(plr =>
-            plr.IsReal() && plr != poi && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist });
+    if (guardPlayerPawn == null || !guardPlayerPawn.IsValid) return;
 
-        if (_canStart)
-            StartLastGuard(lastGuard);
-    }
+    var guardCalcHealth = CalculateHealth();
 
-    [GameEventHandler]
-    public HookResult OnRoundStartEvent(EventRoundStart @event, GameEventInfo info)
-    {
-        _canStart = Utilities.GetPlayers()
-                        .Count(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist }) >=
-                    config.MinimumCTs;
-        return HookResult.Continue;
-    }
+    guardPlayerPawn.Health = guardCalcHealth;
+    Utilities.SetStateChanged(guardPlayerPawn, "CBaseEntity", "m_iHealth");
 
-    public int CalculateHealth()
-    {
-        var aliveTerrorists = Utilities.GetPlayers()
-            .Where(plr => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.Terrorist }).ToList();
+    // foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal()))
+    //     player.ExecuteClientCommand("play sounds/lastct");
 
-        return aliveTerrorists.Select(player => player.PlayerPawn?.Value?.Health ?? 0)
-            .Select(playerHealth => (int)(Math.Min(playerHealth, 200) * 0.8)).Sum();
-    }
+    var aliveTerrorists = Utilities.GetPlayers()
+     .Where(p
+        => p.IsReal() && p is { PawnIsAlive: true, Team: CsTeam.Terrorist })
+     .ToList();
 
-    public void StartLastGuard(CCSPlayerController lastGuard)
-    {
-        var ctPlayerPawn = lastGuard.PlayerPawn.Value;
+    var prisonerHp =
+      aliveTerrorists.Sum(prisoner => prisoner.PlayerPawn?.Value?.Health ?? 0);
 
-        if (ctPlayerPawn == null || !ctPlayerPawn.IsValid) return;
+    notifications.LGStarted(guardCalcHealth, prisonerHp)
+     .ToAllCenter()
+     .ToAllChat();
 
-        var ctHealth = ctPlayerPawn.Health;
-        var ctCalcHealth = CalculateHealth();
+    if (string.IsNullOrEmpty(config.LastGuardWeapon)) return;
 
-        ctPlayerPawn.Health = ctHealth > ctCalcHealth ? 125 : ctCalcHealth;
-        Utilities.SetStateChanged(ctPlayerPawn, "CBaseEntity", "m_iHealth");
+    foreach (var player in aliveTerrorists)
+      player.GiveNamedItem(config.LastGuardWeapon);
+  }
 
-        // foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal()))
-        //     player.ExecuteClientCommand("play sounds/lastct");
+  [GameEventHandler]
+  public HookResult OnPlayerDeathEvent(EventPlayerDeath @event,
+    GameEventInfo info) {
+    checkLastGuard(@event.Userid);
+    return HookResult.Continue;
+  }
 
-        var aliveTerrorists = Utilities.GetPlayers()
-            .Where(p => p.IsReal() && p is { PawnIsAlive: true, Team: CsTeam.Terrorist }).ToList();
+  [GameEventHandler]
+  public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event,
+    GameEventInfo info) {
+    checkLastGuard(@event.Userid);
+    return HookResult.Continue;
+  }
 
-        var guardHp = lastGuard.PlayerPawn?.Value?.Health ?? 0;
-        var prisonerHp = aliveTerrorists.Sum(prisoner => prisoner.PlayerPawn?.Value?.Health ?? 0);
+  private void checkLastGuard(CCSPlayerController? poi) {
+    if (poi == null) return;
+    if (poi.Team != CsTeam.CounterTerrorist) return;
+    var aliveCts = Utilities.GetPlayers()
+     .Count(plr
+        => plr.IsReal() && plr is {
+          PawnIsAlive: true, Team: CsTeam.CounterTerrorist
+        }) - 1;
 
-        notifications.LG_STARTED(guardHp, prisonerHp).ToAllCenter().ToAllChat();
+    if (aliveCts != 1 || lrManager.IsLREnabled) return;
+    var lastGuard = Utilities.GetPlayers()
+     .First(plr => plr.IsReal() && plr != poi && plr is {
+        PawnIsAlive: true, Team: CsTeam.CounterTerrorist
+      });
 
-        if (string.IsNullOrEmpty(config.LastGuardWeapon)) return;
+    if (canStart) StartLastGuard(lastGuard);
+  }
 
-        foreach (var player in aliveTerrorists)
-        {
-            player.GiveNamedItem(config.LastGuardWeapon);
-        }
-    }
+  [GameEventHandler]
+  public HookResult OnRoundStartEvent(EventRoundStart @event,
+    GameEventInfo info) {
+    canStart = Utilities.GetPlayers()
+     .Count(plr
+        => plr.IsReal() && plr is {
+          PawnIsAlive: true, Team: CsTeam.CounterTerrorist
+        }) >= config.MinimumCTs;
+    return HookResult.Continue;
+  }
 }

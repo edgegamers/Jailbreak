@@ -1,40 +1,31 @@
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Menu;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestMenuSelector
-{
-    private readonly CenterHtmlMenu _menu;
-    private readonly Func<LRType, string> _command;
+public class LastRequestMenuSelector {
+  private readonly Func<LRType, string> command;
+  private readonly CenterHtmlMenu menu;
 
-    public LastRequestMenuSelector(ILastRequestFactory factory) : this(factory, (lr) => "css_lr " + ((int)lr))
-    {
-    }
+  public LastRequestMenuSelector(ILastRequestFactory factory, BasePlugin plugin)
+    : this(factory, lr => "css_lr " + (int)lr, plugin) { }
 
-    public LastRequestMenuSelector(ILastRequestFactory factory, Func<LRType, string> command)
-    {
-        _command = command;
-        _menu = new CenterHtmlMenu("css_lr [LR] [Player]");
-        foreach (LRType lr in Enum.GetValues(typeof(LRType)))
-        {
-            if (!factory.IsValidType(lr))
-                continue;
-            _menu.AddMenuOption(lr.ToFriendlyString(), (p, o) => OnSelectLR(p, lr));
-        }
+  public LastRequestMenuSelector(ILastRequestFactory factory,
+    Func<LRType, string> command, BasePlugin plugin) {
+    this.command = command;
+    menu         = new CenterHtmlMenu("css_lr [LR] [Player]", plugin);
+    foreach (LRType lr in Enum.GetValues(typeof(LRType))) {
+      if (!factory.IsValidType(lr)) continue;
+      menu.AddMenuOption(lr.ToFriendlyString(), (p, _) => OnSelectLR(p, lr));
     }
+  }
 
-    public CenterHtmlMenu GetMenu()
-    {
-        return _menu;
-    }
+  public CenterHtmlMenu GetMenu() { return menu; }
 
-    private void OnSelectLR(CCSPlayerController player, LRType lr)
-    {
-        MenuManager.CloseActiveMenu(player);
-        player.ExecuteClientCommandFromServer(this._command.Invoke(lr));
-    }
+  private void OnSelectLR(CCSPlayerController player, LRType lr) {
+    MenuManager.CloseActiveMenu(player);
+    player.ExecuteClientCommandFromServer(command.Invoke(lr));
+  }
 }

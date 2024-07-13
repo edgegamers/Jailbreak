@@ -5,95 +5,79 @@ using CounterStrikeSharp.API.Modules.Utils;
 
 namespace Jailbreak.Public.Extensions;
 
-public static class PlayerExtensions
-{
-    public static CsTeam GetTeam(this CCSPlayerController controller)
-    {
-        return (CsTeam)controller.TeamNum;
-    }
+public static class PlayerExtensions {
+  public static CsTeam GetTeam(this CCSPlayerController controller) {
+    return (CsTeam)controller.TeamNum;
+  }
 
-    public static bool IsReal(this CCSPlayerController? player)
-    {
-        //  Do nothing else before this:
-        //  Verifies the handle points to an entity within the global entity list.
-        if (player == null)
-            return false;
-        if (!player.IsValid)
-            return false;
+  public static bool IsReal(this CCSPlayerController? player) {
+    //  Do nothing else before this:
+    //  Verifies the handle points to an entity within the global entity list.
+    if (player == null) return false;
+    if (!player.IsValid) return false;
 
-        if (player.Connected != PlayerConnectedState.PlayerConnected)
-            return false;
+    if (player.Connected != PlayerConnectedState.PlayerConnected) return false;
 
-        if (player.IsHLTV)
-            return false;
+    if (player.IsHLTV) return false;
 
-        return true;
-    }
+    return true;
+  }
 
-    public static void Teleport(this CCSPlayerController player, CCSPlayerController target)
-    {
-        if (!player.IsReal() || !target.IsReal())
-            return;
+  public static void Teleport(this CCSPlayerController player,
+    CCSPlayerController target) {
+    if (!player.IsReal() || !target.IsReal()) return;
 
-        var playerPawn = player.Pawn.Value;
-        if (playerPawn == null)
-            return;
+    var playerPawn = player.Pawn.Value;
+    if (playerPawn == null) return;
 
-        var targetPawn = target.Pawn.Value;
-        if (targetPawn == null)
-            return;
+    var targetPawn = target.Pawn.Value;
+    if (targetPawn == null) return;
 
-        if (targetPawn is { AbsRotation: not null, AbsOrigin: not null })
-            Teleport(player, targetPawn.AbsOrigin, targetPawn.AbsRotation);
-    }
+    if (targetPawn is { AbsRotation: not null, AbsOrigin: not null })
+      Teleport(player, targetPawn.AbsOrigin, targetPawn.AbsRotation);
+  }
 
-    public static void Teleport(this CCSPlayerController player, Vector pos, QAngle? rot = null)
-    {
-        if (!player.IsReal())
-            return;
+  public static void Teleport(this CCSPlayerController player, Vector pos,
+    QAngle? rot = null) {
+    if (!player.IsReal()) return;
 
-        var playerPawn = player.Pawn.Value;
-        if (playerPawn == null)
-            return;
+    var playerPawn = player.Pawn.Value;
+    if (playerPawn == null) return;
 
-        playerPawn.Teleport(pos, rot ?? playerPawn.AbsRotation!, new Vector());
-    }
+    playerPawn.Teleport(pos, rot ?? playerPawn.AbsRotation!, new Vector());
+  }
 
-    public static void Freeze(this CCSPlayerController player)
-    {
-        if (!player.Pawn.IsValid || player.Connected != PlayerConnectedState.PlayerConnected)
-            return;
+  public static void Freeze(this CCSPlayerController player) {
+    if (!player.Pawn.IsValid
+      || player.Connected != PlayerConnectedState.PlayerConnected)
+      return;
 
-        if (player.Pawn.Value == null)
-            return;
+    if (player.Pawn.Value == null) return;
 
-        player.Pawn.Value.Freeze();
-    }
+    player.Pawn.Value.Freeze();
+  }
 
-    public static void UnFreeze(this CCSPlayerController player)
-    {
-        if (!player.Pawn.IsValid || player.Connected != PlayerConnectedState.PlayerConnected)
-            return;
+  public static void UnFreeze(this CCSPlayerController player) {
+    if (!player.Pawn.IsValid
+      || player.Connected != PlayerConnectedState.PlayerConnected)
+      return;
 
-        if (player.Pawn.Value == null)
-            return;
+    if (player.Pawn.Value == null) return;
 
-        player.Pawn.Value.UnFreeze();
-    }
+    player.Pawn.Value.UnFreeze();
+  }
 
-    public static void Freeze(this CBasePlayerPawn pawn)
-    {
-        pawn.MoveType = MoveType_t.MOVETYPE_OBSOLETE;
+  public static void Freeze(this CBasePlayerPawn pawn) {
+    pawn.MoveType = MoveType_t.MOVETYPE_OBSOLETE;
 
-        Schema.SetSchemaValue(pawn.Handle, "CBaseEntity", "m_nActualMoveType", 1);
-        Utilities.SetStateChanged(pawn, "CBaseEntity", "m_MoveType");
-    }
+    Schema.SetSchemaValue(pawn.Handle, "CBaseEntity", "m_nActualMoveType", 1);
+    Utilities.SetStateChanged(pawn, "CBaseEntity", "m_MoveType");
+  }
 
-    public static void UnFreeze(this CBasePlayerPawn pawn)
-    {
-        pawn.MoveType = MoveType_t.MOVETYPE_WALK;
+  public static void UnFreeze(this CBasePlayerPawn pawn) {
+    pawn.MoveType = MoveType_t.MOVETYPE_WALK;
 
-        Schema.SetSchemaValue(pawn.Handle, "CBaseEntity", "m_nActualMoveType", 2);
-        Utilities.SetStateChanged(pawn, "CBaseEntity", "m_MoveType");
-    }
+    Schema.SetSchemaValue(pawn.Handle, "CBaseEntity", "m_nActualMoveType", 2);
+    Utilities.SetStateChanged(pawn, "CBaseEntity", "m_MoveType");
+  }
 }
