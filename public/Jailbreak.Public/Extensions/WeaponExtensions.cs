@@ -18,6 +18,8 @@ public static class WeaponExtensions {
         return "CZ75";
       case "weapon_deagle":
         return "Desert Eagle";
+      case "weapon_elite":
+        return "Dualies";
       case "weapon_famas":
         return "Famas";
       case "weapon_fiveseven":

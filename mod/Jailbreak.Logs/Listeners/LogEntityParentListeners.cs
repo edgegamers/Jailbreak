@@ -9,7 +9,7 @@ namespace Jailbreak.Logs.Listeners;
 public class LogEntityParentListeners(IRichLogService logs) : IPluginBehavior {
   private static readonly string[] WEAPON_STRINGS = [
     "weapon_ak47", "weapon_aug", "weapon_awp", "weapon_bizon", "weapon_cz75a",
-    "weapon_deagle", "weapon_famas", "weapon_fiveseven", "weapon_g3sg1",
+    "weapon_deagle", "weapon_elite", "weapon_famas", "weapon_fiveseven", "weapon_g3sg1",
     "weapon_galilar", "weapon_glock", "weapon_hkp2000", "weapon_m249",
     "weapon_m4a1", "weapon_m4a1_silencer", "weapon_m4a4", "weapon_mac10",
     "weapon_mag7", "weapon_mp5sd", "weapon_mp7", "weapon_mp9", "weapon_negev",
