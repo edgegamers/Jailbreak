@@ -120,7 +120,7 @@ public class LastRequestMessages : ILastRequestMessages,
           PREFIX,
           (result == LRResult.GUARD_WIN ? ChatColors.Blue : ChatColors.Red)
          .ToString(),
-          result == LRResult.PRISONER_WIN ? lr.Prisoner : lr.Guard,
+          result == LRResult.PRISONER_WIN ? lr.Prisoner! : lr.Guard!,
           "won the LR."
         };
     }
