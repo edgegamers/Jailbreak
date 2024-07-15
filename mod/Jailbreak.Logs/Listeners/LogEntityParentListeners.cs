@@ -17,7 +17,12 @@ public class LogEntityParentListeners(IRichLogService logs) : IPluginBehavior
     "weapon_nova", "weapon_p250", "weapon_p90", "weapon_revolver",
     "weapon_sawedoff", "weapon_scar20", "weapon_sg553", "weapon_sg556",
     "weapon_ssg08", "weapon_taser", "weapon_tec9", "weapon_ump45",
-    "weapon_usp_silencer", "weapon_xm1014"
+    "weapon_usp_silencer", "weapon_xm1014", "item_kevlar", "item_assaultsuit",
+    "weapon_snowball", "weapon_shield", "weapon_c4", "weapon_healthshot",
+    "weapon_breachcharge", "weapon_tablet", "weapon_bumpmine", "weapon_smokegrenade",
+    "weapon_flashbang", "weapon_hegrenade", "weapon_molotov", "weapon_incgrenade",
+    "weapon_decoy", "weapon_tagrenade", "weapon_frag", "weapon_firebomb",
+    "weapon_diversion", "weapon_knife_t", "weapon_knife"
     ];
 
     private readonly HashSet<int> recentWeaponEvents = new();
