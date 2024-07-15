@@ -6,9 +6,10 @@ using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.Logs.Listeners;
 
-public class LogEntityParentListeners(IRichLogService logs) : IPluginBehavior {
-  private static readonly string[] WEAPON_STRINGS = [
-    "weapon_ak47", "weapon_aug", "weapon_awp", "weapon_bizon", "weapon_cz75a",
+public class LogEntityParentListeners(IRichLogService logs) : IPluginBehavior
+{
+    private static readonly string[] WEAPON_STRINGS = [
+      "weapon_ak47", "weapon_aug", "weapon_awp", "weapon_bizon", "weapon_cz75a",
     "weapon_deagle", "weapon_elite", "weapon_famas", "weapon_fiveseven", "weapon_g3sg1",
     "weapon_galilar", "weapon_glock", "weapon_hkp2000", "weapon_m249",
     "weapon_m4a1", "weapon_m4a1_silencer", "weapon_m4a4", "weapon_mac10",
@@ -17,9 +18,11 @@ public class LogEntityParentListeners(IRichLogService logs) : IPluginBehavior {
     "weapon_sawedoff", "weapon_scar20", "weapon_sg553", "weapon_sg556",
     "weapon_ssg08", "weapon_taser", "weapon_tec9", "weapon_ump45",
     "weapon_usp_silencer", "weapon_xm1014"
-  ];
+    ];
 
-  public void Start(BasePlugin _parent) {
+    private readonly HashSet<int> recentWeaponEvents = new();
+
+    public void Start(BasePlugin _parent) {
     _parent
      .RegisterListener<
         CounterStrikeSharp.API.Core.Listeners.OnEntityParentChanged>(
@@ -48,7 +51,13 @@ public class LogEntityParentListeners(IRichLogService logs) : IPluginBehavior {
       return;
     }
 
-    var weaponPickerUpper = Utilities
+    if (!recentWeaponEvents.Add((int)weaponEntity.Index))
+    {
+      recentWeaponEvents.Remove((int)weaponEntity.Index);
+      return;
+    }
+
+        var weaponPickerUpper = Utilities
      .GetEntityFromIndex<CCSPlayerPawn>((int)newParent.Index)
     ?.OriginalController.Get();
     if (weaponPickerUpper == null) return;
