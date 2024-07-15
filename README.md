@@ -21,8 +21,8 @@ Our **Nightly** builds are used exclusively for development and staging, and are
 Our release tags starting from 'v1.2.0' follow the [Semantic Versioning 2.0.0](https://semver.org/) standard,
 where `MAJOR.MINOR.PATCH` are incremented based on the following:
 - `MAJOR` when we make incompatible API changes,
-- `MINOR` when we add functionality in a backwards-compatible manner, **or** modify gameplay behavior
-- `PATCH` when we make backwards-compatible bug fixes, **or** modify non-gameplay (cosmetic) behavior
+- `MINOR` when we add functionality in a backwards-compatible manner.
+- `PATCH` when we make backwards-compatible bug fixes.
 
 ## Status
 
