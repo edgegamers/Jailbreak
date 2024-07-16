@@ -114,7 +114,8 @@ public class LastRequestManager(LastRequestConfig config,
 
   [GameEventHandler]
   public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
-    foreach (var lr in ActiveLRs) EndLastRequest(lr, LRResult.TIMED_OUT);
+    foreach (var lr in ActiveLRs.ToList())
+      EndLastRequest(lr, LRResult.TIMED_OUT);
 
     IsLREnabled = false;
     return HookResult.Continue;

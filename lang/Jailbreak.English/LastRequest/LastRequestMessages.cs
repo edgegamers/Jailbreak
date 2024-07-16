@@ -81,26 +81,20 @@ public class LastRequestMessages : ILastRequestMessages,
   }
 
   public IView LastRequestDecided(AbstractLastRequest lr, LRResult result) {
-    var tNull = lr.Prisoner == null || !lr.Prisoner.IsReal();
-    var gNull = lr.Guard == null || !lr.Guard.IsReal();
+    var tNull = !lr.Prisoner.IsReal();
+    var gNull = !lr.Guard.IsReal();
     if (tNull && gNull)
       return new SimpleView() { PREFIX, "Last Request has been decided." };
 
     if (tNull && result == LRResult.PRISONER_WIN) {
       return new SimpleView() {
-        PREFIX,
-        ChatColors.Red.ToString(),
-        lr.Guard!,
-        "lost the LR, but the prisoner left the game."
+        PREFIX, lr.Guard!, "lost the LR, but the prisoner left the game."
       };
     }
 
     if (gNull && result == LRResult.GUARD_WIN) {
       return new SimpleView() {
-        PREFIX,
-        ChatColors.Blue.ToString(),
-        lr.Prisoner!,
-        "lost the LR, but the guard left the game."
+        PREFIX, lr.Prisoner!, "lost the LR, but the guard left the game."
       };
     }
 
@@ -118,8 +112,6 @@ public class LastRequestMessages : ILastRequestMessages,
       default:
         return new SimpleView {
           PREFIX,
-          (result == LRResult.GUARD_WIN ? ChatColors.Blue : ChatColors.Red)
-         .ToString(),
           result == LRResult.PRISONER_WIN ? lr.Prisoner! : lr.Guard!,
           "won the LR."
         };
