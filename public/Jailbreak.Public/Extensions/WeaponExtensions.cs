@@ -18,6 +18,8 @@ public static class WeaponExtensions {
         return "CZ75";
       case "weapon_deagle":
         return "Desert Eagle";
+      case "weapon_elite":
+        return "Dualies";
       case "weapon_famas":
         return "Famas";
       case "weapon_fiveseven":
@@ -78,8 +80,50 @@ public static class WeaponExtensions {
         return "USPS";
       case "weapon_xm1014":
         return "XM1014";
+      case "item_kevlar":
+        return "Kevlar";
+      case "item_assaultsuit":
+        return "Kevlar Helmet";
+      case "weapon_snowball":
+        return "Snowball";
+      case "weapon_shield":
+        return "Shield";
+      case "weapon_c4":
+        return "Bomb";
+      case "weapon_healthshot":
+        return "Healthshot";
+      case "weapon_breachcharge":
+        return "Breach Charge";
+      case "weapon_tablet":
+        return "Tablet";
+      case "weapon_bumpmine":
+        return "Bumpmine";
+      case "weapon_smokegrenade":
+        return "Smoke Grenade";
+      case "weapon_flashbang":
+        return "Flashbang";
+      case "weapon_hegrenade":
+        return "HE Grenade";
+      case "weapon_molotov":
+        return "Molotov";
+      case "weapon_incgrenade":
+        return "Incendiary Grenade";
+      case "weapon_decoy":
+        return "Decoy Grenade";
+      case "weapon_tagrenade":
+        return "TAGrenade";
+      case "weapon_frag":
+        return "Frag Grenade";
+      case "weapon_firebomb":
+        return "Firebomb";
+      case "weapon_diversion":
+        return "Diversion";
+      case "weapon_knife_t":
+        return "Knife";
+      case "weapon_knife":
+        return "Knife";
       default:
-        return "UNKNOWN: Pleace Contact Tech";
+        return "UNKNOWN: Please Contact Tech";
     }
   }
 }

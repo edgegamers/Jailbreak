@@ -1,6 +1,6 @@
 ﻿namespace Jailbreak.LastGuard;
 
 public class LastGuardConfig {
-  public string? LastGuardWeapon { get; } = "weapon_glock";
+  public string? LastGuardWeapon { get; } = "";
   public int MinimumCTs { get; } = 4;
 }

@@ -18,6 +18,8 @@ public abstract class TeleportingRequest(BasePlugin plugin,
     Prisoner.Freeze();
     Plugin.AddTimer(1, () => {
       Guard.UnFreeze();
+    });
+    Plugin.AddTimer(2, () => {
       Prisoner.UnFreeze();
     });
   }

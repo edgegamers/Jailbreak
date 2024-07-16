@@ -79,7 +79,9 @@ public class MuteSystem(IServiceProvider provider)
     basePlugin.RegisterListener<Listeners.OnClientVoice>(OnPlayerSpeak);
   }
 
-  public void Dispose() { parent!.RemoveListener(OnPlayerSpeak); }
+  public void Dispose() {
+    parent!.RemoveListener<Listeners.OnClientVoice>(OnPlayerSpeak);
+  }
 
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {

@@ -3,7 +3,6 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Capabilities;
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
-using Jailbreak.Public.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -43,8 +42,6 @@ public class Jailbreak : BasePlugin {
     });
 
     //  Load Managers
-    FreezeManager.CreateInstance(this);
-
     Logger.LogInformation("[Jailbreak] Loading...");
 
     scope = provider.CreateScope();

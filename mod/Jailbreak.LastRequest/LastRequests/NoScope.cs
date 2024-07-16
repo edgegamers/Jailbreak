@@ -64,7 +64,7 @@ public class NoScope(BasePlugin plugin, ILastRequestManager manager,
 
   public override void OnEnd(LRResult result) {
     State = LRState.COMPLETED;
-    Plugin.RemoveListener(OnTick);
+    Plugin.RemoveListener<Listeners.OnTick>(OnTick);
 
     if (result != LRResult.GUARD_WIN && result != LRResult.PRISONER_WIN) return;
 
