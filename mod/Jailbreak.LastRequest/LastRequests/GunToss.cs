@@ -7,14 +7,13 @@ namespace Jailbreak.LastRequest.LastRequests;
 
 public class GunToss(BasePlugin plugin, ILastRequestManager manager,
   CCSPlayerController prisoner, CCSPlayerController guard)
-  : AbstractLastRequest(plugin, manager, prisoner, guard) {
+  : TeleportingRequest(plugin, manager, prisoner, guard) {
   public override LRType Type => LRType.GUN_TOSS;
 
   public override void Setup() {
     // Strip weapons, teleport T to CT
     Prisoner.RemoveWeapons();
     Guard.RemoveWeapons();
-    Guard.Teleport(Prisoner);
     State = LRState.PENDING;
 
     Plugin.AddTimer(3, Execute);
