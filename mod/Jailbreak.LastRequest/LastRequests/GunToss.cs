@@ -11,10 +11,7 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
   public override LRType Type => LRType.GUN_TOSS;
 
   public override void Setup() {
-    // Strip weapons, teleport T to CT
-    Prisoner.RemoveWeapons();
-    Guard.RemoveWeapons();
-    State = LRState.PENDING;
+    base.Setup();
 
     Plugin.AddTimer(3, Execute);
   }
