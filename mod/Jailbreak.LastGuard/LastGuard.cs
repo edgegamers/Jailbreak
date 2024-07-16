@@ -38,8 +38,8 @@ public class LastGuard(LastGuardConfig config,
     guardPlayerPawn.Health = guardCalcHealth;
     Utilities.SetStateChanged(guardPlayerPawn, "CBaseEntity", "m_iHealth");
 
-    // foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal()))
-    //     player.ExecuteClientCommand("play sounds/lastct");
+    foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal()))
+         player.ExecuteClientCommand("play sounds/lastct");
 
     var aliveTerrorists = Utilities.GetPlayers()
      .Where(p
