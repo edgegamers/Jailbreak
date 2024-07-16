@@ -133,6 +133,9 @@ public class LastRequestManager(LastRequestConfig config,
       return HookResult.Continue;
     }
 
+    if (!Utilities.GetPlayers().Any(p => p.Team == CsTeam.CounterTerrorist))
+      return HookResult.Continue;
+
     EnableLR();
     return HookResult.Continue;
   }
