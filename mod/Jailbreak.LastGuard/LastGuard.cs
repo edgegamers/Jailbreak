@@ -77,10 +77,9 @@ public class LastGuard(LastGuardConfig config,
     if (poi == null) return;
     if (poi.Team != CsTeam.CounterTerrorist) return;
     var aliveCts = Utilities.GetPlayers()
-     .Count(plr
-        => plr.IsReal() && plr is {
-          PawnIsAlive: true, Team: CsTeam.CounterTerrorist
-        }) - 1;
+     .Count(plr => plr.SteamID != poi.SteamID && plr is {
+        PawnIsAlive: true, Team: CsTeam.CounterTerrorist
+      });
 
     if (aliveCts != 1 || lrManager.IsLREnabled) return;
     var lastGuard = Utilities.GetPlayers()
