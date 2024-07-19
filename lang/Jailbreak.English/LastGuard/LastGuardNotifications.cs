@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API.Modules.Utils;
+﻿using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Logistics;
@@ -16,14 +17,17 @@ public class LastGuardNotifications : ILastGuardNotifications,
       Plain = false, Panorama = false, Chat = true
     };
 
-  public IView LGStarted(int ctHealth, int tHealth) {
+  public IView
+    LGStarted(CCSPlayerController lastGuard, int ctHealth, int tHealth) {
     return new SimpleView {
-      PREFIX,
-      $"{ChatColors.Red}Last Guard has been activated! Last guard has",
-      ctHealth,
-      $"{ChatColors.Red}health and Ts have",
-      tHealth,
-      $"{ChatColors.Red}health."
+      SimpleView.NEWLINE, {
+        PREFIX,
+        $"{ChatColors.Red}All Ts are rebels! The {ChatColors.DarkRed}LAST GUARD{ChatColors.Red} must kill until two remaining prisoners alive (LR)."
+      }, {
+        PREFIX, lastGuard, ChatColors.Red + "has", ctHealth,
+        $"{ChatColors.Red}health and Ts have", tHealth,
+        $"{ChatColors.Red}health."
+      }
     };
   }
 }
