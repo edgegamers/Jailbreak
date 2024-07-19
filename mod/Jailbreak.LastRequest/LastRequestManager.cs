@@ -133,6 +133,9 @@ public class LastRequestManager(LastRequestConfig config,
       return HookResult.Continue;
     }
 
+    if (!Utilities.GetPlayers().Any(p => p.Team == CsTeam.CounterTerrorist))
+      return HookResult.Continue;
+
     EnableLR();
     return HookResult.Continue;
   }
@@ -159,6 +162,9 @@ public class LastRequestManager(LastRequestConfig config,
     if (player.GetTeam() != CsTeam.Terrorist) return HookResult.Continue;
 
     if (countAlivePrisoners() - 1 > config.PrisonersToActiveLR)
+      return HookResult.Continue;
+
+    if (!Utilities.GetPlayers().Any(p => p.Team == CsTeam.CounterTerrorist))
       return HookResult.Continue;
 
     EnableLR(player);
