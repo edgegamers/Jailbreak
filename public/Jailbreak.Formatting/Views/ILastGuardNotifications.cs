@@ -1,7 +1,9 @@
-﻿using Jailbreak.Formatting.Base;
+﻿using CounterStrikeSharp.API.Core;
+using Jailbreak.Formatting.Base;
 
 namespace Jailbreak.Formatting.Views;
 
 public interface ILastGuardNotifications {
-  public IView LGStarted(int ctHealth, int tHealth);
+  public IView LGStarted(CCSPlayerController lastGuard, int ctHealth,
+    int tHealth);
 }

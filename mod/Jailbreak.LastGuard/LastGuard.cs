@@ -68,7 +68,7 @@ public class LastGuard(LastGuardConfig config,
       lastGuardPrisoners.Sum(
         prisoner => prisoner.PlayerPawn?.Value?.Health ?? 0);
 
-    notifications.LGStarted(guardCalcHealth, prisonerHp)
+    notifications.LGStarted(lastGuard, guardCalcHealth, prisonerHp)
      .ToAllCenter()
      .ToAllChat();
 
