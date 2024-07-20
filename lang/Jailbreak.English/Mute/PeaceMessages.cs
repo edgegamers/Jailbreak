@@ -26,7 +26,7 @@ public class PeaceMessages : IPeaceMessages,
     };
 
     return new SimpleView {
-      PREFIX, message;
+      {PREFIX, $"{message}";
     };
   }
 
