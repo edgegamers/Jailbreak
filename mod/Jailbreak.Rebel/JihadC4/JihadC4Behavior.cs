@@ -51,7 +51,7 @@ public class JihadC4Behavior(IJihadC4Notifications jihadC4Notifications,
   public void TryGiveC4ToRandomTerrorist() {
     plugin!.AddTimer(1, () => {
       var validTerroristPlayers = Utilities.GetPlayers()
-       .Where(player => player.IsReal() && player is {
+       .Where(player => player is {
           Team       : CsTeam.Terrorist,
           PawnIsAlive: true,
           IsBot      : false,
@@ -141,7 +141,7 @@ public class JihadC4Behavior(IJihadC4Notifications jihadC4Notifications,
 
     /* Calculate damage here, only applies to alive CTs. */
     foreach (var ct in Utilities.GetPlayers()
-     .Where(p => p.IsReal() && p is {
+     .Where(p => p is {
         Team: CsTeam.CounterTerrorist, PawnIsAlive: true, IsValid: true
       })) {
       var distanceFromBomb =

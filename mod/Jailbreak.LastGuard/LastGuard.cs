@@ -18,8 +18,7 @@ public class LastGuard(LastGuardConfig config,
 
   public int CalculateHealth() {
     var aliveTerrorists = Utilities.GetPlayers()
-     .Where(plr
-        => plr.IsReal() && plr is { PawnIsAlive: true, Team: CsTeam.Terrorist })
+     .Where(plr => plr is { PawnIsAlive: true, Team: CsTeam.Terrorist })
      .ToList();
 
     return aliveTerrorists
@@ -42,8 +41,7 @@ public class LastGuard(LastGuardConfig config,
     //     player.ExecuteClientCommand("play sounds/lastct");
 
     var aliveTerrorists = Utilities.GetPlayers()
-     .Where(p
-        => p.IsReal() && p is { PawnIsAlive: true, Team: CsTeam.Terrorist })
+     .Where(p => p is { PawnIsAlive: true, Team: CsTeam.Terrorist })
      .ToList();
 
     var prisonerHp =
@@ -77,14 +75,13 @@ public class LastGuard(LastGuardConfig config,
     if (poi == null) return;
     if (poi.Team != CsTeam.CounterTerrorist) return;
     var aliveCts = Utilities.GetPlayers()
-     .Count(plr
-        => plr.IsReal() && plr is {
-          PawnIsAlive: true, Team: CsTeam.CounterTerrorist
-        }) - 1;
+       .Count(plr
+          => plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist })
+      - 1;
 
     if (aliveCts != 1 || lrManager.IsLREnabled) return;
     var lastGuard = Utilities.GetPlayers()
-     .First(plr => plr.IsReal() && plr != poi && plr is {
+     .First(plr => plr != poi && plr is {
         PawnIsAlive: true, Team: CsTeam.CounterTerrorist
       });
 
@@ -95,10 +92,9 @@ public class LastGuard(LastGuardConfig config,
   public HookResult OnRoundStartEvent(EventRoundStart @event,
     GameEventInfo info) {
     canStart = Utilities.GetPlayers()
-     .Count(plr
-        => plr.IsReal() && plr is {
-          PawnIsAlive: true, Team: CsTeam.CounterTerrorist
-        }) >= config.MinimumCTs;
+       .Count(plr
+          => plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist })
+      >= config.MinimumCTs;
     return HookResult.Continue;
   }
 }

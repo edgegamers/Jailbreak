@@ -75,8 +75,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
     Warden.PlayerName = "[WARDEN] " + Warden.PlayerName;
 
-    foreach (var player in Utilities.GetPlayers()
-     .Where(player => player.IsReal()))
+    foreach (var player in Utilities.GetPlayers())
       player.ExecuteClientCommand($"play sounds/{config.WardenNewSoundName}");
 
     logs.Append(logs.Player(Warden), "is now the warden.");

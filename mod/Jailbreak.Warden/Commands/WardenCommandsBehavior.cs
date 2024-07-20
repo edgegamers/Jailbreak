@@ -64,7 +64,7 @@ public class WardenCommandsBehavior(IWardenNotifications notifications,
       return;
     }
 
-    foreach (var client in Utilities.GetPlayers().Where(p => p.IsReal())) {
+    foreach (var client in Utilities.GetPlayers()) {
       if (AdminManager.PlayerHasPermissions(client, "@css/chat"))
         notifications.FireWarden(warden.Warden, player).ToPlayerChat(client);
       else

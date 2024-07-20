@@ -29,8 +29,7 @@ public class MuteSystem(IServiceProvider provider)
   public void PeaceMute(MuteReason reason) {
     var duration   = getPeaceDuration(reason);
     var ctDuration = Math.Min(10, duration);
-    foreach (var player in Utilities.GetPlayers()
-     .Where(player => player.IsReal()))
+    foreach (var player in Utilities.GetPlayers())
       if (!warden!.IsWarden(player))
         mute(player);
 
@@ -97,7 +96,7 @@ public class MuteSystem(IServiceProvider provider)
 
   private void unmuteGuards() {
     foreach (var player in Utilities.GetPlayers()
-     .Where(player => player.IsReal() && player is {
+     .Where(player => player is {
         Team: CsTeam.CounterTerrorist, PawnIsAlive: true
       }))
       unmute(player);
@@ -108,8 +107,7 @@ public class MuteSystem(IServiceProvider provider)
 
   private void unmutePrisoners() {
     foreach (var player in Utilities.GetPlayers()
-     .Where(player => player.IsReal()
-        && player is { Team: CsTeam.Terrorist, PawnIsAlive: true }))
+     .Where(player => player is { Team: CsTeam.Terrorist, PawnIsAlive: true }))
       unmute(player);
 
     messages!.UnmutedPrisoners.ToAllChat();
@@ -118,8 +116,7 @@ public class MuteSystem(IServiceProvider provider)
 
   private int getPeaceDuration(MuteReason reason) {
     var prisoners = Utilities.GetPlayers()
-     .Count(c
-        => c.IsReal() && c is { Team: CsTeam.Terrorist, PawnIsAlive: true });
+     .Count(c => c is { Team: CsTeam.Terrorist, PawnIsAlive: true });
     // https://www.desmos.com/calculator/gwd9cqw4yq
     var baseTime = (int)Math.Floor((prisoners + 30) / 5.0) * 5;
 
