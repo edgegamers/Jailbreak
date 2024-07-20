@@ -1,4 +1,5 @@
 ﻿using Jailbreak.Formatting.Base;
+using Jailbreak.Public.Mod.Mute;
 
 namespace Jailbreak.Formatting.Views;
 
@@ -16,9 +17,6 @@ public interface IPeaceMessages {
   public IView AdminDeadReminder { get; }
 
   public IView PeaceActive { get; }
-  public IView PeaceEnactedByAdmin(int seconds);
+  public IView PeaceEnacted(int seconds, MuteReason reason);
 
-  public IView WardenEnactedPeace(int seconds);
-
-  public IView GeneralPeaceEnacted(int seconds);
 }

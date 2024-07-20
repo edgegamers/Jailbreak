@@ -33,19 +33,7 @@ public class MuteSystem(IServiceProvider provider)
       if (!warden!.IsWarden(player))
         mute(player);
 
-    switch (reason) {
-      case MuteReason.ADMIN:
-        messages!.PeaceEnactedByAdmin(duration).ToAllChat();
-        break;
-      case MuteReason.WARDEN_TAKEN:
-        messages!.GeneralPeaceEnacted(duration).ToAllChat();
-        break;
-      case MuteReason.WARDEN_INVOKED:
-        messages!.WardenEnactedPeace(duration).ToAllChat();
-        break;
-      case MuteReason.INITIAL_WARDEN:
-        messages!.GeneralPeaceEnacted(duration).ToAllChat();
-        break;
+      messages!.PeaceEnactedByAdmin(duration,reason).ToAllChat();
     }
 
     peaceEnd   = DateTime.Now.AddSeconds(duration);
@@ -123,8 +111,8 @@ public class MuteSystem(IServiceProvider provider)
     return reason switch {
       MuteReason.ADMIN          => baseTime,
       MuteReason.WARDEN_TAKEN   => baseTime / 5,
-      MuteReason.INITIAL_WARDEN => 2 * baseTime / 3,
-      MuteReason.WARDEN_INVOKED => baseTime / 2,
+      MuteReason.INITIAL_WARDEN_TAKEN => baseTime / 2,
+      MuteReason.WARDEN_COMMAND => 2 * baseTime / 3,
       _                         => baseTime
     };
   }
@@ -136,6 +124,8 @@ public class MuteSystem(IServiceProvider provider)
 
   private void unmute(CCSPlayerController player) {
     player.VoiceFlags &= ~VoiceFlags.Muted;
+    // player.ExecuteClientCommand(
+    //     $"play sounds/{config.SomeNoiseForUnmuting}");
   }
 
   private void OnPlayerSpeak(int playerSlot) {

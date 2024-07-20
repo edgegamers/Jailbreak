@@ -1,4 +1,5 @@
 ﻿using CounterStrikeSharp.API.Modules.Utils;
+using Jailbreak.Public.Mod.Mute;
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Logistics;
@@ -14,24 +15,20 @@ public class PeaceMessages : IPeaceMessages,
       $" {ChatColors.DarkBlue}[{ChatColors.LightBlue}Voice{ChatColors.DarkBlue}]{ChatColors.Grey} ") {
       Plain = false, Panorama = false, Chat = true
     };
+    public IView PeaceEnacted(int seconds, MuteReason reason) {
 
-  public IView PeaceEnactedByAdmin(int seconds) {
-    return new SimpleView {
-      PREFIX, "An admin enacted peace for", seconds, "seconds."
+      string message = reason switch
+      {
+        MuteReason.ADMIN => $"An admin enacted peace for {seconds} seconds.",
+        MuteReason.WARDEN_COMMAND => $"Warden enacted peace for {seconds} seconds.",
+        MuteReason.WARDEN_TAKEN or MuteReason.INITIAL_WARDEN_TAKEN => $"Warden has been taken! Peace enacted for {seconds} seconds",
+        _ => $"Peace enacted for {seconds} Seconds"
     };
-  }
 
-  public IView WardenEnactedPeace(int seconds) {
     return new SimpleView {
-      PREFIX, "Warden enacted peace for", seconds, "seconds."
+      PREFIX, message;
     };
-  }
-
-  public IView GeneralPeaceEnacted(int seconds) {
-    return new SimpleView {
-      PREFIX, "Peace has been enacted for", seconds, "seconds."
-    };
-  }
+  }bool 9
 
   public IView UnmutedGuards
     => new SimpleView {
@@ -48,7 +45,7 @@ public class PeaceMessages : IPeaceMessages,
 
   public IView MuteReminder
     => new SimpleView {
-      { PREFIX, ChatColors.Red, "You are currently muted!" }
+      { PREFIX, $"{ChatColors.Red}You are currently muted!" }
     };
 
   public IView PeaceReminder

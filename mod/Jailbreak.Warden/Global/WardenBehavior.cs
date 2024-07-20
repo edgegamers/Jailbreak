@@ -82,7 +82,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
     unblueTimer = parent!.AddTimer(3, unmarkPrisonersBlue);
     mute.PeaceMute(firstWarden ?
-      MuteReason.INITIAL_WARDEN :
+      MuteReason.INITIAL_WARDEN_TAKEN :
       MuteReason.WARDEN_TAKEN);
 
     // Always store the stats of the warden b4 they became warden, in case we need to restore them later.

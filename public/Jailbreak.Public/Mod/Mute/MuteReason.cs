@@ -1,5 +1,5 @@
 ﻿namespace Jailbreak.Public.Mod.Mute;
 
 public enum MuteReason {
-  ADMIN, WARDEN_INVOKED, INITIAL_WARDEN, WARDEN_TAKEN
+  ADMIN, WARDEN_COMMAND, INITIAL_WARDEN_TAKEN, WARDEN_TAKEN
 }
