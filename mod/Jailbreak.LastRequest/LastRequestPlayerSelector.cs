@@ -14,7 +14,6 @@ public class LastRequestPlayerSelector(ILastRequestManager manager,
     var menu = new CenterHtmlMenu(command.Invoke("[Player]"), plugin);
 
     foreach (var target in Utilities.GetPlayers()
-     .Where(target => target.IsReal())
      .Where(target => target.PawnIsAlive
         && (target.Team == CsTeam.CounterTerrorist || debug))) {
       menu.AddMenuOption(target.PlayerName,
@@ -27,9 +26,7 @@ public class LastRequestPlayerSelector(ILastRequestManager manager,
 
   public bool WouldHavePlayers() {
     return Utilities.GetPlayers()
-     .Any(p => p.IsReal() && p is {
-        PawnIsAlive: true, Team: CsTeam.CounterTerrorist
-      });
+     .Any(p => p is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist });
   }
 
   private void onSelect(CCSPlayerController player,

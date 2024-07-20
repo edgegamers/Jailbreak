@@ -24,7 +24,9 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
 
     basePlugin.AddTimer(1f, () => {
       foreach (var player in GetActiveRebels()) {
-        if (!player.IsReal()) continue;
+        if (!player.IsValid
+          || player.Connected != PlayerConnectedState.PlayerConnected)
+          continue;
 
         if (GetRebelTimeLeft(player) <= 0) {
           UnmarkRebel(player);
@@ -79,10 +81,7 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
 
   private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
     rebelTimes.Clear();
-    foreach (var player in Utilities.GetPlayers()) {
-      if (!player.IsReal()) continue;
-      applyRebelColor(player);
-    }
+    foreach (var player in Utilities.GetPlayers()) applyRebelColor(player);
 
     return HookResult.Continue;
   }

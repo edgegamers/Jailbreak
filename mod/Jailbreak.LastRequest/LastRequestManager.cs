@@ -64,7 +64,7 @@ public class LastRequestManager(LastRequestConfig config,
     IsLREnabled = true;
     setRoundTime(60);
 
-    foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal())) {
+    foreach (var player in Utilities.GetPlayers()) {
       // player.ExecuteClientCommand($"play sounds/lr");
       if (player.Team != CsTeam.Terrorist || !player.PawnIsAlive) continue;
       if (died != null && player.SteamID == died.SteamID) continue;

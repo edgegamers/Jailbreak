@@ -14,7 +14,7 @@ public class LastGuard(IServiceProvider services) : AbstractCommand(services) {
     var lgService = Services.GetRequiredService<ILastGuardService>();
 
     var target = Utilities.GetPlayers()
-     .FirstOrDefault(p => p.IsReal() && p is {
+     .FirstOrDefault(p => p is {
         Team: CsTeam.CounterTerrorist, PawnIsAlive: true
       });
 
