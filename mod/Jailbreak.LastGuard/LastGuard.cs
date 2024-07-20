@@ -40,7 +40,7 @@ public class LastGuard(LastGuardConfig config,
 
     return aliveTerrorists
      .Select(player => player.PlayerPawn?.Value?.Health ?? 0)
-     .Select(playerHealth => (int)(Math.Min(playerHealth, 200) * 0.8))
+     .Select(playerHealth => Math.Min(playerHealth, 200))
      .Sum();
   }
 
@@ -51,7 +51,8 @@ public class LastGuard(LastGuardConfig config,
 
     isLastGuard = true;
 
-    var guardCalcHealth = CalculateHealth();
+    var guardCalcHealth = Math.Max(CalculateHealth(),
+      Math.Min(guardPlayerPawn.Health, 125));
 
     guardPlayerPawn.Health = guardCalcHealth;
     Utilities.SetStateChanged(guardPlayerPawn, "CBaseEntity", "m_iHealth");
@@ -101,7 +102,7 @@ public class LastGuard(LastGuardConfig config,
 
   private void giveGun(CCSPlayerController poi) {
     lastGuardPrisoners = lastGuardPrisoners.Where(p
-        => p is { IsValid: true, PawnIsAlive: true } && poi.SteamID != p.SteamID
+        => p is { IsValid: true, PawnIsAlive: true } && poi.Index != p.Index
         && !playerHasGun(p))
      .ToList();
     if (lastGuardPrisoners.Count == 0) { return; }
@@ -115,7 +116,7 @@ public class LastGuard(LastGuardConfig config,
     var weapons = player.Pawn.Value?.WeaponServices;
     if (weapons == null) return false;
     foreach (var weapon in weapons.MyWeapons) {
-      if (weapon == null || weapon.Value == null) continue;
+      if (weapon.Value == null) continue;
       if (NON_WEAPONS.Contains(weapon.Value!.DesignerName)) continue;
       return true;
     }
@@ -125,6 +126,7 @@ public class LastGuard(LastGuardConfig config,
 
   private void checkLastGuard(CCSPlayerController? poi) {
     if (poi == null) return;
+    if (isLastGuard) return;
     lastGuardPrisoners.Remove(poi);
     if (poi.Team != CsTeam.CounterTerrorist) return;
     var aliveCts = Utilities.GetPlayers()

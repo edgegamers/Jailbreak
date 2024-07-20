@@ -22,8 +22,9 @@ public class LastGuardNotifications : ILastGuardNotifications,
     return new SimpleView {
       SimpleView.NEWLINE, {
         PREFIX,
-        $"{ChatColors.Red}All Ts are rebels! The {ChatColors.DarkRed}LAST GUARD{ChatColors.Red} must kill until two remaining prisoners alive (LR)."
-      }, {
+        $"{ChatColors.Red}All Ts are rebels! {ChatColors.DarkRed}LAST GUARD{ChatColors.Red} must kill until two prisoners alive (LR)."
+      },
+      SimpleView.NEWLINE, {
         PREFIX, lastGuard, ChatColors.Red + "has", ctHealth,
         $"{ChatColors.Red}health and Ts have", tHealth,
         $"{ChatColors.Red}health."
