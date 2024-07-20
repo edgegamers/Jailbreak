@@ -33,8 +33,7 @@ public class MuteSystem(IServiceProvider provider)
       if (!warden!.IsWarden(player))
         mute(player);
 
-      messages!.PeaceEnactedByAdmin(duration,reason).ToAllChat();
-    }
+    messages!.PeaceEnactedByAdmin(duration,reason).ToAllChat();
 
     peaceEnd   = DateTime.Now.AddSeconds(duration);
     ctPeaceEnd = DateTime.Now.AddSeconds(ctDuration);

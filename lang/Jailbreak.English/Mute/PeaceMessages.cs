@@ -28,7 +28,7 @@ public class PeaceMessages : IPeaceMessages,
     return new SimpleView {
       PREFIX, message;
     };
-  }bool 9
+  }
 
   public IView UnmutedGuards
     => new SimpleView {
