@@ -17,7 +17,7 @@ public class LastGuard(ILastGuardNotifications notifications,
   ILastRequestManager lrManager) : ILastGuardService, IPluginBehavior {
   private bool canStart;
   private bool isLastGuard = false;
-  private List<CCSPlayerController> lastGuardPrisoners = new();
+  private List<CCSPlayerController> lastGuardPrisoners = [];
   private readonly Random rng = new();
 
   private readonly FakeConVar<int> cvMinimumCts = new("css_jb_lg_min_cts",
