@@ -34,7 +34,7 @@ public class LastGuard(ILastGuardNotifications notifications,
     ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 1000));
 
   public readonly FakeConVar<double> CvGuardHealthRatio = new(
-    "css_jb_lg_ct_hp_ratio", "Ratio of CT : T Health", 0.8,
+    "css_jb_lg_ct_hp_ratio", "Ratio of CT : T Health", 0.6,
     ConVarFlags.FCVAR_NONE, new RangeValidator<double>(0.00001, 10));
 
   public readonly FakeConVar<bool> CvAlwaysOverrideCt = new(
