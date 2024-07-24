@@ -4,7 +4,7 @@ namespace Jailbreak.Validator;
 
 public class WeaponValidator(
   WeaponValidator.WeaponType type = WeaponValidator.WeaponType.WEAPON,
-  bool allowEmpty = false) : IValidator<string> {
+  bool allowEmpty = true) : IValidator<string> {
   public enum WeaponType {
     GRENADE,
     UTILITY,
