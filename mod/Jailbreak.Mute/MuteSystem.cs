@@ -122,8 +122,8 @@ public class MuteSystem(IServiceProvider provider)
 
     return reason switch {
       MuteReason.ADMIN          => baseTime,
-      MuteReason.WARDEN_TAKEN   => baseTime / 5,
-      MuteReason.INITIAL_WARDEN => 2 * baseTime / 3,
+      MuteReason.WARDEN_TAKEN   => baseTime / 4,
+      MuteReason.INITIAL_WARDEN => baseTime,
       MuteReason.WARDEN_INVOKED => baseTime / 2,
       _                         => baseTime
     };

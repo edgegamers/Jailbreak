@@ -7,8 +7,6 @@ namespace Jailbreak.LastRequest;
 public static class LastRequestExtension {
   public static void AddJailbreakLastRequest(
     this IServiceCollection collection) {
-    collection.AddConfig<LastRequestConfig>("lastrequest");
-
     collection.AddPluginBehavior<ILastRequestFactory, LastRequestFactory>();
     collection.AddPluginBehavior<ILastRequestManager, LastRequestManager>();
     collection.AddPluginBehavior<LastRequestCommand>();

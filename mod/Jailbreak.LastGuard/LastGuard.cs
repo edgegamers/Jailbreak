@@ -1,45 +1,59 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Cvars;
+using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.LastGuard;
 using Jailbreak.Public.Mod.LastRequest;
+using Jailbreak.Validator;
 
 namespace Jailbreak.LastGuard;
 
-public class LastGuard(LastGuardConfig config,
-  ILastGuardNotifications notifications, ILastRequestManager lrManager)
-  : ILastGuardService, IPluginBehavior {
+public class LastGuard(ILastGuardNotifications notifications,
+  ILastRequestManager lrManager) : ILastGuardService, IPluginBehavior {
   private bool canStart;
   private bool isLastGuard = false;
-  private List<CCSPlayerController> lastGuardPrisoners = new();
+  private List<CCSPlayerController> lastGuardPrisoners = [];
   private readonly Random rng = new();
 
-  private static readonly HashSet<string> NON_WEAPONS = new() {
-    "weapon_knife",
-    "weapon_c4",
-    "weapon_hegrenade",
-    "weapon_flashbang",
-    "weapon_smokegrenade",
-    "weapon_decoy",
-    "weapon_incgrenade",
-    "weapon_healthshot",
-    "weapon_molotov",
-    "weapon_taser"
-  };
+  private readonly FakeConVar<int> cvMinimumCts = new("css_jb_lg_min_cts",
+    "Minimum number of CTs to start last guard", 2, ConVarFlags.FCVAR_NONE,
+    new RangeValidator<int>(1, 32));
+
+  private readonly FakeConVar<string> cvLGWeapon = new("css_jb_lg_t_weapon",
+    "Weapon to give remaining prisoners once LG activates", "",
+    ConVarFlags.FCVAR_NONE, new WeaponValidator());
+
+  private readonly FakeConVar<int> cvMaxTHealthContribution = new(
+    "css_jb_lg_t_max_hp", "Max HP to contribute per T to LG", 200,
+    ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 1000));
+
+  private readonly FakeConVar<double> cvGuardHealthRatio = new(
+    "css_jb_lg_ct_hp_ratio", "Ratio of CT : T Health", 0.8,
+    ConVarFlags.FCVAR_NONE, new RangeValidator<double>(0.00001, 10));
+
+  private readonly FakeConVar<bool> cvAlwaysOverrideCT = new(
+    "css_jb_lg_apply_lower_hp",
+    "If true, the LG will be forced lower health if calculated");
+
+  private readonly FakeConVar<int> cvMaxCTHealth = new("css_jb_lg_max_hp",
+    "Max HP that the LG can have otherwise", 125, ConVarFlags.FCVAR_NONE,
+    new RangeValidator<int>(1, 1000));
 
   public int CalculateHealth() {
     var aliveTerrorists = Utilities.GetPlayers()
      .Where(plr => plr is { PawnIsAlive: true, Team: CsTeam.Terrorist })
      .ToList();
 
-    return aliveTerrorists
+    return (int)Math.Floor(aliveTerrorists
      .Select(player => player.PlayerPawn?.Value?.Health ?? 0)
-     .Select(playerHealth => Math.Min(playerHealth, 200))
-     .Sum();
+     .Select(playerHealth
+        => Math.Min(playerHealth, cvMaxTHealthContribution.Value))
+     .Sum() * cvGuardHealthRatio.Value);
   }
 
   public void StartLastGuard(CCSPlayerController lastGuard) {
@@ -49,10 +63,13 @@ public class LastGuard(LastGuardConfig config,
 
     isLastGuard = true;
 
-    var guardCalcHealth = Math.Max(CalculateHealth(),
-      Math.Min(guardPlayerPawn.Health, 125));
+    var calculated = CalculateHealth();
 
-    guardPlayerPawn.Health = guardCalcHealth;
+    if (calculated < guardPlayerPawn.Health && !cvAlwaysOverrideCT.Value) {
+      if (guardPlayerPawn.Health > cvMaxCTHealth.Value)
+        guardPlayerPawn.Health = cvMaxCTHealth.Value;
+    } else { guardPlayerPawn.Health = calculated; }
+
     Utilities.SetStateChanged(guardPlayerPawn, "CBaseEntity", "m_iHealth");
 
     // foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal()))
@@ -66,14 +83,14 @@ public class LastGuard(LastGuardConfig config,
       lastGuardPrisoners.Sum(
         prisoner => prisoner.PlayerPawn?.Value?.Health ?? 0);
 
-    notifications.LGStarted(lastGuard, guardCalcHealth, prisonerHp)
+    notifications.LGStarted(lastGuard, guardPlayerPawn.Health, prisonerHp)
      .ToAllCenter()
      .ToAllChat();
 
-    if (string.IsNullOrEmpty(config.LastGuardWeapon)) return;
+    if (string.IsNullOrEmpty(cvLGWeapon.Value)) return;
 
     foreach (var player in lastGuardPrisoners)
-      player.GiveNamedItem(config.LastGuardWeapon);
+      player.GiveNamedItem(cvLGWeapon.Value);
   }
 
   [GameEventHandler]
@@ -115,7 +132,7 @@ public class LastGuard(LastGuardConfig config,
     if (weapons == null) return false;
     foreach (var weapon in weapons.MyWeapons) {
       if (weapon.Value == null) continue;
-      if (NON_WEAPONS.Contains(weapon.Value!.DesignerName)) continue;
+      if (!Tag.GUNS.Contains(weapon.Value.DesignerName)) continue;
       return true;
     }
 
@@ -153,7 +170,7 @@ public class LastGuard(LastGuardConfig config,
     canStart = Utilities.GetPlayers()
        .Count(plr
           => plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist })
-      >= config.MinimumCTs;
+      >= cvMinimumCts.Value;
     return HookResult.Continue;
   }
 }
