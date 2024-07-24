@@ -2,7 +2,6 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
-using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
 
 namespace Jailbreak.LastRequest;

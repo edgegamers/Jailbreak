@@ -19,19 +19,27 @@ public class LastRequestManager(ILastRequestMessages messages,
   IServiceProvider provider) : ILastRequestManager, IBlockUserDamage {
   private ILastRequestFactory? factory;
 
-  private readonly FakeConVar<int> cvPrisonerToLR =
+  public readonly FakeConVar<int> CvPrisonerToLR =
     new("css_jb_lr_activate_lr_at", "Number of prisoners to activate LR at", 2,
       ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 32));
 
-  private readonly FakeConVar<int> cvLRBaseRoundTime =
-    new("css_jb_lr_time_base",
-      "Round time to set when LR is activated, 0 to disable", 60);
+  public readonly FakeConVar<int> CvLRBaseRoundTime = new("css_jb_lr_time_base",
+    "Round time to set when LR is activated, 0 to disable", 60);
 
-  private readonly FakeConVar<int> cvLRGuardTime =
+  public readonly FakeConVar<int> CvLRGuardTime =
     new("css_jb_lr_time_per_guard", "Additional round time to add per guard");
 
-  private readonly FakeConVar<int> cvLRBonusTime = new("css_jb_lr_time_per_lr",
+  public readonly FakeConVar<int> CvLRBonusTime = new("css_jb_lr_time_per_lr",
     "Additional round time to add per LR completion", 30);
+
+  public void Start(BasePlugin basePlugin) {
+    factory = provider.GetRequiredService<ILastRequestFactory>();
+
+    // basePlugin.RegisterFakeConVars(cvPrisonerToLR);
+    // basePlugin.RegisterFakeConVars(cvLRBaseRoundTime);
+    // basePlugin.RegisterFakeConVars(cvLRGuardTime);
+    // basePlugin.RegisterFakeConVars(cvLRBonusTime);
+  }
 
   public bool ShouldBlockDamage(CCSPlayerController player,
     CCSPlayerController? attacker, EventPlayerHurt @event) {
@@ -68,9 +76,6 @@ public class LastRequestManager(ILastRequestMessages messages,
   public IList<AbstractLastRequest> ActiveLRs { get; } =
     new List<AbstractLastRequest>();
 
-  public void Start(BasePlugin basePlugin) {
-    factory = provider.GetRequiredService<ILastRequestFactory>();
-  }
 
   public void DisableLR() { IsLREnabled = false; }
 
@@ -81,9 +86,9 @@ public class LastRequestManager(ILastRequestMessages messages,
     var cts = Utilities.GetPlayers()
      .Count(p => p is { Team: CsTeam.CounterTerrorist, PawnIsAlive: true });
 
-    if (cvLRBaseRoundTime.Value != 0) setRoundTime(cvLRBaseRoundTime.Value);
+    if (CvLRBaseRoundTime.Value != 0) setRoundTime(CvLRBaseRoundTime.Value);
 
-    addRoundTime(cvLRGuardTime.Value * cts);
+    addRoundTime(CvLRGuardTime.Value * cts);
 
     foreach (var player in Utilities.GetPlayers()) {
       // player.ExecuteClientCommand($"play sounds/lr");
@@ -118,7 +123,7 @@ public class LastRequestManager(ILastRequestMessages messages,
 
   public bool EndLastRequest(AbstractLastRequest lr, LRResult result) {
     if (result is LRResult.GUARD_WIN or LRResult.PRISONER_WIN) {
-      addRoundTime(cvLRBonusTime.Value);
+      addRoundTime(CvLRBonusTime.Value);
       messages.LastRequestDecided(lr, result).ToAllChat();
     }
 
@@ -170,7 +175,7 @@ public class LastRequestManager(ILastRequestMessages messages,
 
     if (player.GetTeam() != CsTeam.Terrorist) return HookResult.Continue;
 
-    if (countAlivePrisoners() - 1 > cvPrisonerToLR.Value)
+    if (countAlivePrisoners() - 1 > CvPrisonerToLR.Value)
       return HookResult.Continue;
 
     if (Utilities.GetPlayers().All(p => p.Team != CsTeam.CounterTerrorist))
@@ -203,7 +208,7 @@ public class LastRequestManager(ILastRequestMessages messages,
     }
 
     if (player.GetTeam() != CsTeam.Terrorist) return HookResult.Continue;
-    if (countAlivePrisoners() > cvPrisonerToLR.Value)
+    if (countAlivePrisoners() > CvPrisonerToLR.Value)
       return HookResult.Continue;
 
     EnableLR();

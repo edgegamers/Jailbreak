@@ -1,5 +1,4 @@
 using CounterStrikeSharp.API.Core;
-using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 

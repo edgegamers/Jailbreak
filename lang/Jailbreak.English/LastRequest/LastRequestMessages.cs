@@ -88,13 +88,13 @@ public class LastRequestMessages : ILastRequestMessages,
 
     if (tNull && result == LRResult.PRISONER_WIN) {
       return new SimpleView() {
-        PREFIX, lr.Guard!, "lost the LR, but the prisoner left the game."
+        PREFIX, lr.Guard, "lost the LR, but the prisoner left the game."
       };
     }
 
     if (gNull && result == LRResult.GUARD_WIN) {
       return new SimpleView() {
-        PREFIX, lr.Prisoner!, "lost the LR, but the guard left the game."
+        PREFIX, lr.Prisoner, "lost the LR, but the guard left the game."
       };
     }
 
@@ -112,7 +112,7 @@ public class LastRequestMessages : ILastRequestMessages,
       default:
         return new SimpleView {
           PREFIX,
-          result == LRResult.PRISONER_WIN ? lr.Prisoner! : lr.Guard!,
+          result == LRResult.PRISONER_WIN ? lr.Prisoner : lr.Guard,
           "won the LR."
         };
     }

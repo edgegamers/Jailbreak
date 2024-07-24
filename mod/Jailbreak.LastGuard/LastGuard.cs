@@ -16,31 +16,31 @@ namespace Jailbreak.LastGuard;
 public class LastGuard(ILastGuardNotifications notifications,
   ILastRequestManager lrManager) : ILastGuardService, IPluginBehavior {
   private bool canStart;
-  private bool isLastGuard = false;
+  private bool isLastGuard;
   private List<CCSPlayerController> lastGuardPrisoners = [];
   private readonly Random rng = new();
 
-  private readonly FakeConVar<int> cvMinimumCts = new("css_jb_lg_min_cts",
+  public readonly FakeConVar<int> CvMinimumCts = new("css_jb_lg_min_cts",
     "Minimum number of CTs to start last guard", 2, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 32));
 
-  private readonly FakeConVar<string> cvLGWeapon = new("css_jb_lg_t_weapon",
+  public readonly FakeConVar<string> CvLGWeapon = new("css_jb_lg_t_weapon",
     "Weapon to give remaining prisoners once LG activates", "",
     ConVarFlags.FCVAR_NONE, new WeaponValidator());
 
-  private readonly FakeConVar<int> cvMaxTHealthContribution = new(
+  public readonly FakeConVar<int> CvMaxTHealthContribution = new(
     "css_jb_lg_t_max_hp", "Max HP to contribute per T to LG", 200,
     ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 1000));
 
-  private readonly FakeConVar<double> cvGuardHealthRatio = new(
+  public readonly FakeConVar<double> CvGuardHealthRatio = new(
     "css_jb_lg_ct_hp_ratio", "Ratio of CT : T Health", 0.8,
     ConVarFlags.FCVAR_NONE, new RangeValidator<double>(0.00001, 10));
 
-  private readonly FakeConVar<bool> cvAlwaysOverrideCT = new(
+  public readonly FakeConVar<bool> CvAlwaysOverrideCt = new(
     "css_jb_lg_apply_lower_hp",
     "If true, the LG will be forced lower health if calculated");
 
-  private readonly FakeConVar<int> cvMaxCTHealth = new("css_jb_lg_max_hp",
+  public readonly FakeConVar<int> CvMaxCtHealth = new("css_jb_lg_max_hp",
     "Max HP that the LG can have otherwise", 125, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 1000));
 
@@ -50,10 +50,10 @@ public class LastGuard(ILastGuardNotifications notifications,
      .ToList();
 
     return (int)Math.Floor(aliveTerrorists
-     .Select(player => player.PlayerPawn?.Value?.Health ?? 0)
+     .Select(player => player.PlayerPawn.Value?.Health ?? 0)
      .Select(playerHealth
-        => Math.Min(playerHealth, cvMaxTHealthContribution.Value))
-     .Sum() * cvGuardHealthRatio.Value);
+        => Math.Min(playerHealth, CvMaxTHealthContribution.Value))
+     .Sum() * CvGuardHealthRatio.Value);
   }
 
   public void StartLastGuard(CCSPlayerController lastGuard) {
@@ -65,9 +65,9 @@ public class LastGuard(ILastGuardNotifications notifications,
 
     var calculated = CalculateHealth();
 
-    if (calculated < guardPlayerPawn.Health && !cvAlwaysOverrideCT.Value) {
-      if (guardPlayerPawn.Health > cvMaxCTHealth.Value)
-        guardPlayerPawn.Health = cvMaxCTHealth.Value;
+    if (calculated < guardPlayerPawn.Health && !CvAlwaysOverrideCt.Value) {
+      if (guardPlayerPawn.Health > CvMaxCtHealth.Value)
+        guardPlayerPawn.Health = CvMaxCtHealth.Value;
     } else { guardPlayerPawn.Health = calculated; }
 
     Utilities.SetStateChanged(guardPlayerPawn, "CBaseEntity", "m_iHealth");
@@ -80,17 +80,17 @@ public class LastGuard(ILastGuardNotifications notifications,
      .ToList();
 
     var prisonerHp =
-      lastGuardPrisoners.Sum(
-        prisoner => prisoner.PlayerPawn?.Value?.Health ?? 0);
+      lastGuardPrisoners.Sum(prisoner
+        => prisoner.PlayerPawn.Value?.Health ?? 0);
 
     notifications.LGStarted(lastGuard, guardPlayerPawn.Health, prisonerHp)
      .ToAllCenter()
      .ToAllChat();
 
-    if (string.IsNullOrEmpty(cvLGWeapon.Value)) return;
+    if (string.IsNullOrEmpty(CvLGWeapon.Value)) return;
 
     foreach (var player in lastGuardPrisoners)
-      player.GiveNamedItem(cvLGWeapon.Value);
+      player.GiveNamedItem(CvLGWeapon.Value);
   }
 
   [GameEventHandler]
@@ -170,7 +170,7 @@ public class LastGuard(ILastGuardNotifications notifications,
     canStart = Utilities.GetPlayers()
        .Count(plr
           => plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist })
-      >= cvMinimumCts.Value;
+      >= CvMinimumCts.Value;
     return HookResult.Continue;
   }
 }

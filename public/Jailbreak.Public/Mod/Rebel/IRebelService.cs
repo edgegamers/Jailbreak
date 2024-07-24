@@ -11,7 +11,7 @@ public interface IRebelService {
 
   long GetRebelTimeLeft(CCSPlayerController player);
 
-  bool MarkRebel(CCSPlayerController player, long time = 30);
+  bool MarkRebel(CCSPlayerController player, long time = -1);
 
   void UnmarkRebel(CCSPlayerController player);
 }

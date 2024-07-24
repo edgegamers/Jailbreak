@@ -41,29 +41,29 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   private PreWardenStats? preWardenStats;
   private Timer? unblueTimer;
 
-  private readonly FakeConVar<int> cvArmorOutnumbered =
+  public readonly FakeConVar<int> CvArmorOutnumbered =
     new("css_jb_hp_outnumbered", "Health points for CTs when outnumbered by Ts",
       100, ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 200));
 
-  private readonly FakeConVar<int> cvArmorEqual = new("css_jb_hp_outnumbered",
+  public readonly FakeConVar<int> CvArmorEqual = new("css_jb_hp_outnumbered",
     "Health points for CTs have equal balance", 50, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 200));
 
-  private readonly FakeConVar<int> cvArmorOutnumber = new("css_jb_hp_outnumber",
+  public readonly FakeConVar<int> CvArmorOutnumber = new("css_jb_hp_outnumber",
     "HP for CTs when outnumbering Ts", 25, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 200));
 
-  private readonly FakeConVar<int> cvWardenHealth = new("css_jb_warden_hp",
+  public readonly FakeConVar<int> CvWardenHealth = new("css_jb_warden_hp",
     "HP for the warden", 125, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 200));
 
-  private readonly FakeConVar<int> cvWardenArmor = new("css_jb_warden_armor",
+  public readonly FakeConVar<int> CvWardenArmor = new("css_jb_warden_armor",
     "Armor for the warden", 125, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 200));
 
-  private readonly FakeConVar<int> cvWardenMaxHealth =
-    new("css_jb_warden_maxhp", "Max HP for the warden", 100,
-      ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 200));
+  public readonly FakeConVar<int> CvWardenMaxHealth = new("css_jb_warden_maxhp",
+    "Max HP for the warden", 100, ConVarFlags.FCVAR_NONE,
+    new RangeValidator<int>(1, 200));
 
   public void Start(BasePlugin basePlugin) { parent = basePlugin; }
 
@@ -127,8 +127,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
       if (!hasHelmet) Warden.GiveNamedItem("item_assaultsuit");
 
-      setWardenStats(wardenPawn, cvWardenArmor.Value, cvWardenHealth.Value,
-        cvWardenMaxHealth.Value);
+      setWardenStats(wardenPawn, CvWardenArmor.Value, CvWardenHealth.Value,
+        CvWardenMaxHealth.Value);
       if (!hasHealthshot) Warden.GiveNamedItem("weapon_healthshot");
     } else { preWardenStats = null; }
 
@@ -333,10 +333,10 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     preWardenStats = null;
 
     var ctArmorValue = getBalance() switch {
-      0  => cvArmorEqual.Value,       // Balanced teams
-      1  => cvArmorOutnumbered.Value, // Ts outnumber CTs
-      -1 => cvArmorOutnumber.Value,   // CTs outnumber Ts
-      _  => cvArmorEqual.Value        // default (should never happen)
+      0  => CvArmorEqual.Value,       // Balanced teams
+      1  => CvArmorOutnumbered.Value, // Ts outnumber CTs
+      -1 => CvArmorOutnumber.Value,   // CTs outnumber Ts
+      _  => CvArmorEqual.Value        // default (should never happen)
     };
 
     /* Round start CT buff */

@@ -20,7 +20,7 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
 
   private readonly Dictionary<CCSPlayerController, long> rebelTimes = new();
 
-  private readonly FakeConVar<int> cvRebelTime = new("css_jb_rebel_time",
+  public readonly FakeConVar<int> CvRebelTime = new("css_jb_rebel_time",
     "Time to mark a rebel for", 30, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(0, 500));
 
@@ -58,9 +58,11 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
     return 0;
   }
 
-  public bool MarkRebel(CCSPlayerController player, long time = 30) {
+  public bool MarkRebel(CCSPlayerController player, long time = -1) {
     if (!rebelTimes.ContainsKey(player))
       logs.Append(logs.Player(player), "is now a rebel.");
+
+    if (time == -1) time = CvRebelTime.Value;
 
     rebelTimes[player] = DateTimeOffset.Now.ToUnixTimeSeconds() + time;
     applyRebelColor(player);
@@ -114,10 +116,10 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
   // https://www.desmos.com/calculator/g2v6vvg7ax
   private float getRebelTimePercentage(CCSPlayerController player) {
     var x = GetRebelTimeLeft(player);
-    if (x > cvRebelTime.Value) return 1;
+    if (x > CvRebelTime.Value) return 1;
     if (x <= 0) return 0;
-    return (float)(100 - (cvRebelTime.Value - x)
-      * Math.Sqrt(cvRebelTime.Value - x) / 3.8f) / 100;
+    return (float)(100 - (CvRebelTime.Value - x)
+      * Math.Sqrt(CvRebelTime.Value - x) / 3.8f) / 100;
   }
 
   private Color getRebelColor(CCSPlayerController player) {

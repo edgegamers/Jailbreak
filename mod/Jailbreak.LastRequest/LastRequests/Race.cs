@@ -39,7 +39,7 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
 
     messages.RaceStartingMessage(Prisoner).ToPlayerChat(Guard);
 
-    startLocation = Prisoner.Pawn?.Value?.AbsOrigin?.Clone();
+    startLocation = Prisoner.Pawn.Value?.AbsOrigin?.Clone();
 
     if (startLocation == null) return;
     start = new BeamCircle(Plugin, startLocation, 20, 16);
@@ -51,14 +51,14 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
   public override void Execute() {
     State = LRState.ACTIVE;
 
-    endLocation = Prisoner.Pawn?.Value?.AbsOrigin?.Clone();
+    endLocation = Prisoner.Pawn.Value?.AbsOrigin?.Clone();
 
     if (endLocation == null) return;
     end = new BeamCircle(Plugin, endLocation, 10, 32);
     end.SetColor(Color.Red);
     end.Draw();
 
-    Prisoner.Pawn?.Value?.Teleport(startLocation);
+    Prisoner.Pawn.Value?.Teleport(startLocation);
     Guard.Pawn.Value?.Teleport(startLocation);
 
     Guard.Freeze();
@@ -83,7 +83,7 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
     end?.Update();
 
     if (endLocation == null) return;
-    var guardDist = Guard.Pawn?.Value?.AbsOrigin?.Clone()
+    var guardDist = Guard.Pawn.Value?.AbsOrigin?.Clone()
      .DistanceSquared(endLocation);
 
     if (guardDist < requiredDistanceSqured) {
@@ -91,7 +91,7 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
       return;
     }
 
-    var prisonerDist = Prisoner.Pawn?.Value?.AbsOrigin?.Clone()
+    var prisonerDist = Prisoner.Pawn.Value?.AbsOrigin?.Clone()
      .DistanceSquared(endLocation);
     if (prisonerDist < requiredDistanceSqured)
       Manager.EndLastRequest(this, LRResult.PRISONER_WIN);
