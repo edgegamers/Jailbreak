@@ -146,18 +146,6 @@ public class LastRequestManager(ILastRequestMessages messages,
   public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
     foreach (var player in Utilities.GetPlayers())
       MenuManager.CloseActiveMenu(player);
-
-    if (ServerExtensions.GetGameRules().WarmupPeriod)
-      return HookResult.Continue;
-    if (countAlivePrisoners() > cvPrisonerToLR.Value) {
-      IsLREnabled = false;
-      return HookResult.Continue;
-    }
-
-    if (!Utilities.GetPlayers().Any(p => p.Team == CsTeam.CounterTerrorist))
-      return HookResult.Continue;
-
-    EnableLR();
     return HookResult.Continue;
   }
 
