@@ -11,6 +11,7 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Damage;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
+using Jailbreak.Public.Utils;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.LastRequest;
@@ -23,7 +24,7 @@ public class LastRequestManager(ILastRequestMessages messages,
     new("css_jb_lr_activate_lr_at", "Number of prisoners to activate LR at", 2,
       ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 32));
 
-  public readonly FakeConVar<int> CvLRBaseRoundTime = new("css_jb_lr_time_base",
+  public readonly FakeConVar<int> CvLRBaseTime = new("css_jb_lr_time_base",
     "Round time to set when LR is activated, 0 to disable", 60);
 
   public readonly FakeConVar<int> CvLRGuardTime =
@@ -81,9 +82,10 @@ public class LastRequestManager(ILastRequestMessages messages,
     var cts = Utilities.GetPlayers()
      .Count(p => p is { Team: CsTeam.CounterTerrorist, PawnIsAlive: true });
 
-    if (CvLRBaseRoundTime.Value != 0) setRoundTime(CvLRBaseRoundTime.Value);
+    if (CvLRBaseTime.Value != 0)
+      RoundUtil.SetTimeRemaining(CvLRBaseTime.Value);
 
-    addRoundTime(CvLRGuardTime.Value * cts);
+    RoundUtil.AddTimeRemaining(CvLRGuardTime.Value * cts);
 
     foreach (var player in Utilities.GetPlayers()) {
       // player.ExecuteClientCommand($"play sounds/lr");
@@ -118,7 +120,7 @@ public class LastRequestManager(ILastRequestMessages messages,
 
   public bool EndLastRequest(AbstractLastRequest lr, LRResult result) {
     if (result is LRResult.GUARD_WIN or LRResult.PRISONER_WIN) {
-      addRoundTime(CvLRBonusTime.Value);
+      RoundUtil.AddTimeRemaining(CvLRBonusTime.Value);
       messages.LastRequestDecided(lr, result).ToAllChat();
     }
 
@@ -152,8 +154,7 @@ public class LastRequestManager(ILastRequestMessages messages,
   [GameEventHandler]
   public HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info) {
     var player = @event.Userid;
-    if (player == null || !player.IsReal()
-      || ServerExtensions.GetGameRules().WarmupPeriod)
+    if (player == null || !player.IsReal() || RoundUtil.IsWarmup())
       return HookResult.Continue;
 
     if (IsLREnabled) {
@@ -187,8 +188,7 @@ public class LastRequestManager(ILastRequestMessages messages,
 
     if (player == null) return HookResult.Continue;
 
-    if (!player.IsReal() || ServerExtensions.GetGameRules().WarmupPeriod)
-      return HookResult.Continue;
+    if (!player.IsReal() || RoundUtil.IsWarmup()) return HookResult.Continue;
 
     if (IsLREnabled) {
       var activeLr = ((ILastRequestManager)this).GetActiveLR(player);
@@ -208,28 +208,6 @@ public class LastRequestManager(ILastRequestMessages messages,
 
     EnableLR();
     return HookResult.Continue;
-  }
-
-  private int getCurrentTimeElapsed() {
-    var gamerules  = ServerExtensions.GetGameRules();
-    var freezeTime = gamerules.FreezeTime;
-    return (int)(Server.CurrentTime - gamerules.RoundStartTime - freezeTime);
-  }
-
-  private void setRoundTime(int time) {
-    var gamerules = ServerExtensions.GetGameRules();
-    gamerules.RoundTime = getCurrentTimeElapsed() + time;
-
-    Utilities.SetStateChanged(ServerExtensions.GetGameRulesProxy(),
-      "CCSGameRulesProxy", "m_pGameRules");
-  }
-
-  private void addRoundTime(int time) {
-    var gamerules = ServerExtensions.GetGameRules();
-    gamerules.RoundTime += time;
-
-    Utilities.SetStateChanged(ServerExtensions.GetGameRulesProxy(),
-      "CCSGameRulesProxy", "m_pGameRules");
   }
 
   private int countAlivePrisoners() {
