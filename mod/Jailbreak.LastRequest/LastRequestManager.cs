@@ -34,11 +34,6 @@ public class LastRequestManager(ILastRequestMessages messages,
 
   public void Start(BasePlugin basePlugin) {
     factory = provider.GetRequiredService<ILastRequestFactory>();
-
-    // basePlugin.RegisterFakeConVars(cvPrisonerToLR);
-    // basePlugin.RegisterFakeConVars(cvLRBaseRoundTime);
-    // basePlugin.RegisterFakeConVars(cvLRGuardTime);
-    // basePlugin.RegisterFakeConVars(cvLRBonusTime);
   }
 
   public bool ShouldBlockDamage(CCSPlayerController player,
