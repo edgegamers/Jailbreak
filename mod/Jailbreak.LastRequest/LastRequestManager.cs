@@ -15,9 +15,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestManager(LastRequestConfig config,
-  ILastRequestMessages messages, IServiceProvider provider)
-  : ILastRequestManager, IBlockUserDamage {
+public class LastRequestManager(ILastRequestMessages messages,
+  IServiceProvider provider) : ILastRequestManager, IBlockUserDamage {
   private ILastRequestFactory? factory;
 
   private readonly FakeConVar<int> cvPrisonerToLR =
@@ -216,7 +215,7 @@ public class LastRequestManager(LastRequestConfig config,
     }
 
     if (player.GetTeam() != CsTeam.Terrorist) return HookResult.Continue;
-    if (countAlivePrisoners() > config.PrisonersToActiveLR)
+    if (countAlivePrisoners() > cvPrisonerToLR.Value)
       return HookResult.Continue;
 
     EnableLR();
