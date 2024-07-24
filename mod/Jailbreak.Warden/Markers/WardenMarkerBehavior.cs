@@ -1,6 +1,7 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
@@ -10,16 +11,25 @@ using Jailbreak.Public.Mod.Warden;
 namespace Jailbreak.Warden.Markers;
 
 public class WardenMarkerBehavior(IWardenService warden) : IPluginBehavior {
-  private const float MIN_RADIUS = 60f, MAX_RADIUS = 360f;
+  public readonly FakeConVar<float> CvMinRadius = new(
+    "css_jb_warden_marker_min_radius", "Minimum radius for warden marker", 60);
+
+  public readonly FakeConVar<float> CvMaxRadius = new(
+    "css_jb_warden_marker_max_radius", "Maximum radius for warden marker", 360);
+
+  public readonly FakeConVar<long> CvResizeTime = new(
+    "css_jb_warden_resize_time", "Milliseconds to wait for resizing marker",
+    800);
 
   private Vector? currentPos;
 
   private BeamCircle? marker;
   private long placementTime;
-  private float radius = MIN_RADIUS;
+  private float radius;
 
   public void Start(BasePlugin basePlugin) {
-    marker = new BeamCircle(basePlugin, new Vector(), 60f, (int)Math.PI * 15);
+    marker = new BeamCircle(basePlugin, new Vector(), CvMinRadius.Value,
+      (int)Math.PI * 15);
     basePlugin.AddCommandListener("player_ping", CommandListener_PlayerPing);
   }
 
@@ -34,9 +44,9 @@ public class WardenMarkerBehavior(IWardenService warden) : IPluginBehavior {
       var distance = currentPos.Distance(vec);
       var timeElapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
         - placementTime;
-      if (timeElapsed < 500) {
-        if (distance <= MAX_RADIUS * 1.5) {
-          distance = Math.Clamp(distance, MIN_RADIUS, MAX_RADIUS);
+      if (timeElapsed < CvResizeTime.Value) {
+        if (distance <= CvMaxRadius.Value * 1.3) {
+          distance = Math.Clamp(distance, CvMinRadius.Value, CvMaxRadius.Value);
           marker?.SetRadius(distance);
           marker?.Update();
           radius = distance;
@@ -48,7 +58,7 @@ public class WardenMarkerBehavior(IWardenService warden) : IPluginBehavior {
       }
     }
 
-    radius        = MIN_RADIUS;
+    radius        = CvMinRadius.Value;
     currentPos    = vec;
     placementTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     marker?.Move(vec);

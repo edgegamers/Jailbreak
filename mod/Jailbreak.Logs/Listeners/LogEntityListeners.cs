@@ -18,7 +18,7 @@ public class LogEntityListeners(IRichLogService logs) : IPluginBehavior {
     var ent = Utilities.GetEntityFromIndex<CBaseEntity>((int)caller.Index);
 
     logs.Append(logs.Player(player),
-      $"pressed a button: {ent?.Entity?.Name ?? "Unlabeled"} -> {output?.Connections?.TargetDesc ?? "None"}");
+      $"pressed a button: {ent?.Entity?.Name ?? "Unlabeled"} -> {output.Connections?.TargetDesc ?? "None"}");
     return HookResult.Continue;
   }
 
@@ -32,7 +32,7 @@ public class LogEntityListeners(IRichLogService logs) : IPluginBehavior {
     var ent = Utilities.GetEntityFromIndex<CBaseEntity>((int)caller.Index);
 
     logs.Append(logs.Player(player),
-      $"broke an entity: {ent?.Entity?.Name ?? "Unlabeled"} -> {output?.Connections?.TargetDesc ?? "None"}");
+      $"broke an entity: {ent?.Entity?.Name ?? "Unlabeled"} -> {output.Connections?.TargetDesc ?? "None"}");
     return HookResult.Continue;
   }
 }

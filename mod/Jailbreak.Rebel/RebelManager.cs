@@ -1,6 +1,8 @@
 ﻿using System.Drawing;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Cvars;
+using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Timers;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
@@ -13,8 +15,14 @@ namespace Jailbreak.Rebel;
 
 public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
   : IPluginBehavior, IRebelService {
+  [Obsolete("No longer used, use FakeConvar")]
   public static readonly int MAX_REBEL_TIME = 45;
+
   private readonly Dictionary<CCSPlayerController, long> rebelTimes = new();
+
+  public readonly FakeConVar<int> CvRebelTime = new("css_jb_rebel_time",
+    "Time to mark a rebel for", 30, ConVarFlags.FCVAR_NONE,
+    new RangeValidator<int>(0, 500));
 
   public void Start(BasePlugin basePlugin) {
     basePlugin.RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
@@ -50,9 +58,11 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
     return 0;
   }
 
-  public bool MarkRebel(CCSPlayerController player, long time = 30) {
+  public bool MarkRebel(CCSPlayerController player, long time = -1) {
     if (!rebelTimes.ContainsKey(player))
       logs.Append(logs.Player(player), "is now a rebel.");
+
+    if (time == -1) time = CvRebelTime.Value;
 
     rebelTimes[player] = DateTimeOffset.Now.ToUnixTimeSeconds() + time;
     applyRebelColor(player);
@@ -106,10 +116,10 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
   // https://www.desmos.com/calculator/g2v6vvg7ax
   private float getRebelTimePercentage(CCSPlayerController player) {
     var x = GetRebelTimeLeft(player);
-    if (x > MAX_REBEL_TIME) return 1;
+    if (x > CvRebelTime.Value) return 1;
     if (x <= 0) return 0;
-    return (float)(100 - (MAX_REBEL_TIME - x) * Math.Sqrt(MAX_REBEL_TIME - x)
-      / 3.8f) / 100;
+    return (float)(100 - (CvRebelTime.Value - x)
+      * Math.Sqrt(CvRebelTime.Value - x) / 3.8f) / 100;
   }
 
   private Color getRebelColor(CCSPlayerController player) {

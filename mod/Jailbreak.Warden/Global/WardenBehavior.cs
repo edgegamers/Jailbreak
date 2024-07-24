@@ -2,6 +2,8 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Cvars;
+using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
@@ -39,6 +41,30 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   private PreWardenStats? preWardenStats;
   private Timer? unblueTimer;
 
+  public readonly FakeConVar<int> CvArmorOutnumbered =
+    new("css_jb_hp_outnumbered", "Health points for CTs when outnumbered by Ts",
+      100, ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 200));
+
+  public readonly FakeConVar<int> CvArmorEqual = new("css_jb_hp_outnumbered",
+    "Health points for CTs have equal balance", 50, ConVarFlags.FCVAR_NONE,
+    new RangeValidator<int>(1, 200));
+
+  public readonly FakeConVar<int> CvArmorOutnumber = new("css_jb_hp_outnumber",
+    "HP for CTs when outnumbering Ts", 25, ConVarFlags.FCVAR_NONE,
+    new RangeValidator<int>(1, 200));
+
+  public readonly FakeConVar<int> CvWardenHealth = new("css_jb_warden_hp",
+    "HP for the warden", 125, ConVarFlags.FCVAR_NONE,
+    new RangeValidator<int>(1, 200));
+
+  public readonly FakeConVar<int> CvWardenArmor = new("css_jb_warden_armor",
+    "Armor for the warden", 125, ConVarFlags.FCVAR_NONE,
+    new RangeValidator<int>(1, 200));
+
+  public readonly FakeConVar<int> CvWardenMaxHealth = new("css_jb_warden_maxhp",
+    "Max HP for the warden", 100, ConVarFlags.FCVAR_NONE,
+    new RangeValidator<int>(1, 200));
+
   public void Start(BasePlugin basePlugin) { parent = basePlugin; }
 
   /// <summary>
@@ -63,7 +89,6 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     HasWarden = true;
     Warden    = controller;
 
-
     if (Warden.Pawn.Value != null) {
       Warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
       Warden.Pawn.Value.Render     = Color.FromArgb(254, 0, 0, 255);
@@ -73,7 +98,10 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
     notifications.NewWarden(Warden).ToAllChat().ToAllCenter();
 
-    Warden.PlayerName = "[WARDEN] " + Warden.PlayerName;
+    Warden.Clan = "[WARDEN]";
+    Utilities.SetStateChanged(Warden, "CCSPlayerController", "m_szClan");
+    var ev = new EventNextlevelChanged(true);
+    ev.FireEvent(false);
 
     foreach (var player in Utilities.GetPlayers())
       player.ExecuteClientCommand($"play sounds/{config.WardenNewSoundName}");
@@ -99,7 +127,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
       if (!hasHelmet) Warden.GiveNamedItem("item_assaultsuit");
 
-      setWardenStats(wardenPawn, 125, 125, 100);
+      setWardenStats(wardenPawn, CvWardenArmor.Value, CvWardenHealth.Value,
+        CvWardenMaxHealth.Value);
       if (!hasHealthshot) Warden.GiveNamedItem("weapon_healthshot");
     } else { preWardenStats = null; }
 
@@ -114,11 +143,15 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     HasWarden = false;
 
     if (Warden != null && Warden.Pawn.Value != null) {
-      Warden.PlayerName            = Warden.PlayerName.Replace("[WARDEN] ", "");
+      // Warden.PlayerName            = Warden.PlayerName.Replace("[WARDEN] ", "");
+      Warden.Clan                  = "";
       Warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
       Warden.Pawn.Value.Render     = Color.FromArgb(254, 255, 255, 255);
       Utilities.SetStateChanged(Warden.Pawn.Value, "CBaseModelEntity",
         "m_clrRender");
+      Utilities.SetStateChanged(Warden, "CCSPlayerController", "m_szClan");
+      var ev = new EventNextlevelChanged(true);
+      ev.FireEvent(false);
       logs.Append(logs.Player(Warden), "is no longer the warden.");
     }
 
@@ -300,17 +333,15 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     preWardenStats = null;
 
     var ctArmorValue = getBalance() switch {
-      0  => 50,  // Balanced teams
-      1  => 100, // Ts outnumber CTs
-      -1 => 25,  // CTs outnumber Ts
-      _  => 50   // default (should never happen)
+      0  => CvArmorEqual.Value,       // Balanced teams
+      1  => CvArmorOutnumbered.Value, // Ts outnumber CTs
+      -1 => CvArmorOutnumber.Value,   // CTs outnumber Ts
+      _  => CvArmorEqual.Value        // default (should never happen)
     };
 
     /* Round start CT buff */
     foreach (var guardController in Utilities.GetPlayers()
-     .Where(p => p.IsReal() && p is {
-        Team: CsTeam.CounterTerrorist, PawnIsAlive: true
-      })) {
+     .Where(p => p is { Team: CsTeam.CounterTerrorist, PawnIsAlive: true })) {
       var guardPawn = guardController.PlayerPawn.Value;
       if (guardPawn == null) continue;
 
@@ -332,14 +363,11 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
     notifications.WardenLeft.ToAllChat().ToAllCenter();
 
-    foreach (var player in Utilities.GetPlayers()) {
-      if (!player.IsReal()) continue;
+    foreach (var player in Utilities.GetPlayers())
       player.ExecuteClientCommand(
         $"play sounds/{config.WardenPassedSoundName}");
-    }
 
     notifications.BecomeNextWarden.ToAllChat();
-
     return HookResult.Continue;
   }
 }

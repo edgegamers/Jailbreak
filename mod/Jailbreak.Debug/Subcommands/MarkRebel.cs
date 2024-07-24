@@ -1,6 +1,5 @@
 using CounterStrikeSharp.API.Core;
 using Jailbreak.Public.Mod.Rebel;
-using Jailbreak.Rebel;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Debug.Subcommands;
@@ -17,7 +16,7 @@ public class MarkRebel(IServiceProvider services) : AbstractCommand(services) {
     var target = GetVulnerableTarget(info);
     if (target == null) return;
 
-    var duration = RebelManager.MAX_REBEL_TIME;
+    var duration = -1;
     if (info.ArgCount == 3)
       if (!int.TryParse(info.GetArg(2), out duration)) {
         info.ReplyToCommand("Invalid duration");

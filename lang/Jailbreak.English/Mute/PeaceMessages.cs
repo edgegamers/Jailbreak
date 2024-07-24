@@ -48,7 +48,7 @@ public class PeaceMessages : IPeaceMessages,
 
   public IView MuteReminder
     => new SimpleView {
-      { PREFIX, ChatColors.Red, "You are currently muted!" }
+      { PREFIX, ChatColors.Red + "You are currently muted!" }
     };
 
   public IView PeaceReminder
