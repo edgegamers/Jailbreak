@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using api.plugin;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Capabilities;
 using Jailbreak.Public;
@@ -72,6 +73,14 @@ public class Jailbreak : BasePlugin {
     });
 
     base.Load(hotReload);
+  }
+
+  public override void OnAllPluginsLoaded(bool hotReload) {
+    try { new PluginCapability<IActain>("maulactain:core").Get(); } catch (
+      Exception e) {
+      Console.WriteLine(e);
+      throw;
+    }
   }
 
   /// <inheritdoc />

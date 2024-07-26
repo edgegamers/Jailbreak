@@ -75,6 +75,12 @@
         </PackageReference>
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="MAULActainShared">
+        <HintPath>..\..\public\Jailbreak.Public\Mixin\MAULActainShared.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
     <Target Name="ZipOutputPath" AfterTargets="Publish">
         <ZipDirectory Overwrite="true" SourceDirectory="$(PublishDir)\" DestinationFile="$(PublishBaseDirectory)\Jailbreak.zip"/>
     </Target>

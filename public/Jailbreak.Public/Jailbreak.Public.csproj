@@ -9,10 +9,9 @@
     <ItemGroup>
         <PackageReference Include="CounterStrikeSharp.API" Version="1.0.233"/>
         <PackageReference Include="System.Text.Json" Version="8.0.4"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Content Include="Mixin\MAUL\MAULActainShared.csproj" />
+        <Reference Include="MAULActainShared.dll">
+            <HintPath>./Mixin/MAULActainShared.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
 </Project>
