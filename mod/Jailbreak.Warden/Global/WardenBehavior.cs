@@ -120,7 +120,6 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
     oldTag      = actain?.getTagService().GetTag(Warden);
     oldTagColor = actain?.getTagService().GetTagColor(Warden);
-    Server.PrintToConsole("Do we have actain? " + (actain != null));
     actain?.getTagService().SetTag(Warden, "[WARDEN]");
     actain?.getTagService().SetTagColor(Warden, ChatColors.DarkBlue);
 
