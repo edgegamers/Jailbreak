@@ -44,7 +44,14 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   private BasePlugin? parent;
   private PreWardenStats? preWardenStats;
   private Timer? unblueTimer;
-  private IActain? actain;
+
+  private IActain? actain {
+    get {
+      try { return MAULCapability.Get(); } catch (KeyNotFoundException e) {
+        return null;
+      }
+    }
+  }
 
   public static PluginCapability<IActain?> MAULCapability { get; } =
     new("maulactain:core");
@@ -73,10 +80,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     "Max HP for the warden", 100, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 200));
 
-  public void Start(BasePlugin basePlugin) {
-    parent = basePlugin;
-    actain = MAULCapability.Get();
-  }
+  public void Start(BasePlugin basePlugin) { parent = basePlugin; }
 
   /// <summary>
   ///   Get the current warden, if there is one.
