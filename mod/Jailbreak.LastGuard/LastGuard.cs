@@ -9,6 +9,7 @@ using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.LastGuard;
 using Jailbreak.Public.Mod.LastRequest;
+using Jailbreak.Public.Utils;
 using Jailbreak.Validator;
 
 namespace Jailbreak.LastGuard;
@@ -33,7 +34,7 @@ public class LastGuard(ILastGuardNotifications notifications,
     ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 1000));
 
   public readonly FakeConVar<double> CvGuardHealthRatio = new(
-    "css_jb_lg_ct_hp_ratio", "Ratio of CT : T Health", 0.8,
+    "css_jb_lg_ct_hp_ratio", "Ratio of CT : T Health", 0.6,
     ConVarFlags.FCVAR_NONE, new RangeValidator<double>(0.00001, 10));
 
   public readonly FakeConVar<bool> CvAlwaysOverrideCt = new(
@@ -43,6 +44,20 @@ public class LastGuard(ILastGuardNotifications notifications,
   public readonly FakeConVar<int> CvMaxCtHealth = new("css_jb_lg_max_hp",
     "Max HP that the LG can have otherwise", 125, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 1000));
+
+  public readonly FakeConVar<int> CvLGBaseRoundTime = new("css_jb_lg_time_base",
+    "Round time to set when LG is activated, 0 to disable", 60);
+
+  public readonly FakeConVar<int> CvLGPerPrisonerTime =
+    new("css_jb_lg_time_per_prisoner",
+      "Additional round time to add per prisoner", 10);
+
+  public readonly FakeConVar<int> CvLGKillBonusTime =
+    new("css_jb_lg_time_per_kill",
+      "Additional round time to add per prisoner kill", 10);
+
+  public readonly FakeConVar<int> CvLGMaxTime = new("css_jb_lg_time_max",
+    "Max round time to give the LG regardless of bonuses", 120);
 
   public int CalculateHealth() {
     var aliveTerrorists = Utilities.GetPlayers()
@@ -79,6 +94,12 @@ public class LastGuard(ILastGuardNotifications notifications,
      .Where(p => p is { PawnIsAlive: true, Team: CsTeam.Terrorist })
      .ToList();
 
+    if (CvLGBaseRoundTime.Value != 0)
+      RoundUtil.SetTimeRemaining(Math.Min(CvLGBaseRoundTime.Value,
+        CvLGMaxTime.Value));
+    addRoundTimeCapped(CvLGPerPrisonerTime.Value * lastGuardPrisoners.Count,
+      CvLGMaxTime.Value);
+
     var prisonerHp =
       lastGuardPrisoners.Sum(prisoner
         => prisoner.PlayerPawn.Value?.Health ?? 0);
@@ -103,6 +124,8 @@ public class LastGuard(ILastGuardNotifications notifications,
     if (!isLastGuard) return HookResult.Continue;
 
     if (player.Team != CsTeam.Terrorist) return HookResult.Continue;
+
+    addRoundTimeCapped(CvLGKillBonusTime.Value, CvLGMaxTime.Value);
 
     giveGun(player);
     return HookResult.Continue;
@@ -172,5 +195,11 @@ public class LastGuard(ILastGuardNotifications notifications,
           => plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist })
       >= CvMinimumCts.Value;
     return HookResult.Continue;
+  }
+
+  private void addRoundTimeCapped(int time, int max) {
+    var timeleft                    = RoundUtil.GetTimeRemaining();
+    if (timeleft + time > max) time = max - timeleft;
+    RoundUtil.AddTimeRemaining(time);
   }
 }
