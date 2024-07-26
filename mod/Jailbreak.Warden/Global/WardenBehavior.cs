@@ -48,7 +48,6 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   private IActain? actain {
     get {
       try { return MAULCapability.Get(); } catch (KeyNotFoundException e) {
-        Server.PrintToConsole("MAULCapability not found: " + e.Message);
         return null;
       }
     }

@@ -75,14 +75,6 @@ public class Jailbreak : BasePlugin {
     base.Load(hotReload);
   }
 
-  public override void OnAllPluginsLoaded(bool hotReload) {
-    try { new PluginCapability<IActain>("maulactain:core").Get(); } catch (
-      Exception e) {
-      Console.WriteLine(e);
-      throw;
-    }
-  }
-
   /// <inheritdoc />
   public override void Unload(bool hotReload) {
     Logger.LogInformation("[Jailbreak] Shutting down...");
