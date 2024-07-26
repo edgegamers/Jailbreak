@@ -11,4 +11,8 @@
         <PackageReference Include="System.Text.Json" Version="8.0.4"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include="Mixin\MAUL\MAULActainShared.csproj" />
+    </ItemGroup>
+
 </Project>
