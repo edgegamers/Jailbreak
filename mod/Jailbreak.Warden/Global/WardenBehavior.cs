@@ -47,7 +47,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
   private IActain? actain {
     get {
-      try { return MAULCapability.Get(); } catch (KeyNotFoundException e) {
+      try { return MAULCapability.Get(); } catch (KeyNotFoundException) {
         return null;
       }
     }
