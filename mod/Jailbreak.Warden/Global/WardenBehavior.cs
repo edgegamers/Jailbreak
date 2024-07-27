@@ -147,6 +147,23 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
       if (!hasHelmet) Warden.GiveNamedItem("item_assaultsuit");
 
+      var ctArmorValue = getBalance() switch {
+        0  => CvArmorEqual.Value,       // Balanced teams
+        1  => CvArmorOutnumbered.Value, // Ts outnumber CTs
+        -1 => CvArmorOutnumber.Value,   // CTs outnumber Ts
+        _  => CvArmorEqual.Value        // default (should never happen)
+      };
+
+      /* Round start CT buff */
+      foreach (var guardController in Utilities.GetPlayers()
+       .Where(p => p is { Team: CsTeam.CounterTerrorist, PawnIsAlive: true })) {
+        var guardPawn = guardController.PlayerPawn.Value;
+        if (guardPawn == null) continue;
+
+        guardPawn.ArmorValue = ctArmorValue;
+        Utilities.SetStateChanged(guardPawn, "CCSPlayerPawn", "m_ArmorValue");
+      }
+
       setWardenStats(wardenPawn, CvWardenArmor.Value, CvWardenHealth.Value,
         CvWardenMaxHealth.Value);
       if (!hasHealthshot) Warden.GiveNamedItem("weapon_healthshot");
@@ -363,22 +380,6 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     firstWarden    = true;
     preWardenStats = null;
 
-    var ctArmorValue = getBalance() switch {
-      0  => CvArmorEqual.Value,       // Balanced teams
-      1  => CvArmorOutnumbered.Value, // Ts outnumber CTs
-      -1 => CvArmorOutnumber.Value,   // CTs outnumber Ts
-      _  => CvArmorEqual.Value        // default (should never happen)
-    };
-
-    /* Round start CT buff */
-    foreach (var guardController in Utilities.GetPlayers()
-     .Where(p => p is { Team: CsTeam.CounterTerrorist, PawnIsAlive: true })) {
-      var guardPawn = guardController.PlayerPawn.Value;
-      if (guardPawn == null) continue;
-
-      guardPawn.ArmorValue = ctArmorValue;
-      Utilities.SetStateChanged(guardPawn, "CCSPlayerPawn", "m_ArmorValue");
-    }
 
     return HookResult.Continue;
   }
