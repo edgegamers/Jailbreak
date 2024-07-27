@@ -40,6 +40,9 @@ public static class LRTypeExtensions {
       case "m4m":
       case "mfm":
         return LRType.MAG_FOR_MAG;
+      case "cf":
+      case "5050":
+        return LRType.COINFLIP;
     }
 
     if (type.Contains("knife")) return LRType.KNIFE_FIGHT;
