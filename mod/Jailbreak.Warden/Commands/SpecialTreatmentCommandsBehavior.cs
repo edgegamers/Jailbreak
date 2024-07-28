@@ -4,8 +4,10 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.Warden;
+using MStatsShared;
 
 namespace Jailbreak.Warden.Commands;
 
@@ -50,6 +52,8 @@ public class SpecialTreatmentCommandsBehavior(IWardenService warden,
 
     //	One target, mark as ST.
     var special = eligible.First();
+    API.Stats?.PushStat(new ServerStat("JB_SPECIALTREATMENT",
+      special.SteamID.ToString()));
 
     specialTreatment.SetSpecialTreatment(special,
       !specialTreatment.IsSpecialTreatment(special));

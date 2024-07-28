@@ -7,12 +7,14 @@ using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Public;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Damage;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 using Jailbreak.Public.Utils;
 using Microsoft.Extensions.DependencyInjection;
+using MStatsShared;
 
 namespace Jailbreak.LastRequest;
 
@@ -79,11 +81,12 @@ public class LastRequestManager(ILastRequestMessages messages,
     messages.LastRequestEnabled().ToAllChat();
     IsLREnabled = true;
 
+    API.Stats?.PushStat(new ServerStat("JB_LASTREQUEST_ACTIVATED"));
+
     var cts = Utilities.GetPlayers()
      .Count(p => p is { Team: CsTeam.CounterTerrorist, PawnIsAlive: true });
 
-    if (CvLRBaseTime.Value != 0)
-      RoundUtil.SetTimeRemaining(CvLRBaseTime.Value);
+    if (CvLRBaseTime.Value != 0) RoundUtil.SetTimeRemaining(CvLRBaseTime.Value);
 
     RoundUtil.AddTimeRemaining(CvLRGuardTime.Value * cts);
 
@@ -100,6 +103,9 @@ public class LastRequestManager(ILastRequestMessages messages,
     var lr = factory!.CreateLastRequest(prisoner, guard, type);
     lr.Setup();
     ActiveLRs.Add(lr);
+
+    API.Stats?.PushStat(new ServerStat("JB_LASTREQUEST",
+      $"{prisoner.SteamID} + {type.ToFriendlyString()}"));
 
     if (prisoner.Pawn.Value != null) {
       prisoner.Pawn.Value.Health            = 100;
@@ -123,6 +129,9 @@ public class LastRequestManager(ILastRequestMessages messages,
       RoundUtil.AddTimeRemaining(CvLRBonusTime.Value);
       messages.LastRequestDecided(lr, result).ToAllChat();
     }
+
+    API.Stats?.PushStat(new ServerStat("JB_LASTREQUEST_RESULT",
+      $"{lr.Prisoner.SteamID} {result.ToString()}"));
 
     lr.OnEnd(result);
     ActiveLRs.Remove(lr);
