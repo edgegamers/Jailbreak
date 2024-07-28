@@ -6,11 +6,13 @@ using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.LastGuard;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Utils;
 using Jailbreak.Validator;
+using MStatsShared;
 
 namespace Jailbreak.LastGuard;
 
@@ -77,6 +79,9 @@ public class LastGuard(ILastGuardNotifications notifications,
     if (guardPlayerPawn == null || !guardPlayerPawn.IsValid) return;
 
     isLastGuard = true;
+
+    API.Stats?.PushStat(new ServerStat("JB_LASTGUARD",
+      lastGuard.SteamID.ToString()));
 
     var calculated = CalculateHealth();
 

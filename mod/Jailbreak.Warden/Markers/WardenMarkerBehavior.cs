@@ -3,10 +3,12 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Utils;
+using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.Warden;
+using MStatsShared;
 
 namespace Jailbreak.Warden.Markers;
 
@@ -61,6 +63,9 @@ public class WardenMarkerBehavior(IWardenService warden) : IPluginBehavior {
     radius        = CvMinRadius.Value;
     currentPos    = vec;
     placementTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+    API.Stats?.PushStat(new ServerStat("JB_MARKER",
+      $"{vec.X:F2} {vec.Y:F2} {vec.Z:F2}"));
     marker?.Move(vec);
     marker?.SetRadius(radius);
     marker?.Update();
