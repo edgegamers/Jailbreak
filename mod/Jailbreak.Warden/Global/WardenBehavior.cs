@@ -10,12 +10,14 @@ using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.Logging;
+using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Mute;
 using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.Warden;
 using Microsoft.Extensions.Logging;
+using MStatsShared;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.Warden.Global;
@@ -44,17 +46,6 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   private BasePlugin? parent;
   private PreWardenStats? preWardenStats;
   private Timer? unblueTimer;
-
-  private IActain? actain {
-    get {
-      try { return MAULCapability.Get(); } catch (KeyNotFoundException) {
-        return null;
-      }
-    }
-  }
-
-  public static PluginCapability<IActain?> MAULCapability { get; } =
-    new("maulactain:core");
 
   public readonly FakeConVar<int> CvArmorOutnumbered =
     new("css_jb_hp_outnumbered", "Health points for CTs when outnumbered by Ts",
@@ -118,10 +109,13 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     var ev = new EventNextlevelChanged(true);
     ev.FireEvent(false);
 
-    oldTag      = actain?.getTagService().GetTag(Warden);
-    oldTagColor = actain?.getTagService().GetTagColor(Warden);
-    actain?.getTagService().SetTag(Warden, "[WARDEN]");
-    actain?.getTagService().SetTagColor(Warden, ChatColors.DarkBlue);
+    API.Stats?.PushStat(new ServerStat("JB_WARDEN_ASSIGNED",
+      Warden.SteamID.ToString()));
+
+    oldTag      = API.Actain?.getTagService().GetTag(Warden);
+    oldTagColor = API.Actain?.getTagService().GetTagColor(Warden);
+    API.Actain?.getTagService().SetTag(Warden, "[WARDEN]");
+    API.Actain?.getTagService().SetTagColor(Warden, ChatColors.DarkBlue);
 
     foreach (var player in Utilities.GetPlayers())
       player.ExecuteClientCommand($"play sounds/{config.WardenNewSoundName}");
@@ -189,9 +183,9 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       var ev = new EventNextlevelChanged(true);
       ev.FireEvent(false);
 
-      actain?.getTagService().SetTag(Warden, oldTag!);
+      API.Actain?.getTagService().SetTag(Warden, oldTag!);
       if (oldTagColor != null)
-        actain?.getTagService().SetTagColor(Warden, oldTagColor.Value);
+        API.Actain?.getTagService().SetTagColor(Warden, oldTagColor.Value);
 
       logs.Append(logs.Player(Warden), "is no longer the warden.");
     }
@@ -228,6 +222,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   public HookResult OnDeath(EventPlayerDeath ev, GameEventInfo info) {
     if (!((IWardenService)this).IsWarden(ev.Userid)) return HookResult.Continue;
 
+    API.Stats?.PushStat(new ServerStat("JB_WARDEN_DEATH"));
+
     mute.UnPeaceMute();
     processWardenDeath();
     return HookResult.Continue;
@@ -238,9 +234,9 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     var player = @event.Userid;
     if (player == null) return HookResult.Continue;
 
-    if ("[WARDEN]" == actain?.getTagService().GetTag(player)) {
-      actain.getTagService().SetTag(player, "");
-      actain.getTagService().SetTagColor(player, ChatColors.Default);
+    if ("[WARDEN]" == API.Actain?.getTagService().GetTag(player)) {
+      API.Actain?.getTagService().SetTag(player, "");
+      API.Actain?.getTagService().SetTagColor(player, ChatColors.Default);
     }
 
     if (!((IWardenService)this).IsWarden(player)) return HookResult.Continue;

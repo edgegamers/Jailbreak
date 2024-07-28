@@ -12,6 +12,9 @@
         <Reference Include="MAULActainShared.dll">
             <HintPath>./Mixin/MAULActainShared.dll</HintPath>
         </Reference>
+        <Reference Include="MStatsShared.dll">
+            <HintPath>./Mixin/MStatsShared.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
 </Project>
