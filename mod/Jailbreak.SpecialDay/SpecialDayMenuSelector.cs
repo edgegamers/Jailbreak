@@ -2,6 +2,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
+using Jailbreak.SpecialDay.SpecialDays;
 
 namespace Jailbreak.SpecialDay;
 
@@ -19,7 +20,9 @@ public class SpecialDayMenuSelector {
     foreach (SDType sd in Enum.GetValues(typeof(SDType))) {
       if (!factory.IsValidType(sd)) continue;
       var inst = factory.CreateSpecialDay(sd);
-      menu.AddMenuOption(inst.Messages.Name, (p, _) => OnSelectLR(p, sd));
+      var name = inst.Type.ToString();
+      if (inst is MessagedSpecialDay messaged) name = messaged.Messages.Name;
+      menu.AddMenuOption(name, (p, _) => OnSelectLR(p, sd));
     }
   }
 

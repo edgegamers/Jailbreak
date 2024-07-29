@@ -6,6 +6,7 @@ using Jailbreak.Public;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Utils;
+using Jailbreak.SpecialDay.SpecialDays;
 using MStatsShared;
 
 namespace Jailbreak.SpecialDay;
@@ -20,7 +21,8 @@ public class SpecialDayManager(ISpecialDayFactory factory)
     API.Stats?.PushStat(new ServerStat("JB_SPECIALDAY", type.ToString()));
     RoundsSinceLastSD = 0;
     CurrentSD         = factory.CreateSpecialDay(type);
-    CurrentSD.Messages.SpecialDayStart.ToAllChat();
+    if (CurrentSD is MessagedSpecialDay messaged)
+      messaged.Messages.SpecialDayStart.ToAllChat();
 
     CurrentSD.Setup();
     return true;
@@ -39,7 +41,8 @@ public class SpecialDayManager(ISpecialDayFactory factory)
     IsSDRunning = false;
     CurrentSD   = null;
 
-    CurrentSD?.Messages.SpecialDayEnd((CsTeam)@event.Winner).ToAllChat();
+    if (CurrentSD is MessagedSpecialDay messaged)
+      messaged.Messages.SpecialDayEnd((CsTeam)@event.Winner).ToAllChat();
     CurrentSD = null;
     return HookResult.Continue;
   }

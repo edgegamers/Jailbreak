@@ -3,7 +3,6 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Utils;
-using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
@@ -16,7 +15,6 @@ namespace Jailbreak.Public.Mod.SpecialDay;
 public abstract class AbstractSpecialDay {
   protected BasePlugin Plugin;
   public abstract SDType Type { get; }
-  public abstract ISpecialDayInstanceMessages Messages { get; }
   public virtual SpecialDaySettings? Settings => null;
 
   private readonly Dictionary<string, object?> previousConvarValues = new();

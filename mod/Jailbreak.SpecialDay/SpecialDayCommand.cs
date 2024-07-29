@@ -11,6 +11,7 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Mod.Warden;
+using Jailbreak.SpecialDay.SpecialDays;
 
 namespace Jailbreak.SpecialDay;
 
@@ -45,7 +46,14 @@ public class SpecialDayCommand(IWardenService warden,
 
       if (sd.IsSDRunning) {
         // SD is already running
-        sdMsg.SpecialDayRunning(sd.CurrentSD?.Messages.Name ?? "Unknown");
+        if (sd.CurrentSD is MessagedSpecialDay messaged) {
+          sdMsg.SpecialDayRunning(messaged.Messages.Name)
+           .ToPlayerChat(executor);
+        } else {
+          sdMsg.SpecialDayRunning(sd.CurrentSD?.Type.ToString() ?? "Unknown")
+           .ToPlayerChat(executor);
+        }
+
         return;
       }
 
