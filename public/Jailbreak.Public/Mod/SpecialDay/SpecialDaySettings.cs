@@ -62,6 +62,11 @@ public class SpecialDaySettings {
   /// </summary>
   public bool StartInvulnerable = true;
 
+  /// <summary>
+  /// If true, will strip all players down to their knife at the beginning.
+  /// </summary>
+  public bool StripToKnife = true;
+
   public SpecialDaySettings WithFriendlyFire() {
     this.ConVarValues["mp_teammates_are_enemies"]     = true;
     this.ConVarValues["ff_damage_reduction_bullets"]  = 1;

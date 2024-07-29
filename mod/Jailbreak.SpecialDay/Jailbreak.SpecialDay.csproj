@@ -11,4 +11,10 @@
       <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="MStatsShared">
+        <HintPath>..\..\public\Jailbreak.Public\Mixin\MStatsShared.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

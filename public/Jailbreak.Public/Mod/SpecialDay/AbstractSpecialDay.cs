@@ -16,7 +16,7 @@ namespace Jailbreak.Public.Mod.SpecialDay;
 public abstract class AbstractSpecialDay {
   protected BasePlugin Plugin;
   public abstract SDType Type { get; }
-  public abstract ISpecialDayMessages Messages { get; }
+  public abstract ISpecialDayInstanceMessages Messages { get; }
   public virtual SpecialDaySettings? Settings => null;
 
   private readonly Dictionary<string, object?> previousConvarValues = new();
@@ -48,6 +48,12 @@ public abstract class AbstractSpecialDay {
 
     if (Settings.StartInvulnerable) DisableDamage();
 
+    if (Settings.StripToKnife)
+      foreach (var player in Utilities.GetPlayers()) {
+        player.RemoveWeapons();
+        player.GiveNamedItem("weapon_knife");
+      }
+
     if (!Settings.AllowLastRequests)
       provider.GetRequiredService<ILastRequestManager>().DisableLRForRound();
 
@@ -59,16 +65,67 @@ public abstract class AbstractSpecialDay {
       }
     }
 
-    switch (Settings.Teleport) {
-      case SpecialDaySettings.TeleportType.NONE:
-        break;
-      case SpecialDaySettings.TeleportType.CELL:
-        var spawn = Utilities
-         .FindAllEntitiesByDesignerName<SpawnPoint>(
-            "info_player_counterterrorist")
-         .ToList();
-        break;
+    doTeleports();
+  }
+
+  private void doTeleports() {
+    if (Settings == null) return;
+    IEnumerable<CCSPlayerController> targets = [];
+
+    if (Settings.ForceTeleportAll) { targets = PlayerUtil.GetAlive(); } else {
+      targets = Settings.Teleport switch {
+        SpecialDaySettings.TeleportType.CELL
+          or SpecialDaySettings.TeleportType.CELL_STACKED =>
+          PlayerUtil.FromTeam(CsTeam.CounterTerrorist),
+        SpecialDaySettings.TeleportType.ARMORY
+          or SpecialDaySettings.TeleportType.ARMORY_STACKED => PlayerUtil
+           .FromTeam(CsTeam.Terrorist),
+        SpecialDaySettings.TeleportType.RANDOM => PlayerUtil.GetAlive(),
+        _                                      => targets
+      };
     }
+
+    IEnumerable<Vector> spawnPositions;
+
+    var tSpawns = Utilities
+     .FindAllEntitiesByDesignerName<SpawnPoint>("info_player_terrorist")
+     .Where(s => s.AbsOrigin != null)
+     .Select(s => s.AbsOrigin!);
+    var ctSpawns = Utilities
+     .FindAllEntitiesByDesignerName<SpawnPoint>("info_player_counterterrorist")
+     .Where(s => s.AbsOrigin != null)
+     .Select(s => s.AbsOrigin!);
+    var tpSpawns = Utilities
+     .FindAllEntitiesByDesignerName<
+        CInfoTeleportDestination>("info_teleport_destination")
+     .Where(s => s.AbsOrigin != null)
+     .Select(s => s.AbsOrigin!);
+    switch (Settings.Teleport) {
+      case SpecialDaySettings.TeleportType.CELL:
+        spawnPositions = tSpawns;
+        break;
+      case SpecialDaySettings.TeleportType.CELL_STACKED:
+        spawnPositions = [tSpawns.First()];
+        break;
+      case SpecialDaySettings.TeleportType.ARMORY:
+        spawnPositions = ctSpawns;
+        break;
+      case SpecialDaySettings.TeleportType.ARMORY_STACKED:
+        spawnPositions = [ctSpawns.First()];
+        break;
+      case SpecialDaySettings.TeleportType.RANDOM:
+        // TODO: Support truly random spawns
+        spawnPositions = tSpawns.Union(ctSpawns).Union(tpSpawns);
+        break;
+      case SpecialDaySettings.TeleportType.NONE:
+      default:
+        return;
+    }
+
+    var enumerable   = spawnPositions.ToList();
+    var baggedSpawns = new ShuffleBag<Vector>(enumerable);
+
+    foreach (var target in targets) { target.Teleport(baggedSpawns.GetNext()); }
   }
 
   private string getConvarStringValue(ConVar? cvar) {
@@ -96,7 +153,7 @@ public abstract class AbstractSpecialDay {
   /// <summary>
   /// Called when the actual action begins for the special day.
   /// </summary>
-  public abstract void Execute();
+  public virtual void Execute() { EnableDamage(); }
 
   [GameEventHandler]
   public virtual HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {

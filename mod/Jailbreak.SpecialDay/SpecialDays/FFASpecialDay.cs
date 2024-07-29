@@ -1,15 +1,14 @@
 using CounterStrikeSharp.API.Core;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Views;
-using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class FFASpecialDay(BasePlugin plugin, IServiceProvider provider)
-  : AbstractSpecialDay(plugin, provider) {
+  : DelayedStartSpecialDay(plugin, provider, 25) {
   public override SDType Type => SDType.FFA;
-  public override ISpecialDayMessages Messages => new FFAMessages();
+  public override ISpecialDayInstanceMessages Messages => new FfaInstanceMessages();
   public override SpecialDaySettings? Settings => new FFASettings();
 
   public class FFASettings : SpecialDaySettings {
@@ -26,7 +25,4 @@ public class FFASpecialDay(BasePlugin plugin, IServiceProvider provider)
       return rng.NextSingle() * 5 + 2;
     }
   }
-
-  public override void Setup() { base.Setup(); }
-  public override void Execute() { throw new NotImplementedException(); }
 }

@@ -13,6 +13,8 @@ public interface ISpecialDayMessages {
       Plain = false, Panorama = false, Chat = true
     };
 
-  public IView SpecialDayStart { get; }
-  public IView SpecialDayEnd(CsTeam winner);
+  public IView SpecialDayRunning(string name);
+  public IView InvalidSpecialDay(string name);
+
+  public IView SpecialDayCooldown(int rounds);
 }
