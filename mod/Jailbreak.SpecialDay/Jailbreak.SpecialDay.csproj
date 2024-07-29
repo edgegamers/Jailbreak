@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\lang\Jailbreak.English\Jailbreak.English.csproj" />
+      <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj" />
+    </ItemGroup>
+
+</Project>
