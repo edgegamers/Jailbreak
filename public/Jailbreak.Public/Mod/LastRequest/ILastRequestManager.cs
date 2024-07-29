@@ -24,4 +24,5 @@ public interface ILastRequestManager : IPluginBehavior {
 
   public void EnableLR(CCSPlayerController? died = null);
   public void DisableLR();
+  public void DisableLRForRound();
 }

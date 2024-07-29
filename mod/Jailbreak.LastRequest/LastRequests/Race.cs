@@ -28,7 +28,10 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
     Prisoner.RemoveWeapons();
 
     Guard.RemoveWeapons();
-    Guard.GiveNamedItem("weapon_knife");
+    Plugin.AddTimer(1, () => {
+      if (State != LRState.PENDING) return;
+      Guard.GiveNamedItem("weapon_knife");
+    });
 
     Plugin.AddTimer(3, () => {
       if (State != LRState.PENDING) return;

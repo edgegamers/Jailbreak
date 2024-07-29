@@ -14,8 +14,7 @@ public abstract class WeaponizedRequest(BasePlugin plugin,
   : TeleportingRequest(plugin, manager, prisoner, guard) {
   public override void Setup() {
     base.Setup();
-
-    // Strip weapons, teleport T to CT
+    
     Prisoner.RemoveWeapons();
     Guard.RemoveWeapons();
     for (var i = 3; i >= 1; i--) {
@@ -23,7 +22,10 @@ public abstract class WeaponizedRequest(BasePlugin plugin,
       Plugin.AddTimer(3 - i, () => { PrintToParticipants($"{copy}..."); });
     }
 
-    Plugin.AddTimer(3, Execute);
+    Plugin.AddTimer(3, () => {
+      if (State != LRState.PENDING) return;
+      Execute();
+    });
   }
 
   public override void OnEnd(LRResult result) {

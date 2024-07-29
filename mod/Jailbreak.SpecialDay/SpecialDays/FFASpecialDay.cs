@@ -6,14 +6,27 @@ using Jailbreak.Public.Mod.SpecialDay.Enums;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
-public class FFASpecialDay : AbstractSpecialDay {
-  public FFASpecialDay(BasePlugin plugin) : base(plugin) { }
-  public override SDType Type { get; }
+public class FFASpecialDay(BasePlugin plugin, IServiceProvider provider)
+  : AbstractSpecialDay(plugin, provider) {
+  public override SDType Type => SDType.FFA;
   public override ISpecialDayMessages Messages => new FFAMessages();
-  public override void Setup() { throw new NotImplementedException(); }
-  public override void Execute() { throw new NotImplementedException(); }
+  public override SpecialDaySettings? Settings => new FFASettings();
 
-  public override HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
-    throw new NotImplementedException();
+  public class FFASettings : SpecialDaySettings {
+    private readonly Random rng;
+
+    public FFASettings() {
+      AllowLastRequests = false;
+      Teleport          = TeleportType.ARMORY;
+      rng               = new Random();
+      WithFriendlyFire();
+    }
+
+    public override float FreezeTime(CCSPlayerController player) {
+      return rng.NextSingle() * 5 + 2;
+    }
   }
+
+  public override void Setup() { base.Setup(); }
+  public override void Execute() { throw new NotImplementedException(); }
 }

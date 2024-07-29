@@ -70,12 +70,18 @@ public class LastRequestManager(ILastRequestMessages messages,
   }
 
   public bool IsLREnabled { get; set; }
+  public bool IsLREnabledForRound { get; set; } = true;
 
   public IList<AbstractLastRequest> ActiveLRs { get; } =
     new List<AbstractLastRequest>();
 
 
   public void DisableLR() { IsLREnabled = false; }
+
+  public void DisableLRForRound() {
+    DisableLR();
+    IsLREnabledForRound = false;
+  }
 
   public void EnableLR(CCSPlayerController? died = null) {
     messages.LastRequestEnabled().ToAllChat();
@@ -155,6 +161,7 @@ public class LastRequestManager(ILastRequestMessages messages,
 
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
+    IsLREnabledForRound = true;
     foreach (var player in Utilities.GetPlayers())
       MenuManager.CloseActiveMenu(player);
     return HookResult.Continue;
