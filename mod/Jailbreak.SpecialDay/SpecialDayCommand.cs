@@ -57,8 +57,7 @@ public class SpecialDayCommand(IWardenService warden,
       }
 
       var roundsToNext = sd.RoundsSinceLastSD - CvRoundsBetweenSD.Value;
-      if (roundsToNext < 0
-        && !AdminManager.PlayerHasPermissions(executor, "@css/rcon")) {
+      if (roundsToNext < 0) {
         sdMsg.SpecialDayCooldown(Math.Abs(roundsToNext)).ToPlayerChat(executor);
         return;
       }
