@@ -1,4 +1,5 @@
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Utils;
 
 namespace Jailbreak.SpecialDay;
 
@@ -75,9 +76,21 @@ public class SpecialDaySettings {
     return this;
   }
 
-  public SpecialDaySettings WithRespawns() {
-    this.ConVarValues["mp_respawn_on_death_ct"] = true;
-    this.ConVarValues["mp_respawn_on_death_t"]  = true;
+  public SpecialDaySettings WithRespawns(CsTeam? team = CsTeam.None) {
+    switch (team) {
+      case CsTeam.None:
+      case CsTeam.Spectator:
+        this.ConVarValues["mp_respawn_on_death_ct"] = true;
+        this.ConVarValues["mp_respawn_on_death_t"]  = true;
+        break;
+      case CsTeam.Terrorist:
+        this.ConVarValues["mp_respawn_on_death_t"] = true;
+        break;
+      case CsTeam.CounterTerrorist:
+        this.ConVarValues["mp_respawn_on_death_ct"] = true;
+        break;
+    }
+
     return this;
   }
 }
