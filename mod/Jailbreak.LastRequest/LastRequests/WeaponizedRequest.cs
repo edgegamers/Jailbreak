@@ -14,7 +14,7 @@ public abstract class WeaponizedRequest(BasePlugin plugin,
   : TeleportingRequest(plugin, manager, prisoner, guard) {
   public override void Setup() {
     base.Setup();
-    
+
     Prisoner.RemoveWeapons();
     Guard.RemoveWeapons();
     for (var i = 3; i >= 1; i--) {

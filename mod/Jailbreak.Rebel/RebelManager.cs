@@ -18,11 +18,11 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
   [Obsolete("No longer used, use FakeConvar")]
   public static readonly int MAX_REBEL_TIME = 45;
 
-  private readonly Dictionary<CCSPlayerController, long> rebelTimes = new();
-
   public readonly FakeConVar<int> CvRebelTime = new("css_jb_rebel_time",
     "Time to mark a rebel for", 30, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(0, 500));
+
+  private readonly Dictionary<CCSPlayerController, long> rebelTimes = new();
 
   public void Start(BasePlugin basePlugin) {
     basePlugin.RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);

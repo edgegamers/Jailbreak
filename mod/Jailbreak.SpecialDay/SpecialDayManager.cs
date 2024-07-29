@@ -13,9 +13,9 @@ namespace Jailbreak.SpecialDay;
 
 public class SpecialDayManager(ISpecialDayFactory factory)
   : ISpecialDayManager {
-  public bool IsSDRunning { get; set; } = false;
-  public AbstractSpecialDay? CurrentSD { get; private set; } = null;
-  public int RoundsSinceLastSD { get; set; } = 0;
+  public bool IsSDRunning { get; set; }
+  public AbstractSpecialDay? CurrentSD { get; private set; }
+  public int RoundsSinceLastSD { get; set; }
 
   public bool InitiateSpecialDay(SDType type) {
     API.Stats?.PushStat(new ServerStat("JB_SPECIALDAY", type.ToString()));

@@ -18,41 +18,16 @@ namespace Jailbreak.LastGuard;
 
 public class LastGuard(ILastGuardNotifications notifications,
   ILastRequestManager lrManager) : ILastGuardService, IPluginBehavior {
-  private bool canStart;
-  private bool isLastGuard;
-  private List<CCSPlayerController> lastGuardPrisoners = [];
-  private readonly Random rng = new();
-
-  public readonly FakeConVar<int> CvMinimumCts = new("css_jb_lg_min_cts",
-    "Minimum number of CTs to start last guard", 2, ConVarFlags.FCVAR_NONE,
-    new RangeValidator<int>(1, 32));
-
-  public readonly FakeConVar<string> CvLGWeapon = new("css_jb_lg_t_weapon",
-    "Weapon to give remaining prisoners once LG activates", "",
-    ConVarFlags.FCVAR_NONE, new WeaponValidator());
-
-  public readonly FakeConVar<int> CvMaxTHealthContribution = new(
-    "css_jb_lg_t_max_hp", "Max HP to contribute per T to LG", 200,
-    ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 1000));
+  public readonly FakeConVar<bool> CvAlwaysOverrideCt = new(
+    "css_jb_lg_apply_lower_hp",
+    "If true, the LG will be forced lower health if calculated");
 
   public readonly FakeConVar<double> CvGuardHealthRatio = new(
     "css_jb_lg_ct_hp_ratio", "Ratio of CT : T Health", 0.6,
     ConVarFlags.FCVAR_NONE, new RangeValidator<double>(0.00001, 10));
 
-  public readonly FakeConVar<bool> CvAlwaysOverrideCt = new(
-    "css_jb_lg_apply_lower_hp",
-    "If true, the LG will be forced lower health if calculated");
-
-  public readonly FakeConVar<int> CvMaxCtHealth = new("css_jb_lg_max_hp",
-    "Max HP that the LG can have otherwise", 125, ConVarFlags.FCVAR_NONE,
-    new RangeValidator<int>(1, 1000));
-
   public readonly FakeConVar<int> CvLGBaseRoundTime = new("css_jb_lg_time_base",
     "Round time to set when LG is activated, 0 to disable", 60);
-
-  public readonly FakeConVar<int> CvLGPerPrisonerTime =
-    new("css_jb_lg_time_per_prisoner",
-      "Additional round time to add per prisoner", 10);
 
   public readonly FakeConVar<int> CvLGKillBonusTime =
     new("css_jb_lg_time_per_kill",
@@ -60,6 +35,31 @@ public class LastGuard(ILastGuardNotifications notifications,
 
   public readonly FakeConVar<int> CvLGMaxTime = new("css_jb_lg_time_max",
     "Max round time to give the LG regardless of bonuses", 120);
+
+  public readonly FakeConVar<int> CvLGPerPrisonerTime =
+    new("css_jb_lg_time_per_prisoner",
+      "Additional round time to add per prisoner", 10);
+
+  public readonly FakeConVar<string> CvLGWeapon = new("css_jb_lg_t_weapon",
+    "Weapon to give remaining prisoners once LG activates", "",
+    ConVarFlags.FCVAR_NONE, new WeaponValidator());
+
+  public readonly FakeConVar<int> CvMaxCtHealth = new("css_jb_lg_max_hp",
+    "Max HP that the LG can have otherwise", 125, ConVarFlags.FCVAR_NONE,
+    new RangeValidator<int>(1, 1000));
+
+  public readonly FakeConVar<int> CvMaxTHealthContribution = new(
+    "css_jb_lg_t_max_hp", "Max HP to contribute per T to LG", 200,
+    ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 1000));
+
+  public readonly FakeConVar<int> CvMinimumCts = new("css_jb_lg_min_cts",
+    "Minimum number of CTs to start last guard", 2, ConVarFlags.FCVAR_NONE,
+    new RangeValidator<int>(1, 32));
+
+  private readonly Random rng = new();
+  private bool canStart;
+  private bool isLastGuard;
+  private List<CCSPlayerController> lastGuardPrisoners = [];
 
   public int CalculateHealth() {
     var aliveTerrorists = Utilities.GetPlayers()
@@ -148,7 +148,7 @@ public class LastGuard(ILastGuardNotifications notifications,
         => p is { IsValid: true, PawnIsAlive: true } && poi.Index != p.Index
         && !playerHasGun(p))
      .ToList();
-    if (lastGuardPrisoners.Count == 0) { return; }
+    if (lastGuardPrisoners.Count == 0) return;
 
     var random = lastGuardPrisoners[rng.Next(lastGuardPrisoners.Count)];
     random.GiveNamedItem("weapon_glock");

@@ -9,7 +9,7 @@ public static class RoundUtil {
     var freezeTime = gamerules.FreezeTime;
     return (int)(Server.CurrentTime - gamerules.RoundStartTime - freezeTime);
   }
-  
+
   public static int GetTimeRemaining() {
     var gamerules = ServerExtensions.GetGameRules();
     return gamerules.RoundTime - GetTimeElapsed();

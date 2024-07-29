@@ -13,12 +13,9 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jailbreak.Public.Mod.SpecialDay;
 
 public abstract class AbstractSpecialDay {
-  protected BasePlugin Plugin;
-  public abstract SDType Type { get; }
-  public virtual SpecialDaySettings? Settings => null;
-
   private readonly Dictionary<string, object?> previousConvarValues = new();
   private readonly IServiceProvider provider;
+  protected BasePlugin Plugin;
 
   public AbstractSpecialDay(BasePlugin plugin, IServiceProvider provider) {
     Plugin = plugin;
@@ -26,9 +23,12 @@ public abstract class AbstractSpecialDay {
     this.provider = provider;
   }
 
+  public abstract SDType Type { get; }
+  public virtual SpecialDaySettings? Settings => null;
+
   /// <summary>
-  /// Called when the warden initially picks the special day.
-  /// Use for teleporting, stripping weapons, starting timers, etc.
+  ///   Called when the warden initially picks the special day.
+  ///   Use for teleporting, stripping weapons, starting timers, etc.
   /// </summary>
   public virtual void Setup() {
     if (Settings == null) return;
@@ -55,13 +55,12 @@ public abstract class AbstractSpecialDay {
     if (!Settings.AllowLastRequests)
       provider.GetRequiredService<ILastRequestManager>().DisableLRForRound();
 
-    if (Settings.FreezePlayers) {
+    if (Settings.FreezePlayers)
       foreach (var player in Utilities.GetPlayers()) {
         player.Freeze();
         Plugin.AddTimer(Settings.FreezeTime(player),
           () => { player.UnFreeze(); });
       }
-    }
 
     doTeleports();
   }
@@ -70,7 +69,9 @@ public abstract class AbstractSpecialDay {
     if (Settings == null) return;
     IEnumerable<CCSPlayerController> targets = [];
 
-    if (Settings.ForceTeleportAll) { targets = PlayerUtil.GetAlive(); } else {
+    if (Settings.ForceTeleportAll)
+      targets = PlayerUtil.GetAlive();
+    else
       targets = Settings.Teleport switch {
         SpecialDaySettings.TeleportType.CELL
           or SpecialDaySettings.TeleportType.CELL_STACKED =>
@@ -81,7 +82,6 @@ public abstract class AbstractSpecialDay {
         SpecialDaySettings.TeleportType.RANDOM => PlayerUtil.GetAlive(),
         _                                      => targets
       };
-    }
 
     IEnumerable<Vector> spawnPositions;
 
@@ -123,7 +123,7 @@ public abstract class AbstractSpecialDay {
     var enumerable   = spawnPositions.ToList();
     var baggedSpawns = new ShuffleBag<Vector>(enumerable);
 
-    foreach (var target in targets) { target.Teleport(baggedSpawns.GetNext()); }
+    foreach (var target in targets) target.Teleport(baggedSpawns.GetNext());
   }
 
   private string getConvarStringValue(ConVar? cvar) {
@@ -149,7 +149,7 @@ public abstract class AbstractSpecialDay {
 
 
   /// <summary>
-  /// Called when the actual action begins for the special day.
+  ///   Called when the actual action begins for the special day.
   /// </summary>
   public virtual void Execute() { EnableDamage(); }
 

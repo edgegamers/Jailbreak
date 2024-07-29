@@ -18,11 +18,11 @@ namespace Jailbreak.SpecialDay;
 public class SpecialDayCommand(IWardenService warden,
   ISpecialDayFactory factory, IWardenNotifications wardenMsg,
   ISpecialDayMessages sdMsg, ISpecialDayManager sd) : IPluginBehavior {
-  private SpecialDayMenuSelector? menuSelector;
-  private BasePlugin? plugin;
-
   public static FakeConVar<int> CvRoundsBetweenSD = new(
     "css_jb_sd_round_cooldown", "Rounds between special days", 5);
+
+  private SpecialDayMenuSelector? menuSelector;
+  private BasePlugin? plugin;
 
   // css_lr <player> <LRType>
   public void Start(BasePlugin basePlugin) {
@@ -46,18 +46,17 @@ public class SpecialDayCommand(IWardenService warden,
 
       if (sd.IsSDRunning) {
         // SD is already running
-        if (sd.CurrentSD is MessagedSpecialDay messaged) {
+        if (sd.CurrentSD is MessagedSpecialDay messaged)
           sdMsg.SpecialDayRunning(messaged.Messages.Name)
            .ToPlayerChat(executor);
-        } else {
+        else
           sdMsg.SpecialDayRunning(sd.CurrentSD?.Type.ToString() ?? "Unknown")
            .ToPlayerChat(executor);
-        }
 
         return;
       }
 
-      int roundsToNext = sd.RoundsSinceLastSD - CvRoundsBetweenSD.Value;
+      var roundsToNext = sd.RoundsSinceLastSD - CvRoundsBetweenSD.Value;
       if (roundsToNext < 0
         && !AdminManager.PlayerHasPermissions(executor, "@css/rcon")) {
         sdMsg.SpecialDayCooldown(Math.Abs(roundsToNext)).ToPlayerChat(executor);

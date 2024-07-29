@@ -14,11 +14,10 @@ public class LastRequestPlayerSelector(ILastRequestManager manager,
 
     foreach (var target in Utilities.GetPlayers()
      .Where(target => target.PawnIsAlive
-        && (target.Team == CsTeam.CounterTerrorist || debug))) {
+        && (target.Team == CsTeam.CounterTerrorist || debug)))
       menu.AddMenuOption(target.PlayerName,
         (_, _) => onSelect(player, command, target.UserId.ToString()),
         !debug && manager.IsInLR(target));
-    }
 
     return menu;
   }

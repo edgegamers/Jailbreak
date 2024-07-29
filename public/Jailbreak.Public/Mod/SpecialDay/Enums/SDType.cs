@@ -7,6 +7,9 @@ public enum SDType {
   HNS,
   NOSCOPE,
   OITC,
+  PACMAN,
+  SNAKE,
+  SPEEDRUN,
   TAG,
   WARDAY,
   ZOMBIE
@@ -27,6 +30,12 @@ public static class SDTypeExtensions {
         return SDType.NOSCOPE;
       case "war":
         return SDType.WARDAY;
+      case "tron":
+        return SDType.SNAKE;
+      case "gun":
+        return SDType.GUNGAME;
+      case "zomb":
+        return SDType.ZOMBIE;
     }
 
     return null;
