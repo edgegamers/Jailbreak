@@ -47,6 +47,7 @@ public class SpecialDaySettings {
   public bool ForceTeleportAll = false;
 
   public bool FreezePlayers = true;
+  public bool RespawnPlayers = true;
 
   /// <summary>
   ///   If true, all players will be immune from damage at the beginning.

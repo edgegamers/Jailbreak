@@ -21,6 +21,7 @@ public class SpecialDayManager(ISpecialDayFactory factory)
     API.Stats?.PushStat(new ServerStat("JB_SPECIALDAY", type.ToString()));
     RoundsSinceLastSD = 0;
     CurrentSD         = factory.CreateSpecialDay(type);
+    IsSDRunning       = true;
     if (CurrentSD is MessagedSpecialDay messaged)
       messaged.Messages.SpecialDayStart.ToAllChat();
 

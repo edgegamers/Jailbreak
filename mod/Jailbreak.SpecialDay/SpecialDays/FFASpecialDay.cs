@@ -1,3 +1,4 @@
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
@@ -23,5 +24,10 @@ public class FFASpecialDay(BasePlugin plugin, IServiceProvider provider)
     public override float FreezeTime(CCSPlayerController player) {
       return rng.NextSingle() * 5 + 2;
     }
+  }
+
+  public override void Execute() {
+    base.Execute();
+    Server.PrintToChatAll("GO!");
   }
 }

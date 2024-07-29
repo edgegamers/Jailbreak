@@ -18,8 +18,7 @@ public abstract class AbstractSpecialDay {
   protected BasePlugin Plugin;
 
   public AbstractSpecialDay(BasePlugin plugin, IServiceProvider provider) {
-    Plugin = plugin;
-    plugin.RegisterEventHandler<EventRoundEnd>(OnEnd);
+    Plugin        = plugin;
     this.provider = provider;
   }
 
@@ -33,27 +32,37 @@ public abstract class AbstractSpecialDay {
   public virtual void Setup() {
     if (Settings == null) return;
 
+    Plugin.RegisterEventHandler<EventRoundEnd>(OnEnd);
+
     foreach (var entry in Settings.ConVarValues) {
       var cv = ConVar.Find(entry.Key);
       if (cv == null) Server.PrintToConsole($"Invalid convar: {entry.Key}");
       previousConvarValues[entry.Key] = getConvarStringValue(cv);
-      try { cv?.SetValue(entry.Value); } catch (InvalidOperationException e) {
-        Console.WriteLine(e);
-      }
+      setConvarStringValue(cv, entry.Value);
     }
 
     RoundUtil.SetTimeRemaining(Settings.RoundTime());
 
     if (Settings.StartInvulnerable) DisableDamage();
 
-    if (Settings.StripToKnife)
+    if (Settings.StripToKnife || Settings.RespawnPlayers)
       foreach (var player in Utilities.GetPlayers()) {
-        player.RemoveWeapons();
-        player.GiveNamedItem("weapon_knife");
+        if (Settings.StripToKnife) {
+          player.RemoveWeapons();
+          player.GiveNamedItem("weapon_knife");
+        }
+
+        if (!Settings.RespawnPlayers) continue;
+        if (player is {
+          PawnIsAlive: false, Team : CsTeam.Terrorist or CsTeam.CounterTerrorist
+        })
+          player.Respawn();
       }
 
     if (!Settings.AllowLastRequests)
       provider.GetRequiredService<ILastRequestManager>().DisableLRForRound();
+
+    doTeleports();
 
     if (Settings.FreezePlayers)
       foreach (var player in Utilities.GetPlayers()) {
@@ -61,8 +70,6 @@ public abstract class AbstractSpecialDay {
         Plugin.AddTimer(Settings.FreezeTime(player),
           () => { player.UnFreeze(); });
       }
-
-    doTeleports();
   }
 
   private void doTeleports() {
@@ -123,7 +130,8 @@ public abstract class AbstractSpecialDay {
     var enumerable   = spawnPositions.ToList();
     var baggedSpawns = new ShuffleBag<Vector>(enumerable);
 
-    foreach (var target in targets) target.Teleport(baggedSpawns.GetNext());
+    foreach (var target in targets)
+      target.Pawn.Value?.Teleport(baggedSpawns.GetNext());
   }
 
   private string getConvarStringValue(ConVar? cvar) {
@@ -147,6 +155,40 @@ public abstract class AbstractSpecialDay {
     } catch (Exception) { return "INVALID"; }
   }
 
+  private void setConvarStringValue(ConVar? cvar, object value) {
+    if (cvar == null) return;
+    try {
+      switch (cvar.Type) {
+        case ConVarType.Bool:
+          cvar.SetValue((bool)value);
+          break;
+        case ConVarType.Float32 or ConVarType.Float64:
+          cvar.SetValue((float)value);
+          break;
+        case ConVarType.UInt16:
+          cvar.SetValue((ushort)value);
+          break;
+        case ConVarType.Int16:
+          cvar.SetValue((short)value);
+          break;
+        case ConVarType.UInt32:
+          cvar.SetValue((uint)value);
+          break;
+        case ConVarType.Int32:
+          cvar.SetValue((int)value);
+          break;
+        case ConVarType.Int64:
+          cvar.SetValue((long)value);
+          break;
+        case ConVarType.UInt64:
+          cvar.SetValue((ulong)value);
+          break;
+        case ConVarType.String:
+          cvar.SetValue((string)value);
+          break;
+      }
+    } catch (Exception) { }
+  }
 
   /// <summary>
   ///   Called when the actual action begins for the special day.
@@ -165,6 +207,7 @@ public abstract class AbstractSpecialDay {
       previousConvarValues.Clear();
     }
 
+    Plugin.DeregisterEventHandler<EventRoundEnd>(OnEnd);
     return HookResult.Continue;
   }
 

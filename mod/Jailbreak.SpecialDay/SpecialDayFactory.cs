@@ -5,8 +5,11 @@ using Jailbreak.SpecialDay.SpecialDays;
 
 namespace Jailbreak.SpecialDay;
 
-public class SpecialDayFactory(BasePlugin plugin, IServiceProvider provider)
-  : ISpecialDayFactory {
+public class SpecialDayFactory(IServiceProvider provider) : ISpecialDayFactory {
+  private BasePlugin plugin = null!;
+
+  public void Start(BasePlugin basePlugin) { plugin = basePlugin; }
+
   public AbstractSpecialDay CreateSpecialDay(SDType type) {
     return type switch {
       SDType.FFA => new FFASpecialDay(plugin, provider),
