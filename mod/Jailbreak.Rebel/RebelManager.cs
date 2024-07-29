@@ -7,9 +7,11 @@ using CounterStrikeSharp.API.Modules.Timers;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.Logging;
+using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rebel;
+using MStatsShared;
 
 namespace Jailbreak.Rebel;
 
@@ -61,6 +63,10 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
   public bool MarkRebel(CCSPlayerController player, long time = -1) {
     if (!rebelTimes.ContainsKey(player))
       logs.Append(logs.Player(player), "is now a rebel.");
+
+    var pos = player.Pawn.Value?.AbsOrigin;
+    API.Stats?.PushStat(new ServerStat("JB_REBEL_STARTED",
+      $"{player.SteamID} {pos.X:F2} {pos.Y:F2} {pos.Z:F2}"));
 
     if (time == -1) time = CvRebelTime.Value;
 

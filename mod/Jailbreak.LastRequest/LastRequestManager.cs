@@ -111,7 +111,7 @@ public class LastRequestManager(ILastRequestMessages messages,
     ActiveLRs.Add(lr);
 
     API.Stats?.PushStat(new ServerStat("JB_LASTREQUEST",
-      $"{prisoner.SteamID} + {type.ToFriendlyString()}"));
+      $"{prisoner.SteamID} {type.ToFriendlyString()}"));
 
     if (prisoner.Pawn.Value != null) {
       prisoner.Pawn.Value.Health            = 100;
@@ -185,6 +185,8 @@ public class LastRequestManager(ILastRequestMessages messages,
       return HookResult.Continue;
     }
 
+    if (!IsLREnabledForRound) return HookResult.Continue;
+
     if (player.GetTeam() != CsTeam.Terrorist) return HookResult.Continue;
 
     if (countAlivePrisoners() - 1 > CvPrisonerToLR.Value)
@@ -216,6 +218,8 @@ public class LastRequestManager(ILastRequestMessages messages,
 
       return HookResult.Continue;
     }
+
+    if (!IsLREnabledForRound) return HookResult.Continue;
 
     if (player.GetTeam() != CsTeam.Terrorist) return HookResult.Continue;
     if (countAlivePrisoners() > CvPrisonerToLR.Value)
