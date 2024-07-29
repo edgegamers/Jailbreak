@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
@@ -7,7 +7,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\lang\Jailbreak.English\Jailbreak.English.csproj"/>
         <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Reference Include="MStatsShared">
+            <HintPath>..\..\public\Jailbreak.Public\Mixin\MStatsShared.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
 </Project>

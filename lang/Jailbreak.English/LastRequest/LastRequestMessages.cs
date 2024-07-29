@@ -84,27 +84,25 @@ public class LastRequestMessages : ILastRequestMessages,
     var tNull = !lr.Prisoner.IsReal();
     var gNull = !lr.Guard.IsReal();
     if (tNull && gNull)
-      return new SimpleView() { PREFIX, "Last Request has been decided." };
+      return new SimpleView { PREFIX, "Last Request has been decided." };
 
-    if (tNull && result == LRResult.PRISONER_WIN) {
-      return new SimpleView() {
+    if (tNull && result == LRResult.PRISONER_WIN)
+      return new SimpleView {
         PREFIX, lr.Guard, "lost the LR, but the prisoner left the game."
       };
-    }
 
-    if (gNull && result == LRResult.GUARD_WIN) {
-      return new SimpleView() {
+    if (gNull && result == LRResult.GUARD_WIN)
+      return new SimpleView {
         PREFIX, lr.Prisoner, "lost the LR, but the guard left the game."
       };
-    }
 
     switch (result) {
       case LRResult.TIMED_OUT:
-        return new SimpleView() {
+        return new SimpleView {
           PREFIX, ChatColors.Grey.ToString(), "Last Request has timed out."
         };
       case LRResult.INTERRUPTED:
-        return new SimpleView() {
+        return new SimpleView {
           PREFIX,
           ChatColors.Grey.ToString(),
           "Last Request has been interrupted."

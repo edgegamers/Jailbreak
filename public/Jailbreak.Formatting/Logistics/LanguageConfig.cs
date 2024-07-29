@@ -37,8 +37,8 @@ public class LanguageConfig<TDialect> where TDialect : IDialect {
   }
 
   public void WithSpecialDay<TSpecialDay>()
-    where TSpecialDay : class, ILanguage<TDialect>, ISpecialDayNotifications {
-    collection.AddSingleton<ISpecialDayNotifications, TSpecialDay>();
+    where TSpecialDay : class, ILanguage<TDialect>, ISpecialDayMessages {
+    collection.AddSingleton<ISpecialDayMessages, TSpecialDay>();
   }
 
   public void WithLogging<TLogging>()

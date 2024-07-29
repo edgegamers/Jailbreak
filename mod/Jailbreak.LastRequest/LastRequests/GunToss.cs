@@ -11,7 +11,7 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
 
   public override void Setup() {
     base.Setup();
-    
+
     Prisoner.RemoveWeapons();
     Guard.RemoveWeapons();
 

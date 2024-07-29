@@ -13,11 +13,11 @@ using MStatsShared;
 namespace Jailbreak.Warden.Markers;
 
 public class WardenMarkerBehavior(IWardenService warden) : IPluginBehavior {
-  public readonly FakeConVar<float> CvMinRadius = new(
-    "css_jb_warden_marker_min_radius", "Minimum radius for warden marker", 60);
-
   public readonly FakeConVar<float> CvMaxRadius = new(
     "css_jb_warden_marker_max_radius", "Maximum radius for warden marker", 360);
+
+  public readonly FakeConVar<float> CvMinRadius = new(
+    "css_jb_warden_marker_min_radius", "Minimum radius for warden marker", 60);
 
   public readonly FakeConVar<long> CvResizeTime = new(
     "css_jb_warden_resize_time", "Milliseconds to wait for resizing marker",

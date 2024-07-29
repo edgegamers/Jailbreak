@@ -24,7 +24,7 @@ public static class API {
 
   public static IMStat? Stats {
     get {
-      try { return StatsCapability.Get(); } catch (KeyNotFoundException _) {
+      try { return StatsCapability.Get(); } catch (KeyNotFoundException) {
         return null;
       }
     }
@@ -32,7 +32,7 @@ public static class API {
 
   public static IActain? Actain {
     get {
-      try { return ActainCapability.Get(); } catch (KeyNotFoundException _) {
+      try { return ActainCapability.Get(); } catch (KeyNotFoundException) {
         return null;
       }
     }
