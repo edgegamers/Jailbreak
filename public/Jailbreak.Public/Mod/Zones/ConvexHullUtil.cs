@@ -3,7 +3,7 @@ using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.Zones;
 
-public static class ConvexHullZone {
+public static class ConvexHullUtil {
   // private readonly IList<Vector> hull;
   // private readonly IList<Vector> rawPoints;
 

@@ -30,9 +30,7 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
     var position = executor.PlayerPawn.Value.AbsOrigin;
 
     if (info.ArgCount <= 1) {
-      info.ReplyToCommand("Usage: css_zone [add/set/tpto] [type]");
-      info.ReplyToCommand("       css_zone remove <type>");
-      info.ReplyToCommand("       css_zone finish");
+      sendUsage(executor);
       return;
     }
 
@@ -60,16 +58,11 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
         executor.PrintToChat(
           $"Zone created. Area: {zone.GetArea()} Center: {zone.CalculateCenterPoint()}");
         executor.PrintToChat("Pushing zone...");
-        Server.NextFrameAsync(async () => {
-          await zoneManager.PushZone(zone, creator.Type);
-          Server.NextFrame(() => {
-            if (!executor.IsValid) return;
+        zoneManager.PushZone(zone, creator.Type);
 
-            executor.PrintToChat($"Successfully created {creator.Type} zone");
-            creator.Dispose();
-            creators.Remove(executor.SteamID);
-          });
-        });
+        executor.PrintToChat($"Successfully created {creator.Type} zone");
+        creator.Dispose();
+        creators.Remove(executor.SteamID);
         return;
       case "show":
         var zoneCount = 0;
@@ -96,36 +89,24 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
           info.ReplyToCommand($"Showing {zoneCount} zones");
         return;
       case "remove":
-        var zoneDictionary = zoneManager.GetAllZones(Server.MapName)
-         .GetAwaiter()
-         .GetResult();
-
-        var validZones = zoneDictionary
-         .Where(s => specifiedType == null || s.Key == specifiedType)
-         .SelectMany(s => s.Value)
-         .Where(z => z.IsInsideZone(position))
-         .ToList();
-
-        if (validZones.Count == 0) {
-          info.ReplyToCommand("No zones found");
-          return;
-        }
-
-        if (validZones.Count > 1) {
-          info.ReplyToCommand("Multiple zones found.");
-          return;
-        }
-
-        var toDelete = validZones.First();
-        zoneManager.DeleteZone(toDelete.Id);
-        info.ReplyToCommand("Deleted zone #" + toDelete.Id);
+        var toDelete = getUniqueZone(executor, specifiedType);
+        if (toDelete == null) return;
+        zoneManager.DeleteZone(toDelete.Value.Item1.Id);
+        info.ReplyToCommand("Deleted zone #" + toDelete.Value.Item1.Id);
+        return;
+      case "addinner":
+        var innerPair = getUniqueZone(executor, specifiedType);
+        if (innerPair == null) return;
+        var innerZone = innerPair.Value.Item1;
+        innerZone.AddPoint(position);
+        info.ReplyToCommand("Added point to zone #" + innerZone.Id);
+        zoneManager.PushZoneWithID(innerZone, innerPair.Value.Item2,
+          Server.MapName);
         return;
     }
 
     if (info.ArgCount != 3) {
-      info.ReplyToCommand("Usage: css_zone [add/set/remove/tpto] [type]");
-      info.ReplyToCommand("       css_zone show <type>");
-      info.ReplyToCommand("       css_zone finish");
+      sendUsage(executor);
       return;
     }
 
@@ -144,7 +125,7 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
         attemptBeginCreation(executor, info, specifiedType.Value);
         return;
       case "tpto":
-        var tpDestinations = zoneManager.GetAllZones(Server.MapName)
+        var tpDestinations = zoneManager.GetAllZones()
          .GetAwaiter()
          .GetResult()
          .Where(z => specifiedType == z.Key)
@@ -187,5 +168,53 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
     creator.BeginCreation();
     creators[executor.SteamID] = creator;
     info.ReplyToCommand($"Began creation of a {type.ToString()} zone");
+  }
+
+  private (IZone, ZoneType)? getUniqueZone(CCSPlayerController player,
+    ZoneType? type, bool print = true) {
+    var zoneDictionary = zoneManager.GetAllZones().GetAwaiter().GetResult();
+
+    if (type == null) {
+      IZone?    result     = null;
+      ZoneType? resultType = null;
+
+      foreach (var zones in zoneDictionary) {
+        var zone = zones.Value.FirstOrDefault(z
+          => z.IsInsideZone(player.PlayerPawn.Value!.AbsOrigin!));
+        if (zone == null) continue;
+        if (result != null) {
+          player.PrintToChat("Multiple zones found.");
+          return null;
+        }
+
+        result     = zone;
+        resultType = zones.Key;
+      }
+
+      if (result == null || resultType == null) return null;
+      return (result, resultType.Value);
+    }
+
+    var validZones = zoneDictionary[type.Value]
+     .Where(zone => zone.IsInsideZone(player.PlayerPawn.Value!.AbsOrigin!))
+     .ToList();
+
+    switch (validZones.Count) {
+      case 0:
+        player.PrintToChat("No zones found");
+        return null;
+      case > 1:
+        player.PrintToChat("Multiple zones found.");
+        return null;
+      default:
+        return (validZones.First()!, type.Value);
+    }
+  }
+
+  private void sendUsage(CCSPlayerController player) {
+    player.PrintToChat("Usage: css_zone [add/set/remove/tpto] [type]");
+    player.PrintToChat("       css_zone addinner <type>");
+    player.PrintToChat("       css_zone show <type>");
+    player.PrintToChat("       css_zone finish");
   }
 }

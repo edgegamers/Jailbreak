@@ -46,6 +46,18 @@ public class MultiZoneWrapper(IEnumerable<IZone>? zones = null)
     return zones.SelectMany(zone => zone.GetAllPoints());
   }
 
+  public void AddPoint(Vector point) {
+    var insideZone = zones.FirstOrDefault(zone => zone.IsInsideZone(point));
+    if (insideZone != null) {
+      insideZone.AddPoint(point);
+      return;
+    }
+
+    var minZone = zones.OrderBy(zone => zone.GetMinDistance(point)).First();
+
+    minZone.AddPoint(point);
+  }
+
   public void Draw(BasePlugin plugin, Color color, float lifetime,
     float width = 1) {
     foreach (var zone in zones) zone.Draw(plugin, color, lifetime, width);

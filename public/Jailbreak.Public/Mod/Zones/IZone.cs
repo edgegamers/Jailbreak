@@ -47,6 +47,8 @@ public interface IZone {
   /// <returns></returns>
   public IEnumerable<Vector> GetAllPoints();
 
+  public void AddPoint(Vector point);
+
   /// <summary>
   ///   Calculate the area of the zone
   /// </summary>

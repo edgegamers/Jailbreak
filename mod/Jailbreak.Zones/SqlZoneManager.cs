@@ -32,14 +32,6 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     plugin.RemoveListener<Listeners.OnMapStart>(OnMapStart);
   }
 
-  public async void LoadZones(string map) {
-    var tasks = Enum.GetValues<ZoneType>()
-     .Select(type => LoadZones(map, type))
-     .ToList();
-
-    await Task.WhenAll(tasks);
-  }
-
   public async void DeleteZone(int zoneId, string map) {
     foreach (var list in zones.Values) {
       var zone = list.FirstOrDefault(z => z.Id == zoneId);
@@ -63,13 +55,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     await cmd.ExecuteNonQueryAsync();
   }
 
-  public Task<IList<IZone>> GetZones(string map, ZoneType type) {
-    return Task.FromResult(!zones.TryGetValue(type, out var result) ?
-      new List<IZone>() :
-      result);
-  }
-
-  public async Task PushZone(IZone zone, ZoneType type, string map) {
+  public async void PushZoneWithID(IZone zone, ZoneType type, string map) {
     if (!zones.TryGetValue(type, out var list)) {
       list        = new List<IZone>();
       zones[type] = list;
@@ -81,7 +67,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     var conn = new MySqlConnection(CvSqlConnectionString.Value);
     await conn.OpenAsync();
 
-    var insertPointCommand = """
+    var insertPointCommand = $"""
         INSERT INTO {CvSqlTable.Value} (map, type, zoneid, pointid, X, Y, Z)
         VALUES (@map, @type, @zoneid, @pointid, @X, @Y, @Z)
       """;
@@ -90,9 +76,8 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
 
     cmd.Parameters.AddWithValue("@map", map);
     cmd.Parameters.AddWithValue("@type", type.ToString());
-    var nextId = zones.SelectMany(s => s.Value).Max(z => z.Id) + 1;
 
-    cmd.Parameters.AddWithValue("@zoneid", nextId);
+    cmd.Parameters.AddWithValue("@zoneid", zone.Id);
     var pointId = 0;
 
     foreach (var point in zone.GetBorderPoints()) {
@@ -104,8 +89,41 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     }
   }
 
-  public Task<IDictionary<ZoneType, IList<IZone>>> GetAllZones(string map) {
+  public Task<IList<IZone>> GetZones(string map, ZoneType type) {
+    return Task.FromResult(!zones.TryGetValue(type, out var result) ?
+      new List<IZone>() :
+      result);
+  }
+
+  public async void PushZone(IZone zone, ZoneType type, string map) {
+    if (!zones.TryGetValue(type, out var list)) {
+      list        = new List<IZone>();
+      zones[type] = list;
+    }
+
+    list.Add(zone);
+
+    var nextId = zones.SelectMany(s => s.Value).Max(z => z.Id) + 1;
+    zone.Id = nextId;
+    PushZoneWithID(zone, type, map);
+  }
+
+  public async void UpdateZone(IZone zone, ZoneType type, int id) {
+    DeleteZone(id, Server.MapName);
+    zone.Id = id;
+    PushZoneWithID(zone, type, Server.MapName);
+  }
+
+  public Task<IDictionary<ZoneType, IList<IZone>>> GetAllZones() {
     return Task.FromResult(zones);
+  }
+
+  public async void LoadZones(string map) {
+    var tasks = Enum.GetValues<ZoneType>()
+     .Select(type => LoadZones(map, type))
+     .ToList();
+
+    await Task.WhenAll(tasks);
   }
 
   private void OnMapEnd() { zones.Clear(); }
@@ -114,8 +132,8 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     var conn = new MySqlConnection(CvSqlConnectionString.Value);
     await conn.OpenAsync();
 
-    var cmdText = """
-      CREATE TABLE IF NOT EXISTS CvSqlTable.Value(
+    var cmdText = $"""
+      CREATE TABLE IF NOT EXISTS {CvSqlTable.Value}(
         zoneid INT NOT NULL,
         pointid INT NOT NULL,
         map VARCHAR(64) NOT NULL,
