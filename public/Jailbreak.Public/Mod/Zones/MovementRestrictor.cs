@@ -7,15 +7,15 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 namespace Jailbreak.SpecialDay;
 
 /// <summary>
-/// Wrapper class to restrict player movement to a given area / zone
+///   Wrapper class to restrict player movement to a given area / zone
 /// </summary>
 public abstract class MovementRestrictor {
-  private readonly CCSPlayerController player;
-  private Vector? lastValid;
-  private readonly float radiusSquared;
-  private Timer timer;
   private readonly Action? onTeleport;
+  private readonly CCSPlayerController player;
+  private readonly float radiusSquared;
+  private Vector? lastValid;
   private float maxSpeed = 0.6f;
+  private readonly Timer timer;
 
   public MovementRestrictor(BasePlugin plugin, CCSPlayerController player,
     float radiusSquared = 250000f, Action? onTeleport = null) {
@@ -36,8 +36,8 @@ public abstract class MovementRestrictor {
   public abstract float DistanceFrom(Vector vec);
 
   /// <summary>
-  /// Returns a valid center point to teleport a player to
-  /// in case they somehow got outside the zone
+  ///   Returns a valid center point to teleport a player to
+  ///   in case they somehow got outside the zone
   /// </summary>
   /// <returns></returns>
   public abstract Vector GetCenter();

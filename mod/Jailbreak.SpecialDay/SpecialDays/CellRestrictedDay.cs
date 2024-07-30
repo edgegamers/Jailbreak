@@ -1,55 +1,36 @@
-﻿using System.Drawing;
-using CounterStrikeSharp.API;
+﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
-using Jailbreak.Formatting.Extensions;
-using Jailbreak.Public.Mod.Draw;
-using Jailbreak.Public.Mod.SpecialDay;
-using Jailbreak.Public.Mod.SpecialDay.Enums;
-using Jailbreak.Public.Utils;
+using Jailbreak.Formatting.Views;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public abstract class CellRestrictedDay(BasePlugin plugin,
   IServiceProvider provider, CsTeam restrictedTeam = CsTeam.Terrorist)
-  : AbstractSpecialDay(plugin, provider) {
-  private readonly IList<MovementRestrictor> restrictors =
-    new List<MovementRestrictor>();
+  : ZoneRestrictedDay(plugin, provider, restrictedTeam) {
+  public override IView ZoneReminder => ArmoryReminder;
 
-  public override void Setup() {
-    base.Setup();
+  public virtual IView ArmoryReminder
+    => this is ISpecialDayMessageProvider messaged ?
+      new SimpleView {
+        ISpecialDayMessages.PREFIX,
+        $"Today is {messaged.Messages.Name}, so stay in cells!"
+      } :
+      new SimpleView { ISpecialDayMessages.PREFIX, "Stay in cells!" };
 
-    ArmoryReminder.ToTeamChat(restrictedTeam);
+  override protected IZone GetZone() {
+    var manager = provider.GetRequiredService<IZoneManager>();
+    var zones   = manager.GetZones(ZoneType.CELL).GetAwaiter().GetResult();
+    if (zones.Count > 0) return new MultiZoneWrapper(zones);
 
-    var armoryBounds = new ConvexHullBorder(Utilities
+    var bounds = new ConvexHullZone(Utilities
      .FindAllEntitiesByDesignerName<SpawnPoint>("info_player_terrorist")
      .Where(s => s.AbsOrigin != null)
      .Select(s => s.AbsOrigin!)
      .ToList());
 
-    var points = armoryBounds.GetPoints().ToList();
-    for (var i = 0; i < points.Count; i++) {
-      var first  = points[i];
-      var second = points[(i + 1) % points.Count];
-      var line   = new BeamLine(plugin, first, second);
-      line.SetWidth(1f);
-      line.SetColor(Color.Firebrick);
-      line.Draw(55);
-    }
-
-    foreach (var t in PlayerUtil.FromTeam(restrictedTeam)) {
-      var armoryRestrictor = new BorderMovementRestrictor(plugin, t,
-        armoryBounds, onTeleport: () => ArmoryReminder.ToPlayerChat(t));
-      restrictors.Add(armoryRestrictor);
-    }
+    return bounds;
   }
-
-  public override void Execute() {
-    base.Execute();
-
-    foreach (var restrictor in restrictors) { restrictor.Kill(); }
-  }
-
-  public abstract IView ArmoryReminder { get; }
 }

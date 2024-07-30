@@ -14,21 +14,9 @@ public class WardaySpecialDay(BasePlugin plugin, IServiceProvider provider)
   : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
   public override SDType Type => SDType.WARDAY;
   private WardayInstanceMessages msg => (WardayInstanceMessages)Messages;
-  public ISpecialDayInstanceMessages Messages => new WardayInstanceMessages();
-
-  public class WardaySettings : SpecialDaySettings {
-    public WardaySettings() {
-      AllowLastGuard = true;
-      TTeleport      = TeleportType.ARMORY;
-      CtTeleport     = TeleportType.ARMORY;
-    }
-
-    public override float FreezeTime(CCSPlayerController player) {
-      return player.GetTeam() == CsTeam.CounterTerrorist ? 3 : 30;
-    }
-  }
 
   public override SpecialDaySettings? Settings => new WardaySettings();
+  public ISpecialDayInstanceMessages Messages => new WardayInstanceMessages();
 
   public override void Setup() {
     Timers[15]  += () => Messages.BeginsIn(15).ToAllChat();
@@ -45,5 +33,17 @@ public class WardaySpecialDay(BasePlugin plugin, IServiceProvider provider)
     };
 
     base.Setup();
+  }
+
+  public class WardaySettings : SpecialDaySettings {
+    public WardaySettings() {
+      AllowLastGuard = true;
+      TTeleport      = TeleportType.ARMORY;
+      CtTeleport     = TeleportType.ARMORY;
+    }
+
+    public override float FreezeTime(CCSPlayerController player) {
+      return player.GetTeam() == CsTeam.CounterTerrorist ? 3 : 30;
+    }
   }
 }

@@ -1,7 +1,6 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
-using CounterStrikeSharp.API.Modules.Cvars;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Extensions;
@@ -18,24 +17,12 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
     => new FfaInstanceMessages("NoScope",
       "No scopes allowed, only quickscopes!");
 
-  private class NoScopeSettings : FFASettings {
-    public NoScopeSettings() {
-      CtTeleport = TeleportType.RANDOM;
-      TTeleport  = TeleportType.RANDOM;
-
-      ConVarValues["sv_gravity"] = (float)200;
-    }
-
-    public override float FreezeTime(CCSPlayerController player) { return 1; }
-  }
-
   public override SpecialDaySettings? Settings => new NoScopeSettings();
 
   public override void Setup() {
     Timers[120] += () => {
-      foreach (var player in PlayerUtil.GetAlive()) {
+      foreach (var player in PlayerUtil.GetAlive())
         player.GiveNamedItem("weapon_knife");
-      }
     };
     base.Setup();
   }
@@ -73,5 +60,16 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
     if (activeWeapon.DesignerName is "weapon_ssg08" or "weapon_knife") return;
     if (Tag.UTILITY.Contains(activeWeapon.DesignerName)) return;
     activeWeapon.NextPrimaryAttackTick = Server.TickCount + 500;
+  }
+
+  private class NoScopeSettings : FFASettings {
+    public NoScopeSettings() {
+      CtTeleport = TeleportType.RANDOM;
+      TTeleport  = TeleportType.RANDOM;
+
+      ConVarValues["sv_gravity"] = (float)200;
+    }
+
+    public override float FreezeTime(CCSPlayerController player) { return 1; }
   }
 }

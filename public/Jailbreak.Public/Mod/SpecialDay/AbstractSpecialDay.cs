@@ -1,4 +1,3 @@
-using System.Reflection;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
@@ -88,16 +87,14 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
           () => { player.UnFreeze(); });
       }
 
-    if (Timers.Count > 0) {
-      foreach (var entry in Timers) {
+    if (Timers.Count > 0)
+      foreach (var entry in Timers)
         Plugin.AddTimer(entry.Key, () => {
           if (provider.GetRequiredService<ISpecialDayManager>().CurrentSD
             != this)
             return;
           entry.Value.Invoke();
         }, TimerFlags.STOP_ON_MAPCHANGE);
-      }
-    }
   }
 
   private void doTeleports() {

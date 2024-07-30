@@ -3,17 +3,13 @@ using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.SpecialDay;
 
-public class DistanceBorder(IEnumerable<Vector> origins, float tolerance)
-  : IBorder {
+public class DistanceZone(IEnumerable<Vector> origins, float tolerance)
+  : IZone {
   public static float WIDTH_CELL = 200 * 200;
   public static float WIDTH_MEDIUM_ROOM = 1000 * 1000;
   public static float WIDTH_LARGE_ROOM = 1500 * 1500;
 
-  public bool IsInsideRegion(Vector position) {
-    return origins.Any(origin => origin.DistanceSquared(position) < tolerance);
-  }
-
-  public bool IsInsiderBorder(Vector position) {
+  public bool IsInsideZone(Vector position) {
     return GetMinDistance(position) < tolerance;
   }
 
@@ -28,4 +24,8 @@ public class DistanceBorder(IEnumerable<Vector> origins, float tolerance)
   }
 
   public IEnumerable<Vector> GetPoints() { return origins; }
+
+  public bool IsInsideRegion(Vector position) {
+    return origins.Any(origin => origin.DistanceSquared(position) < tolerance);
+  }
 }

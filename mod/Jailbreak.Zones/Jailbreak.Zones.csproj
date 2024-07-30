@@ -7,7 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj" />
+        <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MySqlConnector" Version="2.3.7"/>
     </ItemGroup>
 
 </Project>
