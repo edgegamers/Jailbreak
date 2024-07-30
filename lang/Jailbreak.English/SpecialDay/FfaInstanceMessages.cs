@@ -34,4 +34,14 @@ public class FfaInstanceMessages : ISpecialDayInstanceMessages,
       "won!"
     };
   }
+
+  public IView DamageEnablingIn(int seconds)
+    => new SimpleView {
+      ISpecialDayMessages.PREFIX,
+      "Damage will be enabled in",
+      seconds,
+      "seconds."
+    };
+
+  IView Begin => new SimpleView { ISpecialDayMessages.PREFIX, "GO!" };
 }

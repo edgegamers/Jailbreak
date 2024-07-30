@@ -2,8 +2,10 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Cvars;
+using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.LastGuard;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Utils;
@@ -16,6 +18,7 @@ public abstract class AbstractSpecialDay {
   private readonly Dictionary<string, object?> previousConvarValues = new();
   private readonly IServiceProvider provider;
   protected BasePlugin Plugin;
+  protected Dictionary<float, Action> Timers = new();
 
   public AbstractSpecialDay(BasePlugin plugin, IServiceProvider provider) {
     Plugin        = plugin;
@@ -61,6 +64,9 @@ public abstract class AbstractSpecialDay {
 
     if (!Settings.AllowLastRequests)
       provider.GetRequiredService<ILastRequestManager>().DisableLRForRound();
+    if (!Settings.AllowLastGuard)
+      provider.GetRequiredService<ILastGuardService>()
+       .DisableLastGuardForRound();
 
     doTeleports();
 
@@ -70,6 +76,17 @@ public abstract class AbstractSpecialDay {
         Plugin.AddTimer(Settings.FreezeTime(player),
           () => { player.UnFreeze(); });
       }
+
+    if (Timers.Count > 0) {
+      foreach (var entry in Timers) {
+        Plugin.AddTimer(entry.Key, () => {
+          if (provider.GetRequiredService<ISpecialDayManager>().CurrentSD
+            != this)
+            return;
+          entry.Value.Invoke();
+        }, TimerFlags.STOP_ON_MAPCHANGE);
+      }
+    }
   }
 
   private void doTeleports() {
@@ -187,7 +204,7 @@ public abstract class AbstractSpecialDay {
           cvar.SetValue((string)value);
           break;
       }
-    } catch (Exception) { }
+    } catch (InvalidOperationException) { }
   }
 
   /// <summary>
@@ -199,10 +216,9 @@ public abstract class AbstractSpecialDay {
   public virtual HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
     foreach (var entry in previousConvarValues) {
       var cv = ConVar.Find(entry.Key);
-      if (cv == null) continue;
-      try { cv.SetValue(entry.Value); } catch (InvalidOperationException e) {
-        Console.WriteLine(e);
-      }
+      if (cv == null || entry.Value == null) continue;
+      try { setConvarStringValue(cv, entry.Value); } catch (
+        InvalidOperationException e) { Console.WriteLine(e); }
 
       previousConvarValues.Clear();
     }

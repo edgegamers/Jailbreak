@@ -119,6 +119,8 @@ public class LastGuard(ILastGuardNotifications notifications,
       player.GiveNamedItem(CvLGWeapon.Value);
   }
 
+  public void DisableLastGuardForRound() { canStart = false; }
+
   [GameEventHandler]
   public HookResult OnPlayerDeathEvent(EventPlayerDeath @event,
     GameEventInfo info) {

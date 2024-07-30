@@ -37,6 +37,7 @@ public class SpecialDaySettings {
   }
 
   public bool AllowLastRequests = true;
+  public bool AllowLastGuard = false;
 
   /// <summary>
   ///   If true, teleport all players regardless of where they should've
