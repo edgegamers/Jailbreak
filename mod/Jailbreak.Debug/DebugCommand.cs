@@ -22,6 +22,7 @@ public class DebugCommand(IServiceProvider serviceProvider) : IPluginBehavior {
     commands.Add("lr", new Subcommands.LastRequest(serviceProvider, plugin));
     commands.Add("st", new MarkST(serviceProvider));
     commands.Add("lg", new LastGuard(serviceProvider));
+    commands.Add("zone", new Zone(serviceProvider, basePlugin));
   }
 
   [RequiresPermissions("@css/root")]
