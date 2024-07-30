@@ -7,14 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\public\Jailbreak.Formatting\Jailbreak.Formatting.csproj"/>
         <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj"/>
+        <ProjectReference Include="..\Jailbreak.Debug\Jailbreak.Debug.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="MStatsShared">
-            <HintPath>..\..\public\Jailbreak.Public\Mixin\MStatsShared.dll</HintPath>
-        </Reference>
+        <PackageReference Include="MySqlConnector" Version="2.3.7"/>
     </ItemGroup>
 
 </Project>

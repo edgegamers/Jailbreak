@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using CounterStrikeSharp.API;
+﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
@@ -97,25 +96,22 @@ public static class ViewExtensions {
   #region team
 
   public static IView ToTeamChat(this IView view, CsTeam team) {
-    foreach (var player in PlayerUtil.FromTeam(team, false)) {
+    foreach (var player in PlayerUtil.FromTeam(team, false))
       view.ToPlayerChat(player);
-    }
 
     return view;
   }
 
   public static IView ToTeamCenter(this IView view, CsTeam team) {
-    foreach (var player in PlayerUtil.FromTeam(team, false)) {
+    foreach (var player in PlayerUtil.FromTeam(team, false))
       view.ToPlayerCenter(player);
-    }
 
     return view;
   }
 
   public static IView ToTeamCenterHtml(this IView view, CsTeam team) {
-    foreach (var player in PlayerUtil.FromTeam(team, false)) {
+    foreach (var player in PlayerUtil.FromTeam(team, false))
       view.ToPlayerCenterHtml(player);
-    }
 
     return view;
   }

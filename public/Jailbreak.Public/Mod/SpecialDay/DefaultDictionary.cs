@@ -3,8 +3,8 @@
 namespace Jailbreak.Public.Mod.SpecialDay;
 
 public class DefaultableDictionary<TKey, TValue> : IDictionary<TKey, TValue> {
-  private readonly IDictionary<TKey, TValue> dictionary;
   private readonly TValue defaultValue;
+  private readonly IDictionary<TKey, TValue> dictionary;
 
   public DefaultableDictionary(IDictionary<TKey, TValue> dictionary,
     TValue defaultValue) {
@@ -45,7 +45,7 @@ public class DefaultableDictionary<TKey, TValue> : IDictionary<TKey, TValue> {
   public bool Remove(TKey key) { return dictionary.Remove(key); }
 
   public bool TryGetValue(TKey key, out TValue value) {
-    if (!dictionary.TryGetValue(key, out value)) { value = defaultValue; }
+    if (!dictionary.TryGetValue(key, out value)) value = defaultValue;
 
     return true;
   }
@@ -57,7 +57,7 @@ public class DefaultableDictionary<TKey, TValue> : IDictionary<TKey, TValue> {
       }
     }
 
-    set { dictionary[key] = value; }
+    set => dictionary[key] = value;
   }
 
   public ICollection<TKey> Keys => dictionary.Keys;

@@ -21,6 +21,6 @@ public class HNSInstanceMessages() : TeamDayMessages("Hide and Seek") {
 
   public IView ReadyOrNot
     => new SimpleView {
-      ISpecialDayMessages.PREFIX, "Ready or not, here they come!",
+      ISpecialDayMessages.PREFIX, "Ready or not, here they come!"
     };
 }

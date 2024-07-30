@@ -1,6 +1,4 @@
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Cvars;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
@@ -12,13 +10,25 @@ namespace Jailbreak.SpecialDay.SpecialDays;
 public class FFASpecialDay(BasePlugin plugin, IServiceProvider provider)
   : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
   public override SDType Type => SDType.FFA;
-  public override SpecialDaySettings? Settings => new FFASettings();
+  public override SpecialDaySettings Settings => new FFASettings();
+
+  private FfaInstanceMessages msg => (FfaInstanceMessages)Messages;
 
   public virtual ISpecialDayInstanceMessages Messages
     => new FfaInstanceMessages("Free for All",
       "Everyone for themselves! No camping, actively pursue!");
 
-  private FfaInstanceMessages msg => (FfaInstanceMessages)Messages;
+  public override void Setup() {
+    Timers[10] += () => Messages.BeginsIn(10).ToAllChat();
+    Timers[15] += () => Messages.BeginsIn(5).ToAllChat();
+    Timers[20] += Execute;
+    base.Setup();
+  }
+
+  public override void Execute() {
+    base.Execute();
+    msg.Begin.ToAllChat();
+  }
 
   public class FFASettings : SpecialDaySettings {
     private readonly Random rng;
@@ -33,17 +43,5 @@ public class FFASpecialDay(BasePlugin plugin, IServiceProvider provider)
     public override float FreezeTime(CCSPlayerController player) {
       return rng.NextSingle() * 5 + 2;
     }
-  }
-
-  public override void Setup() {
-    Timers[10] += () => Messages.BeginsIn(10).ToAllChat();
-    Timers[15] += () => Messages.BeginsIn(5).ToAllChat();
-    Timers[20] += Execute;
-    base.Setup();
-  }
-
-  public override void Execute() {
-    base.Execute();
-    msg.Begin.ToAllChat();
   }
 }

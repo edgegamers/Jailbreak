@@ -1,13 +1,11 @@
-﻿using System.Drawing;
-using System.Runtime.CompilerServices;
-using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Utils;
 
@@ -17,28 +15,13 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
   : ArmoryRestrictedDay(plugin, provider), ISpecialDayMessageProvider {
   public override SDType Type => SDType.HNS;
 
-  public ISpecialDayInstanceMessages Messages => new HNSInstanceMessages();
-
   private HNSInstanceMessages msg => (HNSInstanceMessages)Messages;
 
-  public class HNSSettings : SpecialDaySettings {
-    public HNSSettings() {
-      AllowLastRequests = true;
-      TTeleport         = TeleportType.ARMORY;
-      CtTeleport        = TeleportType.ARMORY;
-    }
+  public override SpecialDaySettings Settings => new HNSSettings();
 
-    public override int InitialHealth(CCSPlayerController player) {
-      return player.GetTeam() == CsTeam.Terrorist ? 250 : 50;
-    }
+  public override IView ArmoryReminder => msg.StayInArmory;
 
-    public override int InitialArmor(CCSPlayerController player) {
-      if (player.GetTeam() != CsTeam.Terrorist) return -1;
-      return 500;
-    }
-  }
-
-  public override SpecialDaySettings? Settings => new HNSSettings();
+  public ISpecialDayInstanceMessages Messages => new HNSInstanceMessages();
 
   public override void Setup() {
     Timers[10] += () => {
@@ -59,5 +42,20 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
     foreach (var t in PlayerUtil.FromTeam(CsTeam.Terrorist)) t.SetArmor(100);
   }
 
-  public override IView ArmoryReminder => msg.StayInArmory;
+  public class HNSSettings : SpecialDaySettings {
+    public HNSSettings() {
+      AllowLastRequests = true;
+      TTeleport         = TeleportType.ARMORY;
+      CtTeleport        = TeleportType.ARMORY;
+    }
+
+    public override int InitialHealth(CCSPlayerController player) {
+      return player.GetTeam() == CsTeam.Terrorist ? 250 : 50;
+    }
+
+    public override int InitialArmor(CCSPlayerController player) {
+      if (player.GetTeam() != CsTeam.Terrorist) return -1;
+      return 500;
+    }
+  }
 }

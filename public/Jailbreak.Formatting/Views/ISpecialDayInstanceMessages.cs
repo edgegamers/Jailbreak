@@ -1,4 +1,3 @@
-using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
 
 namespace Jailbreak.Formatting.Views;
@@ -19,11 +18,12 @@ public interface ISpecialDayInstanceMessages {
         Description
       };
 
-  public virtual IView SpecialDayEnd()
-    => new SimpleView { ISpecialDayMessages.PREFIX, Name, "ended." };
+  public IView SpecialDayEnd() {
+    return new SimpleView { ISpecialDayMessages.PREFIX, Name, "ended." };
+  }
 
-  public virtual IView BeginsIn(int seconds)
-    => seconds == 0 ?
+  public IView BeginsIn(int seconds) {
+    return seconds == 0 ?
       new SimpleView { ISpecialDayMessages.PREFIX, Name, "begins now!" } :
       new SimpleView {
         ISpecialDayMessages.PREFIX,
@@ -32,4 +32,5 @@ public interface ISpecialDayInstanceMessages {
         seconds,
         "seconds."
       };
+  }
 }

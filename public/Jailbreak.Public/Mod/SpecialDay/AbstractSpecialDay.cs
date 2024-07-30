@@ -1,4 +1,3 @@
-using System.Reflection;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
@@ -9,8 +8,8 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastGuard;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
+using Jailbreak.Public.Mod.Zones;
 using Jailbreak.Public.Utils;
-using Jailbreak.SpecialDay;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Public.Mod.SpecialDay;
@@ -88,16 +87,14 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
           () => { player.UnFreeze(); });
       }
 
-    if (Timers.Count > 0) {
-      foreach (var entry in Timers) {
+    if (Timers.Count > 0)
+      foreach (var entry in Timers)
         Plugin.AddTimer(entry.Key, () => {
           if (provider.GetRequiredService<ISpecialDayManager>().CurrentSD
             != this)
             return;
           entry.Value.Invoke();
         }, TimerFlags.STOP_ON_MAPCHANGE);
-      }
-    }
   }
 
   private void doTeleports() {
@@ -126,12 +123,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
      .FindAllEntitiesByDesignerName<SpawnPoint>("info_player_counterterrorist")
      .Where(s => s.AbsOrigin != null)
      .Select(s => s.AbsOrigin!);
-    var tpSpawns = Utilities
-     .FindAllEntitiesByDesignerName<
-        CInfoTeleportDestination>("info_teleport_destination")
-     .Where(s => s.AbsOrigin != null)
-     .Select(s => s.AbsOrigin!);
-    IEnumerable<Vector> spawnPositions = [];
+    IEnumerable<Vector> spawnPositions;
     switch (type) {
       case SpecialDaySettings.TeleportType.CELL:
         spawnPositions = tSpawns;
@@ -146,8 +138,15 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
         spawnPositions = [ctSpawns.First()];
         break;
       case SpecialDaySettings.TeleportType.RANDOM:
-        // TODO: Support truly random spawns
-        spawnPositions = tSpawns.Union(ctSpawns).Union(tpSpawns);
+        spawnPositions = getRandomSpawns(false, false).ToList();
+        // If we don't have enough manually specified spawns,
+        // gradually pull from the other spawn types
+        if (spawnPositions.Count() < PlayerUtil.GetAlive().Count()) {
+          spawnPositions = getRandomSpawns(true, false).ToList();
+          if (spawnPositions.Count() < PlayerUtil.GetAlive().Count())
+            spawnPositions = getRandomSpawns().ToList();
+        }
+
         break;
       default:
         return;
@@ -156,6 +155,40 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     var baggedSpawns = new ShuffleBag<Vector>(spawnPositions.ToList());
     foreach (var player in players)
       player.Pawn.Value?.Teleport(baggedSpawns.GetNext());
+  }
+
+  private IEnumerable<Vector> getRandomSpawns(bool includeSpawns = true,
+    bool includeTps = true) {
+    var result = new List<Vector>();
+
+    if (includeTps) {
+      var worldTp = Utilities
+       .FindAllEntitiesByDesignerName<CInfoTeleportDestination>(
+          "info_teleport_destination")
+       .Where(s => s.AbsOrigin != null)
+       .Select(s => s.AbsOrigin!);
+      result.AddRange(worldTp);
+    }
+
+    if (includeSpawns) {
+      var tSpawns = Utilities
+       .FindAllEntitiesByDesignerName<SpawnPoint>("info_player_terrorist")
+       .Where(s => s.AbsOrigin != null)
+       .Select(s => s.AbsOrigin!);
+      var ctSpawns = Utilities
+       .FindAllEntitiesByDesignerName<
+          SpawnPoint>("info_player_counterterrorist")
+       .Where(s => s.AbsOrigin != null)
+       .Select(s => s.AbsOrigin!);
+      result.AddRange(tSpawns);
+      result.AddRange(ctSpawns);
+    }
+
+    var zoneManager = provider.GetRequiredService<IZoneManager>();
+    var zones = zoneManager.GetZones(ZoneType.SPAWN).GetAwaiter().GetResult();
+    result.AddRange(zones.Select(z => z.GetCenterPoint()));
+
+    return result;
   }
 
   protected object GetConvarValue(ConVar? cvar) {

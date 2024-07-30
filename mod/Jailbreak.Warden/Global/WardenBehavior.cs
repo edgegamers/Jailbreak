@@ -233,8 +233,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     if (player == null) return HookResult.Continue;
 
     if ("[WARDEN]" == API.Actain?.getTagService().GetTag(player)) {
-      API.Actain?.getTagService().SetTag(player, "");
-      API.Actain?.getTagService().SetTagColor(player, ChatColors.Default);
+      API.Actain.getTagService().SetTag(player, "");
+      API.Actain.getTagService().SetTagColor(player, ChatColors.Default);
     }
 
     if (!((IWardenService)this).IsWarden(player)) return HookResult.Continue;

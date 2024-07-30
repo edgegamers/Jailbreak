@@ -65,8 +65,9 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
       logs.Append(logs.Player(player), "is now a rebel.");
 
     var pos = player.Pawn.Value?.AbsOrigin;
-    API.Stats?.PushStat(new ServerStat("JB_REBEL_STARTED",
-      $"{player.SteamID} {pos.X:F2} {pos.Y:F2} {pos.Z:F2}"));
+    if (pos != null)
+      API.Stats?.PushStat(new ServerStat("JB_REBEL_STARTED",
+        $"{player.SteamID} {pos.X:F2} {pos.Y:F2} {pos.Z:F2}"));
 
     if (time == -1) time = CvRebelTime.Value;
 
