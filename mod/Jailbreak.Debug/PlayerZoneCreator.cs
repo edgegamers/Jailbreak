@@ -8,9 +8,9 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 namespace Jailbreak.Debug;
 
 public class PlayerZoneCreator : BasicZoneCreator, ITypedZoneCreator {
+  private readonly IZoneFactory factory;
   private readonly CCSPlayerController player;
   private readonly BasePlugin plugin;
-  private readonly IZoneFactory factory;
   private Timer? timer;
 
   public PlayerZoneCreator(BasePlugin plugin, CCSPlayerController player,
@@ -28,6 +28,13 @@ public class PlayerZoneCreator : BasicZoneCreator, ITypedZoneCreator {
     timer = plugin.AddTimer(1f, tick,
       TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
   }
+
+  public override void Dispose() {
+    base.Dispose();
+    timer?.Kill();
+  }
+
+  public ZoneType Type { get; }
 
   private void tick() {
     if (!player.IsValid) {
@@ -47,11 +54,4 @@ public class PlayerZoneCreator : BasicZoneCreator, ITypedZoneCreator {
     var zone = Build(factory);
     zone.Draw(plugin, Color.Gray, 1f);
   }
-
-  public override void Dispose() {
-    base.Dispose();
-    timer?.Kill();
-  }
-
-  public ZoneType Type { get; }
 }

@@ -1,4 +1,5 @@
 ﻿// ReSharper disable once CheckNamespace
+
 public static class Tag {
   public static readonly IReadOnlySet<string> GRENADES = new HashSet<string>([
     "weapon_decoy", "weapon_firebomb", "weapon_flashbang", "weapon_hegrenade",

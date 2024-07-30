@@ -9,13 +9,14 @@ namespace Jailbreak.Debug.Subcommands;
 // css_zone draw <type>
 public class Zone(IServiceProvider services, BasePlugin plugin)
   : AbstractCommand(services) {
-  private IDictionary<ulong, ITypedZoneCreator> creators =
+  private readonly IDictionary<ulong, ITypedZoneCreator> creators =
     new Dictionary<ulong, ITypedZoneCreator>();
 
-  private IZoneManager
-    zoneManager = services.GetRequiredService<IZoneManager>();
+  private readonly IZoneFactory factory =
+    services.GetRequiredService<IZoneFactory>();
 
-  private IZoneFactory factory = services.GetRequiredService<IZoneFactory>();
+  private readonly IZoneManager zoneManager =
+    services.GetRequiredService<IZoneManager>();
 
   public override void OnCommand(CCSPlayerController? executor,
     WrappedInfo info) {
@@ -71,14 +72,12 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
         });
         return;
       case "show":
-        int zoneCount = 0;
+        var zoneCount = 0;
         foreach (var type in Enum.GetValues<ZoneType>()) {
           if (specifiedType != null && type != specifiedType) continue;
           var displayZones =
             zoneManager.GetZones(type).GetAwaiter().GetResult();
-          foreach (var z in displayZones) {
-            z.Draw(plugin, type.GetColor(), 120);
-          }
+          foreach (var z in displayZones) z.Draw(plugin, type.GetColor(), 120);
 
           zoneCount += displayZones.Count;
         }
@@ -139,7 +138,8 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
       case "set":
         foreach (var zone in zoneManager.GetZones(specifiedType.Value)
          .GetAwaiter()
-         .GetResult()) { zoneManager.DeleteZone(zone.Id); }
+         .GetResult())
+          zoneManager.DeleteZone(zone.Id);
 
         attemptBeginCreation(executor, info, specifiedType.Value);
         return;

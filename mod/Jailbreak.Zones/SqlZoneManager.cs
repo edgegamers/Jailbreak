@@ -28,8 +28,6 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     basePlugin.RegisterListener<Listeners.OnMapEnd>(OnMapEnd);
   }
 
-  private void OnMapEnd() { zones.Clear(); }
-
   public void Dispose() {
     plugin.RemoveListener<Listeners.OnMapStart>(OnMapStart);
   }
@@ -110,6 +108,8 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     return Task.FromResult(zones);
   }
 
+  private void OnMapEnd() { zones.Clear(); }
+
   private async void createTable() {
     var conn = new MySqlConnection(CvSqlConnectionString.Value);
     await conn.OpenAsync();
@@ -155,7 +155,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     var reader = await cmd.ExecuteReaderAsync();
 
     var currentZone = -1;
-    int pointId     = -1;
+    var pointId     = -1;
     var zoneCreator = new BasicZoneCreator();
     zoneCreator.BeginCreation();
     while (await reader.ReadAsync()) {

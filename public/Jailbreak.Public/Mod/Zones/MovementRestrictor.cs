@@ -13,9 +13,9 @@ public abstract class MovementRestrictor {
   private readonly Action? onTeleport;
   private readonly CCSPlayerController player;
   private readonly float radiusSquared;
+  private readonly Timer timer;
   private Vector? lastValid;
   private float maxSpeed = 0.6f;
-  private readonly Timer timer;
 
   public MovementRestrictor(BasePlugin plugin, CCSPlayerController player,
     float radiusSquared = 250000f, Action? onTeleport = null) {

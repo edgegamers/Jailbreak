@@ -11,13 +11,13 @@ public interface IZone {
   float GetMinDistance(Vector position);
 
   /// <summary>
-  /// Represents a valid center point that players are able to spawn into
+  ///   Represents a valid center point that players are able to spawn into
   /// </summary>
   /// <returns></returns>
   public Vector GetCenterPoint();
 
   /// <summary>
-  /// Calculates the center of all points, may not be a valid spawn point
+  ///   Calculates the center of all points, may not be a valid spawn point
   /// </summary>
   /// <returns></returns>
   public Vector CalculateCenterPoint() {
@@ -35,14 +35,14 @@ public interface IZone {
   }
 
   /// <summary>
-  ///  Get all points that make up the border
+  ///   Get all points that make up the border
   /// </summary>
   /// <returns></returns>
   public IEnumerable<Vector> GetBorderPoints();
 
   /// <summary>
-  ///  Get all points that make up the zone,
-  /// including those that are not part of the border
+  ///   Get all points that make up the zone,
+  ///   including those that are not part of the border
   /// </summary>
   /// <returns></returns>
   public IEnumerable<Vector> GetAllPoints();

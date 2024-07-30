@@ -143,9 +143,8 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
         // gradually pull from the other spawn types
         if (spawnPositions.Count() < PlayerUtil.GetAlive().Count()) {
           spawnPositions = getRandomSpawns(true, false).ToList();
-          if (spawnPositions.Count() < PlayerUtil.GetAlive().Count()) {
+          if (spawnPositions.Count() < PlayerUtil.GetAlive().Count())
             spawnPositions = getRandomSpawns().ToList();
-          }
         }
 
         break;
