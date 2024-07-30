@@ -43,5 +43,5 @@ public class FfaInstanceMessages : ISpecialDayInstanceMessages,
       "seconds."
     };
 
-  IView Begin => new SimpleView { ISpecialDayMessages.PREFIX, "GO!" };
+  public IView Begin => new SimpleView { ISpecialDayMessages.PREFIX, "GO!" };
 }

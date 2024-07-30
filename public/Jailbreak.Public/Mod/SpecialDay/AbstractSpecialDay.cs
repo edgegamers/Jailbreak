@@ -1,3 +1,4 @@
+using System.Reflection;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
@@ -18,7 +19,10 @@ public abstract class AbstractSpecialDay {
   private readonly Dictionary<string, object?> previousConvarValues = new();
   private readonly IServiceProvider provider;
   protected BasePlugin Plugin;
-  protected Dictionary<float, Action> Timers = new();
+
+  protected IDictionary<float, Action> Timers =
+    new DefaultableDictionary<float, Action>(new Dictionary<float, Action>(),
+      () => { });
 
   public AbstractSpecialDay(BasePlugin plugin, IServiceProvider provider) {
     Plugin        = plugin;
@@ -40,13 +44,11 @@ public abstract class AbstractSpecialDay {
     foreach (var entry in Settings.ConVarValues) {
       var cv = ConVar.Find(entry.Key);
       if (cv == null) Server.PrintToConsole($"Invalid convar: {entry.Key}");
-      previousConvarValues[entry.Key] = getConvarStringValue(cv);
-      setConvarStringValue(cv, entry.Value);
+      previousConvarValues[entry.Key] = getConvarValue(cv);
+      setConvarValue(cv, entry.Value);
     }
 
     RoundUtil.SetTimeRemaining(Settings.RoundTime());
-
-    if (Settings.StartInvulnerable) DisableDamage();
 
     if (Settings.StripToKnife || Settings.RespawnPlayers)
       foreach (var player in Utilities.GetPlayers()) {
@@ -61,6 +63,8 @@ public abstract class AbstractSpecialDay {
         })
           player.Respawn();
       }
+
+    if (Settings.StartInvulnerable) DisableDamage();
 
     if (!Settings.AllowLastRequests)
       provider.GetRequiredService<ILastRequestManager>().DisableLRForRound();
@@ -151,20 +155,19 @@ public abstract class AbstractSpecialDay {
       target.Pawn.Value?.Teleport(baggedSpawns.GetNext());
   }
 
-  private string getConvarStringValue(ConVar? cvar) {
+  private object getConvarValue(ConVar? cvar) {
     try {
       if (cvar == null) return "";
-      var convarValue = cvar.Type switch {
-        ConVarType.Bool => cvar.GetPrimitiveValue<bool>().ToString(),
+      object convarValue = cvar.Type switch {
+        ConVarType.Bool => cvar.GetPrimitiveValue<bool>(),
         ConVarType.Float32 or ConVarType.Float64 => cvar
-         .GetPrimitiveValue<float>()
-         .ToString(),
-        ConVarType.UInt16 => cvar.GetPrimitiveValue<ushort>().ToString(),
-        ConVarType.Int16  => cvar.GetPrimitiveValue<short>().ToString(),
-        ConVarType.UInt32 => cvar.GetPrimitiveValue<uint>().ToString(),
-        ConVarType.Int32  => cvar.GetPrimitiveValue<int>().ToString(),
-        ConVarType.Int64  => cvar.GetPrimitiveValue<long>().ToString(),
-        ConVarType.UInt64 => cvar.GetPrimitiveValue<ulong>().ToString(),
+         .GetPrimitiveValue<float>(),
+        ConVarType.UInt16 => cvar.GetPrimitiveValue<ushort>(),
+        ConVarType.Int16  => cvar.GetPrimitiveValue<short>(),
+        ConVarType.UInt32 => cvar.GetPrimitiveValue<uint>(),
+        ConVarType.Int32  => cvar.GetPrimitiveValue<int>(),
+        ConVarType.Int64  => cvar.GetPrimitiveValue<long>(),
+        ConVarType.UInt64 => cvar.GetPrimitiveValue<ulong>(),
         ConVarType.String => cvar.StringValue,
         _                 => ""
       };
@@ -172,7 +175,7 @@ public abstract class AbstractSpecialDay {
     } catch (Exception) { return "INVALID"; }
   }
 
-  private void setConvarStringValue(ConVar? cvar, object value) {
+  private void setConvarValue(ConVar? cvar, object value) {
     if (cvar == null) return;
     try {
       switch (cvar.Type) {
@@ -204,7 +207,12 @@ public abstract class AbstractSpecialDay {
           cvar.SetValue((string)value);
           break;
       }
-    } catch (InvalidOperationException) { }
+    } catch (Exception e) {
+      Server.PrintToChatAll(
+        $"There was an error setting {cvar.Name} ({cvar.Type}) to {value}");
+      Server.PrintToConsole(e.Message);
+      Server.PrintToConsole(e.StackTrace ?? "");
+    }
   }
 
   /// <summary>
@@ -217,8 +225,8 @@ public abstract class AbstractSpecialDay {
     foreach (var entry in previousConvarValues) {
       var cv = ConVar.Find(entry.Key);
       if (cv == null || entry.Value == null) continue;
-      try { setConvarStringValue(cv, entry.Value); } catch (
-        InvalidOperationException e) { Console.WriteLine(e); }
+      try { setConvarValue(cv, entry.Value); } catch (InvalidOperationException
+        e) { Console.WriteLine(e); }
 
       previousConvarValues.Clear();
     }

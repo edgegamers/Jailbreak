@@ -40,8 +40,6 @@ public class SpecialDayManager(ISpecialDayFactory factory)
   public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
     if (!IsSDRunning || CurrentSD == null) return HookResult.Continue;
     IsSDRunning = false;
-    CurrentSD   = null;
-
     if (CurrentSD is MessagedSpecialDay messaged)
       messaged.Messages.SpecialDayEnd((CsTeam)@event.Winner).ToAllChat();
     CurrentSD = null;

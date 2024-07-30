@@ -28,14 +28,14 @@ public class FFASpecialDay(BasePlugin plugin, IServiceProvider provider)
   }
 
   public override void Setup() {
-    base.Setup();
     Timers[10] += () => msg.DamageEnablingIn(10).ToAllChat();
     Timers[15] += () => msg.DamageEnablingIn(5).ToAllChat();
     Timers[20] += Execute;
+    base.Setup();
   }
 
   public override void Execute() {
     base.Execute();
-    Server.PrintToChatAll("GO!");
+    msg.Begin.ToAllChat();
   }
 }
