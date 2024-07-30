@@ -19,15 +19,17 @@ public interface ISpecialDayInstanceMessages {
         Description
       };
 
-  public IView SpecialDayEnd()
+  public virtual IView SpecialDayEnd()
     => new SimpleView { ISpecialDayMessages.PREFIX, Name, "ended." };
 
-  public IView BeginsIn(int seconds)
-    => new SimpleView {
-      ISpecialDayMessages.PREFIX,
-      Name,
-      "begins in",
-      seconds,
-      "seconds."
-    };
+  public virtual IView BeginsIn(int seconds)
+    => seconds == 0 ?
+      new SimpleView { ISpecialDayMessages.PREFIX, Name, "begins now!" } :
+      new SimpleView {
+        ISpecialDayMessages.PREFIX,
+        Name,
+        "begins in",
+        seconds,
+        "seconds."
+      };
 }

@@ -46,7 +46,7 @@ public class SpecialDayCommand(IWardenService warden,
 
       if (sd.IsSDRunning) {
         // SD is already running
-        if (sd.CurrentSD is MessagedSpecialDay messaged)
+        if (sd.CurrentSD is ISpecialDayMessageProvider messaged)
           sdMsg.SpecialDayRunning(messaged.Messages.Name)
            .ToPlayerChat(executor);
         else

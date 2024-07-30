@@ -3,22 +3,30 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views;
+using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class FFASpecialDay(BasePlugin plugin, IServiceProvider provider)
-  : MessagedSpecialDay(plugin, provider, new FfaInstanceMessages()) {
+  : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
   public override SDType Type => SDType.FFA;
   public override SpecialDaySettings? Settings => new FFASettings();
+
+  public virtual ISpecialDayInstanceMessages Messages
+    => new FfaInstanceMessages("Free for All",
+      "Everyone for themselves! No camping, actively pursue!");
+
   private FfaInstanceMessages msg => (FfaInstanceMessages)Messages;
 
   public class FFASettings : SpecialDaySettings {
     private readonly Random rng;
 
     public FFASettings() {
-      Teleport = TeleportType.ARMORY;
-      rng      = new Random();
+      CtTeleport = TeleportType.ARMORY;
+      TTeleport  = TeleportType.ARMORY;
+      rng        = new Random();
       WithFriendlyFire();
     }
 

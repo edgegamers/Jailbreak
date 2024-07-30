@@ -40,13 +40,8 @@ public class SpecialDaySettings {
   public bool AllowLastRequests = false;
   public bool AllowLastGuard = false;
 
-  /// <summary>
-  ///   If true, teleport all players regardless of where they should've
-  ///   spawned in.
-  ///   Eg: if Teleport is set to ARMORY, CTs would not normally be
-  ///   teleported. If this is set to true, they will be.
-  /// </summary>
-  public bool ForceTeleportAll = false;
+  public TeleportType CtTeleport = TeleportType.NONE;
+  public TeleportType TTeleport = TeleportType.NONE;
 
   public bool FreezePlayers = true;
   public bool RespawnPlayers = true;
@@ -60,8 +55,6 @@ public class SpecialDaySettings {
   ///   If true, will strip all players down to their knife at the beginning.
   /// </summary>
   public bool StripToKnife = true;
-
-  public TeleportType Teleport = TeleportType.NONE;
 
   public Dictionary<string, object> ConVarValues { get; } = new();
 

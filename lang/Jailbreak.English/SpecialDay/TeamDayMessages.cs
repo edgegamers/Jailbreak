@@ -10,6 +10,9 @@ public class TeamDayMessages(string name, string? description = null)
   public string Name => name;
   public string? Description => description;
 
+  public virtual IView SpecialDayStart
+    => ((ISpecialDayInstanceMessages)this).SpecialDayStart;
+
   public IView SpecialDayEnd() {
     var winner = PlayerUtil.GetAlive().FirstOrDefault()?.Team
       ?? CsTeam.Spectator;

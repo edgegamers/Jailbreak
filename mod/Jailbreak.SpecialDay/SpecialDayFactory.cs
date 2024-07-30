@@ -12,19 +12,21 @@ public class SpecialDayFactory(IServiceProvider provider) : ISpecialDayFactory {
 
   public AbstractSpecialDay CreateSpecialDay(SDType type) {
     return type switch {
-      SDType.FFA    => new FFASpecialDay(plugin, provider),
-      SDType.WARDAY => new WardaySpecialDay(plugin, provider),
-      SDType.HNS    => new HideAndSeekDay(plugin, provider),
-      _             => throw new NotImplementedException()
+      SDType.FFA     => new FFASpecialDay(plugin, provider),
+      SDType.WARDAY  => new WardaySpecialDay(plugin, provider),
+      SDType.HNS     => new HideAndSeekDay(plugin, provider),
+      SDType.NOSCOPE => new NoScopeDay(plugin, provider),
+      _              => throw new NotImplementedException()
     };
   }
 
   public bool IsValidType(SDType type) {
     return type switch {
-      SDType.FFA    => true,
-      SDType.WARDAY => true,
-      SDType.HNS    => true,
-      _             => false
+      SDType.FFA     => true,
+      SDType.WARDAY  => true,
+      SDType.HNS     => true,
+      SDType.NOSCOPE => true,
+      _              => false
     };
   }
 }

@@ -15,19 +15,14 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Public.Mod.SpecialDay;
 
-public abstract class AbstractSpecialDay {
+public abstract class AbstractSpecialDay(BasePlugin plugin,
+  IServiceProvider provider) {
   private readonly Dictionary<string, object?> previousConvarValues = new();
-  private readonly IServiceProvider provider;
-  protected BasePlugin Plugin;
+  protected BasePlugin Plugin = plugin;
 
   protected IDictionary<float, Action> Timers =
     new DefaultableDictionary<float, Action>(new Dictionary<float, Action>(),
       () => { });
-
-  public AbstractSpecialDay(BasePlugin plugin, IServiceProvider provider) {
-    Plugin        = plugin;
-    this.provider = provider;
-  }
 
   public abstract SDType Type { get; }
   public virtual SpecialDaySettings? Settings => null;
@@ -43,8 +38,14 @@ public abstract class AbstractSpecialDay {
 
     foreach (var entry in Settings.ConVarValues) {
       var cv = ConVar.Find(entry.Key);
-      if (cv == null) Server.PrintToConsole($"Invalid convar: {entry.Key}");
+      if (cv == null) {
+        Server.PrintToConsole($"Invalid convar: {entry.Key}");
+        continue;
+      }
+
       previousConvarValues[entry.Key] = GetConvarValue(cv);
+      Server.PrintToChatAll(
+        $"Storing {entry.Key} ({cv.Type}) as {previousConvarValues[entry.Key]}");
       SetConvarValue(cv, entry.Value);
     }
 
@@ -101,23 +102,21 @@ public abstract class AbstractSpecialDay {
 
   private void doTeleports() {
     if (Settings == null) return;
-    IEnumerable<CCSPlayerController> targets = [];
+    if (Settings.CtTeleport == Settings.TTeleport) {
+      // If the teleports are the same, just do it once
+      // this ensures the same bag is used for both teams
+      doTeleports(Settings.CtTeleport, PlayerUtil.GetAlive());
+      return;
+    }
 
-    if (Settings.ForceTeleportAll)
-      targets = PlayerUtil.GetAlive();
-    else
-      targets = Settings.Teleport switch {
-        SpecialDaySettings.TeleportType.CELL
-          or SpecialDaySettings.TeleportType.CELL_STACKED =>
-          PlayerUtil.FromTeam(CsTeam.CounterTerrorist),
-        SpecialDaySettings.TeleportType.ARMORY
-          or SpecialDaySettings.TeleportType.ARMORY_STACKED => PlayerUtil
-           .FromTeam(CsTeam.Terrorist),
-        SpecialDaySettings.TeleportType.RANDOM => PlayerUtil.GetAlive(),
-        _                                      => targets
-      };
+    doTeleports(Settings.CtTeleport,
+      PlayerUtil.FromTeam(CsTeam.CounterTerrorist));
+    doTeleports(Settings.TTeleport, PlayerUtil.FromTeam(CsTeam.Terrorist));
+  }
 
-    IEnumerable<Vector> spawnPositions;
+  private void doTeleports(SpecialDaySettings.TeleportType type,
+    IEnumerable<CCSPlayerController> players) {
+    if (type == SpecialDaySettings.TeleportType.NONE) return;
 
     var tSpawns = Utilities
      .FindAllEntitiesByDesignerName<SpawnPoint>("info_player_terrorist")
@@ -132,7 +131,8 @@ public abstract class AbstractSpecialDay {
         CInfoTeleportDestination>("info_teleport_destination")
      .Where(s => s.AbsOrigin != null)
      .Select(s => s.AbsOrigin!);
-    switch (Settings.Teleport) {
+    IEnumerable<Vector> spawnPositions = [];
+    switch (type) {
       case SpecialDaySettings.TeleportType.CELL:
         spawnPositions = tSpawns;
         break;
@@ -149,16 +149,13 @@ public abstract class AbstractSpecialDay {
         // TODO: Support truly random spawns
         spawnPositions = tSpawns.Union(ctSpawns).Union(tpSpawns);
         break;
-      case SpecialDaySettings.TeleportType.NONE:
       default:
         return;
     }
 
-    var enumerable   = spawnPositions.ToList();
-    var baggedSpawns = new ShuffleBag<Vector>(enumerable);
-
-    foreach (var target in targets)
-      target.Pawn.Value?.Teleport(baggedSpawns.GetNext());
+    var baggedSpawns = new ShuffleBag<Vector>(spawnPositions.ToList());
+    foreach (var player in players)
+      player.Pawn.Value?.Teleport(baggedSpawns.GetNext());
   }
 
   protected object GetConvarValue(ConVar? cvar) {
@@ -174,11 +171,16 @@ public abstract class AbstractSpecialDay {
         ConVarType.Int32  => cvar.GetPrimitiveValue<int>(),
         ConVarType.Int64  => cvar.GetPrimitiveValue<long>(),
         ConVarType.UInt64 => cvar.GetPrimitiveValue<ulong>(),
-        ConVarType.String => cvar.StringValue,
-        _                 => ""
+        _                 => cvar.StringValue
       };
       return convarValue;
-    } catch (Exception) { return "INVALID"; }
+    } catch (Exception e) {
+      Server.PrintToChatAll(
+        $"There was an error getting {cvar?.Name} ({cvar?.Type})");
+      Server.PrintToConsole(e.Message);
+      Server.PrintToConsole(e.StackTrace ?? "");
+      return "";
+    }
   }
 
   protected void SetConvarValue(ConVar? cvar, object value) {
@@ -215,6 +217,7 @@ public abstract class AbstractSpecialDay {
       }
 
       Server.ExecuteCommand(cvar.Name + " " + value);
+      Server.PrintToChatAll($"{cvar.Name} {value}");
     } catch (Exception e) {
       Server.PrintToChatAll(
         $"There was an error setting {cvar.Name} ({cvar.Type}) to {value}");
@@ -235,9 +238,9 @@ public abstract class AbstractSpecialDay {
       if (cv == null || entry.Value == null) continue;
       try { SetConvarValue(cv, entry.Value); } catch (InvalidOperationException
         e) { Console.WriteLine(e); }
-
-      previousConvarValues.Clear();
     }
+
+    previousConvarValues.Clear();
 
     Plugin.DeregisterEventHandler<EventRoundEnd>(OnEnd);
     return HookResult.Continue;

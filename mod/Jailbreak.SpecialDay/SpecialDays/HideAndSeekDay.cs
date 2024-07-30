@@ -1,29 +1,39 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using System.Drawing;
+using System.Runtime.CompilerServices;
+using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
+using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Utils;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
-  : MessagedSpecialDay(plugin, provider, new HNSInstanceMessages()) {
-  public override SDType Type => SDType.WARDAY;
+  : ArmoryRestrictedDay(plugin, provider), ISpecialDayMessageProvider {
+  public override SDType Type => SDType.HNS;
+
+  public ISpecialDayInstanceMessages Messages => new HNSInstanceMessages();
+
   private HNSInstanceMessages msg => (HNSInstanceMessages)Messages;
 
   public class HNSSettings : SpecialDaySettings {
-    public HNSSettings() { AllowLastRequests = true; }
+    public HNSSettings() {
+      AllowLastRequests = true;
+      TTeleport         = TeleportType.ARMORY;
+      CtTeleport        = TeleportType.ARMORY;
+    }
 
     public override int InitialHealth(CCSPlayerController player) {
-      return player.GetTeam() == CsTeam.CounterTerrorist ? 250 : 50;
+      return player.GetTeam() == CsTeam.Terrorist ? 250 : 50;
     }
 
     public override int InitialArmor(CCSPlayerController player) {
-      if (player.GetTeam() != CsTeam.CounterTerrorist) return -1;
+      if (player.GetTeam() != CsTeam.Terrorist) return -1;
       return 500;
     }
   }
@@ -31,22 +41,23 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
   public override SpecialDaySettings? Settings => new HNSSettings();
 
   public override void Setup() {
-    Timers[20] += () => Messages.BeginsIn(10);
-    Timers[30] += Execute;
+    Timers[10] += () => {
+      foreach (var t in PlayerUtil.FromTeam(CsTeam.Terrorist)) EnableDamage(t);
+
+      ((ISpecialDayMessageProvider)this).Messages.BeginsIn(45).ToAllChat();
+    };
+    Timers[30] += () => Messages.BeginsIn(25).ToAllChat();
+    Timers[45] += () => Messages.BeginsIn(10).ToAllChat();
+    Timers[55] += Execute;
 
     base.Setup();
-    msg.StayInArmory.ToTeamChat(CsTeam.CounterTerrorist);
-    foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist))
-      ct.SetSpeed(0.2f);
   }
 
   public override void Execute() {
     base.Execute();
-
     msg.ReadyOrNot.ToAllChat();
-    foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist)) {
-      ct.SetSpeed(1.0f);
-      ct.SetArmor(100);
-    }
+    foreach (var t in PlayerUtil.FromTeam(CsTeam.Terrorist)) t.SetArmor(100);
   }
+
+  public override IView ArmoryReminder => msg.StayInArmory;
 }

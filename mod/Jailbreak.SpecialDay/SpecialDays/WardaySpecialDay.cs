@@ -2,6 +2,7 @@
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
@@ -10,16 +11,16 @@ using Jailbreak.Public.Utils;
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class WardaySpecialDay(BasePlugin plugin, IServiceProvider provider)
-  : MessagedSpecialDay(plugin, provider,
-    new TeamDayMessages("Warday", "CTs pick a room and T's must fight them!")) {
+  : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
   public override SDType Type => SDType.WARDAY;
   private WardayInstanceMessages msg => (WardayInstanceMessages)Messages;
+  public ISpecialDayInstanceMessages Messages => new WardayInstanceMessages();
 
   public class WardaySettings : SpecialDaySettings {
     public WardaySettings() {
-      AllowLastGuard   = true;
-      ForceTeleportAll = true;
-      Teleport         = TeleportType.ARMORY;
+      AllowLastGuard = true;
+      TTeleport      = TeleportType.ARMORY;
+      CtTeleport     = TeleportType.ARMORY;
     }
 
     public override float FreezeTime(CCSPlayerController player) {
@@ -31,10 +32,10 @@ public class WardaySpecialDay(BasePlugin plugin, IServiceProvider provider)
 
   public override void Setup() {
     Timers[15]  += () => Messages.BeginsIn(15).ToAllChat();
-    Timers[15]  += () => Messages.BeginsIn(5).ToAllChat();
-    Timers[30]  += Execute;
+    Timers[30]  += () => Messages.BeginsIn(5).ToAllChat();
+    Timers[35]  += Execute;
     Timers[150] += () => msg.ExpandIn(15).ToAllChat();
-    Timers[146] += () => {
+    Timers[165] += () => {
       msg.ExpandNow.ToAllChat();
       foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist)) {
         ct.SetHealth(100);

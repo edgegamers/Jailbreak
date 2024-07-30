@@ -21,7 +21,8 @@ public class SpecialDayMenuSelector {
       if (!factory.IsValidType(sd)) continue;
       var inst = factory.CreateSpecialDay(sd);
       var name = inst.Type.ToString();
-      if (inst is MessagedSpecialDay messaged) name = messaged.Messages.Name;
+      if (inst is ISpecialDayMessageProvider messaged)
+        name = messaged.Messages.Name;
       menu.AddMenuOption(name, (p, _) => OnSelectLR(p, sd));
     }
   }

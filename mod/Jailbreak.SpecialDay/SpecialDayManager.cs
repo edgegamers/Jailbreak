@@ -22,7 +22,7 @@ public class SpecialDayManager(ISpecialDayFactory factory)
     RoundsSinceLastSD = 0;
     CurrentSD         = factory.CreateSpecialDay(type);
     IsSDRunning       = true;
-    if (CurrentSD is MessagedSpecialDay messaged)
+    if (CurrentSD is ISpecialDayMessageProvider messaged)
       messaged.Messages.SpecialDayStart.ToAllChat();
 
     CurrentSD.Setup();
@@ -40,7 +40,7 @@ public class SpecialDayManager(ISpecialDayFactory factory)
   public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
     if (!IsSDRunning || CurrentSD == null) return HookResult.Continue;
     IsSDRunning = false;
-    if (CurrentSD is MessagedSpecialDay messaged)
+    if (CurrentSD is ISpecialDayMessageProvider messaged)
       messaged.Messages.SpecialDayEnd().ToAllChat();
     CurrentSD = null;
     return HookResult.Continue;

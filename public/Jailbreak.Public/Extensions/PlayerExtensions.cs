@@ -99,13 +99,19 @@ public static class PlayerExtensions {
     var pawn = player.PlayerPawn.Value;
     if (pawn == null) return;
     pawn.ArmorValue = armor;
-    Utilities.SetStateChanged(pawn, "CBaseEntity", "m_ArmorValue");
+    Utilities.SetStateChanged(pawn, "CCSPlayerPawn", "m_ArmorValue");
   }
 
   public static void SetSpeed(this CCSPlayerController player, float speed) {
     var pawn = player.PlayerPawn.Value;
     if (pawn == null) return;
-    // pawn.VelocityModifier = speed;
-    pawn.Speed = speed;
+    pawn.VelocityModifier = speed;
+  }
+
+  public static void
+    SetGravity(this CCSPlayerController player, float gravity) {
+    var pawn = player.PlayerPawn.Value;
+    if (pawn == null) return;
+    pawn.GravityScale = gravity;
   }
 }
