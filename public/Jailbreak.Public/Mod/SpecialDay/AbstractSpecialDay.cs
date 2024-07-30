@@ -44,25 +44,31 @@ public abstract class AbstractSpecialDay {
     foreach (var entry in Settings.ConVarValues) {
       var cv = ConVar.Find(entry.Key);
       if (cv == null) Server.PrintToConsole($"Invalid convar: {entry.Key}");
-      previousConvarValues[entry.Key] = getConvarValue(cv);
-      setConvarValue(cv, entry.Value);
+      previousConvarValues[entry.Key] = GetConvarValue(cv);
+      SetConvarValue(cv, entry.Value);
     }
 
     RoundUtil.SetTimeRemaining(Settings.RoundTime());
 
-    if (Settings.StripToKnife || Settings.RespawnPlayers)
-      foreach (var player in Utilities.GetPlayers()) {
-        if (Settings.StripToKnife) {
-          player.RemoveWeapons();
-          player.GiveNamedItem("weapon_knife");
-        }
+    foreach (var player in Utilities.GetPlayers()) {
+      var val = Settings.InitialHealth(player);
+      if (val != -1) player.SetHealth(Settings.InitialHealth(player));
+      val = Settings.InitialMaxHealth(player);
+      if (val != -1) player.SetMaxHealth(val);
+      val = Settings.InitialArmor(player);
+      if (val != -1) player.SetArmor(val);
 
-        if (!Settings.RespawnPlayers) continue;
-        if (player is {
-          PawnIsAlive: false, Team : CsTeam.Terrorist or CsTeam.CounterTerrorist
-        })
-          player.Respawn();
+      if (Settings.StripToKnife) {
+        player.RemoveWeapons();
+        player.GiveNamedItem("weapon_knife");
       }
+
+      if (!Settings.RespawnPlayers) continue;
+      if (player is {
+        PawnIsAlive: false, Team : CsTeam.Terrorist or CsTeam.CounterTerrorist
+      })
+        player.Respawn();
+    }
 
     if (Settings.StartInvulnerable) DisableDamage();
 
@@ -155,7 +161,7 @@ public abstract class AbstractSpecialDay {
       target.Pawn.Value?.Teleport(baggedSpawns.GetNext());
   }
 
-  private object getConvarValue(ConVar? cvar) {
+  protected object GetConvarValue(ConVar? cvar) {
     try {
       if (cvar == null) return "";
       object convarValue = cvar.Type switch {
@@ -175,7 +181,7 @@ public abstract class AbstractSpecialDay {
     } catch (Exception) { return "INVALID"; }
   }
 
-  private void setConvarValue(ConVar? cvar, object value) {
+  protected void SetConvarValue(ConVar? cvar, object value) {
     if (cvar == null) return;
     try {
       switch (cvar.Type) {
@@ -207,6 +213,8 @@ public abstract class AbstractSpecialDay {
           cvar.SetValue((string)value);
           break;
       }
+
+      Server.ExecuteCommand(cvar.Name + " " + value);
     } catch (Exception e) {
       Server.PrintToChatAll(
         $"There was an error setting {cvar.Name} ({cvar.Type}) to {value}");
@@ -225,7 +233,7 @@ public abstract class AbstractSpecialDay {
     foreach (var entry in previousConvarValues) {
       var cv = ConVar.Find(entry.Key);
       if (cv == null || entry.Value == null) continue;
-      try { setConvarValue(cv, entry.Value); } catch (InvalidOperationException
+      try { SetConvarValue(cv, entry.Value); } catch (InvalidOperationException
         e) { Console.WriteLine(e); }
 
       previousConvarValues.Clear();

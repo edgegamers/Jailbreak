@@ -80,4 +80,32 @@ public static class PlayerExtensions {
     Schema.SetSchemaValue(pawn.Handle, "CBaseEntity", "m_nActualMoveType", 2);
     Utilities.SetStateChanged(pawn, "CBaseEntity", "m_MoveType");
   }
+
+  public static void SetHealth(this CCSPlayerController player, int health) {
+    var pawn = player.PlayerPawn.Value;
+    if (pawn == null) return;
+    pawn.Health = health;
+    Utilities.SetStateChanged(pawn, "CBaseEntity", "m_iHealth");
+  }
+
+  public static void SetMaxHealth(this CCSPlayerController player, int health) {
+    var pawn = player.PlayerPawn.Value;
+    if (pawn == null) return;
+    pawn.MaxHealth = health;
+    Utilities.SetStateChanged(pawn, "CBaseEntity", "m_iMaxHealth");
+  }
+
+  public static void SetArmor(this CCSPlayerController player, int armor) {
+    var pawn = player.PlayerPawn.Value;
+    if (pawn == null) return;
+    pawn.ArmorValue = armor;
+    Utilities.SetStateChanged(pawn, "CBaseEntity", "m_ArmorValue");
+  }
+
+  public static void SetSpeed(this CCSPlayerController player, float speed) {
+    var pawn = player.PlayerPawn.Value;
+    if (pawn == null) return;
+    // pawn.VelocityModifier = speed;
+    pawn.Speed = speed;
+  }
 }

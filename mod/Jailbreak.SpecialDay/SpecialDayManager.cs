@@ -41,7 +41,7 @@ public class SpecialDayManager(ISpecialDayFactory factory)
     if (!IsSDRunning || CurrentSD == null) return HookResult.Continue;
     IsSDRunning = false;
     if (CurrentSD is MessagedSpecialDay messaged)
-      messaged.Messages.SpecialDayEnd((CsTeam)@event.Winner).ToAllChat();
+      messaged.Messages.SpecialDayEnd().ToAllChat();
     CurrentSD = null;
     return HookResult.Continue;
   }

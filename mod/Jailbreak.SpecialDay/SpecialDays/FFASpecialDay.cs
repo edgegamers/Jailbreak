@@ -1,5 +1,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Cvars;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
@@ -16,9 +17,8 @@ public class FFASpecialDay(BasePlugin plugin, IServiceProvider provider)
     private readonly Random rng;
 
     public FFASettings() {
-      AllowLastRequests = false;
-      Teleport          = TeleportType.ARMORY;
-      rng               = new Random();
+      Teleport = TeleportType.ARMORY;
+      rng      = new Random();
       WithFriendlyFire();
     }
 
@@ -28,8 +28,8 @@ public class FFASpecialDay(BasePlugin plugin, IServiceProvider provider)
   }
 
   public override void Setup() {
-    Timers[10] += () => msg.DamageEnablingIn(10).ToAllChat();
-    Timers[15] += () => msg.DamageEnablingIn(5).ToAllChat();
+    Timers[10] += () => Messages.BeginsIn(10).ToAllChat();
+    Timers[15] += () => Messages.BeginsIn(5).ToAllChat();
     Timers[20] += Execute;
     base.Setup();
   }

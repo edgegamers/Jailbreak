@@ -34,13 +34,9 @@ public class DefaultableDictionary<TKey, TValue> : IDictionary<TKey, TValue> {
     return dictionary.Remove(item);
   }
 
-  public int Count {
-    get { return dictionary.Count; }
-  }
+  public int Count => dictionary.Count;
 
-  public bool IsReadOnly {
-    get { return dictionary.IsReadOnly; }
-  }
+  public bool IsReadOnly => dictionary.IsReadOnly;
 
   public bool ContainsKey(TKey key) { return dictionary.ContainsKey(key); }
 
@@ -64,9 +60,7 @@ public class DefaultableDictionary<TKey, TValue> : IDictionary<TKey, TValue> {
     set { dictionary[key] = value; }
   }
 
-  public ICollection<TKey> Keys {
-    get { return dictionary.Keys; }
-  }
+  public ICollection<TKey> Keys => dictionary.Keys;
 
   public ICollection<TValue> Values {
     get {

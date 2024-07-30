@@ -1,4 +1,5 @@
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Utils;
 
 namespace Jailbreak.SpecialDay;
@@ -36,7 +37,7 @@ public class SpecialDaySettings {
     RANDOM
   }
 
-  public bool AllowLastRequests = true;
+  public bool AllowLastRequests = false;
   public bool AllowLastGuard = false;
 
   /// <summary>
@@ -64,11 +65,35 @@ public class SpecialDaySettings {
 
   public Dictionary<string, object> ConVarValues { get; } = new();
 
-  public ISet<string> AllowedWeapons { get; } = Tag.WEAPONS.ToHashSet();
-
   public virtual Func<int> RoundTime => () => 60 * 5;
 
   public virtual float FreezeTime(CCSPlayerController player) { return 3; }
+
+  /// <summary>
+  /// The health to set a given player to at the beginning of the round.
+  /// -1 to not change the player's health.
+  /// </summary>
+  /// <param name="player"></param>
+  /// <returns></returns>
+  public virtual int InitialHealth(CCSPlayerController player) { return 100; }
+
+  /// <summary>
+  /// The health to set a given player to at the beginning of the round.
+  /// -1 to not change the player's health.
+  /// </summary>
+  /// <param name="player"></param>
+  /// <returns></returns>
+  public virtual int InitialMaxHealth(CCSPlayerController player) {
+    return 100;
+  }
+
+  /// <summary>
+  ///  The armor to set a given player to at the beginning of the round.
+  ///  -1 to not change the player's armor.
+  /// </summary>
+  /// <param name="player"></param>
+  /// <returns></returns>
+  public virtual int InitialArmor(CCSPlayerController player) { return 0; }
 
   public SpecialDaySettings WithFriendlyFire() {
     ConVarValues["mp_teammates_are_enemies"]     = true;
@@ -93,6 +118,12 @@ public class SpecialDaySettings {
         break;
     }
 
+    return this;
+  }
+
+  public SpecialDaySettings WithAutoBhop() {
+    ConVarValues["sv_enablebunnyhopping"] = true;
+    ConVarValues["sv_autobunnyhopping"]   = true;
     return this;
   }
 }
