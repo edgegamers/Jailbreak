@@ -1,7 +1,7 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 
-namespace Jailbreak.SpecialDay;
+namespace Jailbreak.Public.Mod.SpecialDay;
 
 public class SpecialDaySettings {
   public enum TeleportType {

@@ -4,7 +4,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
-namespace Jailbreak.SpecialDay;
+namespace Jailbreak.Public.Mod.Zones;
 
 /// <summary>
 ///   Wrapper class to restrict player movement to a given area / zone
@@ -44,12 +44,16 @@ public abstract class MovementRestrictor {
 
   private void tick() {
     var pawn = player.PlayerPawn.Value;
-    if (!player.IsValid || !player.PawnIsAlive || pawn == null) Kill();
+    if (!player.IsValid || !player.PawnIsAlive || pawn == null
+      || pawn.AbsOrigin == null) {
+      Kill();
+      return;
+    }
 
     player.SetSpeed(maxSpeed);
-    var dist = DistanceFrom(pawn!.AbsOrigin.Clone());
+    var dist = DistanceFrom(pawn.AbsOrigin!.Clone());
     if (dist <= radiusSquared) {
-      if (dist <= radiusSquared * 0.90 && pawn!.OnGroundLastTick)
+      if (dist <= radiusSquared * 0.90 && pawn.OnGroundLastTick)
         lastValid = player.Pawn.Value!.AbsOrigin!.Clone();
       return;
     }

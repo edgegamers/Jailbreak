@@ -1,13 +1,16 @@
 ﻿using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.Zones;
 
-namespace Jailbreak.SpecialDay;
+namespace Jailbreak.Zones;
 
 public class DistanceZone(IEnumerable<Vector> origins, float tolerance)
   : IZone {
-  public static float WIDTH_CELL = 200 * 200;
-  public static float WIDTH_MEDIUM_ROOM = 1000 * 1000;
-  public static float WIDTH_LARGE_ROOM = 1500 * 1500;
+  public static readonly float WIDTH_CELL = 200 * 200;
+  public static readonly float WIDTH_MEDIUM_ROOM = 1000 * 1000;
+  public static readonly float WIDTH_LARGE_ROOM = 1500 * 1500;
+
+  public int Id { get; set; }
 
   public bool IsInsideZone(Vector position) {
     return GetMinDistance(position) < tolerance;
@@ -17,13 +20,17 @@ public class DistanceZone(IEnumerable<Vector> origins, float tolerance)
     return origins.Min(origin => origin.DistanceSquared(position));
   }
 
-  public Vector GetCenter() {
+  public Vector GetCenterPoint() {
     return origins
      .OrderBy(origin => origins.Sum(point => point.DistanceSquared(origin)))
      .First();
   }
 
-  public IEnumerable<Vector> GetPoints() { return origins; }
+  public IEnumerable<Vector> GetBorderPoints() {
+    return ConvexHullZone.ComputeConvexHull(origins.ToList());
+  }
+
+  public IEnumerable<Vector> GetAllPoints() { return origins; }
 
   public bool IsInsideRegion(Vector position) {
     return origins.Any(origin => origin.DistanceSquared(position) < tolerance);

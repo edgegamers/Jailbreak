@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj"/>
+        <ProjectReference Include="..\Jailbreak.Debug\Jailbreak.Debug.csproj" />
     </ItemGroup>
 
     <ItemGroup>

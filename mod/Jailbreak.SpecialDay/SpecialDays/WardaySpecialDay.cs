@@ -15,7 +15,7 @@ public class WardaySpecialDay(BasePlugin plugin, IServiceProvider provider)
   public override SDType Type => SDType.WARDAY;
   private WardayInstanceMessages msg => (WardayInstanceMessages)Messages;
 
-  public override SpecialDaySettings? Settings => new WardaySettings();
+  public override SpecialDaySettings Settings => new WardaySettings();
   public ISpecialDayInstanceMessages Messages => new WardayInstanceMessages();
 
   public override void Setup() {

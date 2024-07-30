@@ -1,21 +1,16 @@
 ﻿using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 
-namespace Jailbreak.SpecialDay;
+namespace Jailbreak.Zones;
 
-public class ConvexHullZone : IZone {
-  private readonly IList<Vector> hull;
-  private readonly IList<Vector> rawPoints;
+public static class ConvexHullZone {
+  // private readonly IList<Vector> hull;
+  // private readonly IList<Vector> rawPoints;
 
-  public ConvexHullZone(IList<Vector> points) {
-    hull      = ComputeConvexHull(points);
-    rawPoints = points;
-  }
-
-  public bool IsInsideZone(Vector point) {
+  public static bool IsInsideZone(Vector point, IList<Vector> hull) {
     double x      = point.X, y = point.Y;
     var    inside = false;
-    var    j      = 0;
+    int    j;
 
     var i = 0;
     for (j = hull.Count - 1; i < hull.Count; j = i++) {
@@ -30,8 +25,8 @@ public class ConvexHullZone : IZone {
     return inside;
   }
 
-  public float GetMinDistance(Vector position) {
-    if (IsInsideZone(position)) return 0;
+  public static float GetMinDistance(Vector position, IList<Vector> hull) {
+    if (IsInsideZone(position, hull)) return 0;
     var minDistance = float.MaxValue;
     for (var i = 0; i < hull.Count; i++) {
       var v = hull[i];
@@ -43,20 +38,20 @@ public class ConvexHullZone : IZone {
     return minDistance;
   }
 
-  public Vector GetCenter() {
-    return rawPoints.OrderBy(p => rawPoints.Sum(p.DistanceSquared))
-     .ElementAt(rawPoints.Count / 2);
-  }
+  // public Vector GetCenterPoint() {
+  //   return rawPoints.OrderBy(p => rawPoints.Sum(p.DistanceSquared))
+  //    .ElementAt(rawPoints.Count / 2);
+  // }
 
-  public IEnumerable<Vector> GetPoints() { return hull; }
+  // public IEnumerable<Vector> GetBorderPoints() { return hull; }
 
-  public List<Vector> ComputeConvexHull(IList<Vector> points) {
+  public static IEnumerable<Vector> ComputeConvexHull(IList<Vector> points) {
     points = points.OrderBy(p => p.X).ThenBy(p => p.Y).ToList();
 
     List<Vector> lower = [];
     foreach (var p in points) {
       while (lower.Count >= 2
-        && Cross(lower[lower.Count - 2], lower[lower.Count - 1], p) <= 0)
+        && cross(lower[lower.Count - 2], lower[lower.Count - 1], p) <= 0)
         lower.RemoveAt(lower.Count - 1);
       lower.Add(p);
     }
@@ -65,7 +60,7 @@ public class ConvexHullZone : IZone {
     for (var i = points.Count() - 1; i >= 0; i--) {
       var p = points[i];
       while (upper.Count >= 2
-        && Cross(upper[upper.Count - 2], upper[upper.Count - 1], p) <= 0)
+        && cross(upper[upper.Count - 2], upper[upper.Count - 1], p) <= 0)
         upper.RemoveAt(upper.Count - 1);
       upper.Add(p);
     }
@@ -76,7 +71,7 @@ public class ConvexHullZone : IZone {
     return lower.Concat(upper).ToList();
   }
 
-  private static double Cross(Vector o, Vector a, Vector b) {
+  private static double cross(Vector o, Vector a, Vector b) {
     return (a.X - o.X) * (b.Y - o.Y) - (a.Y - o.Y) * (b.X - o.X);
   }
 

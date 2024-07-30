@@ -3,6 +3,8 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Public.Mod.Zones;
+using Jailbreak.Zones;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
@@ -25,11 +27,13 @@ public abstract class ArmoryRestrictedDay(BasePlugin plugin,
     var zones   = manager.GetZones(ZoneType.ARMORY).GetAwaiter().GetResult();
     if (zones.Count > 0) return new MultiZoneWrapper(zones);
 
-    var bounds = new ConvexHullZone(Utilities
-     .FindAllEntitiesByDesignerName<SpawnPoint>("info_player_counterterrorist")
-     .Where(s => s.AbsOrigin != null)
-     .Select(s => s.AbsOrigin!)
-     .ToList());
+    var bounds = new DistanceZone(
+      Utilities
+       .FindAllEntitiesByDesignerName<
+          SpawnPoint>("info_player_counterterrorist")
+       .Where(s => s.AbsOrigin != null)
+       .Select(s => s.AbsOrigin!)
+       .ToList(), DistanceZone.WIDTH_CELL);
 
     return bounds;
   }

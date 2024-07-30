@@ -1,10 +1,10 @@
 using CounterStrikeSharp.API.Modules.Utils;
-using Jailbreak.SpecialDay;
+using Jailbreak.Public.Mod.Zones;
 
 namespace Jailbreak.Zones;
 
-public class CHZZoneFactory : IZoneFactory {
+public class BasicZoneFactory : IZoneFactory {
   public IZone CreateZone(IEnumerable<Vector> origins) {
-    return new ConvexHullZone(origins.ToList());
+    return new DistanceZone(origins.ToList(), 0);
   }
 }

@@ -10,7 +10,7 @@ namespace Jailbreak.SpecialDay.SpecialDays;
 public class FFASpecialDay(BasePlugin plugin, IServiceProvider provider)
   : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
   public override SDType Type => SDType.FFA;
-  public override SpecialDaySettings? Settings => new FFASettings();
+  public override SpecialDaySettings Settings => new FFASettings();
 
   private FfaInstanceMessages msg => (FfaInstanceMessages)Messages;
 

@@ -1,7 +1,7 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
-using Jailbreak.SpecialDay;
+using Jailbreak.Public.Mod.Zones;
 using MySqlConnector;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
@@ -19,16 +19,16 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     new Dictionary<ZoneType, IList<IZone>>();
 
   private BasePlugin plugin = null!;
-  private IZoneFactory zoneFactory = null!;
 
   public void Start(BasePlugin basePlugin) {
-    plugin      = basePlugin;
-    zoneFactory = factory;
-
+    plugin = basePlugin;
     Server.NextFrameAsync(createTable);
 
     basePlugin.RegisterListener<Listeners.OnMapStart>(OnMapStart);
+    basePlugin.RegisterListener<Listeners.OnMapEnd>(OnMapEnd);
   }
+
+  private void OnMapEnd() { zones.Clear(); }
 
   public void Dispose() {
     plugin.RemoveListener<Listeners.OnMapStart>(OnMapStart);
@@ -42,10 +42,68 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     await Task.WhenAll(tasks);
   }
 
+  public async void DeleteZone(int zoneId, string map) {
+    foreach (var list in zones.Values) {
+      var zone = list.FirstOrDefault(z => z.Id == zoneId);
+      if (zone != null) {
+        list.Remove(zone);
+        break;
+      }
+    }
+
+    var conn = new MySqlConnection(CvSqlConnectionString.Value);
+    await conn.OpenAsync();
+    var cmd = conn.CreateCommand();
+    cmd.CommandText = $"""
+        DELETE FROM {CvSqlTable.Value}
+        WHERE zoneid = @zoneid
+        AND map = @map
+      """;
+
+    cmd.Parameters.AddWithValue("@zoneid", zoneId);
+    cmd.Parameters.AddWithValue("@map", map);
+    await cmd.ExecuteNonQueryAsync();
+  }
+
   public Task<IList<IZone>> GetZones(string map, ZoneType type) {
     return Task.FromResult(!zones.TryGetValue(type, out var result) ?
       new List<IZone>() :
       result);
+  }
+
+  public async Task PushZone(IZone zone, ZoneType type, string map) {
+    if (!zones.TryGetValue(type, out var list)) {
+      list        = new List<IZone>();
+      zones[type] = list;
+    }
+
+    list.Add(zone);
+
+    // Update the database
+    var conn = new MySqlConnection(CvSqlConnectionString.Value);
+    await conn.OpenAsync();
+
+    var insertPointCommand = """
+        INSERT INTO {CvSqlTable.Value} (map, type, zoneid, pointid, X, Y, Z)
+        VALUES (@map, @type, @zoneid, @pointid, @X, @Y, @Z)
+      """;
+    var cmd = conn.CreateCommand();
+    cmd.CommandText = insertPointCommand;
+
+    cmd.Parameters.AddWithValue("@map", map);
+    cmd.Parameters.AddWithValue("@type", type.ToString());
+    var nextId = zones.SelectMany(s => s.Value).Max(z => z.Id) + 1;
+
+    cmd.Parameters.AddWithValue("@zoneid", nextId);
+    var pointId = 0;
+
+    foreach (var point in zone.GetBorderPoints()) {
+      cmd.Parameters.AddWithValue("@X", point.X);
+      cmd.Parameters.AddWithValue("@Y", point.Y);
+      cmd.Parameters.AddWithValue("@Z", point.Z);
+      cmd.Parameters.AddWithValue("@pointid", pointId++);
+      await cmd.ExecuteNonQueryAsync();
+    }
   }
 
   public Task<IDictionary<ZoneType, IList<IZone>>> GetAllZones(string map) {
@@ -56,17 +114,16 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     var conn = new MySqlConnection(CvSqlConnectionString.Value);
     await conn.OpenAsync();
 
-    var cmdText = $"""
-            CREATE TABLE IF NOT EXISTS {CvSqlTable.Value} (
-              zoneid INT NOT NULL AUTO_INCREMENT,
-              pointid INT NOT NULL AUTO_INCREMENT,
-              map VARCHAR(64) NOT NULL,
-              type VARCHAR(32) NOT NULL,
-              X FLOAT NOT NULL,
-              Y FLOAT NOT NULL,
-              Z FLOAT NOT NULL,
-              PRIMARY KEY (id, map, type)
-            )
+    var cmdText = """
+      CREATE TABLE IF NOT EXISTS CvSqlTable.Value(
+        zoneid INT NOT NULL,
+        pointid INT NOT NULL,
+        map VARCHAR(64) NOT NULL,
+        type VARCHAR(32) NOT NULL,
+        X FLOAT NOT NULL,
+        Y FLOAT NOT NULL,
+        Z FLOAT NOT NULL,
+        PRIMARY KEY(map, zoneid, pointid))
       """;
 
     var cmd = new MySqlCommand(cmdText, conn);
@@ -97,26 +154,34 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
 
     var reader = await cmd.ExecuteReaderAsync();
 
-    var points      = new List<Vector>();
-    var currentZone = 0;
-    var pointId     = 0;
+    var currentZone = -1;
+    int pointId     = -1;
+    var zoneCreator = new BasicZoneCreator();
+    zoneCreator.BeginCreation();
     while (await reader.ReadAsync()) {
       var point = new Vector(reader.GetFloat("X"), reader.GetFloat("Y"),
         reader.GetFloat("Z"));
-      points.Add(point);
+      zoneCreator.AddPoint(point);
       var zoneId = reader.GetInt32("zoneid");
       pointId = reader.GetInt32("pointid");
+
+      // We just started reading zones
+      if (currentZone == -1) currentZone = zoneId;
+
       if (pointId == 0 || zoneId != currentZone) {
         if (pointId == 0 != (zoneId != currentZone))
           printNotClosedWarning(map, zoneId, pointId, currentZone);
         // Assume the zone is closed and allow the new zone to be created
-        var zone = zoneFactory.CreateZone(points);
+        var zone                                  = zoneCreator.Build(factory);
         if (!zones.ContainsKey(type)) zones[type] = new List<IZone>();
+        zone.Id = zoneId;
         zones[type].Add(zone);
+        currentZone = zoneId;
+        zoneCreator.BeginCreation();
       }
     }
 
-    if (pointId != 0) printNotClosedWarning(map, -1, pointId, currentZone);
+    if (pointId > 0) printNotClosedWarning(map, -1, pointId, currentZone);
   }
 
   private void printNotClosedWarning(string map, int zoneId, int pointId,

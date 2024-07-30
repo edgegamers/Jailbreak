@@ -5,6 +5,7 @@ using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Utils;
 
@@ -16,7 +17,7 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
 
   private HNSInstanceMessages msg => (HNSInstanceMessages)Messages;
 
-  public override SpecialDaySettings? Settings => new HNSSettings();
+  public override SpecialDaySettings Settings => new HNSSettings();
 
   public override IView ArmoryReminder => msg.StayInArmory;
 

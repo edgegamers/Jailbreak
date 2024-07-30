@@ -1,7 +1,8 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
+using Jailbreak.Public.Mod.Zones;
 
-namespace Jailbreak.SpecialDay;
+namespace Jailbreak.Zones;
 
 public class ZoneMovementRestrictor : MovementRestrictor {
   private readonly IZone zone;
@@ -16,5 +17,5 @@ public class ZoneMovementRestrictor : MovementRestrictor {
     return zone.GetMinDistance(vec);
   }
 
-  public override Vector GetCenter() { return zone.GetCenter(); }
+  public override Vector GetCenter() { return zone.GetCenterPoint(); }
 }

@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Utils;
 
@@ -17,7 +18,7 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
     => new FfaInstanceMessages("NoScope",
       "No scopes allowed, only quickscopes!");
 
-  public override SpecialDaySettings? Settings => new NoScopeSettings();
+  public override SpecialDaySettings Settings => new NoScopeSettings();
 
   public override void Setup() {
     Timers[120] += () => {

@@ -3,9 +3,10 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Extensions;
-using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.SpecialDay;
+using Jailbreak.Public.Mod.Zones;
 using Jailbreak.Public.Utils;
+using Jailbreak.Zones;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
@@ -24,16 +25,7 @@ public abstract class ZoneRestrictedDay(BasePlugin plugin,
     base.Setup();
 
     ZoneReminder.ToTeamChat(restrictedTeam);
-
-    var points = GetZone().GetPoints().ToList();
-    for (var i = 0; i < points.Count; i++) {
-      var first  = points[i];
-      var second = points[(i + 1) % points.Count];
-      var line   = new BeamLine(plugin, first, second);
-      line.SetWidth(1f);
-      line.SetColor(Color.Firebrick);
-      line.Draw(55);
-    }
+    GetZone().Draw(plugin, Color.Firebrick, 55);
 
     foreach (var t in PlayerUtil.FromTeam(restrictedTeam)) {
       var zoneRestrictor = new ZoneMovementRestrictor(plugin, t, GetZone(),
