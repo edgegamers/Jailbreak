@@ -7,11 +7,9 @@ using Microsoft.Extensions.Primitives;
 
 namespace Jailbreak.English.SpecialDay;
 
-public class InfectionDayMessages : ISpecialDayInstanceMessages {
-  public string Name => "Infection";
-  public string? Description => "CTs are infected and try to kill Ts!";
-
-  public IView SpecialDayEnd() {
+public class InfectionDayMessages() : TeamDayMessages("Infection",
+  "CTs are infected and try to kill Ts!") {
+  public override IView SpecialDayEnd() {
     var winner = PlayerUtil.GetAlive().FirstOrDefault()?.Team
       ?? CsTeam.Spectator;
     return new SimpleView {

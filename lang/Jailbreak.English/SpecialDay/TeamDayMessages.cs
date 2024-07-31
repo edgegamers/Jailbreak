@@ -11,12 +11,21 @@ public class TeamDayMessages(string name, string? description = null)
   public string? Description => description;
 
   public virtual IView SpecialDayStart
-    => ((ISpecialDayInstanceMessages)this).SpecialDayStart;
+    => Description == null ?
+      new SimpleView { ISpecialDayMessages.PREFIX, Name, "has begun!" } :
+      new SimpleView {
+        ISpecialDayMessages.PREFIX,
+        Name,
+        "has begun!",
+        SimpleView.NEWLINE,
+        ISpecialDayMessages.PREFIX,
+        Description
+      };
 
   public virtual IView BeginsIn(int s)
     => ((ISpecialDayInstanceMessages)this).BeginsIn(s);
 
-  public IView SpecialDayEnd() {
+  public virtual IView SpecialDayEnd() {
     var winner = PlayerUtil.GetAlive().FirstOrDefault()?.Team
       ?? CsTeam.Spectator;
     return new SimpleView {

@@ -6,17 +6,17 @@ public interface ISpecialDayInstanceMessages {
   public string Name { get; }
   public string? Description { get; }
 
-  public IView SpecialDayStart
-    => Description == null ?
-      new SimpleView { ISpecialDayMessages.PREFIX, Name, "has begun!" } :
-      new SimpleView {
-        ISpecialDayMessages.PREFIX,
-        Name,
-        "has begun!",
-        SimpleView.NEWLINE,
-        ISpecialDayMessages.PREFIX,
-        Description
-      };
+  public IView SpecialDayStart { get; }
+  // => Description == null ?
+  //   new SimpleView { ISpecialDayMessages.PREFIX, Name, "has begun!" } :
+  //   new SimpleView {
+  //     ISpecialDayMessages.PREFIX,
+  //     Name,
+  //     "has begun!",
+  //     SimpleView.NEWLINE,
+  //     ISpecialDayMessages.PREFIX,
+  //     Description
+  //   };
 
   public IView SpecialDayEnd() {
     return new SimpleView { ISpecialDayMessages.PREFIX, Name, "ended." };

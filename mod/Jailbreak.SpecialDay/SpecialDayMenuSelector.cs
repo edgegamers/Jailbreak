@@ -23,13 +23,13 @@ public class SpecialDayMenuSelector {
       var name = inst.Type.ToString();
       if (inst is ISpecialDayMessageProvider messaged)
         name = messaged.Messages.Name;
-      menu.AddMenuOption(name, (p, _) => OnSelectLR(p, sd));
+      menu.AddMenuOption(name, (p, _) => OnSelectSD(p, sd));
     }
   }
 
   public CenterHtmlMenu GetMenu() { return menu; }
 
-  private void OnSelectLR(CCSPlayerController player, SDType sd) {
+  private void OnSelectSD(CCSPlayerController player, SDType sd) {
     MenuManager.CloseActiveMenu(player);
     player.ExecuteClientCommandFromServer(command.Invoke(sd));
   }

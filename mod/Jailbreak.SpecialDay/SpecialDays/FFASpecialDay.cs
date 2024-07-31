@@ -13,7 +13,7 @@ public class FFASpecialDay(BasePlugin plugin, IServiceProvider provider)
   public override SpecialDaySettings Settings => new FFASettings();
 
   public virtual ISpecialDayInstanceMessages Messages
-    => new FfaDayMessages("Free for All",
+    => new SoloDayMessages("Free for All",
       "Everyone for themselves! No camping, actively pursue!");
 
   public override void Setup() {

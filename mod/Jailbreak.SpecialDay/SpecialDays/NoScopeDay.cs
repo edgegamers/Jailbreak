@@ -16,7 +16,7 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
   public override SDType Type => SDType.NOSCOPE;
 
   public override ISpecialDayInstanceMessages Messages
-    => new FfaDayMessages("NoScope",
+    => new SoloDayMessages("NoScope",
       "No scopes allowed, only quickscopes!");
 
   public override SpecialDaySettings Settings => new NoScopeSettings();
