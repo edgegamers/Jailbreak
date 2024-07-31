@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj"/>
+        <ProjectReference Include="..\Jailbreak.Debug\Jailbreak.Debug.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MySqlConnector" Version="2.3.1"/>
+    </ItemGroup>
+
+</Project>

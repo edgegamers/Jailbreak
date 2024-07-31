@@ -22,6 +22,9 @@ public class DebugCommand(IServiceProvider serviceProvider) : IPluginBehavior {
     commands.Add("lr", new Subcommands.LastRequest(serviceProvider, plugin));
     commands.Add("st", new MarkST(serviceProvider));
     commands.Add("lg", new LastGuard(serviceProvider));
+    commands.Add("zone", new Zone(serviceProvider, basePlugin));
+    commands.Add("endround", new EndRound(serviceProvider));
+    commands.Add("opencells", new OpenCells(serviceProvider));
   }
 
   [RequiresPermissions("@css/root")]

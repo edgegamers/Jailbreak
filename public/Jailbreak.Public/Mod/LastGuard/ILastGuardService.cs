@@ -7,4 +7,6 @@ public interface ILastGuardService {
   int CalculateHealth();
 
   void StartLastGuard(CCSPlayerController lastGuard);
+
+  public void DisableLastGuardForRound();
 }

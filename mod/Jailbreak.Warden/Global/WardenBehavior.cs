@@ -1,9 +1,7 @@
 ﻿using System.Drawing;
-using api.plugin;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
-using CounterStrikeSharp.API.Core.Capabilities;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -39,18 +37,6 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   private readonly ISet<CCSPlayerController> bluePrisoners =
     new HashSet<CCSPlayerController>();
 
-  private bool firstWarden;
-  private string? oldTag;
-  private char? oldTagColor;
-
-  private BasePlugin? parent;
-  private PreWardenStats? preWardenStats;
-  private Timer? unblueTimer;
-
-  public readonly FakeConVar<int> CvArmorOutnumbered =
-    new("css_jb_hp_outnumbered", "Health points for CTs when outnumbered by Ts",
-      100, ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 200));
-
   public readonly FakeConVar<int> CvArmorEqual = new("css_jb_hp_outnumbered",
     "Health points for CTs have equal balance", 50, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 200));
@@ -59,17 +45,29 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     "HP for CTs when outnumbering Ts", 25, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 200));
 
-  public readonly FakeConVar<int> CvWardenHealth = new("css_jb_warden_hp",
-    "HP for the warden", 125, ConVarFlags.FCVAR_NONE,
-    new RangeValidator<int>(1, 200));
+  public readonly FakeConVar<int> CvArmorOutnumbered =
+    new("css_jb_hp_outnumbered", "Health points for CTs when outnumbered by Ts",
+      100, ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 200));
 
   public readonly FakeConVar<int> CvWardenArmor = new("css_jb_warden_armor",
     "Armor for the warden", 125, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 200));
 
+  public readonly FakeConVar<int> CvWardenHealth = new("css_jb_warden_hp",
+    "HP for the warden", 125, ConVarFlags.FCVAR_NONE,
+    new RangeValidator<int>(1, 200));
+
   public readonly FakeConVar<int> CvWardenMaxHealth = new("css_jb_warden_maxhp",
     "Max HP for the warden", 100, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 200));
+
+  private bool firstWarden;
+  private string? oldTag;
+  private char? oldTagColor;
+
+  private BasePlugin? parent;
+  private PreWardenStats? preWardenStats;
+  private Timer? unblueTimer;
 
   public void Start(BasePlugin basePlugin) { parent = basePlugin; }
 
@@ -235,8 +233,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     if (player == null) return HookResult.Continue;
 
     if ("[WARDEN]" == API.Actain?.getTagService().GetTag(player)) {
-      API.Actain?.getTagService().SetTag(player, "");
-      API.Actain?.getTagService().SetTagColor(player, ChatColors.Default);
+      API.Actain.getTagService().SetTag(player, "");
+      API.Actain.getTagService().SetTagColor(player, ChatColors.Default);
     }
 
     if (!((IWardenService)this).IsWarden(player)) return HookResult.Continue;

@@ -155,7 +155,8 @@ public class JihadC4Behavior(IJihadC4Notifications jihadC4Notifications,
       float healthRef = ct.PlayerPawn.Value.Health;
       if (healthRef <= damage) { ct.CommitSuicide(true, true); } else {
         ct.PlayerPawn.Value.Health -= (int)damage;
-        Utilities.SetStateChanged(ct.PlayerPawn.Value, "CBaseEntity", "m_iHealth");
+        Utilities.SetStateChanged(ct.PlayerPawn.Value, "CBaseEntity",
+          "m_iHealth");
       }
     }
 

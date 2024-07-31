@@ -61,6 +61,7 @@
         <ProjectReference Include="..\..\mod\Jailbreak.LastRequest\Jailbreak.LastRequest.csproj"/>
         <ProjectReference Include="..\..\mod\Jailbreak.Mute\Jailbreak.Mute.csproj"/>
         <ProjectReference Include="..\..\mod\Jailbreak.LastGuard\Jailbreak.LastGuard.csproj"/>
+        <ProjectReference Include="..\..\mod\Jailbreak.SpecialDay\Jailbreak.SpecialDay.csproj"/>
         <ProjectReference Include="..\..\mod\Jailbreak.Warden\Jailbreak.Warden.csproj"/>
         <ProjectReference Include="..\..\mod\Jailbreak.Rebel\Jailbreak.Rebel.csproj"/>
         <ProjectReference Include="..\..\mod\Jailbreak.Logs\Jailbreak.Logs.csproj"/>
@@ -76,9 +77,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="MAULActainShared">
-        <HintPath>..\..\public\Jailbreak.Public\Mixin\MAULActainShared.dll</HintPath>
-      </Reference>
+        <Reference Include="MAULActainShared">
+            <HintPath>..\..\public\Jailbreak.Public\Mixin\MAULActainShared.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
     <Target Name="ZipOutputPath" AfterTargets="Publish">

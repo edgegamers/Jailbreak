@@ -12,12 +12,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="MAULActainShared">
-        <HintPath>..\..\public\Jailbreak.Public\Mixin\MAULActainShared.dll</HintPath>
-      </Reference>
-      <Reference Include="MStatsShared">
-        <HintPath>..\..\public\Jailbreak.Public\Mixin\MStatsShared.dll</HintPath>
-      </Reference>
+        <Reference Include="MAULActainShared">
+            <HintPath>..\..\public\Jailbreak.Public\Mixin\MAULActainShared.dll</HintPath>
+        </Reference>
+        <Reference Include="MStatsShared">
+            <HintPath>..\..\public\Jailbreak.Public\Mixin\MStatsShared.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
 </Project>

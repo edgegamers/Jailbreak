@@ -7,9 +7,11 @@ using CounterStrikeSharp.API.Modules.Timers;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.Logging;
+using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rebel;
+using MStatsShared;
 
 namespace Jailbreak.Rebel;
 
@@ -18,11 +20,12 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
   [Obsolete("No longer used, use FakeConvar")]
   public static readonly int MAX_REBEL_TIME = 45;
 
-  private readonly Dictionary<CCSPlayerController, long> rebelTimes = new();
-
   public readonly FakeConVar<int> CvRebelTime = new("css_jb_rebel_time",
     "Time to mark a rebel for", 30, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(0, 500));
+
+  private readonly Dictionary<CCSPlayerController, long> rebelTimes = new();
+  private bool enabled = true;
 
   public void Start(BasePlugin basePlugin) {
     basePlugin.RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
@@ -59,8 +62,14 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
   }
 
   public bool MarkRebel(CCSPlayerController player, long time = -1) {
+    if (!enabled) return false;
     if (!rebelTimes.ContainsKey(player))
       logs.Append(logs.Player(player), "is now a rebel.");
+
+    var pos = player.Pawn.Value?.AbsOrigin;
+    if (pos != null)
+      API.Stats?.PushStat(new ServerStat("JB_REBEL_STARTED",
+        $"{player.SteamID} {pos.X:F2} {pos.Y:F2} {pos.Z:F2}"));
 
     if (time == -1) time = CvRebelTime.Value;
 
@@ -79,6 +88,8 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
     applyRebelColor(player);
   }
 
+  public void DisableRebelForRound() { enabled = false; }
+
   private void OnTick() {
     foreach (var player in GetActiveRebels()) {
       if (!player.IsReal()) continue;
@@ -90,6 +101,7 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
   }
 
   private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
+    enabled = true;
     rebelTimes.Clear();
     foreach (var player in Utilities.GetPlayers()) applyRebelColor(player);
 
