@@ -1,17 +1,25 @@
 ﻿// ReSharper disable once CheckNamespace
 
 public static class Tag {
+  /// <summary>
+  /// Items that are thrown and exist in the grenade slot
+  /// </summary>
   public static readonly IReadOnlySet<string> GRENADES = new HashSet<string>([
     "weapon_decoy", "weapon_firebomb", "weapon_flashbang", "weapon_hegrenade",
     "weapon_incgrenade", "weapon_molotov", "weapon_smokegrenade",
     "weapon_tagrenade", "weapon_frag"
   ]);
 
+  /// <summary>
+  /// Items that do not shoot bullets
+  /// </summary>
   public static readonly IReadOnlySet<string> UTILITY = new HashSet<string>([
-    "weapon_healthshot", "item_assaultsuit", "item_kevlar", "weapon_diversion",
-    "weapon_breachcharge", "weapon_bumpmine", "weapon_c4", "weapon_tablet",
-    "weapon_taser", "weapon_shield", "weapon_snowball"
-  ]);
+      "weapon_healthshot", "item_assaultsuit", "item_kevlar",
+      "weapon_diversion",
+      "weapon_breachcharge", "weapon_bumpmine", "weapon_c4", "weapon_tablet",
+      "weapon_taser", "weapon_shield", "weapon_snowball", "weapon_knife"
+    ]).Union(GRENADES)
+   .ToHashSet();
 
   public static readonly IReadOnlySet<string> SNIPERS = new HashSet<string>([
     "weapon_awp", "weapon_ssg08", "weapon_scar20", "weapon_g3sg1"

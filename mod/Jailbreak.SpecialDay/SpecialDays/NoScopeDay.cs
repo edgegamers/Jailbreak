@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Cvars;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Extensions;
@@ -15,7 +16,7 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
   public override SDType Type => SDType.NOSCOPE;
 
   public override ISpecialDayInstanceMessages Messages
-    => new FfaInstanceMessages("NoScope",
+    => new FfaDayMessages("NoScope",
       "No scopes allowed, only quickscopes!");
 
   public override SpecialDaySettings Settings => new NoScopeSettings();
@@ -34,17 +35,10 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
       player.GiveNamedItem("weapon_ssg08");
     }
 
-    Plugin.RegisterListener<Listeners.OnTick>(OnTick);
     base.Execute();
   }
 
-  [GameEventHandler]
-  public override HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
-    Plugin.RemoveListener<Listeners.OnTick>(OnTick);
-    return base.OnEnd(@event, info);
-  }
-
-  private void OnTick() {
+  override protected void OnTick() {
     foreach (var player in PlayerUtil.GetAlive()) disableScope(player);
   }
 
@@ -65,10 +59,12 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
 
   private class NoScopeSettings : FFASettings {
     public NoScopeSettings() {
-      CtTeleport = TeleportType.RANDOM;
-      TTeleport  = TeleportType.RANDOM;
+      CtTeleport      = TeleportType.RANDOM;
+      TTeleport       = TeleportType.RANDOM;
+      RestrictWeapons = true;
 
-      ConVarValues["sv_gravity"] = (float)200;
+      ConVarValues["sv_gravity"]       = (float)200;
+      ConVarValues["sv_infinite_ammo"] = 2;
     }
 
     public override float FreezeTime(CCSPlayerController player) { return 1; }

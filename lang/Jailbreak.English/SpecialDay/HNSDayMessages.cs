@@ -3,7 +3,7 @@ using Jailbreak.Formatting.Views;
 
 namespace Jailbreak.English.SpecialDay;
 
-public class HNSInstanceMessages() : TeamDayMessages("Hide and Seek") {
+public class HNSDayMessages() : TeamDayMessages("Hide and Seek") {
   public override IView SpecialDayStart
     => new SimpleView {
       {

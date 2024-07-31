@@ -12,7 +12,7 @@ public enum SDType {
   SPEEDRUN,
   TAG,
   WARDAY,
-  ZOMBIE
+  INFECTION
 }
 
 public static class SDTypeExtensions {
@@ -35,7 +35,8 @@ public static class SDTypeExtensions {
       case "gun":
         return SDType.GUNGAME;
       case "zomb":
-        return SDType.ZOMBIE;
+      case "zombie":
+        return SDType.INFECTION;
     }
 
     return null;

@@ -20,8 +20,8 @@ public class TeamDayMessages(string name, string? description = null)
       ISpecialDayMessages.PREFIX,
       Name,
       "ended.",
-      (winner == CsTeam.CounterTerrorist ? ChatColors.Blue : ChatColors.Red)
-      + winner.ToString(),
+      (winner == CsTeam.CounterTerrorist ? ChatColors.Blue : ChatColors.Red),
+      (winner == CsTeam.CounterTerrorist ? "CTs" : "Ts"),
       "won!"
     };
   }

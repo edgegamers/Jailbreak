@@ -46,6 +46,11 @@ public class SpecialDaySettings {
   public bool RespawnPlayers = true;
 
   /// <summary>
+  /// Used to avoid registring a costly OnTick listener if false
+  /// </summary>
+  public bool RestrictWeapons = false;
+
+  /// <summary>
   ///   If true, all players will be immune from damage at the beginning.
   /// </summary>
   public bool StartInvulnerable = true;
@@ -60,6 +65,10 @@ public class SpecialDaySettings {
   public Dictionary<string, object> ConVarValues { get; } = new();
 
   public virtual Func<int> RoundTime => () => 60 * 5;
+
+  public virtual ISet<string>? AllowedWeapons(CCSPlayerController player) {
+    return null;
+  }
 
   public virtual float FreezeTime(CCSPlayerController player) { return 3; }
 

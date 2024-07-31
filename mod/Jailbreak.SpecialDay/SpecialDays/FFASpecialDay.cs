@@ -12,10 +12,10 @@ public class FFASpecialDay(BasePlugin plugin, IServiceProvider provider)
   public override SDType Type => SDType.FFA;
   public override SpecialDaySettings Settings => new FFASettings();
 
-  private FfaInstanceMessages msg => (FfaInstanceMessages)Messages;
+  private FfaDayMessages msg => (FfaDayMessages)Messages;
 
   public virtual ISpecialDayInstanceMessages Messages
-    => new FfaInstanceMessages("Free for All",
+    => new FfaDayMessages("Free for All",
       "Everyone for themselves! No camping, actively pursue!");
 
   public override void Setup() {

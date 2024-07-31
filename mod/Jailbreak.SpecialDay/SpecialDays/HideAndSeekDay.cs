@@ -15,13 +15,13 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
   : ArmoryRestrictedDay(plugin, provider), ISpecialDayMessageProvider {
   public override SDType Type => SDType.HNS;
 
-  private HNSInstanceMessages msg => (HNSInstanceMessages)Messages;
+  private HNSDayMessages msg => (HNSDayMessages)Messages;
 
   public override SpecialDaySettings Settings => new HNSSettings();
 
   public override IView ArmoryReminder => msg.StayInArmory;
 
-  public ISpecialDayInstanceMessages Messages => new HNSInstanceMessages();
+  public ISpecialDayInstanceMessages Messages => new HNSDayMessages();
 
   public override void Setup() {
     Timers[10] += () => {

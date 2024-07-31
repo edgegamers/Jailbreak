@@ -24,7 +24,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       () => { });
 
   public abstract SDType Type { get; }
-  public virtual SpecialDaySettings? Settings => null;
+  public virtual SpecialDaySettings Settings => new();
 
   /// <summary>
   ///   Called when the warden initially picks the special day.
@@ -262,7 +262,33 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   /// <summary>
   ///   Called when the actual action begins for the special day.
   /// </summary>
-  public virtual void Execute() { EnableDamage(); }
+  public virtual void Execute() {
+    EnableDamage();
+    if (Settings.RestrictWeapons)
+      Plugin.RegisterListener<Listeners.OnTick>(OnTick);
+  }
+
+  protected virtual void OnTick() {
+    foreach (var player in PlayerUtil.GetAlive()) {
+      var weapons = Settings.AllowedWeapons(player);
+      if (weapons == null) continue;
+      disableWeapon(player, weapons);
+    }
+  }
+
+  private void disableWeapon(CCSPlayerController player,
+    ICollection<string> allowed) {
+    if (!player.IsReal()) return;
+    var pawn = player.PlayerPawn.Value;
+    if (pawn == null || !pawn.IsValid) return;
+    var weaponServices = pawn.WeaponServices;
+    if (weaponServices == null) return;
+    var activeWeapon = weaponServices.ActiveWeapon.Value;
+    if (activeWeapon == null || !activeWeapon.IsValid) return;
+    if (allowed.Contains(activeWeapon.DesignerName)) return;
+    activeWeapon.NextSecondaryAttackTick = Server.TickCount + 500;
+    activeWeapon.NextPrimaryAttackTick   = Server.TickCount + 500;
+  }
 
   [GameEventHandler]
   public virtual HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
@@ -271,6 +297,9 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       if (cv == null || entry.Value == null) continue;
       try { SetConvarValue(cv, entry.Value); } catch (InvalidOperationException
         e) { Console.WriteLine(e); }
+
+      if (Settings.RestrictWeapons)
+        Plugin.RemoveListener<Listeners.OnTick>(OnTick);
     }
 
     previousConvarValues.Clear();
