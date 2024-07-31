@@ -12,7 +12,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     "cs2_jb_zones", "The table name for the zones");
 
   public static FakeConVar<string> CvSqlConnectionString =
-    new("css_jb_sqlconnection", "", "The connection string for the database",
+    new("css_jb_sqlconnection", "The connection string for the database", "",
       ConVarFlags.FCVAR_PROTECTED);
 
   private readonly IDictionary<ZoneType, IList<IZone>> zones =
@@ -41,7 +41,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
       }
     }
 
-    if (string.IsNullOrEmpty(CvSqlConnectionString.Value)) return;
+    if (string.IsNullOrWhiteSpace(CvSqlConnectionString.Value)) return;
     var conn = new MySqlConnection(CvSqlConnectionString.Value);
     await conn.OpenAsync();
     var cmd = conn.CreateCommand();
@@ -64,8 +64,8 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
 
     list.Add(zone);
 
-    if (string.IsNullOrEmpty(CvSqlConnectionString.Value)) return;
-    
+    if (string.IsNullOrWhiteSpace(CvSqlConnectionString.Value)) return;
+
     // Update the database
     var conn = new MySqlConnection(CvSqlConnectionString.Value);
     await conn.OpenAsync();
@@ -132,7 +132,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
   private void OnMapEnd() { zones.Clear(); }
 
   private async void createTable() {
-    if (string.IsNullOrEmpty(CvSqlConnectionString.Value)) return;
+    if (string.IsNullOrWhiteSpace(CvSqlConnectionString.Value)) return;
     var conn = new MySqlConnection(CvSqlConnectionString.Value);
     await conn.OpenAsync();
 
@@ -167,7 +167,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
   }
 
   public async Task LoadZones(string map, ZoneType type) {
-    if (string.IsNullOrEmpty(CvSqlConnectionString.Value)) return;
+    if (string.IsNullOrWhiteSpace(CvSqlConnectionString.Value)) return;
     var conn = new MySqlConnection(CvSqlConnectionString.Value);
 
     var cmd = queryAllZones(map);
