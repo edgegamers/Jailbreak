@@ -19,6 +19,7 @@ using Jailbreak.Public.Configuration;
 using Jailbreak.Rebel;
 using Jailbreak.SpecialDay;
 using Jailbreak.Warden;
+using Jailbreak.Zones;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak;
@@ -41,6 +42,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
     serviceCollection.AddJailbreakLastRequest();
     serviceCollection.AddJailbreakLastGuard();
     serviceCollection.AddJailbreakSpecialDay();
+    serviceCollection.AddJailbreakZones();
 
     //	Add in english localization
     serviceCollection.AddLanguage<Formatting.Languages.English>(config => {
