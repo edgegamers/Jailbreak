@@ -41,8 +41,8 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
       }
     }
 
-    if (string.IsNullOrWhiteSpace(CvSqlConnectionString.Value)) return;
-    var conn = new MySqlConnection(CvSqlConnectionString.Value);
+    var conn = createConnection();
+    if (conn == null) return;
     await conn.OpenAsync();
     var cmd = conn.CreateCommand();
     cmd.CommandText = $"""
@@ -64,10 +64,8 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
 
     list.Add(zone);
 
-    if (string.IsNullOrWhiteSpace(CvSqlConnectionString.Value)) return;
-
-    // Update the database
-    var conn = new MySqlConnection(CvSqlConnectionString.Value);
+    var conn = createConnection();
+    if (conn == null) return;
     await conn.OpenAsync();
 
     var insertPointCommand = $"""
@@ -132,10 +130,10 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
   private void OnMapEnd() { zones.Clear(); }
 
   private async void createTable() {
-    if (string.IsNullOrWhiteSpace(CvSqlConnectionString.Value)) return;
     Server.PrintToConsole("Creating table for zones with auth: "
       + CvSqlConnectionString.Value);
-    var conn = new MySqlConnection(CvSqlConnectionString.Value);
+    var conn = createConnection();
+    if (conn == null) return;
     await conn.OpenAsync();
 
     var cmdText = $"""
@@ -169,8 +167,8 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
   }
 
   public async Task LoadZones(string map, ZoneType type) {
-    if (string.IsNullOrWhiteSpace(CvSqlConnectionString.Value)) return;
-    var conn = new MySqlConnection(CvSqlConnectionString.Value);
+    var conn = createConnection();
+    if (conn == null) return;
 
     var cmd = queryAllZones(map);
 
@@ -223,5 +221,11 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
       + "the previous zone was not closed properly");
     Server.PrintToConsole(
       $"{map} Read: {zoneId} {pointId} Current Zone: {currentZone}");
+  }
+
+  private MySqlConnection? createConnection() {
+    var str = CvSqlConnectionString.Value.Trim('"');
+    if (string.IsNullOrWhiteSpace(str)) return null;
+    return new MySqlConnection(str);
   }
 }
