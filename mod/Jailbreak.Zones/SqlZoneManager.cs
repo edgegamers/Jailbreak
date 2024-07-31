@@ -133,6 +133,8 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
 
   private async void createTable() {
     if (string.IsNullOrWhiteSpace(CvSqlConnectionString.Value)) return;
+    Server.PrintToConsole("Creating table for zones with auth: "
+      + CvSqlConnectionString.Value);
     var conn = new MySqlConnection(CvSqlConnectionString.Value);
     await conn.OpenAsync();
 
