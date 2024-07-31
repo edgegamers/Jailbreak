@@ -8,7 +8,7 @@ public class ZoneMovementRestrictor : MovementRestrictor {
   private readonly IZone zone;
 
   public ZoneMovementRestrictor(BasePlugin plugin, CCSPlayerController player,
-    IZone zone, float radiusSquared = 250000, Action? onTeleport = null) : base(
+    IZone zone, float radiusSquared = 150000, Action? onTeleport = null) : base(
     plugin, player, radiusSquared, onTeleport) {
     this.zone = zone;
   }

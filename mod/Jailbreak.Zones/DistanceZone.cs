@@ -17,7 +17,7 @@ public class DistanceZone(IList<Vector> origins, float tolerance) : IZone {
   public int Id { get; set; }
 
   public bool IsInsideZone(Vector position) {
-    return GetMinDistance(position) < tolerance;
+    return ConvexHullUtil.IsInsideZone(position, cachedHull.ToList());
   }
 
   public float GetMinDistance(Vector position) {

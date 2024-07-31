@@ -38,14 +38,8 @@ public static class ConvexHullUtil {
     return minDistance;
   }
 
-  // public Vector GetCenterPoint() {
-  //   return rawPoints.OrderBy(p => rawPoints.Sum(p.DistanceSquared))
-  //    .ElementAt(rawPoints.Count / 2);
-  // }
-
-  // public IEnumerable<Vector> GetBorderPoints() { return hull; }
-
   public static IEnumerable<Vector> ComputeConvexHull(IList<Vector> points) {
+    if (points.Count < 3) return points;
     points = points.OrderBy(p => p.X).ThenBy(p => p.Y).ToList();
 
     List<Vector> lower = [];

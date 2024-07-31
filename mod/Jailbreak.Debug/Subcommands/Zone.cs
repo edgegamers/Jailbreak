@@ -1,5 +1,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Mod.Zones;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -49,6 +50,7 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
 
     switch (info.GetArg(1).ToLower()) {
       case "finish":
+      case "done":
         if (!creators.TryGetValue(executor.SteamID, out var creator)) {
           info.ReplyToCommand("No zone creation in progress");
           return;
@@ -58,13 +60,19 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
         executor.PrintToChat(
           $"Zone created. Area: {zone.GetArea()} Center: {zone.CalculateCenterPoint()}");
         executor.PrintToChat("Pushing zone...");
-        zoneManager.PushZone(zone, creator.Type);
+        Server.NextFrameAsync(async () => {
+          await zoneManager.PushZone(zone, creator.Type);
+          Server.NextFrame(() => {
+            executor.PrintToChat($"Successfully created {creator.Type} zone");
+            creator.Dispose();
+            creators.Remove(executor.SteamID);
+          });
+        });
 
-        executor.PrintToChat($"Successfully created {creator.Type} zone");
-        creator.Dispose();
-        creators.Remove(executor.SteamID);
         return;
       case "show":
+      case "draw":
+      case "display":
         var zoneCount = 0;
         foreach (var type in Enum.GetValues<ZoneType>()) {
           if (specifiedType != null && type != specifiedType) continue;
@@ -89,19 +97,75 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
           info.ReplyToCommand($"Showing {zoneCount} zones");
         return;
       case "remove":
+      case "delete":
+        executor.PrintToChat("Deleting zone...");
         var toDelete = getUniqueZone(executor, specifiedType);
+        executor.PrintToChat("A");
         if (toDelete == null) return;
-        zoneManager.DeleteZone(toDelete.Value.Item1.Id);
-        info.ReplyToCommand("Deleted zone #" + toDelete.Value.Item1.Id);
+        executor.PrintToChat("B");
+        Server.NextFrameAsync(async () => {
+          executor.PrintToChat("C");
+          await zoneManager.DeleteZone(toDelete.Value.Item1.Id);
+          executor.PrintToChat("D");
+          Server.NextFrame(() => {
+            executor.PrintToChat("E");
+            executor.PrintToChat("Deleted zone #" + toDelete.Value.Item1.Id);
+          });
+        });
+
         return;
       case "addinner":
         var innerPair = getUniqueZone(executor, specifiedType);
         if (innerPair == null) return;
         var innerZone = innerPair.Value.Item1;
         innerZone.AddPoint(position);
-        info.ReplyToCommand("Added point to zone #" + innerZone.Id);
-        zoneManager.PushZoneWithID(innerZone, innerPair.Value.Item2,
-          Server.MapName);
+        Server.NextFrameAsync(async () => {
+          await zoneManager.PushZoneWithID(innerZone, innerPair.Value.Item2,
+            Server.MapName);
+          Server.NextFrame(() => {
+            info.ReplyToCommand("Added point to zone #" + innerZone.Id);
+          });
+        });
+        return;
+      case "reload":
+      case "refresh":
+        Server.NextFrameAsync(async () => {
+          await zoneManager.LoadZones(Server.MapName);
+          var count = (await zoneManager.GetAllZones()).SelectMany(e => e.Value)
+           .Count();
+          Server.NextFrame(() => {
+            executor.PrintToChat($"Reloaded {count} zones");
+          });
+        });
+
+        return;
+      case "list":
+      case "ls":
+        var allZones = zoneManager.GetAllZones().GetAwaiter().GetResult();
+        if (allZones.Count == 0) {
+          info.ReplyToCommand("No zones found");
+          return;
+        }
+
+        if (specifiedType == null) {
+          foreach (var type in Enum.GetValues<ZoneType>()) {
+            var zones = zoneManager.GetZones(type).GetAwaiter().GetResult();
+            if (!allZones.ContainsKey(type)) { continue; }
+
+            info.ReplyToCommand($"{type} zones: {zones.Count}");
+          }
+
+          return;
+        }
+
+        var toList = zoneManager.GetZones(specifiedType.Value)
+         .GetAwaiter()
+         .GetResult();
+        foreach (var listZone in toList) {
+          info.ReplyToCommand(
+            $"Points: {listZone.GetBorderPoints().Count()}/{listZone.GetAllPoints().Count()}Center: {listZone.CalculateCenterPoint()} Area: {listZone.GetArea()}");
+        }
+
         return;
     }
 
@@ -139,7 +203,10 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
 
         tpDestinations.Sort((a, b)
           => a.GetMinDistance(position) <= b.GetMinDistance(position) ? -1 : 1);
-        executor.Teleport(tpDestinations.First().GetCenterPoint());
+        executor.PlayerPawn.Value.Teleport(tpDestinations.First()
+         .GetCenterPoint());
+
+        info.ReplyToCommand("Teleported to zone #" + tpDestinations.First().Id);
         return;
     }
   }
@@ -147,7 +214,7 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
   private void attemptBeginCreation(CCSPlayerController executor,
     WrappedInfo info, ZoneType type) {
     if (creators.ContainsKey(executor.SteamID)) {
-      info.ReplyToCommand("You are already creating a zone");
+      executor.PrintToChat("You are already creating a zone");
       return;
     }
 
@@ -155,9 +222,14 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
       if (executor.PlayerPawn.Value?.AbsOrigin != null) {
         var zone = factory.CreateZone([executor.PlayerPawn.Value.AbsOrigin!]);
         zone.Draw(plugin, type.GetColor(), 1f);
-        executor.ExecuteClientCommandFromServer("css_debug zone finish");
+        Server.NextFrameAsync(async () => {
+          await zoneManager.PushZone(zone, type);
+          Server.NextFrame(() => {
+            executor.PrintToChat("Successfully created a single point zone");
+          });
+        });
       } else {
-        info.ReplyToCommand(
+        executor.PrintToChat(
           "Unable to find your position. Please try again later.");
       }
 
@@ -167,7 +239,7 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
     var creator = new PlayerZoneCreator(plugin, executor, factory, type);
     creator.BeginCreation();
     creators[executor.SteamID] = creator;
-    info.ReplyToCommand($"Began creation of a {type.ToString()} zone");
+    executor.PrintToChat($"Began creation of a {type.ToString()} zone");
   }
 
   private (IZone, ZoneType)? getUniqueZone(CCSPlayerController player,
@@ -191,12 +263,21 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
         resultType = zones.Key;
       }
 
-      if (result == null || resultType == null) return null;
+      if (result == null || resultType == null) {
+        player.PrintToChat("No zones found");
+        return null;
+      }
+
       return (result, resultType.Value);
     }
 
-    var validZones = zoneDictionary[type.Value]
-     .Where(zone => zone.IsInsideZone(player.PlayerPawn.Value!.AbsOrigin!))
+    if (!zoneDictionary.TryGetValue(type.Value, out var value)) {
+      player.PrintToChat("No zones found");
+      return null;
+    }
+
+    var validZones = value.Where(zone
+        => zone.IsInsideZone(player.PlayerPawn.Value!.AbsOrigin!))
      .ToList();
 
     switch (validZones.Count) {
@@ -213,8 +294,8 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
 
   private void sendUsage(CCSPlayerController player) {
     player.PrintToChat("Usage: css_zone [add/set/remove/tpto] [type]");
-    player.PrintToChat("       css_zone addinner <type>");
-    player.PrintToChat("       css_zone show <type>");
-    player.PrintToChat("       css_zone finish");
+    player.PrintToChat(ChatColors.Default
+      + "       css_zone [addinner/show/list] <type>");
+    player.PrintToChat(ChatColors.Default + "       css_zone [finish/reload]");
   }
 }

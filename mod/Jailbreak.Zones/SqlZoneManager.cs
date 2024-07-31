@@ -22,7 +22,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
 
   public void Start(BasePlugin basePlugin) {
     plugin = basePlugin;
-    Server.NextFrameAsync(createTable);
+    Server.NextFrameAsync(async () => { await createTable(); });
 
     basePlugin.RegisterListener<Listeners.OnMapStart>(OnMapStart);
     basePlugin.RegisterListener<Listeners.OnMapEnd>(OnMapEnd);
@@ -32,7 +32,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     plugin.RemoveListener<Listeners.OnMapStart>(OnMapStart);
   }
 
-  public async void DeleteZone(int zoneId, string map) {
+  public async Task DeleteZone(int zoneId, string map) {
     foreach (var list in zones.Values) {
       var zone = list.FirstOrDefault(z => z.Id == zoneId);
       if (zone != null) {
@@ -46,7 +46,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     await conn.OpenAsync();
     var cmd = conn.CreateCommand();
     cmd.CommandText = $"""
-        DELETE FROM {CvSqlTable.Value}
+        DELETE FROM {CvSqlTable.Value.Trim('"')}
         WHERE zoneid = @zoneid
         AND map = @map
       """;
@@ -54,9 +54,12 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     cmd.Parameters.AddWithValue("@zoneid", zoneId);
     cmd.Parameters.AddWithValue("@map", map);
     await cmd.ExecuteNonQueryAsync();
+
+    await conn.CloseAsync();
   }
 
-  public async void PushZoneWithID(IZone zone, ZoneType type, string map) {
+  public async Task PushZoneWithID(IZone zone, ZoneType type, string map) {
+    Server.NextFrame(() => { Server.PrintToConsole("Pushing zone to SQL"); });
     if (!zones.TryGetValue(type, out var list)) {
       list        = new List<IZone>();
       zones[type] = list;
@@ -66,28 +69,34 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
 
     var conn = createConnection();
     if (conn == null) return;
+    Server.NextFrame(() => {
+      Server.PrintToConsole("Successfully connect to sql");
+    });
     await conn.OpenAsync();
 
     var insertPointCommand = $"""
-        INSERT INTO {CvSqlTable.Value} (map, type, zoneid, pointid, X, Y, Z)
+        INSERT INTO {CvSqlTable.Value.Trim('"')} (map, type, zoneid, pointid, X, Y, Z)
         VALUES (@map, @type, @zoneid, @pointid, @X, @Y, @Z)
       """;
-    var cmd = conn.CreateCommand();
-    cmd.CommandText = insertPointCommand;
-
-    cmd.Parameters.AddWithValue("@map", map);
-    cmd.Parameters.AddWithValue("@type", type.ToString());
-
-    cmd.Parameters.AddWithValue("@zoneid", zone.Id);
+    Server.NextFrame(() => { Server.PrintToConsole("Creating command"); });
     var pointId = 0;
 
-    foreach (var point in zone.GetBorderPoints()) {
+    foreach (var point in zone.GetAllPoints()) {
+      var cmd = conn.CreateCommand();
+      cmd.CommandText = insertPointCommand;
+
+      cmd.Parameters.AddWithValue("@map", map);
+      cmd.Parameters.AddWithValue("@type", type.ToString());
+
+      cmd.Parameters.AddWithValue("@zoneid", zone.Id);
       cmd.Parameters.AddWithValue("@X", point.X);
       cmd.Parameters.AddWithValue("@Y", point.Y);
       cmd.Parameters.AddWithValue("@Z", point.Z);
       cmd.Parameters.AddWithValue("@pointid", pointId++);
       await cmd.ExecuteNonQueryAsync();
     }
+
+    await conn.CloseAsync();
   }
 
   public Task<IList<IZone>> GetZones(string map, ZoneType type) {
@@ -96,7 +105,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
       result);
   }
 
-  public async void PushZone(IZone zone, ZoneType type, string map) {
+  public async Task PushZone(IZone zone, ZoneType type, string map) {
     if (!zones.TryGetValue(type, out var list)) {
       list        = new List<IZone>();
       zones[type] = list;
@@ -109,7 +118,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     PushZoneWithID(zone, type, map);
   }
 
-  public async void UpdateZone(IZone zone, ZoneType type, int id) {
+  public async Task UpdateZone(IZone zone, ZoneType type, int id) {
     DeleteZone(id, Server.MapName);
     zone.Id = id;
     PushZoneWithID(zone, type, Server.MapName);
@@ -119,7 +128,8 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     return Task.FromResult(zones);
   }
 
-  public async void LoadZones(string map) {
+  public async Task LoadZones(string map) {
+    zones.Clear();
     var tasks = Enum.GetValues<ZoneType>()
      .Select(type => LoadZones(map, type))
      .ToList();
@@ -129,7 +139,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
 
   private void OnMapEnd() { zones.Clear(); }
 
-  private async void createTable() {
+  private async Task createTable() {
     Server.PrintToConsole("Creating table for zones with auth: "
       + CvSqlConnectionString.Value);
     var conn = createConnection();
@@ -150,16 +160,17 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
 
     var cmd = new MySqlCommand(cmdText, conn);
     await cmd.ExecuteNonQueryAsync();
+    await conn.CloseAsync();
   }
 
   private void OnMapStart(string mapname) {
     Server.NextFrameAsync(() => LoadZones(mapname));
   }
 
-  private MySqlCommand queryAllZones(string map) {
+  private MySqlCommand queryAllZones(string map, ZoneType type) {
     var cmdText = $"""
-          SELECT * FROM {CvSqlTable.Value}
-          WHERE map = '{map}'
+          SELECT * FROM {CvSqlTable.Value.Trim('"')}
+          WHERE map = '{map}' AND type = '{type}'
           ORDER BY zoneid, pointid DESC
       """;
 
@@ -170,7 +181,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     var conn = createConnection();
     if (conn == null) return;
 
-    var cmd = queryAllZones(map);
+    var cmd = queryAllZones(map, type);
 
     await conn.OpenAsync();
     cmd.Connection = conn;
@@ -181,30 +192,36 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     var pointId     = -1;
     var zoneCreator = new BasicZoneCreator();
     zoneCreator.BeginCreation();
-    while (await reader.ReadAsync()) {
-      var point = new Vector(reader.GetFloat("X"), reader.GetFloat("Y"),
-        reader.GetFloat("Z"));
-      zoneCreator.AddPoint(point);
-      var zoneId = reader.GetInt32("zoneid");
-      pointId = reader.GetInt32("pointid");
+    Server.NextFrame(() => {
+      while (reader.Read()) {
+        var point = new Vector(reader.GetFloat("X"), reader.GetFloat("Y"),
+          reader.GetFloat("Z"));
+        zoneCreator.AddPoint(point);
+        var zoneId = reader.GetInt32("zoneid");
+        pointId = reader.GetInt32("pointid");
 
-      // We just started reading zones
-      if (currentZone == -1) currentZone = zoneId;
+        // We just started reading zones
+        if (currentZone == -1) currentZone = zoneId;
 
-      if (pointId == 0 || zoneId != currentZone) {
-        if (pointId == 0 != (zoneId != currentZone))
-          printNotClosedWarning(map, zoneId, pointId, currentZone);
-        // Assume the zone is closed and allow the new zone to be created
-        var zone                                  = zoneCreator.Build(factory);
-        if (!zones.ContainsKey(type)) zones[type] = new List<IZone>();
-        zone.Id = zoneId;
-        zones[type].Add(zone);
-        currentZone = zoneId;
-        zoneCreator.BeginCreation();
+        if (pointId == 0 || zoneId != currentZone) {
+          if (zoneId != currentZone)
+            printNotClosedWarning(map, zoneId, pointId, currentZone);
+          // Assume the zone is closed and allow the new zone to be created
+          var zone = zoneCreator.Build(factory);
+          if (!zones.ContainsKey(type)) zones[type] = new List<IZone>();
+          zone.Id = zoneId;
+          zones[type].Add(zone);
+          pointId     = -1;
+          currentZone = -1;
+          zoneCreator.BeginCreation();
+        }
       }
-    }
 
-    if (pointId > 0) printNotClosedWarning(map, -1, pointId, currentZone);
+      reader.Close();
+
+      if (pointId > 0) printNotClosedWarning(map, -1, pointId, currentZone);
+    });
+    await Task.Delay((int)Math.Ceiling(Server.TickInterval / 1000) * 5);
   }
 
   private void printNotClosedWarning(string map, int zoneId, int pointId,
