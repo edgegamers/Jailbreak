@@ -1,6 +1,7 @@
-﻿using CounterStrikeSharp.API.Modules.Utils;
+﻿using System.Numerics;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Zones;
+using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
 namespace Jailbreak.Zones;
 
@@ -11,17 +12,19 @@ public class DistanceZone(IList<Vector> origins, float tolerance) : IZone {
 
   private readonly IList<Vector> origins = origins.ToList();
 
-  private IEnumerable<Vector> cachedHull =
-    ConvexHullUtil.ComputeConvexHull(origins);
+  private IList<Vector> cachedHull =
+    ConvexHullUtil.ComputeConvexHull(origins).ToList();
 
   public int Id { get; set; }
 
   public bool IsInsideZone(Vector position) {
-    return ConvexHullUtil.IsInsideZone(position, cachedHull.ToList());
+    if (ConvexHullUtil.IsInsideZone(position, cachedHull)) return true;
+    var minDistance = GetMinDistance(position);
+    return minDistance < tolerance;
   }
 
   public float GetMinDistance(Vector position) {
-    return origins.Min(origin => origin.DistanceSquared(position));
+    return ConvexHullUtil.GetMinDistance(position, cachedHull);
   }
 
   public Vector GetCenterPoint() {
@@ -37,7 +40,7 @@ public class DistanceZone(IList<Vector> origins, float tolerance) : IZone {
   public void AddPoint(Vector point) {
     origins.Add(point);
 
-    cachedHull = ConvexHullUtil.ComputeConvexHull(origins);
+    cachedHull = ConvexHullUtil.ComputeConvexHull(origins).ToList();
   }
 
   public bool IsInsideRegion(Vector position) {

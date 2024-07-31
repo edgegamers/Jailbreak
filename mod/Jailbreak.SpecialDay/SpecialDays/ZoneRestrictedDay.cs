@@ -16,7 +16,6 @@ public abstract class ZoneRestrictedDay(BasePlugin plugin,
   protected readonly IList<MovementRestrictor> Restrictors =
     new List<MovementRestrictor>();
 
-
   public abstract IView ZoneReminder { get; }
 
   abstract protected IZone GetZone();
@@ -29,7 +28,7 @@ public abstract class ZoneRestrictedDay(BasePlugin plugin,
 
     foreach (var t in PlayerUtil.FromTeam(restrictedTeam)) {
       var zoneRestrictor = new ZoneMovementRestrictor(plugin, t, GetZone(),
-        onTeleport: () => ZoneReminder.ToPlayerChat(t));
+        DistanceZone.WIDTH_CELL, () => ZoneReminder.ToPlayerChat(t));
       Restrictors.Add(zoneRestrictor);
     }
   }

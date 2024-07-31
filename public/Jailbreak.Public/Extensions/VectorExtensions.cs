@@ -16,4 +16,14 @@ public static class VectorExtensions {
     return (float)(Math.Pow(vector.X - other.X, 2)
       + Math.Pow(vector.Y - other.Y, 2) + Math.Pow(vector.Z - other.Z, 2));
   }
+
+  public static float HorizontalDistance(this Vector vector, Vector other) {
+    return (float)Math.Sqrt(vector.HorizontalDistanceSquared(other));
+  }
+
+  public static float
+    HorizontalDistanceSquared(this Vector vector, Vector other) {
+    return (float)(Math.Pow(vector.X - other.X, 2)
+      + Math.Pow(vector.Y - other.Y, 2));
+  }
 }

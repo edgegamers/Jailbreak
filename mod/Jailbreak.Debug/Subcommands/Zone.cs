@@ -98,17 +98,11 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
         return;
       case "remove":
       case "delete":
-        executor.PrintToChat("Deleting zone...");
         var toDelete = getUniqueZone(executor, specifiedType);
-        executor.PrintToChat("A");
         if (toDelete == null) return;
-        executor.PrintToChat("B");
         Server.NextFrameAsync(async () => {
-          executor.PrintToChat("C");
           await zoneManager.DeleteZone(toDelete.Value.Item1.Id);
-          executor.PrintToChat("D");
           Server.NextFrame(() => {
-            executor.PrintToChat("E");
             executor.PrintToChat("Deleted zone #" + toDelete.Value.Item1.Id);
           });
         });
@@ -119,9 +113,11 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
         if (innerPair == null) return;
         var innerZone = innerPair.Value.Item1;
         innerZone.AddPoint(position);
+        var map = Server.MapName;
         Server.NextFrameAsync(async () => {
+          await zoneManager.DeleteZone(innerZone.Id);
           await zoneManager.PushZoneWithID(innerZone, innerPair.Value.Item2,
-            Server.MapName);
+            map);
           Server.NextFrame(() => {
             info.ReplyToCommand("Added point to zone #" + innerZone.Id);
           });
@@ -189,6 +185,7 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
         attemptBeginCreation(executor, info, specifiedType.Value);
         return;
       case "tpto":
+      case "tp":
         var tpDestinations = zoneManager.GetAllZones()
          .GetAwaiter()
          .GetResult()
@@ -293,7 +290,7 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
   }
 
   private void sendUsage(CCSPlayerController player) {
-    player.PrintToChat("Usage: css_zone [add/set/remove/tpto] [type]");
+    player.PrintToChat("Usage: css_zone [add/set/remove/tp] [type]");
     player.PrintToChat(ChatColors.Default
       + "       css_zone [addinner/show/list] <type>");
     player.PrintToChat(ChatColors.Default + "       css_zone [finish/reload]");

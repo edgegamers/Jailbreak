@@ -69,7 +69,7 @@ public interface IZone {
   }
 
   public void Draw(BasePlugin plugin, Color color, float lifetime,
-    float width = 1, bool debug = false) {
+    float width = 1) {
     // TODO: Add point_worldtext to show the points of the zone
 
     var points = GetBorderPoints().ToList();

@@ -154,7 +154,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
 
     var baggedSpawns = new ShuffleBag<Vector>(spawnPositions.ToList());
     foreach (var player in players)
-      player.Pawn.Value?.Teleport(baggedSpawns.GetNext());
+      player.PlayerPawn.Value?.Teleport(baggedSpawns.GetNext());
   }
 
   private IEnumerable<Vector> getRandomSpawns(bool includeSpawns = true,
