@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
+using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Mod.Zones;
@@ -17,10 +18,10 @@ public abstract class CellRestrictedDay(BasePlugin plugin,
   public virtual IView CellReminder
     => this is ISpecialDayMessageProvider messaged ?
       new SimpleView {
-        ISpecialDayMessages.PREFIX,
+        SpecialDayMessages.PREFIX,
         $"Today is {messaged.Messages.Name}, so stay in cells!"
       } :
-      new SimpleView { ISpecialDayMessages.PREFIX, "Stay in cells!" };
+      new SimpleView { SpecialDayMessages.PREFIX, "Stay in cells!" };
 
   override protected IZone GetZone() {
     var manager = provider.GetRequiredService<IZoneManager>();

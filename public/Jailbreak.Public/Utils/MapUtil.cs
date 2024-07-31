@@ -17,7 +17,7 @@ public static class MapUtil {
      .First();
   }
 
-  public static void OpenCells(
+  public static Sensitivity? OpenCells(
     Sensitivity sensitivity = Sensitivity.NAME_CELL_DOOR) {
     var allButtons = Utilities
      .FindAllEntitiesByDesignerName<CEntityInstance>("func_button")
@@ -44,10 +44,10 @@ public static class MapUtil {
       switch (entities.Count) {
         case 1:
           PressButton(entities[0]);
-          return;
+          return sensitivity;
         case 0: {
           var lower = sensitivity.GetLower();
-          if (lower == null) return;
+          if (lower == null) return lower;
           sensitivity = lower.Value;
           continue;
         }
@@ -64,6 +64,8 @@ public static class MapUtil {
       PressButton(sorted[0]);
       break;
     }
+
+    return sensitivity;
   }
 
   private static void PressButton(CBaseEntity entity) {

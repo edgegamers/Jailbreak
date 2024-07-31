@@ -24,6 +24,7 @@ public static class WardenServiceExtension {
     serviceCollection.AddPluginBehavior<PeaceCommandsBehavior>();
     serviceCollection.AddPluginBehavior<WardenCommandsBehavior>();
     serviceCollection.AddPluginBehavior<RollCommandBehavior>();
+    serviceCollection.AddPluginBehavior<OpenCommandsBehavior>();
 
     serviceCollection.AddPluginBehavior<WardenMarkerBehavior>();
     serviceCollection.AddPluginBehavior<WardenPaintBehavior>();

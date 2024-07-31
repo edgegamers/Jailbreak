@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
+using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
@@ -18,10 +19,10 @@ public abstract class ArmoryRestrictedDay(BasePlugin plugin,
   public virtual IView ArmoryReminder
     => this is ISpecialDayMessageProvider messaged ?
       new SimpleView {
-        ISpecialDayMessages.PREFIX,
+        SpecialDayMessages.PREFIX,
         $"Today is {messaged.Messages.Name}, so stay in armory!"
       } :
-      new SimpleView { ISpecialDayMessages.PREFIX, "Stay in armory!" };
+      new SimpleView { SpecialDayMessages.PREFIX, "Stay in armory!" };
 
 
   override protected IZone GetZone() {

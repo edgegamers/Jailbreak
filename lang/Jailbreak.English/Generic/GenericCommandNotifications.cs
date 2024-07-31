@@ -53,4 +53,10 @@ public class GenericCommandNotifications : IGenericCommandNotifications,
       $"{ChatColors.Red}This command requires the {ChatColors.White}{permission}{ChatColors.Red} permission."
     };
   }
+
+  public IView Error(string message) {
+    return new SimpleView {
+      PREFIX, $"{ChatColors.Red}An error occurred: {ChatColors.White}{message}"
+    };
+  }
 }

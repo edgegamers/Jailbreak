@@ -8,4 +8,5 @@ public interface IGenericCommandNotifications {
   public IView CommandOnCooldown(DateTime cooldownEndsAt);
   public IView InvalidParameter(string parameter, string expected);
   public IView NoPermissionMessage(string permission);
+  public IView Error(string message);
 }
