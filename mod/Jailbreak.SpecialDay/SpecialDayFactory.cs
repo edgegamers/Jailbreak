@@ -17,18 +17,15 @@ public class SpecialDayFactory(IServiceProvider provider) : ISpecialDayFactory {
       SDType.HNS       => new HideAndSeekDay(plugin, provider),
       SDType.NOSCOPE   => new NoScopeDay(plugin, provider),
       SDType.INFECTION => new InfectionDay(plugin, provider),
+      SDType.CUSTOM    => new CustomDay(plugin, provider),
       _                => throw new NotImplementedException()
     };
   }
 
   public bool IsValidType(SDType type) {
-    return type switch {
-      SDType.FFA       => true,
-      SDType.WARDAY    => true,
-      SDType.HNS       => true,
-      SDType.NOSCOPE   => true,
-      SDType.INFECTION => true,
-      _                => false
-    };
+    try {
+      CreateSpecialDay(type);
+      return true;
+    } catch (NotImplementedException e) { return false; }
   }
 }

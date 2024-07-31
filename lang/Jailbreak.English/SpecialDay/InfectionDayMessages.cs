@@ -18,8 +18,8 @@ public class InfectionDayMessages : ISpecialDayInstanceMessages {
       ISpecialDayMessages.PREFIX,
       Name,
       "ended.",
-      (winner == CsTeam.CounterTerrorist ? ChatColors.Blue : ChatColors.Red),
-      (winner == CsTeam.CounterTerrorist ? "Zombies" : "Prisoners"),
+      (winner == CsTeam.CounterTerrorist ? ChatColors.Blue : ChatColors.Red)
+      + (winner == CsTeam.CounterTerrorist ? "Zombies" : "Prisoners"),
       "won!"
     };
   }

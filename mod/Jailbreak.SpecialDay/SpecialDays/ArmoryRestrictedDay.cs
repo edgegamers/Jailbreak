@@ -2,6 +2,7 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
+using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Mod.Zones;
 using Jailbreak.Zones;
@@ -22,6 +23,7 @@ public abstract class ArmoryRestrictedDay(BasePlugin plugin,
       } :
       new SimpleView { ISpecialDayMessages.PREFIX, "Stay in armory!" };
 
+
   override protected IZone GetZone() {
     var manager = provider.GetRequiredService<IZoneManager>();
     var zones   = manager.GetZones(ZoneType.ARMORY).GetAwaiter().GetResult();
@@ -33,7 +35,7 @@ public abstract class ArmoryRestrictedDay(BasePlugin plugin,
           SpawnPoint>("info_player_counterterrorist")
        .Where(s => s.AbsOrigin != null)
        .Select(s => s.AbsOrigin!)
-       .ToList(), DistanceZone.WIDTH_CELL);
+       .ToList(), DistanceZone.WIDTH_MEDIUM_ROOM);
 
     return bounds;
   }

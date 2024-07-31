@@ -35,6 +35,8 @@ public abstract class ZoneRestrictedDay(BasePlugin plugin,
 
   public override void Execute() {
     base.Execute();
+    if (this is ISpecialDayMessageProvider messaged)
+      messaged.Messages.BeginsIn(0).ToAllChat();
 
     foreach (var restrictor in Restrictors) restrictor.Kill();
   }

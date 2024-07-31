@@ -31,8 +31,6 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   ///   Use for teleporting, stripping weapons, starting timers, etc.
   /// </summary>
   public virtual void Setup() {
-    if (Settings == null) return;
-
     Plugin.RegisterEventHandler<EventRoundEnd>(OnEnd);
 
     foreach (var entry in Settings.ConVarValues) {
@@ -43,8 +41,6 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       }
 
       previousConvarValues[entry.Key] = GetConvarValue(cv);
-      Server.PrintToChatAll(
-        $"Storing {entry.Key} ({cv.Type}) as {previousConvarValues[entry.Key]}");
       SetConvarValue(cv, entry.Value);
     }
 
@@ -250,7 +246,6 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       }
 
       Server.ExecuteCommand(cvar.Name + " " + value);
-      Server.PrintToChatAll($"{cvar.Name} {value}");
     } catch (Exception e) {
       Server.PrintToChatAll(
         $"There was an error setting {cvar.Name} ({cvar.Type}) to {value}");

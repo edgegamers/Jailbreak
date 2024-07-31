@@ -38,7 +38,6 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
 
   public override void Execute() {
     base.Execute();
-    msg.ReadyOrNot.ToAllChat();
     foreach (var t in PlayerUtil.FromTeam(CsTeam.Terrorist)) t.SetArmor(100);
   }
 

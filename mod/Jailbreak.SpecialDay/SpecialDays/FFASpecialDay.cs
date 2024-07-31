@@ -12,8 +12,6 @@ public class FFASpecialDay(BasePlugin plugin, IServiceProvider provider)
   public override SDType Type => SDType.FFA;
   public override SpecialDaySettings Settings => new FFASettings();
 
-  private FfaDayMessages msg => (FfaDayMessages)Messages;
-
   public virtual ISpecialDayInstanceMessages Messages
     => new FfaDayMessages("Free for All",
       "Everyone for themselves! No camping, actively pursue!");
@@ -27,7 +25,7 @@ public class FFASpecialDay(BasePlugin plugin, IServiceProvider provider)
 
   public override void Execute() {
     base.Execute();
-    msg.Begin.ToAllChat();
+    Messages.BeginsIn(0).ToAllChat();
   }
 
   public class FFASettings : SpecialDaySettings {

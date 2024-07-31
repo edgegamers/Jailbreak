@@ -29,9 +29,9 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     public override ISet<string>? AllowedWeapons(CCSPlayerController player) {
-      if (player.Team == CsTeam.Terrorist)
-        return Tag.UTILITY.Union(Tag.PISTOLS).ToHashSet();
-      return null;
+      return player.Team == CsTeam.Terrorist ?
+        Tag.UTILITY.Union(Tag.PISTOLS).ToHashSet() :
+        null;
     }
 
     public override float FreezeTime(CCSPlayerController player) {
@@ -54,17 +54,10 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
     OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info) {
     var player = @event.Userid;
     if (player == null || !player.IsValid) return HookResult.Continue;
-
     if (player.Team != CsTeam.Terrorist) return HookResult.Continue;
 
     var pos = player.PlayerPawn.Value?.AbsOrigin;
     if (pos == null) return HookResult.Continue;
-    swappedPrisoners.Add(player.SteamID);
-    player.Respawn();
-    player.RemoveWeapons();
-
-    plugin.AddTimer(3, () => { player.GiveNamedItem("weapon_knife"); });
-
     var nearest = PlayerUtil.GetAlive()
      .Where(p
         => p.PlayerPawn.Value != null && p.PlayerPawn.Value.AbsOrigin != null)
@@ -75,16 +68,29 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
       <= b.PlayerPawn.Value!.AbsOrigin!.DistanceSquared(pos) ?
         -1 :
         1);
-    msg.YouWereInfectedMessage(@event.Attacker);
-    if (nearest.Count == 0) {
-      player.PlayerPawn.Value!.Teleport(pos);
-      return HookResult.Continue;
-    }
 
-    var target = nearest.First();
-    player.PlayerPawn.Value!.Teleport(target.PlayerPawn.Value!.AbsOrigin!);
-    if (target.Team == CsTeam.Terrorist)
+    var target = nearest.FirstOrDefault();
+    if (target != null && target.Team == CsTeam.Terrorist)
       msg.InfectedWarning(player).ToPlayerChat(target);
+    swappedPrisoners.Add(player.SteamID);
+    plugin.AddTimer(1f, () => {
+      if (!player.IsValid) return;
+      player.Respawn();
+      player.RemoveWeapons();
+
+      plugin.AddTimer(3, () => { player.GiveNamedItem("weapon_knife"); });
+
+      msg.YouWereInfectedMessage(
+        (@event.Attacker != null && @event.Attacker.IsValid) ?
+          @event.Attacker :
+          null);
+      if (nearest.Count == 0 || target == null) {
+        player.PlayerPawn.Value!.Teleport(pos);
+        return;
+      }
+
+      player.PlayerPawn.Value!.Teleport(target.PlayerPawn.Value!.AbsOrigin!);
+    });
     return HookResult.Continue;
   }
 
@@ -96,6 +102,7 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
       player.ChangeTeam(CsTeam.Terrorist);
     }
 
+    plugin.DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
     return result;
   }
 

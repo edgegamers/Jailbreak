@@ -19,8 +19,11 @@ public class HNSDayMessages() : TeamDayMessages("Hide and Seek") {
       ISpecialDayMessages.PREFIX, "Today is", Name, ", stay in the armory!"
     };
 
-  public IView ReadyOrNot
-    => new SimpleView {
-      ISpecialDayMessages.PREFIX, "Ready or not, here they come!"
-    };
+  public override IView BeginsIn(int seconds) {
+    if (seconds == 0)
+      return new SimpleView {
+        ISpecialDayMessages.PREFIX, "Ready or not, here they come!"
+      };
+    return ((ISpecialDayInstanceMessages)this).BeginsIn(seconds);
+  }
 }
