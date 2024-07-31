@@ -9,7 +9,7 @@ namespace Jailbreak.Zones;
 
 public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
   public static FakeConVar<string> CvSqlTable = new("css_jb_zonetable",
-    "cs2_jb_zones", "The table name for the zones");
+    "The table name for the zones", "cs2_jb_zones");
 
   public static FakeConVar<string> CvSqlConnectionString =
     new("css_jb_sqlconnection", "The connection string for the database", "",
@@ -137,7 +137,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     await conn.OpenAsync();
 
     var cmdText = $"""
-      CREATE TABLE IF NOT EXISTS {CvSqlTable.Value}(
+      CREATE TABLE IF NOT EXISTS {CvSqlTable.Value.Trim('"')}(
         zoneid INT NOT NULL,
         pointid INT NOT NULL,
         map VARCHAR(64) NOT NULL,
