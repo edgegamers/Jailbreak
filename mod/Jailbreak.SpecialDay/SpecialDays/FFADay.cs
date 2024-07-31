@@ -7,7 +7,7 @@ using Jailbreak.Public.Mod.SpecialDay.Enums;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
-public class FFASpecialDay(BasePlugin plugin, IServiceProvider provider)
+public class FFADay(BasePlugin plugin, IServiceProvider provider)
   : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
   public override SDType Type => SDType.FFA;
   public override SpecialDaySettings Settings => new FFASettings();
@@ -32,9 +32,10 @@ public class FFASpecialDay(BasePlugin plugin, IServiceProvider provider)
     private readonly Random rng;
 
     public FFASettings() {
-      CtTeleport = TeleportType.ARMORY;
-      TTeleport  = TeleportType.ARMORY;
-      rng        = new Random();
+      CtTeleport   = TeleportType.ARMORY;
+      TTeleport    = TeleportType.ARMORY;
+      StripToKnife = false;
+      rng          = new Random();
       WithFriendlyFire();
     }
 

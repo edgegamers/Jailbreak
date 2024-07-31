@@ -24,6 +24,21 @@ public class HNSDayMessages() : TeamDayMessages("Hide and Seek") {
       return new SimpleView {
         ISpecialDayMessages.PREFIX, "Ready or not, here they come!"
       };
-    return ((ISpecialDayInstanceMessages)this).BeginsIn(seconds);
+    return new SimpleView {
+      ISpecialDayMessages.PREFIX,
+      Name,
+      "begins in",
+      seconds,
+      "seconds."
+    };
+  }
+
+  public IView DamageWarning(int seconds) {
+    return new SimpleView() {
+      ISpecialDayMessages.PREFIX,
+      "You will be vulnerable to damage in",
+      seconds,
+      "seconds."
+    };
   }
 }

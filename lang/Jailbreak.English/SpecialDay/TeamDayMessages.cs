@@ -12,18 +12,30 @@ public class TeamDayMessages(string name, string? description = null)
 
   public virtual IView SpecialDayStart
     => Description == null ?
-      new SimpleView { ISpecialDayMessages.PREFIX, Name, "has begun!" } :
+      new SimpleView {
+        ISpecialDayMessages.PREFIX, "Today is a", Name, "day."
+      } :
       new SimpleView {
         ISpecialDayMessages.PREFIX,
+        "Today is a",
         Name,
-        "has begun!",
+        "day.",
         SimpleView.NEWLINE,
         ISpecialDayMessages.PREFIX,
         Description
       };
 
-  public virtual IView BeginsIn(int s)
-    => ((ISpecialDayInstanceMessages)this).BeginsIn(s);
+  public virtual IView BeginsIn(int seconds) {
+    return seconds == 0 ?
+      new SimpleView { ISpecialDayMessages.PREFIX, Name, "begins now!" } :
+      new SimpleView {
+        ISpecialDayMessages.PREFIX,
+        Name,
+        "begins in",
+        seconds,
+        "seconds."
+      };
+  }
 
   public virtual IView SpecialDayEnd() {
     var winner = PlayerUtil.GetAlive().FirstOrDefault()?.Team

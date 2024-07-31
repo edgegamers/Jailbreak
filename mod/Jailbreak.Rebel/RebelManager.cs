@@ -25,6 +25,7 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
     new RangeValidator<int>(0, 500));
 
   private readonly Dictionary<CCSPlayerController, long> rebelTimes = new();
+  private bool enabled = true;
 
   public void Start(BasePlugin basePlugin) {
     basePlugin.RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
@@ -61,6 +62,7 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
   }
 
   public bool MarkRebel(CCSPlayerController player, long time = -1) {
+    if (!enabled) return false;
     if (!rebelTimes.ContainsKey(player))
       logs.Append(logs.Player(player), "is now a rebel.");
 
@@ -86,6 +88,8 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
     applyRebelColor(player);
   }
 
+  public void DisableRebelForRound() { enabled = false; }
+
   private void OnTick() {
     foreach (var player in GetActiveRebels()) {
       if (!player.IsReal()) continue;
@@ -97,6 +101,7 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
   }
 
   private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
+    enabled = true;
     rebelTimes.Clear();
     foreach (var player in Utilities.GetPlayers()) applyRebelColor(player);
 

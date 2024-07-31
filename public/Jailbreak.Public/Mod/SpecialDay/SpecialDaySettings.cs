@@ -40,10 +40,13 @@ public class SpecialDaySettings {
 
   public bool AllowLastRequests = false;
 
+  public bool AllowRebels = false;
+
   public TeleportType CtTeleport = TeleportType.NONE;
 
   public bool FreezePlayers = true;
   public bool RespawnPlayers = true;
+  public bool OpenCells = true;
 
   /// <summary>
   /// Used to avoid registring a costly OnTick listener if false

@@ -7,6 +7,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastGuard;
 using Jailbreak.Public.Mod.LastRequest;
+using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Mod.Zones;
 using Jailbreak.Public.Utils;
@@ -73,6 +74,10 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     if (!Settings.AllowLastGuard)
       provider.GetRequiredService<ILastGuardService>()
        .DisableLastGuardForRound();
+    if (!Settings.AllowRebels)
+      provider.GetRequiredService<IRebelService>().DisableRebelForRound();
+
+    if (Settings.OpenCells) MapUtil.OpenCells();
 
     doTeleports();
 
@@ -83,18 +88,15 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
           () => { player.UnFreeze(); });
       }
 
-    if (Timers.Count > 0)
-      foreach (var entry in Timers)
-        Plugin.AddTimer(entry.Key, () => {
-          if (provider.GetRequiredService<ISpecialDayManager>().CurrentSD
-            != this)
-            return;
-          entry.Value.Invoke();
-        }, TimerFlags.STOP_ON_MAPCHANGE);
+    foreach (var entry in Timers)
+      Plugin.AddTimer(entry.Key, () => {
+        if (provider.GetRequiredService<ISpecialDayManager>().CurrentSD != this)
+          return;
+        entry.Value.Invoke();
+      }, TimerFlags.STOP_ON_MAPCHANGE);
   }
 
   private void doTeleports() {
-    if (Settings == null) return;
     if (Settings.CtTeleport == Settings.TTeleport) {
       // If the teleports are the same, just do it once
       // this ensures the same bag is used for both teams

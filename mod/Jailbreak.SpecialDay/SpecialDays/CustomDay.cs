@@ -11,9 +11,19 @@ public class CustomDay(BasePlugin plugin, IServiceProvider provider)
   public override SDType Type => SDType.CUSTOM;
 
   public override SpecialDaySettings Settings
-    => new() { StripToKnife = false, AllowLastRequests = true };
+    => new() {
+      StripToKnife      = false,
+      AllowLastRequests = true,
+      AllowRebels       = true,
+      OpenCells         = false
+    };
 
   public ISpecialDayInstanceMessages Messages
     => new TeamDayMessages("Custom Day",
       "Listen to the Warden's orders. Anything goes!");
+
+  public override void Setup() {
+    Timers[3] += Execute;
+    base.Setup();
+  }
 }

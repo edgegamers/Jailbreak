@@ -24,21 +24,41 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
   public ISpecialDayInstanceMessages Messages => new HNSDayMessages();
 
   public override void Setup() {
+    Timers[5] += () => msg.DamageWarning(5).ToTeamChat(CsTeam.CounterTerrorist);
     Timers[10] += () => {
-      foreach (var t in PlayerUtil.FromTeam(CsTeam.Terrorist)) EnableDamage(t);
+      foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist)) {
+        ct.SetSpeed(1.5f);
+        EnableDamage(ct);
+      }
 
-      ((ISpecialDayMessageProvider)this).Messages.BeginsIn(45).ToAllChat();
+      ((ISpecialDayMessageProvider)this).Messages.BeginsIn(25).ToAllChat();
     };
-    Timers[30] += () => Messages.BeginsIn(25).ToAllChat();
-    Timers[45] += () => Messages.BeginsIn(10).ToAllChat();
-    Timers[55] += Execute;
+    Timers[25] += () => {
+      foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist)) {
+        ct.SetSpeed(1.25f);
+        EnableDamage(ct);
+      }
+
+      Messages.BeginsIn(10).ToAllChat();
+    };
+    Timers[30] += () => {
+      foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist))
+        ct.SetSpeed(1.1f);
+    };
+    Timers[35] += Execute;
 
     base.Setup();
+
+    foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist)) {
+      ct.SetSpeed(2f);
+    }
   }
 
   public override void Execute() {
     base.Execute();
     foreach (var t in PlayerUtil.FromTeam(CsTeam.Terrorist)) t.SetArmor(100);
+    foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist))
+      ct.SetSpeed(1);
   }
 
   public class HNSSettings : SpecialDaySettings {
@@ -55,6 +75,11 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
     public override int InitialArmor(CCSPlayerController player) {
       if (player.GetTeam() != CsTeam.Terrorist) return -1;
       return 500;
+    }
+
+    public override ISet<string>? AllowedWeapons(CCSPlayerController player) {
+      if (player.Team != CsTeam.CounterTerrorist) return null;
+      return Tag.PISTOLS.Union(Tag.UTILITY).ToHashSet();
     }
   }
 }

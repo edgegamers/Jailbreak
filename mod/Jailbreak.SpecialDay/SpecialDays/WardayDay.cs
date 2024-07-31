@@ -10,8 +10,8 @@ using Jailbreak.Public.Utils;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
-public class WardaySpecialDay(BasePlugin plugin, IServiceProvider provider)
-  : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
+public class WardayDay(BasePlugin plugin, IServiceProvider provider)
+  : ArmoryRestrictedDay(plugin, provider), ISpecialDayMessageProvider {
   public override SDType Type => SDType.WARDAY;
   private WardayInstanceMessages msg => (WardayInstanceMessages)Messages;
 
@@ -22,8 +22,8 @@ public class WardaySpecialDay(BasePlugin plugin, IServiceProvider provider)
     Timers[15]  += () => Messages.BeginsIn(15).ToAllChat();
     Timers[30]  += () => Messages.BeginsIn(5).ToAllChat();
     Timers[35]  += Execute;
-    Timers[150] += () => msg.ExpandIn(15).ToAllChat();
-    Timers[165] += () => {
+    Timers[120] += () => msg.ExpandIn(30).ToAllChat();
+    Timers[150] += () => {
       msg.ExpandNow.ToAllChat();
       foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist)) {
         ct.SetHealth(100);
@@ -43,7 +43,7 @@ public class WardaySpecialDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     public override float FreezeTime(CCSPlayerController player) {
-      return player.GetTeam() == CsTeam.CounterTerrorist ? 3 : 30;
+      return player.GetTeam() == CsTeam.CounterTerrorist ? 3 : 5;
     }
   }
 }

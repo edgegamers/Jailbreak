@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Drawing;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -113,5 +114,15 @@ public static class PlayerExtensions {
     var pawn = player.PlayerPawn.Value;
     if (pawn == null) return;
     pawn.GravityScale = gravity;
+  }
+
+  public static void SetColor(this CCSPlayerController player, Color color) {
+    var pawn = player.PlayerPawn.Value;
+    if (!player.IsReal() || pawn == null) return;
+
+    if (color.A == 255) color = Color.FromArgb(254, color.R, color.G, color.B);
+    pawn.RenderMode = RenderMode_t.kRenderTransColor;
+    pawn.Render     = color;
+    Utilities.SetStateChanged(pawn, "CBaseModelEntity", "m_clrRender");
   }
 }

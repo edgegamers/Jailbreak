@@ -12,8 +12,8 @@ public class SpecialDayFactory(IServiceProvider provider) : ISpecialDayFactory {
 
   public AbstractSpecialDay CreateSpecialDay(SDType type) {
     return type switch {
-      SDType.FFA       => new FFASpecialDay(plugin, provider),
-      SDType.WARDAY    => new WardaySpecialDay(plugin, provider),
+      SDType.FFA       => new FFADay(plugin, provider),
+      SDType.WARDAY    => new WardayDay(plugin, provider),
       SDType.HNS       => new HideAndSeekDay(plugin, provider),
       SDType.NOSCOPE   => new NoScopeDay(plugin, provider),
       SDType.INFECTION => new InfectionDay(plugin, provider),

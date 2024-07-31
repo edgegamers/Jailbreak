@@ -14,4 +14,6 @@ public interface IRebelService {
   bool MarkRebel(CCSPlayerController player, long time = -1);
 
   void UnmarkRebel(CCSPlayerController player);
+
+  void DisableRebelForRound();
 }

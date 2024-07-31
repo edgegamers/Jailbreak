@@ -8,7 +8,7 @@ using Microsoft.Extensions.Primitives;
 namespace Jailbreak.English.SpecialDay;
 
 public class InfectionDayMessages() : TeamDayMessages("Infection",
-  "CTs are infected and try to kill Ts!") {
+  "CTs are infected and try to infect Ts!") {
   public override IView SpecialDayEnd() {
     var winner = PlayerUtil.GetAlive().FirstOrDefault()?.Team
       ?? CsTeam.Spectator;

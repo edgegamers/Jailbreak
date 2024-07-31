@@ -26,4 +26,13 @@ public class SpecialDayMessages : ISpecialDayMessages,
       "more rounds before starting a special day!"
     };
   }
+
+  public IView TooLateForSpecialDay(int maxTime) {
+    return new SimpleView {
+      ISpecialDayMessages.PREFIX,
+      "You must start a special day within",
+      maxTime,
+      "seconds of the round start!"
+    };
+  }
 }

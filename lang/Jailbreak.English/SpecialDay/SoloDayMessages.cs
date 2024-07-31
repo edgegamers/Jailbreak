@@ -9,17 +9,32 @@ public class SoloDayMessages(string name, string? description = null)
   public string Name => name;
   public string? Description => description;
 
-  public IView SpecialDayStart
+  public virtual IView SpecialDayStart
     => Description == null ?
-      new SimpleView { ISpecialDayMessages.PREFIX, Name, "has begun!" } :
+      new SimpleView {
+        ISpecialDayMessages.PREFIX, "Today is a", Name, "day."
+      } :
       new SimpleView {
         ISpecialDayMessages.PREFIX,
+        "Today is a",
         Name,
-        "has begun!",
+        "day.",
         SimpleView.NEWLINE,
         ISpecialDayMessages.PREFIX,
         Description
       };
+
+  public virtual IView BeginsIn(int seconds) {
+    return seconds == 0 ?
+      new SimpleView { ISpecialDayMessages.PREFIX, Name, "begins now!" } :
+      new SimpleView {
+        ISpecialDayMessages.PREFIX,
+        Name,
+        "begins in",
+        seconds,
+        "seconds."
+      };
+  }
 
   public IView SpecialDayEnd() {
     var lastAlive = PlayerUtil.GetAlive().FirstOrDefault();

@@ -1,3 +1,4 @@
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
@@ -11,6 +12,7 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Mod.Warden;
+using Jailbreak.Public.Utils;
 using Jailbreak.SpecialDay.SpecialDays;
 
 namespace Jailbreak.SpecialDay;
@@ -20,6 +22,10 @@ public class SpecialDayCommand(IWardenService warden,
   ISpecialDayMessages sdMsg, ISpecialDayManager sd) : IPluginBehavior {
   public static FakeConVar<int> CvRoundsBetweenSD = new(
     "css_jb_sd_round_cooldown", "Rounds between special days", 5);
+
+  public static FakeConVar<int> CvMaxElapsedTime = new(
+    "css_jb_sd_max_elapsed_time",
+    "Max time elapsed in a round to be able to call a special day", 30);
 
   private SpecialDayMenuSelector? menuSelector;
   private BasePlugin? plugin;
@@ -33,12 +39,10 @@ public class SpecialDayCommand(IWardenService warden,
   [ConsoleCommand("css_sd", "Start a special day as the warden")]
   [ConsoleCommand("css_specialday", "Start a special day as the warden")]
   [ConsoleCommand("css_startday", "Start a special day as the warden")]
-  [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
   public void Command_SpecialDay(CCSPlayerController? executor,
     CommandInfo info) {
-    if (executor == null || !executor.IsReal()) return;
-
-    if (!AdminManager.PlayerHasPermissions(executor, "@css/rcon")) {
+    if (executor != null
+      && !AdminManager.PlayerHasPermissions(executor, "@css/rcon")) {
       if (!warden.IsWarden(executor)) {
         wardenMsg.NotWarden.ToPlayerChat(executor);
         return;
@@ -61,9 +65,19 @@ public class SpecialDayCommand(IWardenService warden,
         sdMsg.SpecialDayCooldown(Math.Abs(roundsToNext)).ToPlayerChat(executor);
         return;
       }
+
+      if (RoundUtil.GetTimeElapsed() > CvMaxElapsedTime.Value) {
+        sdMsg.TooLateForSpecialDay(CvMaxElapsedTime.Value);
+        return;
+      }
     }
 
     if (info.ArgCount == 1) {
+      if (executor == null) {
+        Server.PrintToConsole("css_sd [SD]");
+        return;
+      }
+
       MenuManager.OpenCenterHtmlMenu(plugin!, executor,
         menuSelector!.GetMenu());
       return;
@@ -72,7 +86,8 @@ public class SpecialDayCommand(IWardenService warden,
     // Validate LR
     var type = SDTypeExtensions.FromString(info.GetArg(1));
     if (type == null) {
-      sdMsg.InvalidSpecialDay(info.GetArg(1)).ToPlayerChat(executor);
+      if (executor != null)
+        sdMsg.InvalidSpecialDay(info.GetArg(1)).ToPlayerChat(executor);
       return;
     }
 

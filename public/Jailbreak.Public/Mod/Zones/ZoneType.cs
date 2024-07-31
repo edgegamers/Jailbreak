@@ -47,7 +47,12 @@ public enum ZoneType {
   /// <summary>
   ///   This zone represents an area on the map that only CTs can access
   /// </summary>
-  ZONE_LIMIT_CT
+  ZONE_LIMIT_CT,
+
+  /// <summary>
+  ///  The center of the map (both vertically and horizontally)
+  /// </summary>
+  CENTER
 }
 
 public static class ZoneTypeExtensions {

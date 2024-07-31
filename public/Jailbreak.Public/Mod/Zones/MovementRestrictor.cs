@@ -64,7 +64,7 @@ public abstract class MovementRestrictor {
   }
 
   public void Kill() {
-    player.SetSpeed(1f);
+    if (player.IsValid) player.SetSpeed(1f);
     timer.Kill();
   }
 

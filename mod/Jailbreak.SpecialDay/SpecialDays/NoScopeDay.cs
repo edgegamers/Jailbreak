@@ -12,7 +12,7 @@ using Jailbreak.Public.Utils;
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
-  : FFASpecialDay(plugin, provider) {
+  : FFADay(plugin, provider) {
   public override SDType Type => SDType.NOSCOPE;
 
   public override ISpecialDayInstanceMessages Messages
