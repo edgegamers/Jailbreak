@@ -1,6 +1,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Modules.Utils;
-using Jailbreak.Zones;
+using Jailbreak.Public.Mod.Zones;
 
 namespace Jailbreak.Public.Mod.Trail;
 
