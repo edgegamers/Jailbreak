@@ -1,4 +1,3 @@
-using System.Drawing;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 using Jailbreak.Debug.Subcommands;

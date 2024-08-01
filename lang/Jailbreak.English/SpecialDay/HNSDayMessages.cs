@@ -1,5 +1,4 @@
 ﻿using Jailbreak.Formatting.Base;
-using Jailbreak.Formatting.Views;
 
 namespace Jailbreak.English.SpecialDay;
 
@@ -25,7 +24,7 @@ public class HNSDayMessages() : TeamDayMessages("Hide and Seek",
   }
 
   public IView DamageWarning(int seconds) {
-    return new SimpleView() {
+    return new SimpleView {
       SpecialDayMessages.PREFIX,
       "You will be vulnerable to damage in",
       seconds,

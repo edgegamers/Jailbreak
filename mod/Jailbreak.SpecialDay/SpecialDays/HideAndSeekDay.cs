@@ -49,9 +49,8 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
 
     base.Setup();
 
-    foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist)) {
+    foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist))
       ct.SetSpeed(2f);
-    }
   }
 
   public override void Execute() {

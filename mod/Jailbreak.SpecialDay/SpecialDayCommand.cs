@@ -8,7 +8,6 @@ using CounterStrikeSharp.API.Modules.Menu;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
-using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Mod.Warden;

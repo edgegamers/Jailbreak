@@ -16,34 +16,13 @@ namespace Jailbreak.SpecialDay.SpecialDays;
 public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
   : ArmoryRestrictedDay(plugin, provider, CsTeam.CounterTerrorist),
     ISpecialDayMessageProvider {
+  private readonly ICollection<uint> swappedPrisoners = new HashSet<uint>();
   public override SDType Type => SDType.INFECTION;
 
   public override SpecialDaySettings Settings => new InfectionSettings();
-  private readonly ICollection<uint> swappedPrisoners = new HashSet<uint>();
+  private InfectionDayMessages msg => (InfectionDayMessages)Messages;
 
-  public class InfectionSettings : SpecialDaySettings {
-    public InfectionSettings() {
-      CtTeleport      = TeleportType.ARMORY;
-      TTeleport       = TeleportType.ARMORY;
-      RestrictWeapons = true;
-
-      WithRespawns(CsTeam.CounterTerrorist);
-    }
-
-    public override ISet<string>? AllowedWeapons(CCSPlayerController player) {
-      return player.Team == CsTeam.CounterTerrorist ?
-        Tag.UTILITY.Union(Tag.PISTOLS).ToHashSet() :
-        null;
-    }
-
-    public override float FreezeTime(CCSPlayerController player) {
-      return player.Team == CsTeam.CounterTerrorist ? 5 : 2;
-    }
-
-    public override int InitialHealth(CCSPlayerController player) {
-      return player.Team == CsTeam.CounterTerrorist ? 50 : 200;
-    }
-  }
+  public ISpecialDayInstanceMessages Messages => new InfectionDayMessages();
 
   public override void Setup() {
     Timers[15] += () => Messages.BeginsIn(15).ToAllChat();
@@ -101,7 +80,7 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
     if (!player.IsValid) return HookResult.Continue;
 
     msg.YouWereInfectedMessage(
-        (@event.Attacker != null && @event.Attacker.IsValid) ?
+        @event.Attacker != null && @event.Attacker.IsValid ?
           @event.Attacker :
           null)
      .ToPlayerChat(player);
@@ -151,6 +130,27 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
     return result;
   }
 
-  public ISpecialDayInstanceMessages Messages => new InfectionDayMessages();
-  private InfectionDayMessages msg => (InfectionDayMessages)Messages;
+  public class InfectionSettings : SpecialDaySettings {
+    public InfectionSettings() {
+      CtTeleport      = TeleportType.ARMORY;
+      TTeleport       = TeleportType.ARMORY;
+      RestrictWeapons = true;
+
+      WithRespawns(CsTeam.CounterTerrorist);
+    }
+
+    public override ISet<string>? AllowedWeapons(CCSPlayerController player) {
+      return player.Team == CsTeam.CounterTerrorist ?
+        Tag.UTILITY.Union(Tag.PISTOLS).ToHashSet() :
+        null;
+    }
+
+    public override float FreezeTime(CCSPlayerController player) {
+      return player.Team == CsTeam.CounterTerrorist ? 5 : 2;
+    }
+
+    public override int InitialHealth(CCSPlayerController player) {
+      return player.Team == CsTeam.CounterTerrorist ? 50 : 200;
+    }
+  }
 }

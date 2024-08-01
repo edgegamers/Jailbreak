@@ -37,9 +37,8 @@ public static class MapUtil {
       foreach (var button in allButtons
        .Select(cell => entityCache[(int)cell.Index])
        .Where(button => button != null && button.IsValid)
-       .Where(button => IsCellButton(button, sensitivity))) {
+       .Where(button => IsCellButton(button, sensitivity)))
         entities.Add(button);
-      }
 
       switch (entities.Count) {
         case 1:

@@ -1,8 +1,5 @@
 ﻿using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
-using Jailbreak.Formatting.Core;
-using Jailbreak.Formatting.Objects;
 
 // ReSharper disable InconsistentNaming
 

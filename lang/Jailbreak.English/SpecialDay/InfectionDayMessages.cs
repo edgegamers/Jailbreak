@@ -1,9 +1,7 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
-using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Utils;
-using Microsoft.Extensions.Primitives;
 
 namespace Jailbreak.English.SpecialDay;
 
@@ -23,7 +21,7 @@ public class InfectionDayMessages() : TeamDayMessages("Infection",
   }
 
   public IView YouWereInfectedMessage(CCSPlayerController? player) {
-    return (player == null || !player.IsValid) ?
+    return player == null || !player.IsValid ?
       new SimpleView {
         SpecialDayMessages.PREFIX,
         $"{ChatColors.Red}You were {ChatColors.DarkRed}infected{ChatColors.Red}! You are now a zombie!"

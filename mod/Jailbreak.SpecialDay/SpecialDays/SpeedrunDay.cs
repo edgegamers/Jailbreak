@@ -14,25 +14,16 @@ namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
-  public override SDType Type => SDType.SPEEDRUN;
+  private IGenericCommandNotifications generics;
+  private readonly Random rng = new();
   private CCSPlayerController? speedrunner;
   private Vector? target;
-  private Random rng = new();
-  private IGenericCommandNotifications generics;
+  public override SDType Type => SDType.SPEEDRUN;
 
-  public class SpeedrunSettings : SpecialDaySettings {
-    public SpeedrunSettings() {
-      CtTeleport      = TeleportType.ARMORY_STACKED;
-      TTeleport       = TeleportType.ARMORY_STACKED;
-      RestrictWeapons = true;
-      StripToKnife    = true;
-    }
+  private SpeedrunDayMessages msg => (SpeedrunDayMessages)Messages;
 
-    public override ISet<string>? AllowedWeapons(CCSPlayerController player) {
-      // Return empty set to allow no weapons
-      return new HashSet<string>();
-    }
-  }
+  public override SpecialDaySettings Settings => new SpeedrunSettings();
+  public ISpecialDayInstanceMessages Messages => new SpeedrunDayMessages();
 
   public override void Setup() {
     generics = provider.GetRequiredService<IGenericCommandNotifications>();
@@ -54,8 +45,17 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     speedrunner.SetColor(Color.CornflowerBlue);
   }
 
-  private SpeedrunDayMessages msg => ((SpeedrunDayMessages)Messages);
+  public class SpeedrunSettings : SpecialDaySettings {
+    public SpeedrunSettings() {
+      CtTeleport      = TeleportType.ARMORY_STACKED;
+      TTeleport       = TeleportType.ARMORY_STACKED;
+      RestrictWeapons = true;
+      StripToKnife    = true;
+    }
 
-  public override SpecialDaySettings Settings => new SpeedrunSettings();
-  public ISpecialDayInstanceMessages Messages => new SpeedrunDayMessages();
+    public override ISet<string>? AllowedWeapons(CCSPlayerController player) {
+      // Return empty set to allow no weapons
+      return new HashSet<string>();
+    }
+  }
 }

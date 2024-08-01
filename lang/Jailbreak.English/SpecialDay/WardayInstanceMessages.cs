@@ -1,5 +1,4 @@
 ﻿using Jailbreak.Formatting.Base;
-using Jailbreak.Formatting.Views;
 
 namespace Jailbreak.English.SpecialDay;
 

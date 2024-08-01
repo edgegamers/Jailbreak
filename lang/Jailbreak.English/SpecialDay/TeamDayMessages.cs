@@ -12,28 +12,6 @@ public class TeamDayMessages(string name, params string[] description)
   public string[] Description
     => description.Select(s => s + SimpleView.NEWLINE).ToArray();
 
-  public IView GenerateStartMessage() {
-    if (Description.Length == 0) {
-      return new SimpleView {
-        SpecialDayMessages.PREFIX, "Today is a", Name, "day."
-      };
-    }
-
-    if (Description.Length == 1) {
-      return new SimpleView {
-        { SpecialDayMessages.PREFIX, "Today is a", Name, "day." },
-        SimpleView.NEWLINE,
-        { SpecialDayMessages.PREFIX, Description[0] }
-      };
-    }
-
-    return new SimpleView {
-      { SpecialDayMessages.PREFIX, "Today is a", Name, "day." },
-      SimpleView.NEWLINE,
-      string.Join(SpecialDayMessages.PREFIX.ToChat(), Description)
-    };
-  }
-
   public virtual IView SpecialDayStart => GenerateStartMessage();
 
   IView ISpecialDayInstanceMessages.SpecialDayEnd
@@ -49,6 +27,26 @@ public class TeamDayMessages(string name, params string[] description)
         seconds,
         "seconds."
       };
+  }
+
+  public IView GenerateStartMessage() {
+    if (Description.Length == 0)
+      return new SimpleView {
+        SpecialDayMessages.PREFIX, "Today is a", Name, "day."
+      };
+
+    if (Description.Length == 1)
+      return new SimpleView {
+        { SpecialDayMessages.PREFIX, "Today is a", Name, "day." },
+        SimpleView.NEWLINE,
+        { SpecialDayMessages.PREFIX, Description[0] }
+      };
+
+    return new SimpleView {
+      { SpecialDayMessages.PREFIX, "Today is a", Name, "day." },
+      SimpleView.NEWLINE,
+      string.Join(SpecialDayMessages.PREFIX.ToChat(), Description)
+    };
   }
 
   public virtual IView SpecialDayEnd() {

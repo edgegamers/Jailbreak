@@ -3,7 +3,6 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Base;
-using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Mod.Zones;
 using Jailbreak.Zones;
 using Microsoft.Extensions.DependencyInjection;
