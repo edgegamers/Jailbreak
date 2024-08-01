@@ -50,7 +50,7 @@ public enum ZoneType {
   ZONE_LIMIT_CT,
 
   /// <summary>
-  ///  The center of the map (both vertically and horizontally)
+  ///   The center of the map (both vertically and horizontally)
   /// </summary>
   CENTER
 }

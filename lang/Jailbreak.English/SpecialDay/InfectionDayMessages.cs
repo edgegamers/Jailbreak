@@ -1,18 +1,17 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
-using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Utils;
 
 namespace Jailbreak.English.SpecialDay;
 
 public class InfectionDayMessages() : TeamDayMessages("Infection",
-  "CTs are infected and try to infect Ts!") {
+  "CTs are infected and try to infect Ts!", "CTs can use pistols!") {
   public override IView SpecialDayEnd() {
     var winner = PlayerUtil.GetAlive().FirstOrDefault()?.Team
       ?? CsTeam.Spectator;
     return new SimpleView {
-      ISpecialDayMessages.PREFIX,
+      SpecialDayMessages.PREFIX,
       Name,
       "ended.",
       (winner == CsTeam.CounterTerrorist ? ChatColors.Blue : ChatColors.Red)
@@ -22,13 +21,13 @@ public class InfectionDayMessages() : TeamDayMessages("Infection",
   }
 
   public IView YouWereInfectedMessage(CCSPlayerController? player) {
-    return (player == null || !player.IsValid) ?
+    return player == null || !player.IsValid ?
       new SimpleView {
-        ISpecialDayMessages.PREFIX,
+        SpecialDayMessages.PREFIX,
         $"{ChatColors.Red}You were {ChatColors.DarkRed}infected{ChatColors.Red}! You are now a zombie!"
       } :
       new SimpleView {
-        ISpecialDayMessages.PREFIX,
+        SpecialDayMessages.PREFIX,
         $"{ChatColors.Red}You were {ChatColors.DarkRed}infected{ChatColors.Red} by",
         player,
         "! You are now a zombie!"
@@ -37,7 +36,7 @@ public class InfectionDayMessages() : TeamDayMessages("Infection",
 
   public IView InfectedWarning(CCSPlayerController player) {
     return new SimpleView {
-      ISpecialDayMessages.PREFIX,
+      SpecialDayMessages.PREFIX,
       player,
       $"was {ChatColors.DarkRed}infected{ChatColors.Default}! {ChatColors.Red}Watch out!"
     };

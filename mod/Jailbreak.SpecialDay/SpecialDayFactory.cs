@@ -18,6 +18,7 @@ public class SpecialDayFactory(IServiceProvider provider) : ISpecialDayFactory {
       SDType.NOSCOPE   => new NoScopeDay(plugin, provider),
       SDType.INFECTION => new InfectionDay(plugin, provider),
       SDType.CUSTOM    => new CustomDay(plugin, provider),
+      SDType.SPEEDRUN  => new SpeedrunDay(plugin, provider),
       _                => throw new NotImplementedException()
     };
   }

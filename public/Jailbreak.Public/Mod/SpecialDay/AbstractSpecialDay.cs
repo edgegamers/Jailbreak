@@ -265,7 +265,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       Plugin.RegisterListener<Listeners.OnTick>(OnTick);
   }
 
-  protected virtual void OnTick() {
+  virtual protected void OnTick() {
     foreach (var player in PlayerUtil.GetAlive()) {
       var weapons = Settings.AllowedWeapons(player);
       if (weapons == null) continue;

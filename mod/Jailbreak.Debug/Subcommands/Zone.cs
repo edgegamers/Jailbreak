@@ -146,7 +146,7 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
         if (specifiedType == null) {
           foreach (var type in Enum.GetValues<ZoneType>()) {
             var zones = zoneManager.GetZones(type).GetAwaiter().GetResult();
-            if (!allZones.ContainsKey(type)) { continue; }
+            if (!allZones.ContainsKey(type)) continue;
 
             info.ReplyToCommand($"{type} zones: {zones.Count}");
           }
@@ -157,10 +157,9 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
         var toList = zoneManager.GetZones(specifiedType.Value)
          .GetAwaiter()
          .GetResult();
-        foreach (var listZone in toList) {
+        foreach (var listZone in toList)
           info.ReplyToCommand(
             $"Points: {listZone.GetBorderPoints().Count()}/{listZone.GetAllPoints().Count()}Center: {listZone.CalculateCenterPoint()} Area: {listZone.GetArea()}");
-        }
 
         return;
     }

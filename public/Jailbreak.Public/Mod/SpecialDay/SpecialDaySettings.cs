@@ -45,11 +45,11 @@ public class SpecialDaySettings {
   public TeleportType CtTeleport = TeleportType.NONE;
 
   public bool FreezePlayers = true;
-  public bool RespawnPlayers = true;
   public bool OpenCells = true;
+  public bool RespawnPlayers = true;
 
   /// <summary>
-  /// Used to avoid registring a costly OnTick listener if false
+  ///   Used to avoid registring a costly OnTick listener if false
   /// </summary>
   public bool RestrictWeapons = false;
 
