@@ -115,13 +115,13 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
 
     var nextId = zones.SelectMany(s => s.Value).Max(z => z.Id) + 1;
     zone.Id = nextId;
-    PushZoneWithID(zone, type, map);
+    await PushZoneWithID(zone, type, map);
   }
 
   public async Task UpdateZone(IZone zone, ZoneType type, int id) {
-    DeleteZone(id, Server.MapName);
+    await DeleteZone(id, Server.MapName);
     zone.Id = id;
-    PushZoneWithID(zone, type, Server.MapName);
+    await PushZoneWithID(zone, type, Server.MapName);
   }
 
   public Task<IDictionary<ZoneType, IList<IZone>>> GetAllZones() {
@@ -164,7 +164,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
   }
 
   private void OnMapStart(string mapname) {
-    Server.NextFrameAsync(() => LoadZones(mapname));
+    Server.NextFrameAsync(async () => await LoadZones(mapname));
   }
 
   private MySqlCommand queryAllZones(string map, ZoneType type) {

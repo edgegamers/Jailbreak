@@ -1,7 +1,7 @@
 ﻿using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 
-namespace Jailbreak.Zones;
+namespace Jailbreak.Public.Mod.Zones;
 
 public static class ConvexHullUtil {
   // private readonly IList<Vector> hull;

@@ -27,6 +27,6 @@ public class SpecialDayFactory(IServiceProvider provider) : ISpecialDayFactory {
     try {
       CreateSpecialDay(type);
       return true;
-    } catch (NotImplementedException e) { return false; }
+    } catch (NotImplementedException) { return false; }
   }
 }
