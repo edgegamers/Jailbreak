@@ -9,8 +9,7 @@ public class TeamDayMessages(string name, params string[] description)
   : ISpecialDayInstanceMessages {
   public string Name => name;
 
-  public string[] Description
-    => description.Select(s => s + SimpleView.NEWLINE).ToArray();
+  public string[] Description => description;
 
   public virtual IView SpecialDayStart => GenerateStartMessage();
 
@@ -30,23 +29,21 @@ public class TeamDayMessages(string name, params string[] description)
   }
 
   public IView GenerateStartMessage() {
-    if (Description.Length == 0)
-      return new SimpleView {
-        SpecialDayMessages.PREFIX, "Today is a", Name, "day."
-      };
-
-    if (Description.Length == 1)
-      return new SimpleView {
-        { SpecialDayMessages.PREFIX, "Today is a", Name, "day." },
-        SimpleView.NEWLINE,
-        { SpecialDayMessages.PREFIX, Description[0] }
-      };
-
-    return new SimpleView {
-      { SpecialDayMessages.PREFIX, "Today is a", Name, "day." },
-      SimpleView.NEWLINE,
-      string.Join(SpecialDayMessages.PREFIX.ToChat(), Description)
+    var result = new SimpleView {
+      SpecialDayMessages.PREFIX, { "Today is a", Name, "day!" }
     };
+
+    if (description.Length == 0) return result;
+
+    result.Add(description[0]);
+
+    for (int i = 1; i < description.Length; i++) {
+      result.Add(SimpleView.NEWLINE);
+      result.Add(SpecialDayMessages.PREFIX);
+      result.Add(description[i]);
+    }
+
+    return result;
   }
 
   public virtual IView SpecialDayEnd() {

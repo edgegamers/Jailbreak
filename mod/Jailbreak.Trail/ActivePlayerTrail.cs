@@ -1,4 +1,6 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Draw;
@@ -16,13 +18,19 @@ public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
     float lifetime = 20, int maxPoints = 100, float updateRate = 0.5f) : base(
     plugin, lifetime, maxPoints, updateRate) {
     Player = player;
-    Timer  = plugin.AddTimer(updateRate, Tick);
+    Timer = plugin.AddTimer(updateRate, Tick,
+      TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
   }
 
   virtual protected void Tick() {
     if (!Player.IsValid) Kill();
     var pos = Player.PlayerPawn.Value?.AbsOrigin;
     if (pos == null) return;
+    pos = pos.Clone();
+    var end  = GetEndSegment();
+    var dist = end?.GetStart().DistanceSquared(pos) ?? float.MaxValue;
+    if (dist < 1000) return;
+
     AddTrailPoint(pos);
   }
 

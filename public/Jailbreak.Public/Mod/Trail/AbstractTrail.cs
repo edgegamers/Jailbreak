@@ -26,8 +26,8 @@ public abstract class AbstractTrail<T>(BasePlugin plugin, float lifetime = 20,
 
   IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
-  public T? GetStartSegment() { return Segments.FirstOrDefault(); }
-  public T? GetEndSegment() { return Segments.LastOrDefault(); }
+  public T? GetStartSegment() { return Segments.LastOrDefault(); }
+  public T? GetEndSegment() { return Segments.FirstOrDefault(); }
 
   protected virtual void Cleanup() {
     while (Segments.Count > MaxPoints) {
@@ -97,10 +97,10 @@ public abstract class AbstractTrail<T>(BasePlugin plugin, float lifetime = 20,
   }
 
   public virtual void AddTrailPoint(Vector vector) {
-    vector = vector.Clone();
-    var mostRecent = Segments.FirstOrDefault() ?? CreateSegment(vector, vector);
-    if (mostRecent.GetEnd().Equals(vector)) return;
-    Segments.Insert(0, CreateSegment(mostRecent.GetEnd(), vector));
+    var start = GetEndSegment()?.GetEnd() ?? vector;
+    var end   = vector;
+    var seg   = CreateSegment(start, end);
+    Segments.Insert(0, seg);
     Cleanup();
   }
 
