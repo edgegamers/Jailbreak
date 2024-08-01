@@ -58,6 +58,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
       config.WithRaceLR<RaceLRMessages>();
       config.WithLastGuard<LastGuardNotifications>();
       config.WithSpecialDay<SpecialDayMessages>();
+      config.WithOpenCommand<OpenCommandNotifications>();
     });
   }
 }

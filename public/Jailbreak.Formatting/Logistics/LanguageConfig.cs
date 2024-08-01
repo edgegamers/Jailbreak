@@ -77,4 +77,9 @@ public class LanguageConfig<TDialect> where TDialect : IDialect {
     where TLastGuard : class, ILanguage<TDialect>, ILastGuardNotifications {
     collection.AddSingleton<ILastGuardNotifications, TLastGuard>();
   }
+
+  public void WithOpenCommand<TOpenCommand>()
+    where TOpenCommand : class, ILanguage<TDialect>, IOpenCommandMessages {
+    collection.AddSingleton<IOpenCommandMessages, TOpenCommand>();
+  }
 }
