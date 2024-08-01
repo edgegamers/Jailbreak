@@ -3,7 +3,6 @@ using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Utils;
-using Microsoft.Extensions.Primitives;
 
 namespace Jailbreak.English.SpecialDay;
 

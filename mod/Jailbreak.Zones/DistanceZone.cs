@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using Jailbreak.Public.Extensions;
+﻿using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Zones;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 

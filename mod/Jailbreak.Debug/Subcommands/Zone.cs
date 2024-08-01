@@ -174,7 +174,7 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
       nameof(specifiedType) + " != null");
     switch (info.GetArg(1).ToLower()) {
       case "add":
-        attemptBeginCreation(executor, info, specifiedType.Value);
+        attemptBeginCreation(executor, specifiedType.Value);
         return;
       case "set":
         foreach (var zone in zoneManager.GetZones(specifiedType.Value)
@@ -182,7 +182,7 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
          .GetResult())
           zoneManager.DeleteZone(zone.Id);
 
-        attemptBeginCreation(executor, info, specifiedType.Value);
+        attemptBeginCreation(executor, specifiedType.Value);
         return;
       case "tpto":
       case "tp":
@@ -208,8 +208,8 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
     }
   }
 
-  private void attemptBeginCreation(CCSPlayerController executor,
-    WrappedInfo info, ZoneType type) {
+  private void
+    attemptBeginCreation(CCSPlayerController executor, ZoneType type) {
     if (creators.ContainsKey(executor.SteamID)) {
       executor.PrintToChat("You are already creating a zone");
       return;
@@ -252,7 +252,7 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
           => z.IsInsideZone(player.PlayerPawn.Value!.AbsOrigin!));
         if (zone == null) continue;
         if (result != null) {
-          player.PrintToChat("Multiple zones found.");
+          if (print) player.PrintToChat("Multiple zones found.");
           return null;
         }
 
@@ -261,7 +261,7 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
       }
 
       if (result == null || resultType == null) {
-        player.PrintToChat("No zones found");
+        if (print) player.PrintToChat("No zones found");
         return null;
       }
 
@@ -269,7 +269,7 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
     }
 
     if (!zoneDictionary.TryGetValue(type.Value, out var value)) {
-      player.PrintToChat("No zones found");
+      if (print) player.PrintToChat("No zones found");
       return null;
     }
 
@@ -279,13 +279,13 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
 
     switch (validZones.Count) {
       case 0:
-        player.PrintToChat("No zones found");
+        if (print) player.PrintToChat("No zones found");
         return null;
       case > 1:
-        player.PrintToChat("Multiple zones found.");
+        if (print) player.PrintToChat("Multiple zones found.");
         return null;
       default:
-        return (validZones.First()!, type.Value);
+        return (validZones.First(), type.Value);
     }
   }
 
