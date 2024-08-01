@@ -3,9 +3,9 @@ using Jailbreak.Public.Behaviors;
 
 namespace Jailbreak.Public.Mod.Trail;
 
-public interface ITrailManager : IPluginBehavior {
+public interface ITrailManager<T> : IPluginBehavior where T : ITrailSegment {
   bool AddPlayerTrail(CCSPlayerController player);
   bool HasPlayerTrail(CCSPlayerController player);
   bool RemovePlayerTrail(CCSPlayerController player);
-  AbstractTrail? GetPlayerTrail(CCSPlayerController player);
+  T? GetPlayerTrail(CCSPlayerController player);
 }

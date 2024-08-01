@@ -1,6 +1,7 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
+using Jailbreak.Public.Extensions;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.Public.Mod.Draw;
@@ -14,7 +15,10 @@ public abstract class DrawableShape(BasePlugin plugin, Vector position) {
 
   protected BasePlugin Plugin = plugin;
 
-  protected Vector Position = position; // Represents the origin of the shape
+  public Vector Position {
+    get => position.Clone();
+    protected set => position = value;
+  }
 
   // Note that this can mean different things for different shapes
   protected DateTime StartTime = DateTime.Now;
@@ -33,7 +37,7 @@ public abstract class DrawableShape(BasePlugin plugin, Vector position) {
     KillTimer = Plugin.AddTimer(lifetime, Remove, TimerFlags.STOP_ON_MAPCHANGE);
   }
 
-  public virtual void Move(Vector position) { Position = position; }
+  public virtual void Move(Vector newPosition) { Position = newPosition; }
 
   public abstract void Remove();
 }

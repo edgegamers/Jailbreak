@@ -3,7 +3,7 @@ using Jailbreak.Public.Mod.Trail;
 
 namespace Jailbreak.Trail;
 
-public class TrailManager : ITrailManager {
+public class TrailManager : ITrailManager<BeamTrailSegment> {
   public bool AddPlayerTrail(CCSPlayerController player) {
     throw new NotImplementedException();
   }
@@ -16,7 +16,7 @@ public class TrailManager : ITrailManager {
     throw new NotImplementedException();
   }
 
-  public AbstractTrail? GetPlayerTrail(CCSPlayerController player) {
+  public BeamTrailSegment? GetPlayerTrail(CCSPlayerController player) {
     throw new NotImplementedException();
   }
 }

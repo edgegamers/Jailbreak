@@ -1,7 +1,10 @@
 using System.Drawing;
+using System.Numerics;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
+using Jailbreak.Public.Extensions;
+using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
 namespace Jailbreak.Public.Mod.Draw;
 
@@ -10,6 +13,7 @@ public class BeamLine(BasePlugin plugin, Vector position, Vector end)
   private CEnvBeam? beam;
   private Color color = Color.White;
   private float width = 1f;
+  public Vector End => end.Clone();
 
   public void SetColor(Color _color) { color = _color; }
 
@@ -29,9 +33,9 @@ public class BeamLine(BasePlugin plugin, Vector position, Vector end)
     newBeam.Render     = GetColor();
 
     newBeam.Teleport(Position, new QAngle(), new Vector());
-    newBeam.EndPos.X = end.X;
-    newBeam.EndPos.Y = end.Y;
-    newBeam.EndPos.Z = end.Z;
+    newBeam.EndPos.X = End.X;
+    newBeam.EndPos.Y = End.Y;
+    newBeam.EndPos.Z = End.Z;
     beam             = newBeam;
 
     Utilities.SetStateChanged(newBeam, "CBeam", "m_vecEndPos");

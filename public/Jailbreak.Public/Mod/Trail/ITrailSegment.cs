@@ -19,4 +19,6 @@ public interface ITrailSegment {
   float GetDistance(Vector position) {
     return MathF.Sqrt(GetDistanceSquared(position));
   }
+
+  void Remove();
 }
