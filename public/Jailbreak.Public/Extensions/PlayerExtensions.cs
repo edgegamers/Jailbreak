@@ -128,6 +128,6 @@ public static class PlayerExtensions {
   
   public static CBasePlayerWeapon? GetWeaponBase(this CCSPlayerController player, string designerName) {
     return player.PlayerPawn.Value?.WeaponServices?.MyWeapons.
-      FirstOrDefault(w => w.Value?.DesignerName == designerName)?.Value!;
+      FirstOrDefault(w => w.Value?.DesignerName == designerName)?.Value;
   }
 }

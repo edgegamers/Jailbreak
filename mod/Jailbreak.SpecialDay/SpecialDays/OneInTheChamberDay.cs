@@ -34,7 +34,8 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
       player.RemoveWeapons();
       player.GiveNamedItem("weapon_knife");
       player.GiveNamedItem(CsItem.Deagle);
-      player.GetWeaponBase("weapon_deagle").SetAmmo(1, 0);
+      player.GetWeaponBase("weapon_deagle")?.SetAmmo(1, 0);
+      
     }
     base.Execute();
   }
@@ -51,7 +52,7 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
 
   private HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info) {
     if (@event.Attacker == null) return HookResult.Continue;
-    @event.Attacker.GetWeaponBase("weapon_deagle").AddBulletsToMagazine(1);
+    @event.Attacker.GetWeaponBase("weapon_deagle")?.AddBulletsToMagazine(1);
     return HookResult.Continue;
   }
 
