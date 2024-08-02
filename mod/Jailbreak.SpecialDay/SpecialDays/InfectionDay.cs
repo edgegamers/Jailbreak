@@ -25,7 +25,13 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
   public ISpecialDayInstanceMessages Messages => new InfectionDayMessages();
 
   public override void Setup() {
-    Timers[15] += () => Messages.BeginsIn(15).ToAllChat();
+    Timers[15] += () => {
+      Messages.BeginsIn(15).ToAllChat();
+      msg.DamageWarning(5).ToAllChat();
+    };
+    Timers[20] += () => {
+      foreach (var t in PlayerUtil.FromTeam(CsTeam.Terrorist)) EnableDamage(t);
+    };
     Timers[30] += Execute;
     base.Setup();
 
@@ -138,11 +144,11 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     public override float FreezeTime(CCSPlayerController player) {
-      return player.Team == CsTeam.CounterTerrorist ? 5 : 2;
+      return player.Team == CsTeam.CounterTerrorist ? 6 : 2;
     }
 
     public override int InitialHealth(CCSPlayerController player) {
-      return player.Team == CsTeam.Terrorist ? 50 : 200;
+      return player.Team == CsTeam.Terrorist ? 75 : 200;
     }
   }
 }

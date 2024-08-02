@@ -7,7 +7,7 @@ namespace Jailbreak.English.SpecialDay;
 
 public class InfectionDayMessages() : TeamDayMessages("Infection",
   "CTs are infected and try to infect Ts!",
-  "Ts can scavenge for guns, but CTs can only use pistols!") {
+  "Ts can scavenge for any guns, but CTs can only use pistols!") {
   public override IView SpecialDayEnd() {
     var winner = PlayerUtil.GetAlive().FirstOrDefault()?.Team
       ?? CsTeam.Spectator;
@@ -40,6 +40,17 @@ public class InfectionDayMessages() : TeamDayMessages("Infection",
       SpecialDayMessages.PREFIX,
       player,
       $"was {ChatColors.DarkRed}infected{ChatColors.Default}! {ChatColors.Red}Watch out!"
+    };
+  }
+
+  public IView DamageWarning(int seconds) {
+    return new SimpleView {
+      SpecialDayMessages.PREFIX,
+      "Damage will be enabled for the",
+      CsTeam.Terrorist,
+      "team in",
+      seconds,
+      "seconds."
     };
   }
 }
