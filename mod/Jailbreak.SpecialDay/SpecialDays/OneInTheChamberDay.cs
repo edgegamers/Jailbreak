@@ -68,6 +68,7 @@ public class OitcSettings : SpecialDaySettings {
     CtTeleport      = TeleportType.ARMORY;
     TTeleport       = TeleportType.ARMORY;
     RestrictWeapons = true;
+    WithFriendlyFire();
 
     ConVarValues["mp_death_drop_gun"] = 0;
   }
