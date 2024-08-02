@@ -127,7 +127,7 @@ public static class WeaponExtensions {
         return "UNKNOWN: Please Contact Tech";
     }
   }
-  public static void AddBulletsToMagazine(this CBasePlayerWeapon weapon, 
+  public static void AddBulletsToMagazine(this CBasePlayerWeapon? weapon, 
     int bullets) {
     if (weapon.Clip1 + bullets > weapon.VData!.MaxClip1) {
       int overflowBullets = (weapon.Clip1 + bullets) - weapon.VData!.MaxClip1;
@@ -139,7 +139,7 @@ public static class WeaponExtensions {
     Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_pReserveAmmo");
   }
 
-  public static void SetAmmo(this CBasePlayerWeapon weapon, int clip,
+  public static void SetAmmo(this CBasePlayerWeapon? weapon, int clip,
     int reserve) {
     weapon.Clip1          = clip;
     weapon.ReserveAmmo[0] = reserve;

@@ -18,8 +18,8 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
   
   public override ISpecialDayInstanceMessages Messages
     => new SoloDayMessages("One In The Chamber",
-      "You only have one bullet. Kill someone else to get another bullet. "
-      + "No camping!");
+      "You only have one bullet.", " Kill someone else to get another bullet.",
+      "No camping!");
 
   public override SpecialDaySettings Settings => new OitcSettings();
   
@@ -46,18 +46,22 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
   private HookResult OnPlayerDamage(EventPlayerHurt @event, GameEventInfo info) 
   {
     var  player     = @event.Userid!;
-    bool usedDeagle = @event.Weapon.Contains("deagle");
+    bool usedDeagle = @event.Weapon == "weapon_deagle";
     if (!player.IsValid || !usedDeagle) return HookResult.Continue;
     
-    player.PlayerPawn.Value!.Health = 0;
-    Utilities.SetStateChanged(player.PlayerPawn.Value, 
-      "CBaseEntity", "m_iHealth");
+    player.SetHealth(0);
     return HookResult.Changed;
   }
 
   private HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info) {
     if (@event.Attacker == null) return HookResult.Continue;
     @event.Attacker.GetWeaponBase("weapon_deagle").AddBulletsToMagazine(1);
+    return HookResult.Continue;
+  }
+
+  public override HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
+    plugin.DeregisterEventHandler<EventPlayerHurt>(OnPlayerDamage);
+    plugin.DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
     return HookResult.Continue;
   }
 }
