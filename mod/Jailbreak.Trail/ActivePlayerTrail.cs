@@ -15,8 +15,7 @@ public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
   protected readonly Timer Timer;
 
   public ActivePlayerTrail(BasePlugin plugin, CCSPlayerController player,
-    float lifetime = 20, int maxPoints = 100, float updateRate = 0.5f) : base(
-    plugin, lifetime, maxPoints, updateRate) {
+    float lifetime = 20, int maxPoints = 100, float updateRate = 0.5f) : base(lifetime, maxPoints) {
     Player = player;
     Timer = plugin.AddTimer(updateRate, Tick,
       TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
@@ -29,7 +28,11 @@ public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
     pos = pos.Clone();
     var end  = GetEndSegment();
     var dist = end?.GetStart().DistanceSquared(pos) ?? float.MaxValue;
-    if (dist < 1000) return;
+    if (dist < 1000) {
+      // Still want to remove old segments
+      Cleanup();
+      return;
+    }
 
     AddTrailPoint(pos);
   }

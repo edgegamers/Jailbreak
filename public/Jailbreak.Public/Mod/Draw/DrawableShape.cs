@@ -14,10 +14,11 @@ public abstract class DrawableShape(BasePlugin plugin, Vector position) {
     KillTimer; // Internal timer used to remove the shape after a certain amount of time
 
   protected BasePlugin Plugin = plugin;
+  private Vector position = position.Clone();
 
   public Vector Position {
     get => position.Clone();
-    protected set => position = value;
+    protected set => position = value.Clone();
   }
 
   // Note that this can mean different things for different shapes

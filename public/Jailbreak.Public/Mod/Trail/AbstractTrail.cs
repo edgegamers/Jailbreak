@@ -1,16 +1,13 @@
 using System.Collections;
-using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.Public.Mod.Trail;
 
-public abstract class AbstractTrail<T>(BasePlugin plugin, float lifetime = 20,
-  int maxPoints = 100, float updateRate = 0.5f)
+public abstract class AbstractTrail<T>(float lifetime = 20, int maxPoints = 100)
   : IEnumerable<T> where T : ITrailSegment {
   // Ordered from newest to oldest (0 is the newest)
   protected readonly IList<T> Segments = new List<T>();
-  protected BasePlugin Plugin => plugin;
 
   public virtual float Lifetime {
     get => lifetime;
@@ -105,4 +102,10 @@ public abstract class AbstractTrail<T>(BasePlugin plugin, float lifetime = 20,
   }
 
   public abstract T CreateSegment(Vector start, Vector end);
+
+  public virtual void Kill() {
+    foreach (var segment in Segments) { segment.Remove(); }
+
+    Segments.Clear();
+  }
 }
