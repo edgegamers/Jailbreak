@@ -9,23 +9,25 @@ namespace Jailbreak.LastRequest;
 
 public class LastRequestFactory(ILastRequestManager manager,
   IServiceProvider services) : ILastRequestFactory {
-  private BasePlugin? plugin;
+  private BasePlugin plugin = null!;
 
   public void Start(BasePlugin basePlugin) { plugin = basePlugin; }
 
   public AbstractLastRequest CreateLastRequest(CCSPlayerController prisoner,
     CCSPlayerController guard, LRType type) {
     return type switch {
-      LRType.KNIFE_FIGHT => new KnifeFight(plugin!, manager, prisoner, guard),
-      LRType.GUN_TOSS    => new GunToss(plugin!, manager, prisoner, guard),
-      LRType.NO_SCOPE    => new NoScope(plugin!, manager, prisoner, guard),
-      LRType.SHOT_FOR_SHOT => new ShotForShot(plugin!, manager, prisoner, guard),
-      LRType.ROCK_PAPER_SCISSORS => new RockPaperScissors(plugin!, manager,
+      LRType.KNIFE_FIGHT => new KnifeFight(plugin, manager, prisoner, guard),
+      LRType.GUN_TOSS    => new GunToss(plugin, manager, prisoner, guard),
+      LRType.NO_SCOPE    => new NoScope(plugin, manager, prisoner, guard),
+      LRType.SHOT_FOR_SHOT => new BulletForBullet(plugin, manager, prisoner,
+        guard, false),
+      LRType.ROCK_PAPER_SCISSORS => new RockPaperScissors(plugin, manager,
         prisoner, guard),
-      LRType.COINFLIP => new Coinflip(plugin!, manager, prisoner, guard),
-      LRType.RACE => new Race(plugin!, manager, prisoner, guard,
+      LRType.COINFLIP => new Coinflip(plugin, manager, prisoner, guard),
+      LRType.RACE => new Race(plugin, manager, prisoner, guard,
         services.GetRequiredService<IRaceLRMessages>()),
-      LRType.MAG_FOR_MAG => new MagForMag(plugin!, manager, prisoner, guard),
+      LRType.MAG_FOR_MAG => new BulletForBullet(plugin, manager, prisoner,
+        guard, true),
       _ => throw new ArgumentException("Invalid last request type: " + type,
         nameof(type))
     };

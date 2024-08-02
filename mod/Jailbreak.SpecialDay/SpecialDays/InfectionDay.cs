@@ -16,7 +16,7 @@ namespace Jailbreak.SpecialDay.SpecialDays;
 public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
   : ArmoryRestrictedDay(plugin, provider, CsTeam.CounterTerrorist),
     ISpecialDayMessageProvider {
-  private readonly ICollection<uint> swappedPrisoners = new HashSet<uint>();
+  private readonly ICollection<int> swappedPrisoners = new HashSet<int>();
   public override SDType Type => SDType.INFECTION;
 
   public override SpecialDaySettings Settings => new InfectionSettings();
@@ -25,7 +25,13 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
   public ISpecialDayInstanceMessages Messages => new InfectionDayMessages();
 
   public override void Setup() {
-    Timers[15] += () => Messages.BeginsIn(15).ToAllChat();
+    Timers[15] += () => {
+      Messages.BeginsIn(15).ToAllChat();
+      msg.DamageWarning(5).ToAllChat();
+    };
+    Timers[20] += () => {
+      foreach (var t in PlayerUtil.FromTeam(CsTeam.Terrorist)) EnableDamage(t);
+    };
     Timers[30] += Execute;
     base.Setup();
 
@@ -34,14 +40,6 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
 
     plugin.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
     plugin.RegisterEventHandler<EventPlayerSpawn>(OnRespawn);
-
-    plugin.AddCommandListener("jointeam", onJoinTeam);
-  }
-
-  private HookResult onJoinTeam(CCSPlayerController? player,
-    CommandInfo commandinfo) {
-    if (player == null) return HookResult.Continue;
-    return HookResult.Handled;
   }
 
   private HookResult
@@ -76,7 +74,7 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
       target.PlayerPawn.Value!.AbsOrigin!.Clone() :
       pos;
 
-    swappedPrisoners.Add(player.Index);
+    swappedPrisoners.Add(player.Slot);
     if (!player.IsValid) return HookResult.Continue;
 
     msg.YouWereInfectedMessage(
@@ -109,7 +107,7 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
     var hp = Settings.InitialHealth(player);
     if (hp != -1) plugin.AddTimer(0.1f, () => { player.SetHealth(hp); });
 
-    var color = swappedPrisoners.Contains(player.Index) ?
+    var color = swappedPrisoners.Contains(player.Slot) ?
       Color.DarkOliveGreen :
       Color.ForestGreen;
     player.SetColor(color);
@@ -118,15 +116,15 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
 
   public override HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
     var result = base.OnEnd(@event, info);
+    plugin.DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
+    plugin.DeregisterEventHandler<EventPlayerSpawn>(OnRespawn);
+
     foreach (var index in swappedPrisoners) {
-      var player = Utilities.GetPlayerFromIndex((int)index);
+      var player = Utilities.GetPlayerFromSlot(index);
       if (player == null) continue;
       player.SwitchTeam(CsTeam.Terrorist);
     }
 
-    plugin.DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
-    plugin.DeregisterEventHandler<EventPlayerSpawn>(OnRespawn);
-    plugin.RemoveCommandListener("jointeam", onJoinTeam, HookMode.Pre);
     return result;
   }
 
@@ -146,11 +144,11 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     public override float FreezeTime(CCSPlayerController player) {
-      return player.Team == CsTeam.CounterTerrorist ? 5 : 2;
+      return player.Team == CsTeam.CounterTerrorist ? 6 : 2;
     }
 
     public override int InitialHealth(CCSPlayerController player) {
-      return player.Team == CsTeam.Terrorist ? 50 : 200;
+      return player.Team == CsTeam.Terrorist ? 75 : 200;
     }
   }
 }
