@@ -42,6 +42,12 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       }
 
       previousConvarValues[entry.Key] = GetConvarValue(cv);
+
+      if (entry is { Key: "mp_teammates_are_enemies", Value: true }) {
+        Timers[1f] += () => SetConvarValue(cv, true);
+        continue;
+      }
+
       SetConvarValue(cv, entry.Value);
     }
 
@@ -217,6 +223,8 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   protected void SetConvarValue(ConVar? cvar, object value) {
     if (cvar == null) return;
     try {
+      cvar.Flags |= ConVarFlags.FCVAR_REPLICATED | ConVarFlags.FCVAR_NOTIFY
+        | ConVarFlags.FCVAR_PER_USER;
       switch (cvar.Type) {
         case ConVarType.Bool:
           cvar.SetValue((bool)value);

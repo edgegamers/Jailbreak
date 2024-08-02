@@ -1,11 +1,13 @@
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
 
 namespace Jailbreak.English.SpecialDay;
 
 public class SpeedrunDayMessages() : SoloDayMessages("Speedrunners",
-  "Follow the blue player!", "They will run to a spot on the map.",
-  "Each round, the slowest players to reach the target will be eliminated.") {
+  $"Follow the {ChatColors.Blue}blue{ChatColors.Default} player!",
+  "They will run to a spot on the map.",
+  $"Each round, the {ChatColors.Red}slowest players{ChatColors.Default} to reach the target will be eliminated.") {
   public IView RoundEnded
     => new SimpleView {
       SpecialDayMessages.PREFIX, "Round over! The next one will start shortly."
@@ -69,22 +71,55 @@ public class SpeedrunDayMessages() : SoloDayMessages("Speedrunners",
     };
   }
 
-  public IView
-    PlayerTime(CCSPlayerController player, int position, float time) {
+  public IView PlayerTime(CCSPlayerController player, int position,
+    float time) {
+    var place = position switch {
+      1 => ChatColors.Green + "FIRST",
+      2 => ChatColors.LightYellow + "Second",
+      3 => ChatColors.BlueGrey + "3rd",
+      _ => ChatColors.Grey + position + "th"
+    };
+    if (time < 0)
+      return new SimpleView {
+        SpecialDayMessages.PREFIX,
+        player,
+        "finished in",
+        -time,
+        "seconds.",
+        place,
+        "place" + (position == 1 ? "!" : ".")
+      };
+
     return new SimpleView {
       SpecialDayMessages.PREFIX,
       player,
-      "finished in",
+      "was",
       time,
-      "seconds,",
-      position,
-      "place!"
+      "units away from the goal,",
+      place,
+      "place."
     };
   }
 
   public IView PlayerEliminated(CCSPlayerController player) {
     return new SimpleView {
       SpecialDayMessages.PREFIX, player, "was eliminated!"
+    };
+  }
+
+  public IView PlayerWon(CCSPlayerController player) {
+    return new SimpleView {
+      SpecialDayMessages.PREFIX, player, "won the game!"
+    };
+  }
+
+  public IView BestTime(CCSPlayerController player, float time) {
+    return new SimpleView {
+      SpecialDayMessages.PREFIX,
+      player,
+      "beat the best time with",
+      time,
+      $"seconds! {ChatColors.Green}FIRST PLACE{ChatColors.Default}!"
     };
   }
 }

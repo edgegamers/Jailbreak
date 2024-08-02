@@ -42,7 +42,7 @@ public class SpecialDayCommand(IWardenService warden,
     CommandInfo info) {
     if (executor != null
       && !AdminManager.PlayerHasPermissions(executor, "@css/rcon")) {
-      if (!warden.IsWarden(executor)) {
+      if (!warden.IsWarden(executor) || RoundUtil.IsWarmup()) {
         wardenMsg.NotWarden.ToPlayerChat(executor);
         return;
       }
