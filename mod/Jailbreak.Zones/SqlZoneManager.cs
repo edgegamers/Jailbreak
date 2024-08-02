@@ -140,8 +140,6 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
   private void OnMapEnd() { zones.Clear(); }
 
   private async Task createTable() {
-    Server.PrintToConsole("Creating table for zones with auth: "
-      + CvSqlConnectionString.Value);
     var conn = createConnection();
     if (conn == null) return;
     await conn.OpenAsync();

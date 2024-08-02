@@ -269,12 +269,42 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     var playersDiedMidRound = playersAliveAtStart - aliveCount;
     var toEliminate         = getEliminations(aliveCount) - playersDiedMidRound;
 
+    var ctMade = PlayerUtil.FromTeam(CsTeam.CounterTerrorist).Count() < 4;
+    var tMade  = PlayerUtil.FromTeam(CsTeam.Terrorist).Count() < 4;
+
     foreach (var player in PlayerUtil.GetAlive()) {
-      if (finishTimestamps.ContainsKey(player.Slot)) continue;
+      if (finishTimestamps.ContainsKey(player.Slot)) {
+        if (player.Team == CsTeam.CounterTerrorist) ctMade = true;
+        if (player.Team == CsTeam.Terrorist) tMade         = true;
+      }
+
       var dist = player.PlayerPawn.Value?.AbsOrigin?.Distance(target);
       if (dist == null) continue;
       finishTimestamps[player.Slot] = dist.Value;
     }
+
+    if (aliveCount > 1)
+      if (ctMade != tMade && round == 1) {
+        var random = PlayerUtil.GetRandomFromTeam(rng.Next(2) == 0 ?
+          CsTeam.CounterTerrorist :
+          CsTeam.Terrorist);
+
+        if (random != null && activeTrails.TryGetValue(random.Slot,
+          out var randomTrail)) {
+          msg.ImpossibleLocation(
+            ctMade ? CsTeam.Terrorist : CsTeam.CounterTerrorist, random);
+
+          bestTrail?.Kill();
+          randomTrail.StopTracking();
+          // bestTrail = BeamTrail.FromTrail(plugin, activeTrails[bestPlayer]);
+          bestTrail = PulsatingBeamTrail.FromTrail(plugin, randomTrail,
+            pulseRate: 0.05f, pulseMin: 0.5f, pulseMax: 1.5f);
+          target = bestTrail!.GetEndSegment()!.GetEnd();
+        }
+
+        toEliminate = 2;
+        round--;
+      }
 
     announceTimes();
     var slowTimes     = SlowestTimes(finishTimestamps);
@@ -346,6 +376,29 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     nextRoundTime = (int)Math.Clamp(nextRoundTime, 5, roundTimeWas);
     var slowestEnumerator = SlowestTimes(finishTimestamps).GetEnumerator();
 
+    if (ctMade != tMade && round == 0) {
+      bool killedCt = false, killedT = false;
+      while (slowestEnumerator.MoveNext()) {
+        var (slot, _) = slowestEnumerator.Current;
+        var player = Utilities.GetPlayerFromSlot(slot);
+        if (player == null || !player.IsValid) continue;
+        switch (player.Team) {
+          case CsTeam.CounterTerrorist when !killedCt:
+            killedCt = true;
+            eliminatePlayer(player);
+            toEliminate--;
+            break;
+          case CsTeam.Terrorist when !killedT:
+            killedT = true;
+            eliminatePlayer(player);
+            toEliminate--;
+            break;
+        }
+
+        if (killedCt && killedT) break;
+      }
+    }
+
     for (var i = 0; i < toEliminate; i++) {
       if (!slowestEnumerator.MoveNext()) break;
       var (slot, _) = slowestEnumerator.Current;
@@ -362,6 +415,11 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       TimerFlags.STOP_ON_MAPCHANGE);
   }
 
+  private void eliminatePlayer(CCSPlayerController player) {
+    EnableDamage(player);
+    player.CommitSuicide(false, true);
+    msg.PlayerEliminated(player).ToAllChat();
+  }
 
   private int getEliminations(int players) {
     return players switch {

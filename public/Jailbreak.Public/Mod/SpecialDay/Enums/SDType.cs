@@ -4,16 +4,17 @@ public enum SDType {
   CUSTOM,
   FFA,
   GUNGAME,
+  GHOST,
   HNS,
+  INFECTION,
   NOSCOPE,
   OITC,
   PACMAN,
   SNAKE,
   SPEEDRUN,
   TAG,
-  WARDAY,
   TELEPORT,
-  INFECTION
+  WARDAY
 }
 
 public static class SDTypeExtensions {

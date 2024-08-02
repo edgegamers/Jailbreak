@@ -1,5 +1,6 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
+using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.SpecialDay.SpecialDays;
@@ -17,7 +18,12 @@ public class SpecialDayMenuSelector {
     Func<SDType, string> command, BasePlugin plugin) {
     this.command = command;
     menu         = new CenterHtmlMenu("css_sd [SD]", plugin);
-    foreach (SDType sd in Enum.GetValues(typeof(SDType))) {
+    var types = Enum.GetValues(typeof(SDType));
+    // Randomize the order of the special days
+    var randomized = types.Cast<SDType>().ToList();
+    randomized.Shuffle();
+
+    foreach (var sd in randomized) {
       if (!factory.IsValidType(sd)) continue;
       var inst = factory.CreateSpecialDay(sd);
       var name = inst.Type.ToString();

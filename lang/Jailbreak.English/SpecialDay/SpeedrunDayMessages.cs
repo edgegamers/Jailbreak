@@ -135,4 +135,17 @@ public class SpeedrunDayMessages() : SoloDayMessages("Speedrunners",
       $"seconds! {ChatColors.Green}FIRST PLACE{ChatColors.Default}!"
     };
   }
+
+  public IView ImpossibleLocation(CsTeam team, CCSPlayerController player) {
+    return new SimpleView {
+      {
+        SpecialDayMessages.PREFIX, "No one on", team,
+        "reached the goal. Eliminating one player on each time."
+      },
+      SimpleView.NEWLINE, {
+        SpecialDayMessages.PREFIX, "Randomly selected the path from ", player,
+        "."
+      }
+    };
+  }
 }
