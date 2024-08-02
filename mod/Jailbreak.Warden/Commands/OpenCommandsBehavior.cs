@@ -2,6 +2,8 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Cvars;
+using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
@@ -12,6 +14,11 @@ namespace Jailbreak.Warden.Commands;
 
 public class OpenCommandsBehavior(IWardenService warden,
   IWardenNotifications msg, IOpenCommandMessages openMsg) : IPluginBehavior {
+  public static readonly FakeConVar<int> CvOpenCommandCooldown = new(
+    "css_jb_warden_open_cooldown",
+    "Minimum seconds warden must wait before being able to open the cells.", 30,
+    customValidators: new RangeValidator<int>(0, 300));
+
   [ConsoleCommand("css_open", "Opens the cell doors")]
   [ConsoleCommand("css_o", "Opens the cell doors")]
   public void Command_Open(CCSPlayerController? executor, CommandInfo info) {
@@ -22,7 +29,12 @@ public class OpenCommandsBehavior(IWardenService warden,
         return;
       }
 
+    if (RoundUtil.GetTimeElapsed() < CvOpenCommandCooldown.Value) {
+      openMsg.CannotOpenYet(CvOpenCommandCooldown.Value);
+      return;
+    }
+
     var result = MapUtil.OpenCells();
-    // openMsg.OpenedCells()
+    openMsg.OpenResult(result).ToAllChat();
   }
 }
