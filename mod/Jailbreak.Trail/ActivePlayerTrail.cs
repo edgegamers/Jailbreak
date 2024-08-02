@@ -38,7 +38,7 @@ public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
     AddTrailPoint(pos);
   }
 
-  public void StopTracking() { Timer.Kill(); }
+  public virtual void StopTracking() { Timer.Kill(); }
 
   public override void Kill() {
     foreach (var segment in Segments) { segment.Remove(); }

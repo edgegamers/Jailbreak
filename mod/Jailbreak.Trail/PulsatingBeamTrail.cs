@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Drawing;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -17,7 +18,7 @@ public class PulsatingBeamTrail : AbstractTrail<BeamTrailSegment> {
 
   public PulsatingBeamTrail(BasePlugin plugin, float lifetime = 20,
     int maxPoints = 100, float updateRate = 0.25f, float pulseRate = 0.5f,
-    float pulseMin = 0.5f, float pulseMax = 1.5f,
+    float pulseMin = 0.5f, float pulseMax = 2.5f,
     Func<float, float>? transform = null) : base(lifetime, maxPoints) {
     this.plugin    = plugin;
     this.pulseRate = pulseRate;
@@ -30,13 +31,17 @@ public class PulsatingBeamTrail : AbstractTrail<BeamTrailSegment> {
   }
 
   protected void Update() {
-    foreach (var segment in Segments) {
-      var line = segment.GetLine();
-      var x = transform.Invoke((Server.CurrentTime - segment.GetSpawnTime())
-        * pulseRate);
-      var width = MathF.Abs(pulseMin + (pulseMax - pulseMin) * (x + 1) / 2);
+    var i = 0;
+    foreach (var segment in Segments.Reverse()) {
+      var line  = segment.GetLine();
+      var width = MathF.Sin(-Server.CurrentTime * 2.5f + i * 1.5f) * 5f - 2.5f;
+      if (width < 0)
+        line.SetColor(Color.FromArgb(0, 0, 0, 0));
+      else
+        line.SetColor(Color.FromArgb(128, 255, 255, 255));
       line.SetWidth(width);
       line.Update();
+      i += 1;
     }
   }
 

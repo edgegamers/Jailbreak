@@ -23,8 +23,8 @@ public abstract class AbstractTrail<T>(float lifetime = 20, int maxPoints = 100)
 
   IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
-  public T? GetStartSegment() { return Segments.LastOrDefault(); }
-  public T? GetEndSegment() { return Segments.FirstOrDefault(); }
+  public virtual T? GetStartSegment() { return Segments.LastOrDefault(); }
+  public virtual T? GetEndSegment() { return Segments.FirstOrDefault(); }
 
   virtual protected void Cleanup() {
     while (Segments.Count > MaxPoints) {
@@ -55,13 +55,13 @@ public abstract class AbstractTrail<T>(float lifetime = 20, int maxPoints = 100)
     return result;
   }
 
-  public IList<Vector> GetTrailPoints(int max) {
+  public virtual IList<Vector> GetTrailPoints(int max) {
     return GetTrailPoints(Lifetime, max);
   }
 
   public IList<Vector> GetTrailPoints() { return GetTrailPoints(Lifetime); }
 
-  public T? GetNearestSegment(Vector position, float since, int max = 0) {
+  public virtual T? GetNearestSegment(Vector position, float since, int max = 0) {
     var nearest     = default(T);
     var minDistance = double.MaxValue;
     foreach (var segment in GetTrail(since, max)) {
@@ -74,7 +74,7 @@ public abstract class AbstractTrail<T>(float lifetime = 20, int maxPoints = 100)
     return nearest;
   }
 
-  public float GetTrailLength(float since, int max = 0) {
+  public virtual float GetTrailLength(float since, int max = 0) {
     return MathF.Sqrt(GetTrailLengthSquared(since, max));
   }
 

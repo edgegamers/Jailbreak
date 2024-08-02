@@ -92,7 +92,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       // bestTrail = new ActiveBeamPlayerTrail(plugin, speedrunner, 0f,
       //   updateRate: 0.15f, maxPoints: MAX_POINTS);
       bestTrail = new ActivePulsatingBeamPlayerTrail(plugin, speedrunner, 0f,
-        MAX_POINTS);
+        MAX_POINTS, updateRate: 0.15f);
     };
 
     Timers[FIRST_SPEEDRUNNER_TIME + FIRST_ROUND_FREEZE - 30] += ()
@@ -110,7 +110,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         return;
       }
 
-      if (bestTrail is ActiveBeamPlayerTrail active) active.StopTracking();
+      if (bestTrail is ActivePlayerTrail<BeamTrailSegment> active)
+        active.StopTracking();
 
       var timeSpent = bestTrail.GetEndSegment()!.GetSpawnTime()
         - bestTrail.GetStartSegment()!.GetSpawnTime();
@@ -220,7 +221,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
           activeTrails[bestPlayer].StopTracking();
           // bestTrail = BeamTrail.FromTrail(plugin, activeTrails[bestPlayer]);
           bestTrail = PulsatingBeamTrail.FromTrail(plugin,
-            activeTrails[bestPlayer], pulseRate: 0.5f, pulseMin: 0.5f,
+            activeTrails[bestPlayer], pulseRate: 0.05f, pulseMin: 0.5f,
             pulseMax: 1.5f);
         }
       }

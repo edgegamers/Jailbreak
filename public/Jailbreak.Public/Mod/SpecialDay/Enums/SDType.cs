@@ -37,6 +37,11 @@ public static class SDTypeExtensions {
       case "zomb":
       case "zombie":
         return SDType.INFECTION;
+      case "speed":
+      case "speedrun":
+      case "speeders":
+      case "speedrunners":
+        return SDType.SPEEDRUN;
     }
 
     return null;
