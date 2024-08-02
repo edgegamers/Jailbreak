@@ -24,11 +24,6 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
   public override SpecialDaySettings Settings => new OitcSettings();
   
   public override void Setup() {
-    Timers[120] += () => {
-      foreach (var player in PlayerUtil.GetAlive()) {
-        player.GiveNamedItem("weapon_knife");
-      }
-    };
     plugin.RegisterEventHandler<EventPlayerHurt>(OnPlayerDamage);
     plugin.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
     base.Setup();
@@ -37,6 +32,7 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
   public override void Execute() {
     foreach (var player in PlayerUtil.GetAlive()) {
       player.RemoveWeapons();
+      player.GiveNamedItem("weapon_knife");
       player.GiveNamedItem(CsItem.Deagle);
       player.GetWeaponBase("weapon_deagle").SetAmmo(1, 0);
     }
