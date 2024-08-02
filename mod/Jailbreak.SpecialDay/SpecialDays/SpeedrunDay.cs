@@ -289,7 +289,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       finishCheckTimer?.Kill();
 
       var loser = PlayerUtil.GetAlive()
-       .FirstOrDefault(p => p.Slot != winner.Slot);
+       .FirstOrDefault(p => p.IsValid && p.Slot != winner.Slot);
 
       msg.PlayerWon(winner).ToAllChat();
       if (loser == null || !loser.IsValid) {

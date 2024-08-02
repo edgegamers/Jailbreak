@@ -12,6 +12,7 @@ public enum SDType {
   SPEEDRUN,
   TAG,
   WARDAY,
+  TELEPORT,
   INFECTION
 }
 
@@ -19,31 +20,17 @@ public static class SDTypeExtensions {
   public static SDType? FromString(string type) {
     if (Enum.TryParse<SDType>(type, true, out var result)) return result;
     type = type.ToLower().Replace(" ", "");
-    switch (type) {
-      case "freeforall":
-        return SDType.FFA;
-      case "hide":
-      case "hideseek":
-      case "seek":
-        return SDType.HNS;
-      case "ns":
-        return SDType.NOSCOPE;
-      case "war":
-        return SDType.WARDAY;
-      case "tron":
-        return SDType.SNAKE;
-      case "gun":
-        return SDType.GUNGAME;
-      case "zomb":
-      case "zombie":
-        return SDType.INFECTION;
-      case "speed":
-      case "speedrun":
-      case "speeders":
-      case "speedrunners":
-        return SDType.SPEEDRUN;
-    }
-
-    return null;
+    return type switch {
+      "freeforall"                                          => SDType.FFA,
+      "hide" or "hideseek" or "seek"                        => SDType.HNS,
+      "ns"                                                  => SDType.NOSCOPE,
+      "war"                                                 => SDType.WARDAY,
+      "tron"                                                => SDType.SNAKE,
+      "gun"                                                 => SDType.GUNGAME,
+      "zomb" or "zombie"                                    => SDType.INFECTION,
+      "speed" or "speedrun" or "speeders" or "speedrunners" => SDType.SPEEDRUN,
+      "tp"                                                  => SDType.TELEPORT,
+      _                                                     => null
+    };
   }
 }
