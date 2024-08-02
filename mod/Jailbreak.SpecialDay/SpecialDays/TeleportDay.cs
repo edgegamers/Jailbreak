@@ -2,6 +2,7 @@ using CounterStrikeSharp.API.Core;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 
@@ -32,8 +33,10 @@ public class TeleportDay(BasePlugin plugin, IServiceProvider provider)
 
     if (playerLoc == null || attackerLoc == null) return HookResult.Continue;
 
+    var tmp = playerLoc.Clone();
+
     player.Pawn.Value?.Teleport(attackerLoc);
-    attacker.Pawn.Value?.Teleport(playerLoc);
+    attacker.Pawn.Value?.Teleport(tmp);
     return HookResult.Continue;
   }
 
