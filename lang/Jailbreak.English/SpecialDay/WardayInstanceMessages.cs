@@ -3,7 +3,8 @@
 namespace Jailbreak.English.SpecialDay;
 
 public class WardayInstanceMessages() : TeamDayMessages("Warday",
-  "CTs vs Ts! CTs pick a room, Ts must go fight them!") {
+  "CTs vs Ts! CTs pick a room, Ts must go fight them!",
+  "CTs MUST stay in the same room until expansion time.") {
   public IView ExpandNow
     => new SimpleView { { SpecialDayMessages.PREFIX, "CTs can expand now!" } };
 

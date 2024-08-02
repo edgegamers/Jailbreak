@@ -17,7 +17,7 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
 
   public override ISpecialDayInstanceMessages Messages
     => new SoloDayMessages("One In The Chamber", "You only have one bullet.",
-      "Kill someone else to get another bullet.", "No camping!");
+      "Kill someone to get another bullet.", "One-Hit-Kills! No camping!");
 
   public override SpecialDaySettings Settings => new OitcSettings();
 

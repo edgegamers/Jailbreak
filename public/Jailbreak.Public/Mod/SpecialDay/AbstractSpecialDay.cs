@@ -251,7 +251,8 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
 
       Server.ExecuteCommand(cvar.Name + " " + value);
       if (cvar.Name == "mp_teammates_are_enemies") {
-        Server.ExecuteCommand("css_cvar mp_teammates_are_enemies False");
+        bool opposite = !((bool)value);
+        Server.ExecuteCommand("css_cvar mp_teammates_are_enemies " + opposite);
 
         Plugin.AddTimer(0.1f,
           () => {

@@ -26,9 +26,14 @@ public class WardayDay(BasePlugin plugin, IServiceProvider provider)
     Timers[150] += () => {
       msg.ExpandNow.ToAllChat();
       foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist)) {
-        ct.SetHealth(100);
-        ct.SetArmor(100);
+        ct.SetHealth(200);
+        ct.SetArmor(300);
         ct.SetSpeed(1.5f);
+      }
+
+      foreach (var t in PlayerUtil.FromTeam(CsTeam.Terrorist)) {
+        t.SetHealth(Math.Min(25, t.Health));
+        t.SetArmor(0);
       }
     };
 

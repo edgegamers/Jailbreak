@@ -22,10 +22,10 @@ namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
-  private static readonly int FIRST_SPEEDRUNNER_TIME = 60;
-  private static readonly int FIRST_ROUND_FREEZE = 8;
-  private static readonly int FREEZE_TIME = 2;
-  private static readonly int MAX_POINTS = 500;
+  private const int FIRST_SPEEDRUNNER_TIME = 40;
+  private const int FIRST_ROUND_FREEZE = 8;
+  private const int FREEZE_TIME = 2;
+  private const int MAX_POINTS = 500;
   private readonly Random rng = new();
 
   private readonly IDictionary<int, ActivePlayerTrail<VectorTrailSegment>>
@@ -44,7 +44,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     new SortedDictionary<int, float>();
 
   private IGenericCommandNotifications generics = null!;
-  private int round, playersAliveAtStart, bestTimePlayerSlot;
+  private int round, playersAliveAtStart;
+  private int? bestTimePlayerSlot;
   private Timer? roundEndTimer;
 
   private float? roundStartTime;
@@ -86,7 +87,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       speedrunner.SetColor(Color.DodgerBlue);
       msg.YouAreRunner(FIRST_SPEEDRUNNER_TIME).ToPlayerChat(speedrunner);
     };
-    Timers[FIRST_ROUND_FREEZE - 2] += () => {
+    Timers[FIRST_ROUND_FREEZE] += () => {
       start = speedrunner.PlayerPawn.Value!.AbsOrigin!.Clone();
       speedrunner.UnFreeze();
       bestTrail = new ActivePulsatingBeamPlayerTrail(plugin, speedrunner, 0f,
@@ -130,6 +131,13 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       player.SetColor(Color.FromArgb(65, 255, 255, 255));
       player.RemoveWeapons();
     }
+
+    Execute();
+  }
+
+  public override void Execute() {
+    if (Settings.RestrictWeapons)
+      Plugin.RegisterListener<Listeners.OnTick>(OnTick);
   }
 
   private void startRound(int seconds) {
@@ -163,12 +171,13 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
   private void checkFinishers() {
     if (target == null || roundStartTime == null) return;
+    if (finishCheckTimer == null) return;
     targetCircle?.SetRadius(getRequiredDistance() / 2);
     targetCircle?.Update();
     var required = MathF.Pow(getRequiredDistance(), 2);
     foreach (var player in PlayerUtil.GetAlive()) {
       if (finishTimestamps.ContainsKey(player.Slot)) continue;
-      var pos = player.PlayerPawn.Value?.AbsOrigin;
+      var pos = player.Pawn.Value?.AbsOrigin;
       if (pos == null) continue;
       var dist = pos.DistanceSquared(target);
       if (dist >= required) continue;
@@ -199,7 +208,13 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
     if (finishTimestamps.Count >= taking) endRound();
 
-    if (bestTimePlayerSlot == player.Slot) return;
+    if (!player.IsValid) {
+      generics.Error("completer is not valid").ToAllChat();
+      return;
+    }
+
+    if (bestTimePlayerSlot != null && bestTimePlayerSlot == player.Slot) return;
+
     var alpha = Math.Max(255 - finishTimestamps.Count * 20, 0);
     player.SetColor(Color.FromArgb(alpha, Color.White));
   }
@@ -267,6 +282,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     var fastTimestamp = keyValuePairs.Where(s => s.Value < 0)
      .Select(s => s.Value)
      .LastOrDefault(-(Server.CurrentTime - FIRST_SPEEDRUNNER_TIME));
+
+
     if (aliveCount <= 2) {
       // Announce winners, end the round, etc.
       // Maybe tp the loser to the winner and let the winner kill them
@@ -284,7 +301,13 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       }
 
       targetCircle?.Remove();
-      finishCheckTimer?.Kill();
+      targetCircle = null;
+
+      Plugin.AddTimer(0.1f, () => {
+        // Killing this while it's running seems to cause crashes
+        finishCheckTimer?.Kill();
+        finishCheckTimer = null;
+      });
 
       var loser = PlayerUtil.GetAlive()
        .FirstOrDefault(p => p.IsValid && p.Slot != winner.Slot);
@@ -296,6 +319,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         return;
       }
 
+
+      loser.SetColor(Color.FromArgb(254, Color.White));
       loser.Teleport(winner);
       EnableDamage(loser);
 
@@ -305,6 +330,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       Server.ExecuteCommand("mp_ignore_round_win_conditions 0");
       return;
     }
+
 
     var fastTime = MathF.Abs(fastTimestamp) - roundStartTime!;
     var roundTimeWas = Math.Ceiling(Server.CurrentTime - roundStartTime!.Value);
@@ -364,9 +390,11 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   }
 
   public override HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
+    var id     = 0;
     var result = base.OnEnd(@event, info);
 
     finishCheckTimer?.Kill();
+    finishCheckTimer = null;
     bestTrail?.Kill();
 
     foreach (var trail in activeTrails.Values) trail.Kill();

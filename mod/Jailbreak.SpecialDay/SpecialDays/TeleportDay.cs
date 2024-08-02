@@ -15,7 +15,7 @@ public class TeleportDay(BasePlugin plugin, IServiceProvider provider)
 
   public override ISpecialDayInstanceMessages Messages
     => new SoloDayMessages("Teleport",
-      "Free for all! If you damage someone you will swap places with them!");
+      "Free for all! If you damage someone, you will swap places with them!");
 
   public override void Setup() {
     base.Setup();

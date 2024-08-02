@@ -34,11 +34,12 @@ public class PulsatingBeamTrail : AbstractTrail<BeamTrailSegment> {
     var i = 0;
     foreach (var segment in Segments.Reverse()) {
       var line  = segment.GetLine();
-      var width = MathF.Sin(-Server.CurrentTime * 2.5f + i * 1.5f) * 5f - 2.5f;
+      var width = MathF.Sin(-Server.CurrentTime * 3f + i * 1.5f) * 5f - 2.5f;
       if (width < 0)
         line.SetColor(Color.FromArgb(0, 0, 0, 0));
       else
-        line.SetColor(Color.FromArgb(128, 255, 255, 255));
+        line.SetColor(Color.FromArgb(
+          (int)Math.Clamp((width / 2.5f) * 255, 0, 255), 255, 255, 255));
       line.SetWidth(width);
       line.Update();
       i += 1;

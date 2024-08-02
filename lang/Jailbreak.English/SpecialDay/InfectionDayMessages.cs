@@ -6,7 +6,8 @@ using Jailbreak.Public.Utils;
 namespace Jailbreak.English.SpecialDay;
 
 public class InfectionDayMessages() : TeamDayMessages("Infection",
-  "CTs are infected and try to infect Ts!", "CTs can use pistols!") {
+  "CTs are infected and try to infect Ts!",
+  "Ts can scavenge for guns, but CTs can only use pistols!") {
   public override IView SpecialDayEnd() {
     var winner = PlayerUtil.GetAlive().FirstOrDefault()?.Team
       ?? CsTeam.Spectator;
