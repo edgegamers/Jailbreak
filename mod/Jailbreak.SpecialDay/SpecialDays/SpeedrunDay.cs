@@ -22,7 +22,8 @@ namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
-  private static readonly int FIRST_SPEEDRUNNER_TIME = 20;
+  private static readonly int FIRST_SPEEDRUNNER_TIME = 60;
+  private static readonly int FIRST_ROUND_FREEZE = 8;
   private static readonly int FREEZE_TIME = 2;
   private static readonly int MAX_POINTS = 500;
   private readonly Random rng = new();
@@ -80,10 +81,25 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       // Needed since players who respawned are given knife later
       foreach (var player in PlayerUtil.GetAlive()) player.RemoveWeapons();
     };
-    Timers[2] += () => msg.RunnerAssigned(speedrunner).ToAllChat();
-    Timers[FIRST_SPEEDRUNNER_TIME - 30] +=
-      () => msg.RuntimeLeft(30).ToPlayerChat(speedrunner);
-    Timers[FIRST_SPEEDRUNNER_TIME] += () => {
+    Timers[FIRST_ROUND_FREEZE - 4] += () => {
+      msg.RunnerAssigned(speedrunner).ToAllChat();
+      speedrunner.SetColor(Color.DodgerBlue);
+      msg.YouAreRunner(FIRST_SPEEDRUNNER_TIME).ToPlayerChat(speedrunner);
+    };
+    Timers[FIRST_ROUND_FREEZE - 2] += () => {
+      start = speedrunner.PlayerPawn.Value!.AbsOrigin!.Clone();
+      speedrunner.UnFreeze();
+      // bestTrail = new ActiveBeamPlayerTrail(plugin, speedrunner, 0f,
+      //   updateRate: 0.15f, maxPoints: MAX_POINTS);
+      bestTrail = new ActivePulsatingBeamPlayerTrail(plugin, speedrunner, 0f,
+        MAX_POINTS);
+    };
+
+    Timers[FIRST_SPEEDRUNNER_TIME + FIRST_ROUND_FREEZE - 30] += ()
+      => msg.RuntimeLeft(30).ToPlayerChat(speedrunner);
+    Timers[FIRST_SPEEDRUNNER_TIME + FIRST_ROUND_FREEZE - 10] += ()
+      => msg.RuntimeLeft(10).ToPlayerChat(speedrunner);
+    Timers[FIRST_SPEEDRUNNER_TIME + FIRST_ROUND_FREEZE] += () => {
       target       = speedrunner.PlayerPawn.Value?.AbsOrigin!.Clone();
       targetCircle = new BeamCircle(plugin, target!, 10, 16);
       targetCircle.SetColor(Color.Green);
@@ -115,17 +131,10 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       player.SetColor(Color.FromArgb(65, 255, 255, 255));
       player.RemoveWeapons();
     }
-
-    speedrunner.SetColor(Color.DodgerBlue);
-
-    start = speedrunner.PlayerPawn.Value!.AbsOrigin!.Clone();
-    speedrunner.UnFreeze();
-    msg.YouAreRunner(FIRST_SPEEDRUNNER_TIME).ToPlayerChat(speedrunner);
-    bestTrail = new ActiveBeamPlayerTrail(plugin, speedrunner, 0f,
-      updateRate: 0.15f, maxPoints: MAX_POINTS);
   }
 
   private void startRound(int seconds) {
+    roundStartTime = null;
     var alive = PlayerUtil.GetAlive().ToArray();
     playersAliveAtStart = PlayerUtil.GetAlive().Count();
     msg.BeginRound(++round, getEliminations(playersAliveAtStart), seconds)
@@ -169,6 +178,11 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   }
 
   private void onFinish(CCSPlayerController player) {
+    if (roundStartTime == null) {
+      generics.Error("roundStartTime is null").ToAllChat();
+      return;
+    }
+
     var time = Server.CurrentTime - roundStartTime!.Value;
     if (bestTime == null || time < bestTime) {
       bestTime           = time;
@@ -176,26 +190,23 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       msg.BestTime(player, time).ToAllChat();
       player.SetColor(Color.FromArgb(255, Color.Gold));
     } else
-      msg.PlayerTime(player, finishTimestamps.Count, -time).ToAllChat();
+      msg.PlayerTime(player, finishTimestamps.Count + 1, -time).ToAllChat();
 
     finishTimestamps[player.Slot] = -Server.CurrentTime;
     var eliminations = getEliminations(PlayerUtil.GetAlive().Count());
     activeTrails[player.Slot].StopTracking();
-
 
     var taking = playersAliveAtStart - eliminations;
 
     if (finishTimestamps.Count >= taking) endRound();
 
     if (bestTimePlayerSlot == player.Slot) return;
-    var alpha = Math.Max(255 - finishTimestamps.Count() * 20, 0);
+    var alpha = Math.Max(255 - finishTimestamps.Count * 20, 0);
     player.SetColor(Color.FromArgb(alpha, Color.White));
   }
 
   private void resetTrails() {
     if (activeTrails.Count != 0 && finishTimestamps.Count != 0) {
-      // bestTrail?.Kill();
-      // Update the best trail
       var completers = finishTimestamps.Where(x => x.Value < 0).ToArray();
       if (completers.Length > 0) {
         // Of the players who finished, find the one who finished the fastest
@@ -207,7 +218,10 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         if (bestTime == null || time <= bestTime) {
           bestTrail?.Kill();
           activeTrails[bestPlayer].StopTracking();
-          bestTrail = BeamTrail.FromTrail(plugin, activeTrails[bestPlayer]);
+          // bestTrail = BeamTrail.FromTrail(plugin, activeTrails[bestPlayer]);
+          bestTrail = PulsatingBeamTrail.FromTrail(plugin,
+            activeTrails[bestPlayer], pulseRate: 0.5f, pulseMin: 0.5f,
+            pulseMax: 1.5f);
         }
       }
     }
@@ -226,7 +240,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     if (roundStartTime == null) return 0;
     var elapsedSeconds = (float)(Server.CurrentTime - roundStartTime);
 
-    return 10 + elapsedSeconds + MathF.Pow(elapsedSeconds, 3.5f) / 5000;
+    return 10 + elapsedSeconds + MathF.Pow(elapsedSeconds, 3.3f) / 2500;
   }
 
   private void endRound() {
@@ -253,7 +267,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     var keyValuePairs = slowTimes.ToList();
     var fastTimestamp = keyValuePairs.Where(s => s.Value < 0)
      .Select(s => s.Value)
-     .FirstOrDefault(-(Server.CurrentTime - FIRST_SPEEDRUNNER_TIME));
+     .LastOrDefault(-(Server.CurrentTime - FIRST_SPEEDRUNNER_TIME));
     if (aliveCount <= 2) {
       // Announce winners, end the round, etc.
       // Maybe tp the loser to the winner and let the winner kill them
@@ -277,7 +291,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
        .FirstOrDefault(p => p.Slot != winner.Slot);
 
       msg.PlayerWon(winner).ToAllChat();
-      if (loser == null) {
+      if (loser == null || !loser.IsValid) {
         RoundUtil.SetTimeRemaining(10);
         Server.ExecuteCommand("mp_ignore_round_win_conditions 0");
         return;
@@ -293,14 +307,17 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       return;
     }
 
-    if (toEliminate <= 0) {
-      msg.NoneEliminated.ToAllChat();
-      return;
-    }
-
     var fastTime = MathF.Abs(fastTimestamp) - roundStartTime!;
     var roundTimeWas = Math.Ceiling(Server.CurrentTime - roundStartTime!.Value);
     var nextRoundTime = (int)Math.Ceiling(fastTime.Value + 10 - round * 2);
+
+    if (toEliminate <= 0) {
+      msg.NoneEliminated.ToAllChat();
+      Plugin.AddTimer(3f, () => { startRound(nextRoundTime); },
+        TimerFlags.STOP_ON_MAPCHANGE);
+      return;
+    }
+
     nextRoundTime = (int)Math.Clamp(nextRoundTime, 5, roundTimeWas);
     var slowestEnumerator = SlowestTimes(finishTimestamps).GetEnumerator();
 
@@ -370,13 +387,16 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       WithFriendlyFire();
     }
 
-    public override Func<int> RoundTime => () => FIRST_SPEEDRUNNER_TIME;
+    public override Func<int> RoundTime
+      => () => FIRST_SPEEDRUNNER_TIME + FIRST_ROUND_FREEZE;
 
     public override ISet<string>? AllowedWeapons(CCSPlayerController player) {
       // Return empty set to allow no weapons
       return new HashSet<string>();
     }
 
-    public override float FreezeTime(CCSPlayerController player) { return 3; }
+    public override float FreezeTime(CCSPlayerController player) {
+      return FIRST_ROUND_FREEZE;
+    }
   }
 }

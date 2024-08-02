@@ -42,12 +42,6 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       }
 
       previousConvarValues[entry.Key] = GetConvarValue(cv);
-
-      if (entry is { Key: "mp_teammates_are_enemies", Value: true }) {
-        Timers[1f] += () => SetConvarValue(cv, true);
-        continue;
-      }
-
       SetConvarValue(cv, entry.Value);
     }
 
@@ -256,6 +250,10 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       }
 
       Server.ExecuteCommand(cvar.Name + " " + value);
+      if (cvar.Name == "mp_teammates_are_enemies") {
+        Server.ExecuteCommand("css_cvar mp_teammates_are_enemies False");
+        Server.ExecuteCommand("css_cvar mp_teammates_are_enemies " + value);
+      }
     } catch (Exception e) {
       Server.PrintToChatAll(
         $"There was an error setting {cvar.Name} ({cvar.Type}) to {value}");

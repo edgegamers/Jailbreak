@@ -41,15 +41,28 @@ public class SpeedrunDayMessages() : SoloDayMessages("Speedrunners",
   }
 
   public IView BeginRound(int round, int eliminationCount, int seconds) {
+    if (eliminationCount == 1)
+      return new SimpleView {
+        {
+          SpecialDayMessages.PREFIX,
+          $"Round #{ChatColors.Yellow}{round}{ChatColors.Default} begins! The slowest",
+          "player to reach the goal will be eliminated!"
+        },
+        SimpleView.NEWLINE, {
+          SpecialDayMessages.PREFIX, "You have", seconds,
+          "seconds to reach the goal!"
+        }
+      };
+
     return new SimpleView {
       {
-        SpecialDayMessages.PREFIX, "Round #", round, "begins! The slowest",
-        eliminationCount, "player" + (eliminationCount == 1 ? "" : "s"),
-        "to reach the goal will be eliminated!"
+        SpecialDayMessages.PREFIX,
+        $"Round #{ChatColors.Yellow}{round} begins! The slowest",
+        eliminationCount, "players to reach the goal will be eliminated!"
       },
       SimpleView.NEWLINE, {
         SpecialDayMessages.PREFIX, "You have", seconds,
-        "seconds to reach the goal!"
+        "seconds to reach the goal."
       }
     };
   }
@@ -77,7 +90,7 @@ public class SpeedrunDayMessages() : SoloDayMessages("Speedrunners",
       1 => ChatColors.Green + "FIRST",
       2 => ChatColors.LightYellow + "Second",
       3 => ChatColors.BlueGrey + "3rd",
-      _ => ChatColors.Grey + position + "th"
+      _ => ChatColors.Grey + "" + position + "th"
     };
     if (time < 0)
       return new SimpleView {

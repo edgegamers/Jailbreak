@@ -13,7 +13,7 @@ public static class PlayerUtil {
 
   public static CCSPlayerController? GetRandomFromTeam(CsTeam team,
     bool alive = true) {
-    var players = FromTeam(team, alive).ToList();
+    var players = FromTeam(team, alive).Where(p => !p.IsBot).ToList();
     return players.Count == 0 ?
       null :
       players[new Random().Next(players.Count)];
