@@ -1,5 +1,5 @@
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Timers;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
@@ -7,56 +7,62 @@ using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
-public class MagForMag(BasePlugin plugin, ILastRequestManager manager,
-  CCSPlayerController prisoner, CCSPlayerController guard)
-  : WeaponizedRequest(plugin, manager, prisoner, guard) {
-  private const int BULLET_COUNT = 7;
+public class MagForMag : WeaponizedRequest {
+  private readonly ChatMenu chatMenu;
+  private string? CHOSEN_PISTOL;
+  private int MAGAZINE_SIZE;
   private CCSPlayerController? whosShot;
-  public override LRType Type => LRType.GUN_TOSS;
+  public MagForMag(BasePlugin plugin, ILastRequestManager manager,
+    CCSPlayerController prisoner, CCSPlayerController guard) :
+  base(plugin, manager, prisoner, guard) {
+    chatMenu = new ChatMenu("Shot For Shot");
+    foreach (var pistol in Tag.PISTOLS) {
+      chatMenu.AddMenuOption(pistol.GetFriendlyWeaponName(), OnSelect);
+    }
+  }
+  public override LRType Type => LRType.SHOT_FOR_SHOT;
+
+  private void OnSelect(CCSPlayerController player, ChatMenuOption option) {
+    if (player.Slot != Prisoner.Slot) return;
+    MenuManager.CloseActiveMenu(player);
+
+    CHOSEN_PISTOL = Tag.PISTOLS.ElementAt(Array.IndexOf([
+      "Desert Eagle", "Dualies", "Five Seven", "Glock 18", "HPK2000", "P250", 
+      "USPS", "Tec9", "CZ75", "Revolver"
+    ], option.Text));
+
+    PrintToParticipants(player.PlayerName + " has chosen to use the " + 
+      CHOSEN_PISTOL.GetFriendlyWeaponName());
+    State = LRState.ACTIVE;
+
+    Prisoner.GiveNamedItem(CHOSEN_PISTOL);
+    Prisoner.GetWeaponBase(CHOSEN_PISTOL).SetAmmo(0,0);
+    Guard.GiveNamedItem(CHOSEN_PISTOL);
+    Guard.GetWeaponBase(CHOSEN_PISTOL).SetAmmo(0,0);
+    
+    //steal the VData of the prisoners gun for mag size
+    MAGAZINE_SIZE = Prisoner.GetWeaponBase(CHOSEN_PISTOL)!.VData!.MaxClip1;
+    
+    whosShot = new Random().Next(2) == 0 ? Prisoner : Guard;
+    PrintToParticipants(whosShot.PlayerName + " has been chosen to shoot first");
+    
+    whosShot.GetWeaponBase(CHOSEN_PISTOL).SetAmmo(MAGAZINE_SIZE, 0);
+  }
 
   public override void Setup() {
     Plugin.RegisterEventHandler<EventPlayerShoot>(OnPlayerShoot);
     base.Setup();
 
-    whosShot = new Random().Next(2) == 0 ? Prisoner : Guard;
-    PrintToParticipants(whosShot.PlayerName + " will shoot first.");
-    Prisoner.GiveNamedItem("weapon_deagle");
-    Guard.GiveNamedItem("weapon_deagle");
-
-    var weapon = findWeapon(Prisoner, "weapon_deagle");
-    if (weapon != null) setAmmoAmount(weapon, 0, 0);
-    weapon = findWeapon(Guard, "weapon_deagle");
-    if (weapon != null) setAmmoAmount(weapon, 0, 0);
+    CHOSEN_PISTOL = String.Empty;
+    chatMenu.Title =
+      $"Shot For Shot - {Prisoner.PlayerName} vs {Guard.PlayerName}";
   }
-
-  private static CBasePlayerWeapon? findWeapon(CCSPlayerController player,
-    string name) {
-    if (!player.IsReal()) return null;
-
-    var pawn = player.PlayerPawn.Value;
-
-    if (pawn == null) return null;
-
-    var weapons = pawn.WeaponServices?.MyWeapons;
-
-    return weapons?.Select(weaponOpt => weaponOpt.Value)
-     .OfType<CBasePlayerWeapon>()
-     .FirstOrDefault(weapon => weapon.DesignerName.Contains(name));
-  }
-
-  private static void setAmmoAmount(CBasePlayerWeapon weapon, int primary,
-    int reserve) {
-    weapon.Clip1 = primary;
-    Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_iClip1");
-    weapon.Clip2 = reserve;
-    Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_pReserveAmmo");
-  }
-
   public override void Execute() {
-    State = LRState.ACTIVE;
-    var deagle = findWeapon(whosShot!, "weapon_deagle");
-    if (deagle != null) setAmmoAmount(deagle, BULLET_COUNT, 0);
-
+    State = LRState.PENDING;
+    MenuManager.OpenChatMenu(Prisoner, chatMenu);
+    
+    Plugin.AddTimer(10, timeout, TimerFlags.STOP_ON_MAPCHANGE);
+    
     Plugin.AddTimer(30, () => {
       if (State != LRState.ACTIVE) return;
       Prisoner.GiveNamedItem("weapon_knife");
@@ -76,39 +82,47 @@ public class MagForMag(BasePlugin plugin, ILastRequestManager manager,
           LRResult.PRISONER_WIN;
       } else { PrintToParticipants("Health was the deciding factor. "); }
 
-      Manager.EndLastRequest(this, result);
       if (result == LRResult.GUARD_WIN)
         Prisoner.Pawn.Value?.CommitSuicide(false, true);
       else
         Guard.Pawn.Value?.CommitSuicide(false, true);
     }, TimerFlags.STOP_ON_MAPCHANGE);
   }
+  
+  private void timeout() {
+    if (CHOSEN_PISTOL == String.Empty)
+      Manager.EndLastRequest(this, LRResult.TIMED_OUT);
+  }
 
-  public HookResult OnPlayerShoot(EventPlayerShoot @event, GameEventInfo info) {
+  private HookResult OnPlayerShoot(EventPlayerShoot @event,
+    GameEventInfo info) {
     if (State != LRState.ACTIVE) return HookResult.Continue;
-
+    
     var player = @event.Userid;
-    if (!player.IsReal()) return HookResult.Continue;
-
-    if (player!.Slot != Prisoner.Slot && player.Slot != Guard.Slot)
+    if (player == null || whosShot == null || !player.IsReal())
       return HookResult.Continue;
 
-    var shootersDeagle = findWeapon(player, "weapon_deagle");
-    if (shootersDeagle == null) return HookResult.Continue;
+    if (player.Slot != Prisoner.Slot && player.Slot != Guard.Slot)
+      return HookResult.Continue;
+    if (player.Slot != whosShot.Slot) {
+      PrintToParticipants(player.PlayerName + " cheated.");
+      player.Pawn.Value?.CommitSuicide(false, true);
+      return HookResult.Handled;
+    }
 
-    if (shootersDeagle.Clip1 != 0) return HookResult.Continue;
+    if (player.GetWeaponBase(CHOSEN_PISTOL).Clip1 != 0)
+      return HookResult.Continue;
 
-    PrintToParticipants(player.PlayerName + " has shot.");
+    PrintToParticipants(player.PlayerName + " has shot all their bullets.");
     var opponent = player.Slot == Prisoner.Slot ? Guard : Prisoner;
     opponent.PrintToChat("Your shot");
-    var deagle = findWeapon(opponent, "weapon_deagle");
-    if (deagle != null) setAmmoAmount(deagle, 0, BULLET_COUNT);
+    opponent.GetWeaponBase(CHOSEN_PISTOL).SetAmmo(MAGAZINE_SIZE, 0);
     whosShot = opponent;
     return HookResult.Continue;
   }
-
+  
   public override void OnEnd(LRResult result) {
-    Plugin.RemoveListener(OnPlayerShoot);
+    Plugin.DeregisterEventHandler<EventPlayerShoot>(OnPlayerShoot);
     State = LRState.COMPLETED;
   }
 }
