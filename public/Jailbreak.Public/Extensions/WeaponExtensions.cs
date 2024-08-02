@@ -5,7 +5,10 @@ namespace Jailbreak.Public.Extensions;
 
 public static class WeaponExtensions {
   public static string ToFriendlyString(this CCSWeaponBase weaponEntity) {
-    var designerName = weaponEntity.DesignerName;
+    return weaponEntity.DesignerName.GetFriendlyWeaponName();
+  }
+
+  public static string GetFriendlyWeaponName(this string designerName) {
     switch (designerName) {
       case "weapon_ak47":
         return "AK47";

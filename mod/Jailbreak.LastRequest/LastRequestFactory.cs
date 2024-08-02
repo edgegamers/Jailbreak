@@ -19,11 +19,13 @@ public class LastRequestFactory(ILastRequestManager manager,
       LRType.KNIFE_FIGHT => new KnifeFight(plugin!, manager, prisoner, guard),
       LRType.GUN_TOSS    => new GunToss(plugin!, manager, prisoner, guard),
       LRType.NO_SCOPE    => new NoScope(plugin!, manager, prisoner, guard),
+      LRType.SHOT_FOR_SHOT => new ShotForShot(plugin!, manager, prisoner, guard),
       LRType.ROCK_PAPER_SCISSORS => new RockPaperScissors(plugin!, manager,
         prisoner, guard),
       LRType.COINFLIP => new Coinflip(plugin!, manager, prisoner, guard),
       LRType.RACE => new Race(plugin!, manager, prisoner, guard,
         services.GetRequiredService<IRaceLRMessages>()),
+      LRType.MAG_FOR_MAG => new MagForMag(plugin!, manager, prisoner, guard),
       _ => throw new ArgumentException("Invalid last request type: " + type,
         nameof(type))
     };
@@ -34,9 +36,11 @@ public class LastRequestFactory(ILastRequestManager manager,
       LRType.KNIFE_FIGHT         => true,
       LRType.GUN_TOSS            => true,
       LRType.NO_SCOPE            => true,
+      LRType.SHOT_FOR_SHOT       => true,
       LRType.ROCK_PAPER_SCISSORS => true,
       LRType.COINFLIP            => true,
       LRType.RACE                => true,
+      LRType.MAG_FOR_MAG         => true,
       _                          => false
     };
   }
