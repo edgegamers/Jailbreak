@@ -313,7 +313,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
      .Select(s => s.Value)
      .LastOrDefault(-(Server.CurrentTime - FIRST_SPEEDRUNNER_TIME));
 
-
     if (aliveCount <= 2) {
       // Announce winners, end the round, etc.
       // Maybe tp the loser to the winner and let the winner kill them
@@ -360,7 +359,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       Server.ExecuteCommand("mp_ignore_round_win_conditions 0");
       return;
     }
-
 
     var fastTime = MathF.Abs(fastTimestamp) - roundStartTime!;
     var roundTimeWas = Math.Ceiling(Server.CurrentTime - roundStartTime!.Value);

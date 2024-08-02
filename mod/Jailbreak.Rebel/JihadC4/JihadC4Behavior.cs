@@ -5,9 +5,11 @@ using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rebel;
+using MStatsShared;
 
 namespace Jailbreak.Rebel.JihadC4;
 
@@ -36,6 +38,10 @@ public class JihadC4Behavior(IJihadC4Notifications jihadC4Notifications,
   public void StartDetonationAttempt(CCSPlayerController player, float delay,
     CC4 bombEntity) {
     if (plugin == null) return;
+    var pos = player.Pawn.Value?.AbsOrigin;
+    if (pos != null)
+      API.Stats?.PushStat(new ServerStat("JB_BOMB_ATTEMPT",
+        $"{pos.X:F2} {pos.Y:F2} {pos.Z:F2}"));
 
     tryEmitSound(player, "jb.jihad", 1, 1f, 0f);
 
@@ -139,6 +145,7 @@ public class JihadC4Behavior(IJihadC4Notifications jihadC4Notifications,
       new QAngle(), new Vector());
     particleSystemEntity.DispatchSpawn();
 
+    var killed = 0;
     /* Calculate damage here, only applies to alive CTs. */
     foreach (var ct in Utilities.GetPlayers()
      .Where(p => p is {
@@ -153,12 +160,17 @@ public class JihadC4Behavior(IJihadC4Notifications jihadC4Notifications,
       var damage = 340f;
       damage *= (350f - distanceFromBomb) / 350f;
       float healthRef = ct.PlayerPawn.Value.Health;
-      if (healthRef <= damage) { ct.CommitSuicide(true, true); } else {
+      if (healthRef <= damage) {
+        ct.CommitSuicide(true, true);
+        killed++;
+      } else {
         ct.PlayerPawn.Value.Health -= (int)damage;
         Utilities.SetStateChanged(ct.PlayerPawn.Value, "CBaseEntity",
           "m_iHealth");
       }
     }
+
+    API.Stats?.PushStat(new ServerStat("JB_BOMB_EXPLODED", killed.ToString()));
 
     // If they didn't have the C4 make sure to remove it.
     player.CommitSuicide(true, true);
