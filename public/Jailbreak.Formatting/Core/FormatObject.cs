@@ -35,7 +35,7 @@ public abstract class FormatObject {
   public static implicit operator FormatObject(int value) {
     return new IntegerFormatObject(value);
   }
-  
+
   public static implicit operator FormatObject(float value) {
     return new FloatFormatObject(value);
   }

@@ -16,13 +16,13 @@ public abstract class DrawableShape(BasePlugin plugin, Vector position) {
   protected BasePlugin Plugin = plugin;
   private Vector position = position.Clone();
 
+  // Note that this can mean different things for different shapes
+  protected DateTime StartTime = DateTime.Now;
+
   public Vector Position {
     get => position.Clone();
     protected set => position = value.Clone();
   }
-
-  // Note that this can mean different things for different shapes
-  protected DateTime StartTime = DateTime.Now;
 
   public abstract void Draw();
 

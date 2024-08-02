@@ -10,10 +10,9 @@ public class BeamTrail(BasePlugin plugin, float lifetime = 20,
   public static BeamTrail? FromTrail<T>(BasePlugin plugin,
     AbstractTrail<T> trail) where T : ITrailSegment {
     var beamTrail = new BeamTrail(plugin, trail.Lifetime, trail.MaxPoints);
-    foreach (var segment in trail) {
+    foreach (var segment in trail)
       beamTrail.Segments.Add(
         beamTrail.CreateSegment(segment.GetStart(), segment.GetEnd()));
-    }
 
     return beamTrail;
   }

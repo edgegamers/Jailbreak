@@ -26,7 +26,7 @@ public abstract class AbstractTrail<T>(float lifetime = 20, int maxPoints = 100)
   public T? GetStartSegment() { return Segments.LastOrDefault(); }
   public T? GetEndSegment() { return Segments.FirstOrDefault(); }
 
-  protected virtual void Cleanup() {
+  virtual protected void Cleanup() {
     while (Segments.Count > MaxPoints) {
       var seg = Segments[^1];
       seg.Remove();
@@ -104,7 +104,7 @@ public abstract class AbstractTrail<T>(float lifetime = 20, int maxPoints = 100)
   public abstract T CreateSegment(Vector start, Vector end);
 
   public virtual void Kill() {
-    foreach (var segment in Segments) { segment.Remove(); }
+    foreach (var segment in Segments) segment.Remove();
 
     Segments.Clear();
   }

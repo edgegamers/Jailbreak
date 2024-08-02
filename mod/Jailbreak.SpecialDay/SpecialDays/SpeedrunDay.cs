@@ -1,7 +1,6 @@
 using System.Drawing;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
@@ -14,55 +13,52 @@ using Jailbreak.Public.Mod.Trail;
 using Jailbreak.Public.Utils;
 using Jailbreak.Trail;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualBasic.CompilerServices;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
-  private IGenericCommandNotifications generics;
-  private readonly Random rng = new();
-  private Vector? target;
-  public override SDType Type => SDType.SPEEDRUN;
-  private Timer? finishCheckTimer = null;
-  private Timer? roundEndTimer = null;
-
   private static readonly int FIRST_SPEEDRUNNER_TIME = 20;
   private static readonly int FREEZE_TIME = 2;
   private static readonly int MAX_POINTS = 500;
+  private readonly Random rng = new();
+
+  private readonly IDictionary<int, ActivePlayerTrail<VectorTrailSegment>>
+    activeTrails = new Dictionary<int, ActivePlayerTrail<VectorTrailSegment>>();
+
+  private AbstractTrail<BeamTrailSegment>? bestTrail;
+  private Timer? finishCheckTimer;
+
+  /// <summary>
+  ///   Negative values represent players who finished.
+  ///   Positive values represent players who are still alive, and the value
+  ///   being the distance they are from the target.
+  /// </summary>
+  private readonly IDictionary<int, float> finishTimestamps =
+    new SortedDictionary<int, float>();
+
+  private IGenericCommandNotifications generics = null!;
+  private int round, playersAliveAtStart;
+  private Timer? roundEndTimer;
+
+  private float? roundStartTime;
+  private Vector? start;
+  private Vector? target;
+  public override SDType Type => SDType.SPEEDRUN;
 
   private SpeedrunDayMessages msg => (SpeedrunDayMessages)Messages;
 
-  private AbstractTrail<BeamTrailSegment>? bestTrail;
-  private int round = 0, playersAliveAtStart = 0;
-  private Vector? start;
-
-  private IDictionary<int, ActivePlayerTrail<VectorTrailSegment>> activeTrails =
-    new Dictionary<int, ActivePlayerTrail<VectorTrailSegment>>();
-
-  private float? roundStartTime = null;
-
-  /// <summary>
-  /// Negative values represent players who finished.
-  /// Positive values represent players who are still alive, and the value
-  ///   being the distance they are from the target.
-  /// </summary>
-  private IDictionary<int, float> finishTimestamps =
-    new SortedDictionary<int, float>();
-
-  private int Compare(int x, int y) {
-    if (x < 0 && y < 0) {
-      return y.CompareTo(x); // Descending order for negative values
-    } else if (x >= 0 && y >= 0) {
-      return x.CompareTo(y); // Ascending order for non-negative values
-    } else {
-      return x < 0 ? -1 : 1; // Negative values come first
-    }
-  }
-
   public override SpecialDaySettings Settings => new SpeedrunSettings();
   public ISpecialDayInstanceMessages Messages => new SpeedrunDayMessages();
+
+  private int Compare(int x, int y) {
+    if (x < 0 && y < 0)
+      return y.CompareTo(x); // Descending order for negative values
+    if (x >= 0 && y >= 0)
+      return x.CompareTo(y); // Ascending order for non-negative values
+    return x < 0 ? -1 : 1;   // Negative values come first
+  }
 
   public override void Setup() {
     generics = provider.GetRequiredService<IGenericCommandNotifications>();
@@ -122,7 +118,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     resetTrails();
 
     Plugin.AddTimer(FREEZE_TIME, () => {
-      foreach (var player in PlayerUtil.GetAlive()) { player.UnFreeze(); }
+      foreach (var player in PlayerUtil.GetAlive()) player.UnFreeze();
     }, TimerFlags.STOP_ON_MAPCHANGE);
 
     roundEndTimer = Plugin.AddTimer(seconds + FREEZE_TIME, endRound,
@@ -145,7 +141,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   private void onFinish(CCSPlayerController player) {
     finishTimestamps[player.Slot] = -Server.CurrentTime;
     var eliminations = getEliminations(PlayerUtil.GetAlive().Count());
-    if (finishTimestamps.Count >= eliminations) { endRound(); }
+    if (finishTimestamps.Count >= eliminations) endRound();
   }
 
   private void resetTrails() {
@@ -164,14 +160,13 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       }
     }
 
-    foreach (var trail in activeTrails.Values) { trail.Kill(); }
+    foreach (var trail in activeTrails.Values) trail.Kill();
 
     activeTrails.Clear();
 
-    foreach (var player in PlayerUtil.GetAlive()) {
+    foreach (var player in PlayerUtil.GetAlive())
       activeTrails[player.Slot] =
         new ActiveInvisiblePlayerTrail(plugin, player, 0f, MAX_POINTS);
-    }
   }
 
   // https://www.desmos.com/calculator/e1qwgpmtmz
@@ -179,7 +174,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     if (roundStartTime == null) return 0;
     var elapsedSeconds = (float)(Server.CurrentTime - roundStartTime);
 
-    return (10 + elapsedSeconds + MathF.Pow(elapsedSeconds, 2.9f) / 5000);
+    return 10 + elapsedSeconds + MathF.Pow(elapsedSeconds, 2.9f) / 5000;
   }
 
   private void endRound() {
@@ -267,7 +262,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     finishCheckTimer?.Kill();
     bestTrail?.Kill();
 
-    foreach (var trail in activeTrails.Values) { trail.Kill(); }
+    foreach (var trail in activeTrails.Values) trail.Kill();
 
     activeTrails.Clear();
 

@@ -15,7 +15,8 @@ public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
   protected readonly Timer Timer;
 
   public ActivePlayerTrail(BasePlugin plugin, CCSPlayerController player,
-    float lifetime = 20, int maxPoints = 100, float updateRate = 0.5f) : base(lifetime, maxPoints) {
+    float lifetime = 20, int maxPoints = 100, float updateRate = 0.5f) : base(
+    lifetime, maxPoints) {
     Player = player;
     Timer = plugin.AddTimer(updateRate, Tick,
       TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
@@ -39,7 +40,7 @@ public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
 
   public void StopTracking() { Timer.Kill(); }
 
-  public virtual void Kill() {
+  public override void Kill() {
     foreach (var segment in Segments) { segment.Remove(); }
 
     StopTracking();

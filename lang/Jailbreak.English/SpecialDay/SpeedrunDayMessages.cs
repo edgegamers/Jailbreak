@@ -6,6 +6,28 @@ namespace Jailbreak.English.SpecialDay;
 public class SpeedrunDayMessages() : SoloDayMessages("Speedrunners",
   "Follow the blue player!", "They will run to a spot on the map.",
   "Each round, the slowest players to reach the target will be eliminated.") {
+  public IView RoundEnded
+    => new SimpleView {
+      SpecialDayMessages.PREFIX, "Round over! The next one will start shortly."
+    };
+
+  public IView NoneEliminated
+    => new SimpleView {
+      SpecialDayMessages.PREFIX, "No one was eliminated this round!"
+    };
+
+  public IView NoneReachedGoal
+    => new SimpleView {
+      {
+        SpecialDayMessages.PREFIX,
+        "Not enough players reached the goal this round!"
+      },
+      SimpleView.NEWLINE, {
+        SpecialDayMessages.PREFIX,
+        "Going off of distance to target for those who didn't."
+      }
+    };
+
   public IView YouAreRunner(int seconds) {
     return new SimpleView {
       { SpecialDayMessages.PREFIX, "You are the speedrunner!" },
@@ -65,26 +87,4 @@ public class SpeedrunDayMessages() : SoloDayMessages("Speedrunners",
       SpecialDayMessages.PREFIX, player, "was eliminated!"
     };
   }
-
-  public IView RoundEnded
-    => new SimpleView {
-      SpecialDayMessages.PREFIX, "Round over! The next one will start shortly."
-    };
-
-  public IView NoneEliminated
-    => new SimpleView {
-      SpecialDayMessages.PREFIX, "No one was eliminated this round!"
-    };
-
-  public IView NoneReachedGoal
-    => new SimpleView {
-      {
-        SpecialDayMessages.PREFIX,
-        "Not enough players reached the goal this round!"
-      },
-      SimpleView.NEWLINE, {
-        SpecialDayMessages.PREFIX,
-        "Going off of distance to target for those who didn't."
-      }
-    };
 }
