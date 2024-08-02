@@ -1,7 +1,5 @@
-﻿using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Modules.Utils;
+﻿using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Mod.Draw;
-using Jailbreak.Public.Mod.Trail;
 
 namespace Jailbreak.Trail;
 

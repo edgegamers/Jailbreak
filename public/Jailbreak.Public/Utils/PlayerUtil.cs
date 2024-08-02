@@ -13,8 +13,10 @@ public static class PlayerUtil {
 
   public static CCSPlayerController? GetRandomFromTeam(CsTeam team,
     bool alive = true) {
-    return Utilities.GetPlayers()
-     .FirstOrDefault(p => p.Team == team && (!alive || p.PawnIsAlive));
+    var players = FromTeam(team, alive).Where(p => !p.IsBot).ToList();
+    return players.Count == 0 ?
+      null :
+      players[new Random().Next(players.Count)];
   }
 
   public static IEnumerable<CCSPlayerController> GetAlive() {

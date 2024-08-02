@@ -8,6 +8,7 @@ using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.Warden;
+using Jailbreak.Public.Utils;
 
 namespace Jailbreak.Warden.Commands;
 
@@ -99,6 +100,11 @@ public class WardenCommandsBehavior(IWardenNotifications notifications,
         generics.CommandOnCooldown(cooldown).ToPlayerChat(player);
         return;
       }
+    }
+
+    if (RoundUtil.IsWarmup()) {
+      notifications.CannotWardenDuringWarmup.ToPlayerChat(player);
+      return;
     }
 
     //  Queue is open ?

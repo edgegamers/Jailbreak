@@ -217,6 +217,8 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   protected void SetConvarValue(ConVar? cvar, object value) {
     if (cvar == null) return;
     try {
+      cvar.Flags |= ConVarFlags.FCVAR_REPLICATED | ConVarFlags.FCVAR_NOTIFY
+        | ConVarFlags.FCVAR_PER_USER;
       switch (cvar.Type) {
         case ConVarType.Bool:
           cvar.SetValue((bool)value);
@@ -248,6 +250,10 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       }
 
       Server.ExecuteCommand(cvar.Name + " " + value);
+      if (cvar.Name == "mp_teammates_are_enemies") {
+        Server.ExecuteCommand("css_cvar mp_teammates_are_enemies False");
+        Server.ExecuteCommand("css_cvar mp_teammates_are_enemies " + value);
+      }
     } catch (Exception e) {
       Server.PrintToChatAll(
         $"There was an error setting {cvar.Name} ({cvar.Type}) to {value}");

@@ -37,6 +37,8 @@ public interface IWardenNotifications {
   /// <param name="player"></param>
   /// <returns></returns>
   public IView CurrentWarden(CCSPlayerController? player);
+  
+  public IView CannotWardenDuringWarmup { get; }
 
   public IView FireCommandSuccess(CCSPlayerController player);
 

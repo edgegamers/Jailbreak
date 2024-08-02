@@ -1,16 +1,13 @@
 using System.Collections;
-using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.Public.Mod.Trail;
 
-public abstract class AbstractTrail<T>(BasePlugin plugin, float lifetime = 20,
-  int maxPoints = 100, float updateRate = 0.5f)
+public abstract class AbstractTrail<T>(float lifetime = 20, int maxPoints = 100)
   : IEnumerable<T> where T : ITrailSegment {
   // Ordered from newest to oldest (0 is the newest)
   protected readonly IList<T> Segments = new List<T>();
-  protected BasePlugin Plugin => plugin;
 
   public virtual float Lifetime {
     get => lifetime;
@@ -26,10 +23,10 @@ public abstract class AbstractTrail<T>(BasePlugin plugin, float lifetime = 20,
 
   IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
-  public T? GetStartSegment() { return Segments.LastOrDefault(); }
-  public T? GetEndSegment() { return Segments.FirstOrDefault(); }
+  public virtual T? GetStartSegment() { return Segments.LastOrDefault(); }
+  public virtual T? GetEndSegment() { return Segments.FirstOrDefault(); }
 
-  protected virtual void Cleanup() {
+  virtual protected void Cleanup() {
     while (Segments.Count > MaxPoints) {
       var seg = Segments[^1];
       seg.Remove();
@@ -58,13 +55,13 @@ public abstract class AbstractTrail<T>(BasePlugin plugin, float lifetime = 20,
     return result;
   }
 
-  public IList<Vector> GetTrailPoints(int max) {
+  public virtual IList<Vector> GetTrailPoints(int max) {
     return GetTrailPoints(Lifetime, max);
   }
 
   public IList<Vector> GetTrailPoints() { return GetTrailPoints(Lifetime); }
 
-  public T? GetNearestSegment(Vector position, float since, int max = 0) {
+  public virtual T? GetNearestSegment(Vector position, float since, int max = 0) {
     var nearest     = default(T);
     var minDistance = double.MaxValue;
     foreach (var segment in GetTrail(since, max)) {
@@ -77,7 +74,7 @@ public abstract class AbstractTrail<T>(BasePlugin plugin, float lifetime = 20,
     return nearest;
   }
 
-  public float GetTrailLength(float since, int max = 0) {
+  public virtual float GetTrailLength(float since, int max = 0) {
     return MathF.Sqrt(GetTrailLengthSquared(since, max));
   }
 
@@ -105,4 +102,10 @@ public abstract class AbstractTrail<T>(BasePlugin plugin, float lifetime = 20,
   }
 
   public abstract T CreateSegment(Vector start, Vector end);
+
+  public virtual void Kill() {
+    foreach (var segment in Segments) segment.Remove();
+
+    Segments.Clear();
+  }
 }

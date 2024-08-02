@@ -5,7 +5,8 @@ using Jailbreak.Public.Utils;
 
 namespace Jailbreak.English.Warden;
 
-public class OpenCommandNotifications : IOpenCommandMessages, ILanguage<Formatting.Languages.English> {
+public class OpenCommandNotifications : IOpenCommandMessages,
+  ILanguage<Formatting.Languages.English> {
   public IView OpenResult(Sensitivity sensitivity) {
     return new SimpleView { "foobar" };
   }

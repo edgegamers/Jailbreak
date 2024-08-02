@@ -104,7 +104,7 @@ public class SpecialDaySettings {
   public SpecialDaySettings WithFriendlyFire() {
     ConVarValues["mp_teammates_are_enemies"]     = true;
     ConVarValues["ff_damage_reduction_bullets"]  = 1.0f;
-    ConVarValues["ff_damage_reduction_grenades"] = 1.0f;
+    ConVarValues["ff_damage_reduction_grenade"] = 1.0f;
     ConVarValues["ff_damage_reduction_other"]    = 1.0f;
     return this;
   }
