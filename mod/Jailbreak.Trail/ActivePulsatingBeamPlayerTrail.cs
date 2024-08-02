@@ -19,24 +19,6 @@ public class ActivePulsatingBeamPlayerTrail(BasePlugin plugin,
     trail.Kill();
   }
 
-  override protected void Tick() {
-    if (!Player.IsValid) Kill();
-    var pos = Player.PlayerPawn.Value?.AbsOrigin;
-    if (pos == null) return;
-    pos = pos.Clone();
-    var end  = GetEndSegment();
-    var dist = end?.GetStart().DistanceSquared(pos) ?? float.MaxValue;
-    if (dist < 100) {
-      // Still want to remove old segments
-      Cleanup();
-      return;
-    }
-
-    AddTrailPoint(pos);
-  }
-
-  public override void StopTracking() { base.StopTracking(); }
-
   public override void AddTrailPoint(Vector vector) {
     trail.AddTrailPoint(vector);
   }

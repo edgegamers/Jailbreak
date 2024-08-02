@@ -11,46 +11,45 @@ using Jailbreak.Public.Utils;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
-public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider) 
+public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
   : FFADay(plugin, provider) {
-  
   public override SDType Type => SDType.OITC;
-  
+
   public override ISpecialDayInstanceMessages Messages
-    => new SoloDayMessages("One In The Chamber",
-      "You only have one bullet.", " Kill someone else to get another bullet.",
-      "No camping!");
+    => new SoloDayMessages("One In The Chamber", "You only have one bullet.",
+      " Kill someone else to get another bullet.", "No camping!");
 
   public override SpecialDaySettings Settings => new OitcSettings();
-  
+
   public override void Setup() {
     plugin.RegisterEventHandler<EventPlayerHurt>(OnPlayerDamage);
     plugin.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
     base.Setup();
   }
-  
+
   public override void Execute() {
     foreach (var player in PlayerUtil.GetAlive()) {
       player.RemoveWeapons();
       player.GiveNamedItem("weapon_knife");
-      player.GiveNamedItem(CsItem.Deagle);
+      player.GiveNamedItem("weapon_deagle");
       player.GetWeaponBase("weapon_deagle")?.SetAmmo(1, 0);
-      
     }
+
     base.Execute();
   }
 
-  private HookResult OnPlayerDamage(EventPlayerHurt @event, GameEventInfo info) 
-  {
+  private HookResult
+    OnPlayerDamage(EventPlayerHurt @event, GameEventInfo info) {
     var  player     = @event.Userid!;
     bool usedDeagle = @event.Weapon == "weapon_deagle";
     if (!player.IsValid || !usedDeagle) return HookResult.Continue;
-    
+
     player.SetHealth(0);
     return HookResult.Changed;
   }
 
-  private HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info) {
+  private HookResult
+    OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info) {
     if (@event.Attacker == null) return HookResult.Continue;
     @event.Attacker.GetWeaponBase("weapon_deagle")?.AddBulletsToMagazine(1);
     return HookResult.Continue;
@@ -72,7 +71,7 @@ public class OitcSettings : SpecialDaySettings {
 
     ConVarValues["mp_death_drop_gun"] = 0;
   }
-  
+
   public override ISet<string>? AllowedWeapons(CCSPlayerController player) {
     return new HashSet<string> { "weapon_deagle", "weapon_knife" };
   }

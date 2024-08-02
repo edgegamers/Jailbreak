@@ -89,8 +89,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     Timers[FIRST_ROUND_FREEZE - 2] += () => {
       start = speedrunner.PlayerPawn.Value!.AbsOrigin!.Clone();
       speedrunner.UnFreeze();
-      // bestTrail = new ActiveBeamPlayerTrail(plugin, speedrunner, 0f,
-      //   updateRate: 0.15f, maxPoints: MAX_POINTS);
       bestTrail = new ActivePulsatingBeamPlayerTrail(plugin, speedrunner, 0f,
         MAX_POINTS, updateRate: 0.15f);
     };
@@ -278,7 +276,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         return;
       }
 
-      var winner = Utilities.GetPlayerFromSlot(keyValuePairs.First().Key);
+      var winner = Utilities.GetPlayerFromSlot(keyValuePairs.Last().Key);
 
       if (winner == null || !winner.IsValid) {
         generics.Error("Winner is null").ToAllChat();
