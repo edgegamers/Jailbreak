@@ -301,8 +301,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       loser.Teleport(winner);
       EnableDamage(loser);
 
-      winner.GiveNamedItem(CsItem.Knife);
-      winner.GiveNamedItem(CsItem.Negev);
+      winner.GiveNamedItem("weapon_knife");
+      winner.GiveNamedItem("weapon_negev");
       RoundUtil.SetTimeRemaining(30);
       Server.ExecuteCommand("mp_ignore_round_win_conditions 0");
       return;

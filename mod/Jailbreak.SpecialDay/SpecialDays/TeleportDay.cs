@@ -18,11 +18,7 @@ public class TeleportDay(BasePlugin plugin, IServiceProvider provider)
       "Free for all! If you damage someone you will swap places with them!");
 
   public override void Setup() {
-    Timers[10] += () => Messages.BeginsIn(10).ToAllChat();
-    Timers[15] += () => Messages.BeginsIn(5).ToAllChat();
-    Timers[20] += Execute;
     base.Setup();
-
     Plugin.RegisterEventHandler<EventPlayerHurt>(onDamage);
   }
 
@@ -47,11 +43,6 @@ public class TeleportDay(BasePlugin plugin, IServiceProvider provider)
   public override HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
     Plugin.DeregisterEventHandler<EventPlayerHurt>(onDamage);
     return base.OnEnd(@event, info);
-  }
-
-  public override void Execute() {
-    base.Execute();
-    Messages.BeginsIn(0).ToAllChat();
   }
 
   public class TeleportSettings : SpecialDaySettings {
