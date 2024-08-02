@@ -252,7 +252,11 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       Server.ExecuteCommand(cvar.Name + " " + value);
       if (cvar.Name == "mp_teammates_are_enemies") {
         Server.ExecuteCommand("css_cvar mp_teammates_are_enemies False");
-        Server.ExecuteCommand("css_cvar mp_teammates_are_enemies " + value);
+
+        Plugin.AddTimer(0.1f,
+          () => {
+            Server.ExecuteCommand("css_cvar mp_teammates_are_enemies " + value);
+          });
       }
     } catch (Exception e) {
       Server.PrintToChatAll(
@@ -300,11 +304,10 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       if (cv == null || entry.Value == null) continue;
       try { SetConvarValue(cv, entry.Value); } catch (InvalidOperationException
         e) { Console.WriteLine(e); }
-
-      if (Settings.RestrictWeapons)
-        Plugin.RemoveListener<Listeners.OnTick>(OnTick);
     }
 
+    if (Settings.RestrictWeapons)
+      Plugin.RemoveListener<Listeners.OnTick>(OnTick);
     previousConvarValues.Clear();
 
     Plugin.DeregisterEventHandler<EventRoundEnd>(OnEnd);
