@@ -1,3 +1,4 @@
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 
 namespace Jailbreak.Public.Extensions;
@@ -125,5 +126,24 @@ public static class WeaponExtensions {
       default:
         return "UNKNOWN: Please Contact Tech";
     }
+  }
+  public static void AddBulletsToMagazine(this CBasePlayerWeapon? weapon, 
+    int bullets) {
+    if (weapon.Clip1 + bullets > weapon.VData!.MaxClip1) {
+      int overflowBullets = (weapon.Clip1 + bullets) - weapon.VData!.MaxClip1;
+      weapon.Clip1 = weapon.VData!.MaxClip1;
+      weapon.ReserveAmmo[0] += overflowBullets;
+    } 
+    else { weapon.Clip1 += bullets; }
+    Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_iClip1");
+    Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_pReserveAmmo");
+  }
+
+  public static void SetAmmo(this CBasePlayerWeapon? weapon, int clip,
+    int reserve) {
+    weapon.Clip1          = clip;
+    weapon.ReserveAmmo[0] = reserve;
+    Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_iClip1");
+    Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_pReserveAmmo");
   }
 }
