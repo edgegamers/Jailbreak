@@ -37,7 +37,7 @@ public class TeamDayMessages(string name, params string[] description)
 
     result.Add(description[0]);
 
-    for (int i = 1; i < description.Length; i++) {
+    for (var i = 1; i < description.Length; i++) {
       result.Add(SimpleView.NEWLINE);
       result.Add(SpecialDayMessages.PREFIX);
       result.Add(description[i]);
