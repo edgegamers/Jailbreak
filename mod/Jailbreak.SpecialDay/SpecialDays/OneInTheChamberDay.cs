@@ -69,7 +69,7 @@ public class OitcSettings : SpecialDaySettings {
     TTeleport       = TeleportType.ARMORY;
     RestrictWeapons = true;
 
-    ConVarValues["mp_death_drop_gun"] = false;
+    ConVarValues["mp_death_drop_gun"] = 0;
   }
   
   public override ISet<string>? AllowedWeapons(CCSPlayerController player) {
