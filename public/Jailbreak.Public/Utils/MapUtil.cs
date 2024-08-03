@@ -23,12 +23,9 @@ public static class MapUtil {
      .GetAwaiter()
      .GetResult();
 
-    Server.PrintToChatAll("Attempting to open cells...");
 
-    if (zones == null || zones.Count == 0) {
-      Server.PrintToChatAll("No cell buttons found.");
+    if (zones == null || zones.Count == 0)
       return OpenCells() <= Sensitivity.TARGET_CELL;
-    }
 
     return OpenCells(Sensitivity.ANY, zones.First().GetCenterPoint()) != null;
   }
@@ -85,8 +82,6 @@ public static class MapUtil {
   }
 
   private static void PressButton(CBaseEntity entity) {
-    Server.PrintToChatAll(
-      $"Pressing button {entity.Globalname} {entity.Target}");
     entity.AcceptInput("Unlock",
       PlayerUtil.FromTeam(CsTeam.CounterTerrorist).FirstOrDefault());
     entity.AcceptInput("Press",
