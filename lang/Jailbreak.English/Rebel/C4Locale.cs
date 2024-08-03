@@ -5,7 +5,7 @@ using Jailbreak.Formatting.Views;
 
 namespace Jailbreak.English.Rebel;
 
-public class Ic4Locale : IC4Locale, ILanguage<Formatting.Languages.English> {
+public class C4Locale : IC4Locale, ILanguage<Formatting.Languages.English> {
   public IView JihadC4Pickup
     => new SimpleView { RebelLocale.PREFIX, "You picked up a Jihad C4!" };
 

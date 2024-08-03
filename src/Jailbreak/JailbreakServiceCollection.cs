@@ -47,10 +47,26 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
     serviceCollection.AddJailbreakSpecialDay();
     serviceCollection.AddJailbreakZones();
 
+    serviceCollection.AddSingleton<ILogLocale, LogLocale>();
+    serviceCollection.AddSingleton<IRebelLocale, RebelLocale>();
+    serviceCollection.AddSingleton<IGenericCmdLocale, GenericCmdLocale>();
+    serviceCollection.AddSingleton<ILRLocale, LastRequestLocale>();
+    serviceCollection.AddSingleton<ILRCFLocale, CoinflipLocale>();
+    serviceCollection.AddSingleton<ILRRPSLocale, RPSLocale>();
+    serviceCollection.AddSingleton<ILRRaceLocale, RaceLocale>();
+    serviceCollection.AddSingleton<ILGLocale, IlgLocale>();
+    serviceCollection.AddSingleton<ISDLocale, IsdLocale>();
+    serviceCollection.AddSingleton<IWardenLocale, WardenLocale>();
+    serviceCollection.AddSingleton<IWardenSTLocale, IstLocale>();
+    serviceCollection.AddSingleton<IWardenCmdOpenLocale, WardenCmdOpenLocale>();
+    serviceCollection.AddSingleton<IWardenCmdRollLocale, WardenCmdRollLocale>();
+    serviceCollection.AddSingleton<IWardenPeaceLocale, WardenPeaceLocale>();
+    serviceCollection.AddSingleton<IC4Locale, C4Locale>();
+
     //	Add in english localization
     serviceCollection.AddLanguage<Formatting.Languages.English>(config => {
       var serviceMap = new Dictionary<Type, Type> {
-        { typeof(IC4Locale), typeof(Ic4Locale) },
+        { typeof(IC4Locale), typeof(C4Locale) },
         { typeof(IGenericCmdLocale), typeof(GenericCmdLocale) },
         { typeof(ILGLocale), typeof(IlgLocale) },
         { typeof(ILRCFLocale), typeof(CoinflipLocale) },
@@ -60,13 +76,9 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
         { typeof(ILogLocale), typeof(LogLocale) },
         { typeof(IRebelLocale), typeof(RebelLocale) },
         { typeof(ISDLocale), typeof(IsdLocale) },
-        { typeof(IWardenSTLocale), typeof(IstLocale) }, {
-          typeof(IWardenCmdOpenLocale),
-          typeof(WardenCmdOpenCommandNotifications)
-        }, {
-          typeof(IWardenCmdRollLocale),
-          typeof(WardenCmdRollCommandNotifications)
-        },
+        { typeof(IWardenSTLocale), typeof(IstLocale) },
+        { typeof(IWardenCmdOpenLocale), typeof(WardenCmdOpenLocale) },
+        { typeof(IWardenCmdRollLocale), typeof(WardenCmdRollLocale) },
         { typeof(IWardenLocale), typeof(WardenLocale) },
         { typeof(IWardenPeaceLocale), typeof(WardenPeaceLocale) }
       };

@@ -22,7 +22,6 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
 
   public void Start(BasePlugin basePlugin) {
     plugin = basePlugin;
-    Server.NextFrameAsync(async () => { await createTable(); });
 
     basePlugin.RegisterListener<Listeners.OnMapStart>(OnMapStart);
     basePlugin.RegisterListener<Listeners.OnMapEnd>(OnMapEnd);
@@ -30,6 +29,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
 
   public void Dispose() {
     plugin.RemoveListener<Listeners.OnMapStart>(OnMapStart);
+    plugin.RemoveListener<Listeners.OnMapEnd>(OnMapEnd);
   }
 
   public async Task DeleteZone(int zoneId, string map) {
@@ -164,7 +164,10 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
   }
 
   private void OnMapStart(string mapname) {
-    Server.NextFrameAsync(async () => await LoadZones(mapname));
+    Server.NextFrameAsync(async () => {
+      await createTable();
+      await LoadZones(mapname);
+    });
   }
 
   private MySqlCommand queryAllZones(string map, ZoneType type) {

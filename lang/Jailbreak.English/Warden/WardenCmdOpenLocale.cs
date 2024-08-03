@@ -4,7 +4,7 @@ using Jailbreak.Formatting.Views;
 
 namespace Jailbreak.English.Warden;
 
-public class WardenCmdOpenCommandNotifications : IWardenCmdOpenLocale,
+public class WardenCmdOpenLocale : IWardenCmdOpenLocale,
   ILanguage<Formatting.Languages.English> {
   public IView CannotOpenYet(int seconds) {
     return new SimpleView {

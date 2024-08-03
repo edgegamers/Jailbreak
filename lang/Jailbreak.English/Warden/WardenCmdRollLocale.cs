@@ -4,7 +4,7 @@ using Jailbreak.Formatting.Views;
 
 namespace Jailbreak.English.Warden;
 
-public class WardenCmdRollCommandNotifications : IWardenCmdRollLocale,
+public class WardenCmdRollLocale : IWardenCmdRollLocale,
   ILanguage<Formatting.Languages.English> {
   public IView Roll(int roll) {
     return new SimpleView {
