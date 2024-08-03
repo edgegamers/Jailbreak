@@ -1,7 +1,10 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
+using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
+using Microsoft.Extensions.DependencyInjection;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.LastRequest.LastRequests;
@@ -19,16 +22,18 @@ public class Coinflip : AbstractLastRequest {
   ];
 
   private readonly ChatMenu menu;
+  private readonly ILRCFLocale msg;
   private readonly Random rnd;
   private Timer? timeout;
 
-  public Coinflip(BasePlugin plugin, ILastRequestManager manager,
+  public Coinflip(BasePlugin plugin, IServiceProvider provider,
     CCSPlayerController prisoner, CCSPlayerController guard) : base(plugin,
-    manager, prisoner, guard) {
+    provider.GetRequiredService<ILastRequestManager>(), prisoner, guard) {
     rnd  = new Random();
     menu = new ChatMenu("Heads or Tails?");
     menu.AddMenuOption("Heads", (_, _) => decide(true, true));
     menu.AddMenuOption("Tails", (_, _) => decide(false, true));
+    msg = provider.GetRequiredService<ILRCFLocale>();
   }
 
   public override LRType Type => LRType.COINFLIP;
@@ -48,8 +53,7 @@ public class Coinflip : AbstractLastRequest {
       if (State != LRState.ACTIVE) return;
       MenuManager.CloseActiveMenu(Guard);
       var choice = rnd.Next(2) == 1;
-      Guard.PrintToChat(
-        $"You failed to choose in time, defaulting to {(choice ? "Heads" : "Tails")}");
+      msg.FailedToChooseInTime(choice).ToChat(Guard);
       decide(choice, true);
     });
   }
@@ -58,8 +62,7 @@ public class Coinflip : AbstractLastRequest {
     timeout?.Kill();
     if (print) {
       MenuManager.CloseActiveMenu(Guard);
-      PrintToParticipants(
-        $"{Guard.PlayerName} chose {(heads ? "Heads" : "Tails")}... flipping...");
+      msg.GuardChose(Guard, heads).ToChat(Guard, Prisoner);
       State = LRState.ACTIVE;
     }
 
@@ -69,7 +72,7 @@ public class Coinflip : AbstractLastRequest {
         Plugin.AddTimer(2, () => decide(heads, false));
       } else {
         var side = rnd.Next(2) == 1;
-        PrintToParticipants($"The coin lands on {(side ? "Heads" : "Tails")}!");
+        msg.CoinLandsOn(side).ToChat(Guard, Prisoner);
         Manager.EndLastRequest(this,
           side == heads ? LRResult.GUARD_WIN : LRResult.PRISONER_WIN);
       }

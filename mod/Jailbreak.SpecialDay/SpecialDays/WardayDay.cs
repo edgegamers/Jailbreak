@@ -11,24 +11,29 @@ using Jailbreak.Public.Utils;
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class WardayDay(BasePlugin plugin, IServiceProvider provider)
-  : ArmoryRestrictedDay(plugin, provider), ISpecialDayMessageProvider {
+  : AbstractArmoryRestrictedDay(plugin, provider), ISpecialDayMessageProvider {
   public override SDType Type => SDType.WARDAY;
-  private WardayInstanceMessages msg => (WardayInstanceMessages)Messages;
+  private WardayInstanceLocale msg => (WardayInstanceLocale)Locale;
 
   public override SpecialDaySettings Settings => new WardaySettings();
-  public ISpecialDayInstanceMessages Messages => new WardayInstanceMessages();
+  public ISDInstanceLocale Locale => new WardayInstanceLocale();
 
   public override void Setup() {
-    Timers[15]  += () => Messages.BeginsIn(15).ToAllChat();
-    Timers[30]  += () => Messages.BeginsIn(5).ToAllChat();
+    Timers[15]  += () => Locale.BeginsIn(15).ToAllChat();
+    Timers[30]  += () => Locale.BeginsIn(5).ToAllChat();
     Timers[35]  += Execute;
     Timers[120] += () => msg.ExpandIn(30).ToAllChat();
     Timers[150] += () => {
       msg.ExpandNow.ToAllChat();
       foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist)) {
-        ct.SetHealth(100);
-        ct.SetArmor(100);
+        ct.SetHealth(200);
+        ct.SetArmor(300);
         ct.SetSpeed(1.5f);
+      }
+
+      foreach (var t in PlayerUtil.FromTeam(CsTeam.Terrorist)) {
+        t.SetHealth(Math.Min(25, t.Health));
+        t.SetArmor(0);
       }
     };
 

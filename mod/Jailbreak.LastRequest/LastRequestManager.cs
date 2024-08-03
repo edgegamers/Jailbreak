@@ -6,7 +6,7 @@ using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
-using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Damage;
@@ -18,8 +18,8 @@ using MStatsShared;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestManager(ILastRequestMessages messages,
-  IServiceProvider provider) : ILastRequestManager, IBlockUserDamage {
+public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
+  : ILastRequestManager, IBlockUserDamage {
   public readonly FakeConVar<int> CvLRBaseTime = new("css_jb_lr_time_base",
     "Round time to set when LR is activated, 0 to disable", 60);
 
@@ -51,7 +51,7 @@ public class LastRequestManager(ILastRequestMessages messages,
 
     if (playerLR == null != (attackerLR == null)) {
       // One of them is in an LR
-      messages.DamageBlockedInsideLastRequest.ToPlayerCenter(attacker);
+      messages.DamageBlockedInsideLastRequest.ToCenter(attacker);
       return true;
     }
 
@@ -62,7 +62,7 @@ public class LastRequestManager(ILastRequestMessages messages,
       // Same LR, allow damage
       return false;
 
-    messages.DamageBlockedNotInSameLR.ToPlayerCenter(attacker);
+    messages.DamageBlockedNotInSameLR.ToCenter(attacker);
     return true;
   }
 

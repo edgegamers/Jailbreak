@@ -8,95 +8,109 @@ using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 namespace Jailbreak.Zones;
 
 public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
-  public static FakeConVar<string> CvSqlTable = new("css_jb_zonetable",
+  public static readonly FakeConVar<string> CvSqlTable = new("css_jb_zonetable",
     "The table name for the zones", "cs2_jb_zones");
 
-  public static FakeConVar<string> CvSqlConnectionString =
+  public static readonly FakeConVar<string> CvSqlConnectionString =
     new("css_jb_sqlconnection", "The connection string for the database", "",
       ConVarFlags.FCVAR_PROTECTED);
 
-  private readonly IDictionary<ZoneType, IList<IZone>> zones =
-    new Dictionary<ZoneType, IList<IZone>>();
+  private readonly Dictionary<ZoneType, IList<IZone>> zones = new();
 
   private BasePlugin plugin = null!;
 
   public void Start(BasePlugin basePlugin) {
     plugin = basePlugin;
-    Server.NextFrameAsync(async () => { await createTable(); });
+
+    CvSqlConnectionString.ValueChanged += async (_, _) => {
+      await LoadZones(Server.MapName);
+    };
 
     basePlugin.RegisterListener<Listeners.OnMapStart>(OnMapStart);
     basePlugin.RegisterListener<Listeners.OnMapEnd>(OnMapEnd);
   }
 
-  public void Dispose() {
+  void IDisposable.Dispose() {
     plugin.RemoveListener<Listeners.OnMapStart>(OnMapStart);
+    plugin.RemoveListener<Listeners.OnMapEnd>(OnMapEnd);
   }
 
   public async Task DeleteZone(int zoneId, string map) {
     foreach (var list in zones.Values) {
       var zone = list.FirstOrDefault(z => z.Id == zoneId);
-      if (zone != null) {
-        list.Remove(zone);
-        break;
-      }
+      if (zone == null) continue;
+      list.Remove(zone);
+      break;
     }
 
-    var conn = createConnection();
+    foreach (var list in zones.Values) {
+      var zone = list.FirstOrDefault(z => z.Id == zoneId);
+      if (zone == null) continue;
+      list.Remove(zone);
+      break;
+    }
+
+    await using var conn = createConnection();
     if (conn == null) return;
-    await conn.OpenAsync();
-    var cmd = conn.CreateCommand();
-    cmd.CommandText = $"""
-        DELETE FROM {CvSqlTable.Value.Trim('"')}
-        WHERE zoneid = @zoneid
-        AND map = @map
-      """;
+    try {
+      await conn.OpenAsync();
+      await using var cmd = conn.CreateCommand();
+      cmd.CommandText = $"""
+          DELETE FROM {CvSqlTable.Value.Trim('"')}
+          WHERE zoneid = @zoneid
+          AND map = @map
+        """;
 
-    cmd.Parameters.AddWithValue("@zoneid", zoneId);
-    cmd.Parameters.AddWithValue("@map", map);
-    await cmd.ExecuteNonQueryAsync();
-
-    await conn.CloseAsync();
+      cmd.Parameters.AddWithValue("@zoneid", zoneId);
+      cmd.Parameters.AddWithValue("@map", map);
+      await cmd.ExecuteNonQueryAsync();
+    } catch (MySqlException e) { Console.WriteLine(e); } finally {
+      await conn.CloseAsync();
+    }
   }
 
   public async Task PushZoneWithID(IZone zone, ZoneType type, string map) {
-    Server.NextFrame(() => { Server.PrintToConsole("Pushing zone to SQL"); });
     if (!zones.TryGetValue(type, out var list)) {
       list        = new List<IZone>();
       zones[type] = list;
     }
 
-    list.Add(zone);
-
-    var conn = createConnection();
-    if (conn == null) return;
-    Server.NextFrame(() => {
-      Server.PrintToConsole("Successfully connect to sql");
-    });
-    await conn.OpenAsync();
-
-    var insertPointCommand = $"""
-        INSERT INTO {CvSqlTable.Value.Trim('"')} (map, type, zoneid, pointid, X, Y, Z)
-        VALUES (@map, @type, @zoneid, @pointid, @X, @Y, @Z)
-      """;
-    Server.NextFrame(() => { Server.PrintToConsole("Creating command"); });
-    var pointId = 0;
-
-    foreach (var point in zone.GetAllPoints()) {
-      var cmd = conn.CreateCommand();
-      cmd.CommandText = insertPointCommand;
-
-      cmd.Parameters.AddWithValue("@map", map);
-      cmd.Parameters.AddWithValue("@type", type.ToString());
-
-      cmd.Parameters.AddWithValue("@zoneid", zone.Id);
-      cmd.Parameters.AddWithValue("@X", point.X);
-      cmd.Parameters.AddWithValue("@Y", point.Y);
-      cmd.Parameters.AddWithValue("@Z", point.Z);
-      cmd.Parameters.AddWithValue("@pointid", pointId++);
-      await cmd.ExecuteNonQueryAsync();
+    // remove other zones with the same id
+    foreach (var zoneList in zones.Values) {
+      var z = zoneList.FirstOrDefault(z => z.Id == zone.Id);
+      if (z == null) continue;
+      zoneList.Remove(z);
+      break;
     }
 
-    await conn.CloseAsync();
+    list.Add(zone);
+
+    await using var conn = createConnection();
+    if (conn == null) return;
+    try {
+      await conn.OpenAsync();
+
+      var insertPointCommand = $"""
+          INSERT INTO {CvSqlTable.Value.Trim('"')} (map, type, zoneid, pointid, X, Y, Z)
+          VALUES (@map, @type, @zoneid, @pointid, @X, @Y, @Z)
+        """;
+      var pointId = 0;
+
+      foreach (var point in zone.GetAllPoints()) {
+        await using var cmd = new MySqlCommand(insertPointCommand, conn);
+        cmd.Parameters.AddWithValue("@map", map);
+        cmd.Parameters.AddWithValue("@type", type.ToString());
+
+        cmd.Parameters.AddWithValue("@zoneid", zone.Id);
+        cmd.Parameters.AddWithValue("@X", point.X);
+        cmd.Parameters.AddWithValue("@Y", point.Y);
+        cmd.Parameters.AddWithValue("@Z", point.Z);
+        cmd.Parameters.AddWithValue("@pointid", pointId++);
+        await cmd.ExecuteNonQueryAsync();
+      }
+    } catch (MySqlException e) { Console.WriteLine(e); } finally {
+      await conn.CloseAsync();
+    }
   }
 
   public Task<IList<IZone>> GetZones(string map, ZoneType type) {
@@ -111,20 +125,20 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
       zones[type] = list;
     }
 
-    list.Add(zone);
+    var allZones = zones.Values.SelectMany(s => s).ToList();
 
-    var nextId = zones.SelectMany(s => s.Value).Max(z => z.Id) + 1;
+    var nextId = allZones.Count == 0 ? 0 : allZones.Max(z => z.Id) + 1;
     zone.Id = nextId;
-    PushZoneWithID(zone, type, map);
+    await PushZoneWithID(zone, type, map);
   }
 
   public async Task UpdateZone(IZone zone, ZoneType type, int id) {
-    DeleteZone(id, Server.MapName);
+    await DeleteZone(id, Server.MapName);
     zone.Id = id;
-    PushZoneWithID(zone, type, Server.MapName);
+    await PushZoneWithID(zone, type, Server.MapName);
   }
 
-  public Task<IDictionary<ZoneType, IList<IZone>>> GetAllZones() {
+  public Task<Dictionary<ZoneType, IList<IZone>>> GetAllZones() {
     return Task.FromResult(zones);
   }
 
@@ -140,72 +154,76 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
   private void OnMapEnd() { zones.Clear(); }
 
   private async Task createTable() {
-    Server.PrintToConsole("Creating table for zones with auth: "
-      + CvSqlConnectionString.Value);
-    var conn = createConnection();
+    await using var conn = createConnection();
     if (conn == null) return;
-    await conn.OpenAsync();
+    try {
+      await conn.OpenAsync();
 
-    var cmdText = $"""
-      CREATE TABLE IF NOT EXISTS {CvSqlTable.Value.Trim('"')}(
-        zoneid INT NOT NULL,
-        pointid INT NOT NULL,
-        map VARCHAR(64) NOT NULL,
-        type VARCHAR(32) NOT NULL,
-        X FLOAT NOT NULL,
-        Y FLOAT NOT NULL,
-        Z FLOAT NOT NULL,
-        PRIMARY KEY(map, zoneid, pointid))
-      """;
+      var cmdText = $"""
+        CREATE TABLE IF NOT EXISTS {CvSqlTable.Value.Trim('"')}(
+          zoneid INT NOT NULL,
+          pointid INT NOT NULL,
+          map VARCHAR(64) NOT NULL,
+          type VARCHAR(32) NOT NULL,
+          X FLOAT NOT NULL,
+          Y FLOAT NOT NULL,
+          Z FLOAT NOT NULL,
+          PRIMARY KEY(map, zoneid, pointid))
+        """;
 
-    var cmd = new MySqlCommand(cmdText, conn);
-    await cmd.ExecuteNonQueryAsync();
-    await conn.CloseAsync();
+      await using var cmd = new MySqlCommand(cmdText, conn);
+      await cmd.ExecuteNonQueryAsync();
+    } catch (MySqlException e) { Console.WriteLine(e); } finally {
+      await conn.CloseAsync();
+    }
   }
 
   private void OnMapStart(string mapname) {
-    Server.NextFrameAsync(() => LoadZones(mapname));
+    Server.NextFrameAsync(async () => {
+      await createTable();
+      await LoadZones(mapname);
+    });
   }
 
-  private MySqlCommand queryAllZones(string map, ZoneType type) {
+  private MySqlCommand queryAllZones(MySqlConnection conn, string map,
+    ZoneType type) {
     var cmdText = $"""
           SELECT * FROM {CvSqlTable.Value.Trim('"')}
           WHERE map = '{map}' AND type = '{type}'
           ORDER BY zoneid, pointid DESC
       """;
 
-    return new MySqlCommand(cmdText);
+    return new MySqlCommand(cmdText, conn);
   }
 
   public async Task LoadZones(string map, ZoneType type) {
-    var conn = createConnection();
+    // var conn = createConnection();
+    await using var conn = createConnection();
     if (conn == null) return;
 
-    var cmd = queryAllZones(map, type);
-
-    await conn.OpenAsync();
-    cmd.Connection = conn;
-
-    var reader = await cmd.ExecuteReaderAsync();
-
-    var currentZone = -1;
-    var pointId     = -1;
-    var zoneCreator = new BasicZoneCreator();
-    zoneCreator.BeginCreation();
-    Server.NextFrame(() => {
-      while (reader.Read()) {
-        var point = new Vector(reader.GetFloat("X"), reader.GetFloat("Y"),
-          reader.GetFloat("Z"));
-        zoneCreator.AddPoint(point);
+    try {
+      await conn.OpenAsync();
+      await using var cmd         = queryAllZones(conn, map, type);
+      await using var reader      = await cmd.ExecuteReaderAsync();
+      var             currentZone = -1;
+      var             pointId     = -1;
+      var             zoneCreator = new BasicZoneCreator();
+      zoneCreator.BeginCreation();
+      while (await reader.ReadAsync()) {
+        var x      = reader.GetFloat("X");
+        var y      = reader.GetFloat("Y");
+        var z      = reader.GetFloat("Z");
         var zoneId = reader.GetInt32("zoneid");
-        pointId = reader.GetInt32("pointid");
+        var pid    = reader.GetInt32("pointid");
+        Server.NextFrame(() => {
+          var point = new Vector(x, y, z);
+          zoneCreator.AddPoint(point);
+          // We just started reading zones
+          if (currentZone == -1) currentZone = zoneId;
 
-        // We just started reading zones
-        if (currentZone == -1) currentZone = zoneId;
-
-        if (pointId == 0 || zoneId != currentZone) {
+          if (pid != 0 && zoneId == currentZone) return;
           if (zoneId != currentZone)
-            printNotClosedWarning(map, zoneId, pointId, currentZone);
+            printNotClosedWarning(map, zoneId, pid, currentZone);
           // Assume the zone is closed and allow the new zone to be created
           var zone = zoneCreator.Build(factory);
           if (!zones.ContainsKey(type)) zones[type] = new List<IZone>();
@@ -214,13 +232,14 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
           pointId     = -1;
           currentZone = -1;
           zoneCreator.BeginCreation();
-        }
+        });
       }
 
-      reader.Close();
-
       if (pointId > 0) printNotClosedWarning(map, -1, pointId, currentZone);
-    });
+    } catch (MySqlException e) { Console.WriteLine(e); } finally {
+      await conn.CloseAsync();
+    }
+
     await Task.Delay((int)Math.Ceiling(Server.TickInterval / 1000) * 5);
   }
 

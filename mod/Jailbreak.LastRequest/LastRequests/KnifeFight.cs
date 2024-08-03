@@ -1,16 +1,14 @@
 using CounterStrikeSharp.API.Core;
-using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
-public class KnifeFight(BasePlugin plugin, ILastRequestManager manager,
+public class KnifeFight(BasePlugin plugin, IServiceProvider provider,
   CCSPlayerController prisoner, CCSPlayerController guard)
-  : WeaponizedRequest(plugin, manager, prisoner, guard) {
+  : WeaponizedRequest(plugin, provider, prisoner, guard) {
   public override LRType Type => LRType.KNIFE_FIGHT;
 
   public override void Execute() {
-    PrintToParticipants("Go!");
     Prisoner.GiveNamedItem("weapon_knife");
     Guard.GiveNamedItem("weapon_knife");
     State = LRState.ACTIVE;

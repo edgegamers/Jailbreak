@@ -12,20 +12,20 @@ public class FFADay(BasePlugin plugin, IServiceProvider provider)
   public override SDType Type => SDType.FFA;
   public override SpecialDaySettings Settings => new FFASettings();
 
-  public virtual ISpecialDayInstanceMessages Messages
-    => new SoloDayMessages("Free for All",
+  public virtual ISDInstanceLocale Locale
+    => new SoloDayLocale("Free for All",
       "Everyone for themselves! No camping, actively pursue!");
 
   public override void Setup() {
-    Timers[10] += () => Messages.BeginsIn(10).ToAllChat();
-    Timers[15] += () => Messages.BeginsIn(5).ToAllChat();
+    Timers[10] += () => Locale.BeginsIn(10).ToAllChat();
+    Timers[15] += () => Locale.BeginsIn(5).ToAllChat();
     Timers[20] += Execute;
     base.Setup();
   }
 
   public override void Execute() {
     base.Execute();
-    Messages.BeginsIn(0).ToAllChat();
+    Locale.BeginsIn(0).ToAllChat();
   }
 
   public class FFASettings : SpecialDaySettings {

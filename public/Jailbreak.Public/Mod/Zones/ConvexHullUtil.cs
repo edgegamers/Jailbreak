@@ -1,7 +1,7 @@
 ﻿using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 
-namespace Jailbreak.Zones;
+namespace Jailbreak.Public.Mod.Zones;
 
 public static class ConvexHullUtil {
   // private readonly IList<Vector> hull;
@@ -25,7 +25,8 @@ public static class ConvexHullUtil {
     return inside;
   }
 
-  public static float GetMinDistance(Vector position, IList<Vector> hull) {
+  public static float
+    GetMinDistanceSquared(Vector position, IList<Vector> hull) {
     if (IsInsideZone(position, hull)) return 0;
     var minDistance = float.MaxValue;
     for (var i = 0; i < hull.Count; i++) {
@@ -36,6 +37,10 @@ public static class ConvexHullUtil {
     }
 
     return minDistance;
+  }
+
+  public static float GetMinDistance(Vector position, IList<Vector> hull) {
+    return (float)Math.Sqrt(GetMinDistanceSquared(position, hull));
   }
 
   public static IEnumerable<Vector> ComputeConvexHull(IList<Vector> points) {

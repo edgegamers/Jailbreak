@@ -1,7 +1,5 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Core.Attributes.Registration;
-using CounterStrikeSharp.API.Modules.Cvars;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Extensions;
@@ -15,8 +13,8 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
   : FFADay(plugin, provider) {
   public override SDType Type => SDType.NOSCOPE;
 
-  public override ISpecialDayInstanceMessages Messages
-    => new SoloDayMessages("No Scope",
+  public override ISDInstanceLocale Locale
+    => new SoloDayLocale("No Scope",
       "Your scope broke! Fight against everyone else. No camping!");
 
   public override SpecialDaySettings Settings => new NoScopeSettings();

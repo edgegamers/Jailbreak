@@ -3,6 +3,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.Zones;
 
 namespace Jailbreak.Public.Utils;
 
@@ -17,8 +18,22 @@ public static class MapUtil {
      .First();
   }
 
-  public static void OpenCells(
-    Sensitivity sensitivity = Sensitivity.NAME_CELL_DOOR) {
+  public static bool OpenCells(IZoneManager zoneManager) {
+    var zones = zoneManager.GetZones(ZoneType.CELL_BUTTON)
+     .GetAwaiter()
+     .GetResult();
+
+
+    if (zones == null || zones.Count == 0)
+      return OpenCells() <= Sensitivity.TARGET_CELL;
+
+    return OpenCells(Sensitivity.ANY, zones.First().GetCenterPoint()) != null;
+  }
+
+  public static Sensitivity? OpenCells(
+    Sensitivity sensitivity = Sensitivity.NAME_CELL_DOOR,
+    Vector? source = null) {
+    if (source == null) source = getCtSpawn();
     var allButtons = Utilities
      .FindAllEntitiesByDesignerName<CEntityInstance>("func_button")
      .ToHashSet();
@@ -37,38 +52,40 @@ public static class MapUtil {
       foreach (var button in allButtons
        .Select(cell => entityCache[(int)cell.Index])
        .Where(button => button != null && button.IsValid)
-       .Where(button => IsCellButton(button, sensitivity))) {
+       .Where(button => IsCellButton(button, sensitivity)))
         entities.Add(button);
-      }
 
       switch (entities.Count) {
         case 1:
           PressButton(entities[0]);
-          return;
+          return sensitivity;
         case 0: {
           var lower = sensitivity.GetLower();
-          if (lower == null) return;
+          if (lower == null) return lower;
           sensitivity = lower.Value;
           continue;
         }
       }
 
-      var ctSpawn = getCtSpawn();
-      var sorted  = entities.ToList();
+      var sorted = entities.ToList();
       sorted.Sort((a, b) => {
-        var aDist = a.AbsOrigin!.DistanceSquared(ctSpawn);
-        var bDist = b.AbsOrigin!.DistanceSquared(ctSpawn);
+        var aDist = a.AbsOrigin!.DistanceSquared(source);
+        var bDist = b.AbsOrigin!.DistanceSquared(source);
         return aDist.CompareTo(bDist);
       });
 
       PressButton(sorted[0]);
       break;
     }
+
+    return sensitivity;
   }
 
   private static void PressButton(CBaseEntity entity) {
-    entity.AcceptInput("Unlock");
-    entity.AcceptInput("Press");
+    entity.AcceptInput("Unlock",
+      PlayerUtil.FromTeam(CsTeam.CounterTerrorist).FirstOrDefault());
+    entity.AcceptInput("Press",
+      PlayerUtil.FromTeam(CsTeam.CounterTerrorist).FirstOrDefault());
   }
 
   private static bool IsCellButton(CBaseEntity ent, Sensitivity sen) {

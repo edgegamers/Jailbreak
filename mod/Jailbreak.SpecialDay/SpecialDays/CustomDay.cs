@@ -18,8 +18,8 @@ public class CustomDay(BasePlugin plugin, IServiceProvider provider)
       OpenCells         = false
     };
 
-  public ISpecialDayInstanceMessages Messages
-    => new TeamDayMessages("Custom Day",
+  public ISDInstanceLocale Locale
+    => new TeamDayLocale("Custom Day",
       "Listen to the Warden's orders. Anything goes!");
 
   public override void Setup() {

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using JetBrains.Annotations;
 
 namespace Jailbreak.Public.Mod.SpecialDay;
 
@@ -12,10 +13,12 @@ public class DefaultableDictionary<TKey, TValue> : IDictionary<TKey, TValue> {
     this.defaultValue = defaultValue;
   }
 
+  [MustDisposeResource]
   public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
     return dictionary.GetEnumerator();
   }
 
+  [MustDisposeResource]
   IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
   public void Add(KeyValuePair<TKey, TValue> item) { dictionary.Add(item); }

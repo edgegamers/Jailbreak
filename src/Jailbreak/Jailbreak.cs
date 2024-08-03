@@ -56,7 +56,7 @@ public class Jailbreak : BasePlugin {
       RegisterAllAttributes(extension);
 
       //	Tell the extension to start it's magic
-      extension.Start(this);
+      extension.Start(this, hotReload);
 
       Logger.LogInformation("[Jailbreak] Loaded behavior {@Behavior}",
         extension.GetType().FullName);

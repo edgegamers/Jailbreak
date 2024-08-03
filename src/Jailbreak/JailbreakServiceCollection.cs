@@ -9,7 +9,9 @@ using Jailbreak.English.Mute;
 using Jailbreak.English.Rebel;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.English.Warden;
-using Jailbreak.Formatting.Logistics;
+using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.LastRequest;
+using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Generic;
 using Jailbreak.LastGuard;
 using Jailbreak.LastRequest;
@@ -30,6 +32,23 @@ namespace Jailbreak;
 public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
   /// <inheritdoc />
   public void ConfigureServices(IServiceCollection serviceCollection) {
+    serviceCollection.AddSingleton<IC4Locale, C4Locale>();
+    serviceCollection.AddSingleton<IGenericCmdLocale, GenericCmdLocale>();
+    serviceCollection.AddSingleton<ILGLocale, LGLocale>();
+    serviceCollection.AddSingleton<ILRB4BLocale, B4BLocale>();
+    serviceCollection.AddSingleton<ILRCFLocale, CoinflipLocale>();
+    serviceCollection.AddSingleton<ILRLocale, LastRequestLocale>();
+    serviceCollection.AddSingleton<ILRRPSLocale, RPSLocale>();
+    serviceCollection.AddSingleton<ILRRaceLocale, RaceLocale>();
+    serviceCollection.AddSingleton<ILogLocale, LogLocale>();
+    serviceCollection.AddSingleton<IRebelLocale, RebelLocale>();
+    serviceCollection.AddSingleton<ISDLocale, SDLocale>();
+    serviceCollection.AddSingleton<IWardenCmdOpenLocale, WardenCmdOpenLocale>();
+    serviceCollection.AddSingleton<IWardenCmdRollLocale, WardenCmdRollLocale>();
+    serviceCollection.AddSingleton<IWardenLocale, WardenLocale>();
+    serviceCollection.AddSingleton<IWardenPeaceLocale, WardenPeaceLocale>();
+    serviceCollection.AddSingleton<IWardenSTLocale, WardenSTLocale>();
+
     //	Do we want to make this scoped?
     //	Not sure how this will behave with multiple rounds and whatnot.
     serviceCollection.AddTransient<IConfigService, ConfigService>();
@@ -43,21 +62,5 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
     serviceCollection.AddJailbreakLastGuard();
     serviceCollection.AddJailbreakSpecialDay();
     serviceCollection.AddJailbreakZones();
-
-    //	Add in english localization
-    serviceCollection.AddLanguage<Formatting.Languages.English>(config => {
-      config.WithGenericCommand<GenericCommandNotifications>();
-      config.WithWarden<WardenNotifications>();
-      config.WithRebel<RebelNotifications>();
-      config.WithLogging<LogMessages>();
-      config.WithRollCommand<RollCommandNotifications>();
-      config.WithJihadC4<JihadC4Notifications>();
-      config.WithLastRequest<LastRequestMessages>();
-      config.WithSpecialTreatment<SpecialTreatmentNotifications>();
-      config.WithMute<PeaceMessages>();
-      config.WithRaceLR<RaceLRMessages>();
-      config.WithLastGuard<LastGuardNotifications>();
-      config.WithSpecialDay<SpecialDayMessages>();
-    });
   }
 }

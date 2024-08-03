@@ -5,6 +5,7 @@ using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
@@ -12,9 +13,8 @@ using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestCommand(ILastRequestManager manager,
-  ILastRequestMessages messages, IGenericCommandNotifications generic,
-  ILastRequestFactory factory) : IPluginBehavior {
+public class LastRequestCommand(ILastRequestManager manager, ILRLocale messages,
+  IGenericCmdLocale generic, ILastRequestFactory factory) : IPluginBehavior {
   private LastRequestMenuSelector? menuSelector;
   private LastRequestPlayerSelector? playerSelector;
   private BasePlugin? plugin;
@@ -32,28 +32,28 @@ public class LastRequestCommand(ILastRequestManager manager,
     CommandInfo info) {
     if (executor == null || !executor.IsReal()) return;
     if (!manager.IsLREnabled) {
-      messages.LastRequestNotEnabled().ToPlayerChat(executor);
+      messages.LastRequestNotEnabled().ToChat(executor);
       return;
     }
 
     if (executor.Team != CsTeam.Terrorist) {
-      messages.CannotLR("You are not a Prisoner").ToPlayerChat(executor);
+      messages.CannotLR("You are not a Prisoner").ToChat(executor);
       return;
     }
 
     if (!executor.PawnIsAlive) {
-      messages.CannotLR("You are not alive").ToPlayerChat(executor);
+      messages.CannotLR("You are not alive").ToChat(executor);
       return;
     }
 
 
     if (!playerSelector!.WouldHavePlayers()) {
-      messages.CannotLR("No players available to LR").ToPlayerChat(executor);
+      messages.CannotLR("No players available to LR").ToChat(executor);
       return;
     }
 
     if (manager.IsInLR(executor)) {
-      messages.CannotLR("You are already in an LR").ToPlayerChat(executor);
+      messages.CannotLR("You are already in an LR").ToChat(executor);
       return;
     }
 
@@ -66,7 +66,7 @@ public class LastRequestCommand(ILastRequestManager manager,
     // Validate LR
     var type = LRTypeExtensions.FromString(info.GetArg(1));
     if (type is null) {
-      messages.InvalidLastRequest(info.GetArg(1)).ToPlayerChat(executor);
+      messages.InvalidLastRequest(info.GetArg(1)).ToChat(executor);
       return;
     }
 
@@ -90,18 +90,17 @@ public class LastRequestCommand(ILastRequestManager manager,
 
     var player = target.Players.First();
     if (player.Team != CsTeam.CounterTerrorist) {
-      messages.CannotLR(player, "They are not a Guard").ToPlayerChat(executor);
+      messages.CannotLR(player, "They are not a Guard").ToChat(executor);
       return;
     }
 
     if (!player.PawnIsAlive) {
-      messages.CannotLR(player, "They are not alive").ToPlayerChat(executor);
+      messages.CannotLR(player, "They are not alive").ToChat(executor);
       return;
     }
 
     if (manager.IsInLR(player)) {
-      messages.CannotLR(player, "They are already in an LR")
-       .ToPlayerChat(executor);
+      messages.CannotLR(player, "They are already in an LR").ToChat(executor);
       return;
     }
 

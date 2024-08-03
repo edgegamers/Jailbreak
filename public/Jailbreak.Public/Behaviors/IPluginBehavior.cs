@@ -12,4 +12,6 @@ public interface IPluginBehavior : IDisposable {
   ///   Tells the plugin that it will be starting imminently
   /// </summary>
   void Start(BasePlugin basePlugin) { }
+
+  void Start(BasePlugin basePlugin, bool hotreload) { Start(basePlugin); }
 }

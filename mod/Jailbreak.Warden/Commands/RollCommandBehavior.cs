@@ -3,15 +3,15 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.Warden;
 
 namespace Jailbreak.Warden.Commands;
 
 public class RollCommandBehavior(IWardenService warden,
-  IRollCommandNotications notifications,
-  IWardenNotifications wardenNotifications,
-  IGenericCommandNotifications generics) : IPluginBehavior {
+  IWardenCmdRollLocale notifications, IWardenLocale wardenLocale,
+  IGenericCmdLocale generics) : IPluginBehavior {
   private readonly Random rng = new();
 
   [ConsoleCommand("css_roll",
@@ -21,7 +21,7 @@ public class RollCommandBehavior(IWardenService warden,
     if (player == null) return;
 
     if (!warden.IsWarden(player)) {
-      wardenNotifications.NotWarden.ToPlayerChat(player);
+      wardenLocale.NotWarden.ToChat(player);
       return;
     }
 

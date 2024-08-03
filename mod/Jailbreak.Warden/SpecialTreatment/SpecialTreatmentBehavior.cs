@@ -2,7 +2,7 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Jailbreak.Formatting.Extensions;
-using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Generic;
 using Jailbreak.Public.Mod.Rebel;
@@ -11,7 +11,7 @@ using Jailbreak.Public.Mod.Warden;
 namespace Jailbreak.Warden.SpecialTreatment;
 
 public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
-  IRebelService rebel, ISpecialTreatmentNotifications notifications)
+  IRebelService rebel, IWardenSTLocale notifications)
   : IPluginBehavior, ISpecialTreatmentService {
   private readonly IPlayerState<SpecialTreatmentState> sts =
     factory.Round<SpecialTreatmentState>();
@@ -29,7 +29,7 @@ public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
     if (rebel.IsRebel(player)) rebel.UnmarkRebel(player);
     setSpecialColor(player, true);
 
-    notifications.Granted.ToPlayerChat(player).ToPlayerCenter(player);
+    notifications.Granted.ToChat(player).ToCenter(player);
 
     notifications.GrantedTo(player).ToAllChat();
   }
@@ -42,7 +42,7 @@ public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
 
     setSpecialColor(player, false);
 
-    notifications.Revoked.ToPlayerChat(player).ToPlayerCenter(player);
+    notifications.Revoked.ToChat(player).ToCenter(player);
 
     notifications.RevokedFrom(player).ToAllChat();
   }

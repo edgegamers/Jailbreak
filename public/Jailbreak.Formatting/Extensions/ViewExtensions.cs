@@ -6,6 +6,8 @@ using Jailbreak.Formatting.Core;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Utils;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 namespace Jailbreak.Formatting.Extensions;
 
 public static class ViewExtensions {
@@ -26,25 +28,23 @@ public static class ViewExtensions {
   }
 
   public static IView ToAllConsole(this IView view) {
-    Utilities.GetPlayers().ForEach(player => view.ToPlayerConsole(player));
-
+    view.ToConsole(Utilities.GetPlayers().ToArray());
     return view;
   }
 
   public static IView ToAllChat(this IView view) {
-    Utilities.GetPlayers().ForEach(player => view.ToPlayerChat(player));
-
+    view.ToChat(Utilities.GetPlayers().ToArray());
     return view;
   }
 
   public static IView ToAllCenter(this IView view) {
-    Utilities.GetPlayers().ForEach(player => view.ToPlayerCenter(player));
-
+    view.ToCenter(Utilities.GetPlayers().ToArray());
     return view;
   }
 
   #region Individual
 
+  [Obsolete("Use ToConsole instead")]
   public static IView ToPlayerConsole(this IView view,
     CCSPlayerController player) {
     if (!player.IsReal() || player.IsBot) return view;
@@ -56,6 +56,7 @@ public static class ViewExtensions {
     return view;
   }
 
+  [Obsolete("Use ToChat instead")]
   public static IView ToPlayerChat(this IView view,
     CCSPlayerController player) {
     if (!player.IsReal() || player.IsBot) return view;
@@ -67,6 +68,7 @@ public static class ViewExtensions {
     return view;
   }
 
+  [Obsolete("Use ToCenter instead")]
   public static IView ToPlayerCenter(this IView view,
     CCSPlayerController player) {
     if (!player.IsReal() || player.IsBot) return view;
@@ -79,6 +81,7 @@ public static class ViewExtensions {
     return view;
   }
 
+  [Obsolete("Use ToCenterHtml instead")]
   public static IView ToPlayerCenterHtml(this IView view,
     CCSPlayerController player) {
     if (!player.IsReal() || player.IsBot) return view;
@@ -93,11 +96,11 @@ public static class ViewExtensions {
 
   #endregion
 
-  #region team
+  #region Team
 
   public static IView ToTeamChat(this IView view, CsTeam team) {
     foreach (var player in PlayerUtil.FromTeam(team, false))
-      view.ToPlayerChat(player);
+      view.ToChat(player);
 
     return view;
   }
@@ -112,6 +115,31 @@ public static class ViewExtensions {
   public static IView ToTeamCenterHtml(this IView view, CsTeam team) {
     foreach (var player in PlayerUtil.FromTeam(team, false))
       view.ToPlayerCenterHtml(player);
+
+    return view;
+  }
+
+  #endregion
+
+  #region params
+
+  public static IView ToConsole(this IView view,
+    params CCSPlayerController[] players) {
+    foreach (var player in players) view.ToPlayerConsole(player);
+
+    return view;
+  }
+
+  public static IView ToChat(this IView view,
+    params CCSPlayerController[] players) {
+    foreach (var player in players) view.ToPlayerChat(player);
+
+    return view;
+  }
+
+  public static IView ToCenter(this IView view,
+    params CCSPlayerController[] players) {
+    foreach (var player in players) view.ToPlayerCenter(player);
 
     return view;
   }

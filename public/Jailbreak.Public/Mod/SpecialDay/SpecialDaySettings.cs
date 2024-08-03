@@ -33,7 +33,12 @@ public class SpecialDaySettings {
     /// <summary>
     ///   Teleport all players randomly across the map
     /// </summary>
-    RANDOM
+    RANDOM,
+
+    /// <summary>
+    ///   Pick a random teleport on the map and teleport all players to it
+    /// </summary>
+    RANDOM_STACKED
   }
 
   public bool AllowLastGuard = false;
@@ -45,11 +50,11 @@ public class SpecialDaySettings {
   public TeleportType CtTeleport = TeleportType.NONE;
 
   public bool FreezePlayers = true;
-  public bool RespawnPlayers = true;
   public bool OpenCells = true;
+  public bool RespawnPlayers = true;
 
   /// <summary>
-  /// Used to avoid registring a costly OnTick listener if false
+  ///   Used to avoid registring a costly OnTick listener if false
   /// </summary>
   public bool RestrictWeapons = false;
 
@@ -102,10 +107,10 @@ public class SpecialDaySettings {
   public virtual int InitialArmor(CCSPlayerController player) { return 0; }
 
   public SpecialDaySettings WithFriendlyFire() {
-    ConVarValues["mp_teammates_are_enemies"]     = true;
-    ConVarValues["ff_damage_reduction_bullets"]  = 1.0f;
-    ConVarValues["ff_damage_reduction_grenades"] = 1.0f;
-    ConVarValues["ff_damage_reduction_other"]    = 1.0f;
+    ConVarValues["mp_teammates_are_enemies"]    = true;
+    ConVarValues["ff_damage_reduction_bullets"] = 1.0f;
+    ConVarValues["ff_damage_reduction_grenade"] = 1.0f;
+    ConVarValues["ff_damage_reduction_other"]   = 1.0f;
     return this;
   }
 

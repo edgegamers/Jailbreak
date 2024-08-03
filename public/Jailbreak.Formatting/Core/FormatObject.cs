@@ -1,4 +1,5 @@
 ﻿using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Objects;
 using Jailbreak.Public.Extensions;
 
@@ -34,6 +35,14 @@ public abstract class FormatObject {
 
   public static implicit operator FormatObject(int value) {
     return new IntegerFormatObject(value);
+  }
+
+  public static implicit operator FormatObject(float value) {
+    return new FloatFormatObject(value);
+  }
+
+  public static implicit operator FormatObject(CsTeam value) {
+    return new TeamFormatObject(value);
   }
 
   public static FormatObject FromObject(object value) {

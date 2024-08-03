@@ -23,7 +23,9 @@ public class ShuffleBag<T> : IEnumerable<T> {
 
   public IEnumerator<T> GetEnumerator() {
     while (true) yield return GetNext();
+    // ReSharper disable IteratorNeverReturns
   }
+  // ReSharper restore IteratorNeverReturns
 
   IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 

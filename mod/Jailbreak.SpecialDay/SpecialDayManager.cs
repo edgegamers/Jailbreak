@@ -22,7 +22,7 @@ public class SpecialDayManager(ISpecialDayFactory factory)
     CurrentSD         = factory.CreateSpecialDay(type);
     IsSDRunning       = true;
     if (CurrentSD is ISpecialDayMessageProvider messaged)
-      messaged.Messages.SpecialDayStart.ToAllChat();
+      messaged.Locale.SpecialDayStart.ToAllChat();
 
     CurrentSD.Setup();
     return true;
@@ -40,7 +40,7 @@ public class SpecialDayManager(ISpecialDayFactory factory)
     if (!IsSDRunning || CurrentSD == null) return HookResult.Continue;
     IsSDRunning = false;
     if (CurrentSD is ISpecialDayMessageProvider messaged)
-      messaged.Messages.SpecialDayEnd().ToAllChat();
+      messaged.Locale.SpecialDayEnd.ToAllChat();
     CurrentSD = null;
     return HookResult.Continue;
   }

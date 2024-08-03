@@ -15,7 +15,7 @@ using MStatsShared;
 
 namespace Jailbreak.Rebel;
 
-public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
+public class RebelManager(IRebelLocale notifs, IRichLogService logs)
   : IPluginBehavior, IRebelService {
   [Obsolete("No longer used, use FakeConvar")]
   public static readonly int MAX_REBEL_TIME = 45;
@@ -80,7 +80,7 @@ public class RebelManager(IRebelNotifications notifs, IRichLogService logs)
 
   public void UnmarkRebel(CCSPlayerController player) {
     if (rebelTimes.ContainsKey(player)) {
-      notifs.NoLongerRebel.ToPlayerChat(player);
+      notifs.NoLongerRebel.ToChat(player);
       logs.Append(logs.Player(player), "is no longer a rebel.");
     }
 

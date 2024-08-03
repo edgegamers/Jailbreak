@@ -23,5 +23,5 @@ public interface IZoneManager : IPluginBehavior {
 
   Task UpdateZone(IZone zone, ZoneType type, int id);
 
-  Task<IDictionary<ZoneType, IList<IZone>>> GetAllZones();
+  Task<Dictionary<ZoneType, IList<IZone>>> GetAllZones();
 }

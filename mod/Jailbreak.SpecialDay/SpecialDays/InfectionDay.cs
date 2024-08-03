@@ -1,7 +1,6 @@
 ﻿using System.Drawing;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Extensions;
@@ -13,56 +12,36 @@ using Jailbreak.Public.Utils;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
-public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
-  : ArmoryRestrictedDay(plugin, provider, CsTeam.CounterTerrorist),
-    ISpecialDayMessageProvider {
+public class InfectionDay : AbstractArmoryRestrictedDay,
+  ISpecialDayMessageProvider {
+  private readonly ICollection<int> swappedPrisoners = new HashSet<int>();
+
+  public InfectionDay(BasePlugin Plugin, IServiceProvider provider) : base(
+    Plugin, provider, CsTeam.CounterTerrorist) { }
+
   public override SDType Type => SDType.INFECTION;
 
   public override SpecialDaySettings Settings => new InfectionSettings();
-  private readonly ICollection<uint> swappedPrisoners = new HashSet<uint>();
+  private InfectionDayLocale msg => (InfectionDayLocale)Locale;
 
-  public class InfectionSettings : SpecialDaySettings {
-    public InfectionSettings() {
-      CtTeleport      = TeleportType.ARMORY;
-      TTeleport       = TeleportType.ARMORY;
-      RestrictWeapons = true;
-
-      WithRespawns(CsTeam.CounterTerrorist);
-    }
-
-    public override ISet<string>? AllowedWeapons(CCSPlayerController player) {
-      return player.Team == CsTeam.CounterTerrorist ?
-        Tag.UTILITY.Union(Tag.PISTOLS).ToHashSet() :
-        null;
-    }
-
-    public override float FreezeTime(CCSPlayerController player) {
-      return player.Team == CsTeam.CounterTerrorist ? 5 : 2;
-    }
-
-    public override int InitialHealth(CCSPlayerController player) {
-      return player.Team == CsTeam.CounterTerrorist ? 50 : 200;
-    }
-  }
+  public ISDInstanceLocale Locale => new InfectionDayLocale();
 
   public override void Setup() {
-    Timers[15] += () => Messages.BeginsIn(15).ToAllChat();
+    Timers[15] += () => {
+      Locale.BeginsIn(15).ToAllChat();
+      msg.DamageWarning(5).ToAllChat();
+    };
+    Timers[20] += () => {
+      foreach (var t in PlayerUtil.FromTeam(CsTeam.Terrorist)) EnableDamage(t);
+    };
     Timers[30] += Execute;
     base.Setup();
 
     foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist))
       ct.SetColor(Color.LimeGreen);
 
-    plugin.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
-    plugin.RegisterEventHandler<EventPlayerSpawn>(OnRespawn);
-
-    plugin.AddCommandListener("jointeam", onJoinTeam);
-  }
-
-  private HookResult onJoinTeam(CCSPlayerController? player,
-    CommandInfo commandinfo) {
-    if (player == null) return HookResult.Continue;
-    return HookResult.Handled;
+    Plugin.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
+    Plugin.RegisterEventHandler<EventPlayerSpawn>(OnRespawn);
   }
 
   private HookResult
@@ -91,26 +70,26 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
 
     var target = nearest.FirstOrDefault();
     if (target != null && target.Team == CsTeam.Terrorist)
-      msg.InfectedWarning(player).ToPlayerChat(target);
+      msg.InfectedWarning(player).ToChat(target);
 
     var tpSpot = target != null ?
       target.PlayerPawn.Value!.AbsOrigin!.Clone() :
       pos;
 
-    swappedPrisoners.Add(player.Index);
+    swappedPrisoners.Add(player.Slot);
     if (!player.IsValid) return HookResult.Continue;
 
     msg.YouWereInfectedMessage(
-        (@event.Attacker != null && @event.Attacker.IsValid) ?
+        @event.Attacker != null && @event.Attacker.IsValid ?
           @event.Attacker :
           null)
-     .ToPlayerChat(player);
-    plugin.AddTimer(0.1f, () => {
+     .ToChat(player);
+    Plugin.AddTimer(0.1f, () => {
       player.SwitchTeam(CsTeam.CounterTerrorist);
       player.Respawn();
-      plugin.AddTimer(0.1f, () => {
+      Plugin.AddTimer(0.1f, () => {
         player.RemoveWeapons();
-        plugin.AddTimer(3, () => { player.GiveNamedItem("weapon_knife"); });
+        Plugin.AddTimer(3, () => { player.GiveNamedItem("weapon_knife"); });
       });
       if (nearest.Count == 0 || target == null) {
         player.PlayerPawn.Value!.Teleport(pos);
@@ -128,29 +107,51 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
     if (player.Team != CsTeam.CounterTerrorist) return HookResult.Continue;
 
     var hp = Settings.InitialHealth(player);
-    if (hp != -1) plugin.AddTimer(0.1f, () => { player.SetHealth(hp); });
+    if (hp != -1) Plugin.AddTimer(0.1f, () => { player.SetHealth(hp); });
 
-    var color = swappedPrisoners.Contains(player.Index) ?
+    var color = swappedPrisoners.Contains(player.Slot) ?
       Color.DarkOliveGreen :
       Color.ForestGreen;
     player.SetColor(color);
     return HookResult.Continue;
   }
 
-  public override HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
+  override protected HookResult
+    OnEnd(EventRoundEnd @event, GameEventInfo info) {
     var result = base.OnEnd(@event, info);
+    Plugin.DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
+    Plugin.DeregisterEventHandler<EventPlayerSpawn>(OnRespawn);
+
     foreach (var index in swappedPrisoners) {
-      var player = Utilities.GetPlayerFromIndex((int)index);
+      var player = Utilities.GetPlayerFromSlot(index);
       if (player == null) continue;
       player.SwitchTeam(CsTeam.Terrorist);
     }
 
-    plugin.DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
-    plugin.DeregisterEventHandler<EventPlayerSpawn>(OnRespawn);
-    plugin.RemoveCommandListener("jointeam", onJoinTeam, HookMode.Pre);
     return result;
   }
 
-  public ISpecialDayInstanceMessages Messages => new InfectionDayMessages();
-  private InfectionDayMessages msg => (InfectionDayMessages)Messages;
+  public class InfectionSettings : SpecialDaySettings {
+    public InfectionSettings() {
+      CtTeleport      = TeleportType.ARMORY;
+      TTeleport       = TeleportType.RANDOM;
+      RestrictWeapons = true;
+
+      WithRespawns(CsTeam.CounterTerrorist);
+    }
+
+    public override ISet<string>? AllowedWeapons(CCSPlayerController player) {
+      return player.Team == CsTeam.CounterTerrorist ?
+        Tag.UTILITY.Union(Tag.PISTOLS).ToHashSet() :
+        null;
+    }
+
+    public override float FreezeTime(CCSPlayerController player) {
+      return player.Team == CsTeam.CounterTerrorist ? 6 : 2;
+    }
+
+    public override int InitialHealth(CCSPlayerController player) {
+      return player.Team == CsTeam.Terrorist ? 75 : 200;
+    }
+  }
 }

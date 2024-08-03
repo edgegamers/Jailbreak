@@ -1,10 +1,8 @@
-using System.Drawing;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 using Jailbreak.Debug.Subcommands;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Zones;
-using Jailbreak.Zones;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.Debug;
@@ -38,9 +36,9 @@ public class PlayerZoneCreator : BasicZoneCreator, ITypedZoneCreator {
 
   public ZoneType Type { get; }
 
-  public override IZone Build(IZoneFactory factory) {
+  public override IZone Build(IZoneFactory providedFactory) {
     Points = ConvexHullUtil.ComputeConvexHull(Points ?? []).ToList();
-    return base.Build(factory);
+    return base.Build(providedFactory);
   }
 
   private void tick() {

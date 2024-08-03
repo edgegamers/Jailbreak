@@ -1,10 +1,14 @@
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 
 namespace Jailbreak.Public.Extensions;
 
 public static class WeaponExtensions {
   public static string ToFriendlyString(this CCSWeaponBase weaponEntity) {
-    var designerName = weaponEntity.DesignerName;
+    return weaponEntity.DesignerName.GetFriendlyWeaponName();
+  }
+
+  public static string GetFriendlyWeaponName(this string designerName) {
     switch (designerName) {
       case "weapon_ak47":
         return "AK47";
@@ -125,5 +129,27 @@ public static class WeaponExtensions {
       default:
         return "UNKNOWN: Please Contact Tech";
     }
+  }
+
+  public static void AddBulletsToMagazine(this CBasePlayerWeapon? weapon,
+    int bullets) {
+    if (weapon == null) return;
+    if (weapon.Clip1 + bullets > weapon.VData!.MaxClip1) {
+      var overflowBullets = weapon.Clip1 + bullets - weapon.VData!.MaxClip1;
+      weapon.Clip1          =  weapon.VData!.MaxClip1;
+      weapon.ReserveAmmo[0] += overflowBullets;
+    } else { weapon.Clip1 += bullets; }
+
+    Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_iClip1");
+    Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_pReserveAmmo");
+  }
+
+  public static void SetAmmo(this CBasePlayerWeapon? weapon, int clip,
+    int reserve) {
+    if (weapon == null) return;
+    weapon.Clip1          = clip;
+    weapon.ReserveAmmo[0] = reserve;
+    Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_iClip1");
+    Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_pReserveAmmo");
   }
 }

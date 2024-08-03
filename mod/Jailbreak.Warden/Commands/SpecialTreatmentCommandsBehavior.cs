@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.Warden;
@@ -12,9 +13,8 @@ using MStatsShared;
 namespace Jailbreak.Warden.Commands;
 
 public class SpecialTreatmentCommandsBehavior(IWardenService warden,
-  ISpecialTreatmentService specialTreatment,
-  IGenericCommandNotifications generic, IWardenNotifications wardenNotifs)
-  : IPluginBehavior {
+  ISpecialTreatmentService specialTreatment, IGenericCmdLocale generic,
+  IWardenLocale wardenNotifs) : IPluginBehavior {
   [ConsoleCommand("css_treat",
     "Grant or revoke special treatment from a player")]
   [ConsoleCommand("css_st", "Grant or revoke special treatment from a player")]
@@ -23,7 +23,7 @@ public class SpecialTreatmentCommandsBehavior(IWardenService warden,
     if (player == null) return;
 
     if (!warden.IsWarden(player)) {
-      wardenNotifs.NotWarden.ToPlayerChat(player).ToPlayerConsole(player);
+      wardenNotifs.NotWarden.ToChat(player).ToConsole(player);
       return;
     }
 
@@ -38,15 +38,15 @@ public class SpecialTreatmentCommandsBehavior(IWardenService warden,
 
     if (eligible.Count == 0) {
       generic.PlayerNotFound(command.GetArg(1))
-       .ToPlayerChat(player)
-       .ToPlayerConsole(player);
+       .ToChat(player)
+       .ToConsole(player);
       return;
     }
 
     if (eligible.Count != 1) {
       generic.PlayerFoundMultiple(command.GetArg(1))
-       .ToPlayerChat(player)
-       .ToPlayerConsole(player);
+       .ToChat(player)
+       .ToConsole(player);
       return;
     }
 

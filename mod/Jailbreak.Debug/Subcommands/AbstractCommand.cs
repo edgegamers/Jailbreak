@@ -9,8 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jailbreak.Debug.Subcommands;
 
 public abstract class AbstractCommand(IServiceProvider services) {
-  private readonly IGenericCommandNotifications lang =
-    services.GetRequiredService<IGenericCommandNotifications>();
+  private readonly IGenericCmdLocale lang =
+    services.GetRequiredService<IGenericCmdLocale>();
 
   protected readonly IServiceProvider Services = services;
 
@@ -41,7 +41,7 @@ public abstract class AbstractCommand(IServiceProvider services) {
     if (!matches.Any()) {
       if (command.CallingPlayer != null)
         lang.PlayerNotFound(command.GetArg(argIndex))
-         .ToPlayerChat(command.CallingPlayer);
+         .ToChat(command.CallingPlayer);
       return null;
     }
 
@@ -53,7 +53,7 @@ public abstract class AbstractCommand(IServiceProvider services) {
 
     if (command.CallingPlayer != null)
       lang.PlayerFoundMultiple(command.GetArg(argIndex))
-       .ToPlayerChat(command.CallingPlayer);
+       .ToChat(command.CallingPlayer);
     return null;
   }
 
@@ -71,14 +71,14 @@ public abstract class AbstractCommand(IServiceProvider services) {
     if (!matches.Any()) {
       if (command.CallingPlayer != null)
         lang.PlayerNotFound(command.GetArg(argIndex))
-         .ToPlayerChat(command.CallingPlayer);
+         .ToChat(command.CallingPlayer);
       return null;
     }
 
     if (matches.Count() <= 1) return matches;
     if (command.CallingPlayer != null)
       lang.PlayerFoundMultiple(command.GetArg(argIndex))
-       .ToPlayerChat(command.CallingPlayer);
+       .ToChat(command.CallingPlayer);
     return null;
   }
 

@@ -2,7 +2,7 @@
 
 public static class Tag {
   /// <summary>
-  /// Items that are thrown and exist in the grenade slot
+  ///   Items that are thrown and exist in the grenade slot
   /// </summary>
   public static readonly IReadOnlySet<string> GRENADES = new HashSet<string>([
     "weapon_decoy", "weapon_firebomb", "weapon_flashbang", "weapon_hegrenade",
@@ -11,7 +11,7 @@ public static class Tag {
   ]);
 
   /// <summary>
-  /// Items that do not shoot bullets
+  ///   Items that do not shoot bullets
   /// </summary>
   public static readonly IReadOnlySet<string> UTILITY = new HashSet<string>([
       "weapon_healthshot", "item_assaultsuit", "item_kevlar",

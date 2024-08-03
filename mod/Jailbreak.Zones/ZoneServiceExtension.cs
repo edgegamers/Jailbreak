@@ -8,5 +8,6 @@ public static class ZoneServiceExtension {
   public static void AddJailbreakZones(this IServiceCollection service) {
     service.AddPluginBehavior<IZoneFactory, BasicZoneFactory>();
     service.AddPluginBehavior<IZoneManager, SqlZoneManager>();
+    service.AddPluginBehavior<RandomZoneGenerator>();
   }
 }

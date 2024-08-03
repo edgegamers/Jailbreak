@@ -1,6 +1,5 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -17,10 +16,11 @@ namespace Jailbreak.Public.Mod.SpecialDay;
 
 public abstract class AbstractSpecialDay(BasePlugin plugin,
   IServiceProvider provider) {
+  protected readonly BasePlugin Plugin = plugin;
   private readonly Dictionary<string, object?> previousConvarValues = new();
-  protected BasePlugin Plugin = plugin;
+  protected readonly IServiceProvider Provider = provider;
 
-  protected IDictionary<float, Action> Timers =
+  protected readonly IDictionary<float, Action> Timers =
     new DefaultableDictionary<float, Action>(new Dictionary<float, Action>(),
       () => { });
 
@@ -32,6 +32,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   ///   Use for teleporting, stripping weapons, starting timers, etc.
   /// </summary>
   public virtual void Setup() {
+    Plugin.RegisterAllAttributes(this);
     Plugin.RegisterEventHandler<EventRoundEnd>(OnEnd);
 
     foreach (var entry in Settings.ConVarValues) {
@@ -70,27 +71,27 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     if (Settings.StartInvulnerable) DisableDamage();
 
     if (!Settings.AllowLastRequests)
-      provider.GetRequiredService<ILastRequestManager>().DisableLRForRound();
+      Provider.GetRequiredService<ILastRequestManager>().DisableLRForRound();
     if (!Settings.AllowLastGuard)
-      provider.GetRequiredService<ILastGuardService>()
+      Provider.GetRequiredService<ILastGuardService>()
        .DisableLastGuardForRound();
     if (!Settings.AllowRebels)
-      provider.GetRequiredService<IRebelService>().DisableRebelForRound();
+      Provider.GetRequiredService<IRebelService>().DisableRebelForRound();
 
-    if (Settings.OpenCells) MapUtil.OpenCells();
+    if (Settings.OpenCells)
+      MapUtil.OpenCells(Provider.GetRequiredService<IZoneManager>());
 
     doTeleports();
 
     if (Settings.FreezePlayers)
       foreach (var player in Utilities.GetPlayers()) {
         player.Freeze();
-        Plugin.AddTimer(Settings.FreezeTime(player),
-          () => { player.UnFreeze(); });
+        Timers[Settings.FreezeTime(player)] += () => player.UnFreeze();
       }
 
     foreach (var entry in Timers)
       Plugin.AddTimer(entry.Key, () => {
-        if (provider.GetRequiredService<ISpecialDayManager>().CurrentSD != this)
+        if (Provider.GetRequiredService<ISpecialDayManager>().CurrentSD != this)
           return;
         entry.Value.Invoke();
       }, TimerFlags.STOP_ON_MAPCHANGE);
@@ -121,30 +122,30 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
      .FindAllEntitiesByDesignerName<SpawnPoint>("info_player_counterterrorist")
      .Where(s => s.AbsOrigin != null)
      .Select(s => s.AbsOrigin!);
+    var enumerable = tSpawns as Vector[] ?? tSpawns.ToArray();
+    enumerable.Shuffle();
+    var positions = ctSpawns as Vector[] ?? ctSpawns.ToArray();
+    positions.Shuffle();
+
     IEnumerable<Vector> spawnPositions;
     switch (type) {
       case SpecialDaySettings.TeleportType.CELL:
-        spawnPositions = tSpawns;
+        spawnPositions = enumerable;
         break;
       case SpecialDaySettings.TeleportType.CELL_STACKED:
-        spawnPositions = [tSpawns.First()];
+        spawnPositions = [enumerable.First()];
         break;
       case SpecialDaySettings.TeleportType.ARMORY:
-        spawnPositions = ctSpawns;
+        spawnPositions = positions;
         break;
       case SpecialDaySettings.TeleportType.ARMORY_STACKED:
-        spawnPositions = [ctSpawns.First()];
+        spawnPositions = [positions.First()];
         break;
       case SpecialDaySettings.TeleportType.RANDOM:
-        spawnPositions = getRandomSpawns(false, false).ToList();
-        // If we don't have enough manually specified spawns,
-        // gradually pull from the other spawn types
-        if (spawnPositions.Count() < PlayerUtil.GetAlive().Count()) {
-          spawnPositions = getRandomSpawns(true, false).ToList();
-          if (spawnPositions.Count() < PlayerUtil.GetAlive().Count())
-            spawnPositions = getRandomSpawns().ToList();
-        }
-
+        spawnPositions = getAtLeastRandom(PlayerUtil.GetAlive().Count());
+        break;
+      case SpecialDaySettings.TeleportType.RANDOM_STACKED:
+        spawnPositions = [getAtLeastRandom(1).First()];
         break;
       default:
         return;
@@ -155,8 +156,17 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       player.PlayerPawn.Value?.Teleport(baggedSpawns.GetNext());
   }
 
-  private IEnumerable<Vector> getRandomSpawns(bool includeSpawns = true,
-    bool includeTps = true) {
+  private List<Vector> getAtLeastRandom(int count) {
+    // Progressively get more lax with our "randomness quality"
+    var result                       = getRandomSpawns(false, false, false);
+    if (result.Count < count) result = getRandomSpawns(false, false);
+    if (result.Count < count) result = getRandomSpawns(false);
+    if (result.Count < count) result = getRandomSpawns();
+    return result;
+  }
+
+  private List<Vector> getRandomSpawns(bool includeSpawns = true,
+    bool includeTps = true, bool includeAuto = true) {
     var result = new List<Vector>();
 
     if (includeTps) {
@@ -182,9 +192,17 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       result.AddRange(ctSpawns);
     }
 
-    var zoneManager = provider.GetRequiredService<IZoneManager>();
+    var zoneManager = Provider.GetRequiredService<IZoneManager>();
+    if (includeAuto)
+      result.AddRange(zoneManager.GetZones(ZoneType.SPAWN_AUTO)
+       .GetAwaiter()
+       .GetResult()
+       .Select(z => z.GetCenterPoint()));
+
     var zones = zoneManager.GetZones(ZoneType.SPAWN).GetAwaiter().GetResult();
     result.AddRange(zones.Select(z => z.GetCenterPoint()));
+
+    result.Shuffle();
 
     return result;
   }
@@ -248,6 +266,14 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       }
 
       Server.ExecuteCommand(cvar.Name + " " + value);
+      if (cvar.Name == "mp_teammates_are_enemies") {
+        var opposite = !(bool)value;
+        Server.ExecuteCommand("css_cvar mp_teammates_are_enemies " + opposite);
+
+        Server.NextFrame(() => {
+          Server.ExecuteCommand("css_cvar mp_teammates_are_enemies " + value);
+        });
+      }
     } catch (Exception e) {
       Server.PrintToChatAll(
         $"There was an error setting {cvar.Name} ({cvar.Type}) to {value}");
@@ -265,7 +291,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       Plugin.RegisterListener<Listeners.OnTick>(OnTick);
   }
 
-  protected virtual void OnTick() {
+  virtual protected void OnTick() {
     foreach (var player in PlayerUtil.GetAlive()) {
       var weapons = Settings.AllowedWeapons(player);
       if (weapons == null) continue;
@@ -287,19 +313,17 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     activeWeapon.NextPrimaryAttackTick   = Server.TickCount + 500;
   }
 
-  [GameEventHandler]
-  public virtual HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
+  virtual protected HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
     foreach (var entry in previousConvarValues) {
       var cv = ConVar.Find(entry.Key);
       if (cv == null || entry.Value == null) continue;
-      try { SetConvarValue(cv, entry.Value); } catch (InvalidOperationException
-        e) { Console.WriteLine(e); }
-
-      if (Settings.RestrictWeapons)
-        Plugin.RemoveListener<Listeners.OnTick>(OnTick);
+      SetConvarValue(cv, entry.Value);
     }
 
     previousConvarValues.Clear();
+
+    if (Settings.RestrictWeapons)
+      Plugin.RemoveListener<Listeners.OnTick>(OnTick);
 
     Plugin.DeregisterEventHandler<EventRoundEnd>(OnEnd);
     return HookResult.Continue;
@@ -314,10 +338,14 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   }
 
   protected void DisableDamage(CCSPlayerController player) {
-    if (player.Pawn.Value != null) player.Pawn.Value.TakesDamage = false;
+    if (!player.IsValid || player.Pawn.Value == null) return;
+    if (!player.Pawn.IsValid) return;
+    player.Pawn.Value.TakesDamage = false;
   }
 
   protected void EnableDamage(CCSPlayerController player) {
-    if (player.Pawn.Value != null) player.Pawn.Value.TakesDamage = true;
+    if (!player.IsValid || player.Pawn.Value == null) return;
+    if (!player.Pawn.IsValid) return;
+    player.Pawn.Value.TakesDamage = true;
   }
 }
