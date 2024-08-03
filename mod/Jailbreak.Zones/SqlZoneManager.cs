@@ -125,9 +125,9 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
       zones[type] = list;
     }
 
-    var nextId = zones.Count == 0 ?
-      0 :
-      zones.SelectMany(s => s.Value).Max(z => z.Id) + 1;
+    var allZones = zones.Values.SelectMany(s => s).ToList();
+
+    var nextId = allZones.Count == 0 ? 0 : allZones.Max(z => z.Id) + 1;
     zone.Id = nextId;
     await PushZoneWithID(zone, type, map);
   }
