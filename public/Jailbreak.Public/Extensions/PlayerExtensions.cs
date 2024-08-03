@@ -29,10 +29,10 @@ public static class PlayerExtensions {
     if (!player.IsReal() || !target.IsReal()) return;
 
     var playerPawn = player.Pawn.Value;
-    if (playerPawn == null) return;
+    if (playerPawn == null || !playerPawn.IsValid) return;
 
     var targetPawn = target.Pawn.Value;
-    if (targetPawn == null) return;
+    if (targetPawn == null || !targetPawn.IsValid) return;
 
     if (targetPawn is { AbsRotation: not null, AbsOrigin: not null })
       Teleport(player, targetPawn.AbsOrigin, targetPawn.AbsRotation);
@@ -49,26 +49,22 @@ public static class PlayerExtensions {
   }
 
   public static void Freeze(this CCSPlayerController player) {
-    if (!player.Pawn.IsValid
-      || player.Connected != PlayerConnectedState.PlayerConnected)
-      return;
+    if (!player.IsValid) return;
+    var pawn = player.PlayerPawn.Value;
+    if (pawn == null || !pawn.IsValid) return;
 
-    if (player.Pawn.Value == null) return;
-
-    player.Pawn.Value.Freeze();
+    pawn.Freeze();
   }
 
   public static void UnFreeze(this CCSPlayerController player) {
-    if (!player.Pawn.IsValid
-      || player.Connected != PlayerConnectedState.PlayerConnected)
-      return;
-
-    if (player.Pawn.Value == null) return;
-
-    player.Pawn.Value.UnFreeze();
+    if (!player.IsValid) return;
+    var pawn = player.PlayerPawn.Value;
+    if (pawn == null || !pawn.IsValid) return;
+    pawn.UnFreeze();
   }
 
   public static void Freeze(this CBasePlayerPawn pawn) {
+    if (!pawn.IsValid) return;
     pawn.MoveType = MoveType_t.MOVETYPE_OBSOLETE;
 
     Schema.SetSchemaValue(pawn.Handle, "CBaseEntity", "m_nActualMoveType", 1);
@@ -76,6 +72,7 @@ public static class PlayerExtensions {
   }
 
   public static void UnFreeze(this CBasePlayerPawn pawn) {
+    if (!pawn.IsValid) return;
     pawn.MoveType = MoveType_t.MOVETYPE_WALK;
 
     Schema.SetSchemaValue(pawn.Handle, "CBaseEntity", "m_nActualMoveType", 2);
@@ -83,42 +80,48 @@ public static class PlayerExtensions {
   }
 
   public static void SetHealth(this CCSPlayerController player, int health) {
+    if (!player.IsValid) return;
     var pawn = player.PlayerPawn.Value;
-    if (pawn == null) return;
+    if (pawn == null || !pawn.IsValid) return;
     pawn.Health = health;
     Utilities.SetStateChanged(pawn, "CBaseEntity", "m_iHealth");
   }
 
   public static void SetMaxHealth(this CCSPlayerController player, int health) {
+    if (!player.IsValid) return;
     var pawn = player.PlayerPawn.Value;
-    if (pawn == null) return;
+    if (pawn == null || !pawn.IsValid) return;
     pawn.MaxHealth = health;
     Utilities.SetStateChanged(pawn, "CBaseEntity", "m_iMaxHealth");
   }
 
   public static void SetArmor(this CCSPlayerController player, int armor) {
+    if (!player.IsValid) return;
     var pawn = player.PlayerPawn.Value;
-    if (pawn == null) return;
+    if (pawn == null || !pawn.IsValid) return;
     pawn.ArmorValue = armor;
     Utilities.SetStateChanged(pawn, "CCSPlayerPawn", "m_ArmorValue");
   }
 
   public static void SetSpeed(this CCSPlayerController player, float speed) {
+    if (!player.IsValid) return;
     var pawn = player.PlayerPawn.Value;
-    if (pawn == null) return;
+    if (pawn == null || !pawn.IsValid) return;
     pawn.VelocityModifier = speed;
   }
 
   public static void
     SetGravity(this CCSPlayerController player, float gravity) {
+    if (!player.IsValid) return;
     var pawn = player.PlayerPawn.Value;
-    if (pawn == null) return;
+    if (pawn == null || !pawn.IsValid) return;
     pawn.GravityScale = gravity;
   }
 
   public static void SetColor(this CCSPlayerController player, Color color) {
+    if (!player.IsValid) return;
     var pawn = player.PlayerPawn.Value;
-    if (!player.IsReal() || pawn == null) return;
+    if (!player.IsValid || pawn == null || !pawn.IsValid) return;
 
     if (color.A == 255) color = Color.FromArgb(254, color.R, color.G, color.B);
     pawn.RenderMode = RenderMode_t.kRenderTransColor;
@@ -127,15 +130,20 @@ public static class PlayerExtensions {
   }
 
   public static Color? GetColor(this CCSPlayerController player) {
+    if (!player.IsValid) return null;
     var pawn = player.PlayerPawn.Value;
-    if (!player.IsReal() || pawn == null) return null;
+    if (pawn == null || !pawn.IsValid) return null;
 
     return pawn.Render;
   }
 
-  public static CBasePlayerWeapon?
-    GetWeaponBase(this CCSPlayerController player, string designerName) {
-    return player.PlayerPawn.Value?.WeaponServices?.MyWeapons
+  public static CBasePlayerWeapon? GetWeaponBase(
+    this CCSPlayerController player, string designerName) {
+    if (!player.IsValid) return null;
+    var pawn = player.PlayerPawn.Value;
+    if (pawn == null || !pawn.IsValid) return null;
+
+    return pawn.WeaponServices?.MyWeapons
      .FirstOrDefault(w => w.Value?.DesignerName == designerName)
     ?.Value;
   }

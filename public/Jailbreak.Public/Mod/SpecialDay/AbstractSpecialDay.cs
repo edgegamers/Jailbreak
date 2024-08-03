@@ -20,7 +20,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   private readonly Dictionary<string, object?> previousConvarValues = new();
   protected readonly IServiceProvider Provider = provider;
 
-  protected IDictionary<float, Action> Timers =
+  protected readonly IDictionary<float, Action> Timers =
     new DefaultableDictionary<float, Action>(new Dictionary<float, Action>(),
       () => { });
 
@@ -86,8 +86,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     if (Settings.FreezePlayers)
       foreach (var player in Utilities.GetPlayers()) {
         player.Freeze();
-        Plugin.AddTimer(Settings.FreezeTime(player),
-          () => { player.UnFreeze(); });
+        Timers[Settings.FreezeTime(player)] += () => player.UnFreeze();
       }
 
     foreach (var entry in Timers)
@@ -339,10 +338,14 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   }
 
   protected void DisableDamage(CCSPlayerController player) {
-    if (player.Pawn.Value != null) player.Pawn.Value.TakesDamage = false;
+    if (!player.IsValid || player.Pawn.Value == null) return;
+    if (!player.Pawn.IsValid) return;
+    player.Pawn.Value.TakesDamage = false;
   }
 
   protected void EnableDamage(CCSPlayerController player) {
-    if (player.Pawn.Value != null) player.Pawn.Value.TakesDamage = true;
+    if (!player.IsValid || player.Pawn.Value == null) return;
+    if (!player.Pawn.IsValid) return;
+    player.Pawn.Value.TakesDamage = true;
   }
 }

@@ -470,7 +470,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     public SpeedrunSettings() {
       CtTeleport = TeleportType.RANDOM_STACKED;
       TTeleport = TeleportType.RANDOM_STACKED;
-      RestrictWeapons = true;
+      // RestrictWeapons = true;
       StripToKnife = true;
       ConVarValues["mp_ignore_round_win_conditions"] = true;
       WithFriendlyFire();
