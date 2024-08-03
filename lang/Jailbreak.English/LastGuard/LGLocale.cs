@@ -8,7 +8,7 @@ using Jailbreak.Formatting.Views;
 
 namespace Jailbreak.English.LastGuard;
 
-public class IlgLocale : ILGLocale, ILanguage<Formatting.Languages.English> {
+public class LGLocale : ILGLocale, ILanguage<Formatting.Languages.English> {
   private static readonly FormatObject PREFIX =
     new HiddenFormatObject(
       $" {ChatColors.DarkRed}[{ChatColors.LightRed}Last Guard{ChatColors.DarkRed}]") {
