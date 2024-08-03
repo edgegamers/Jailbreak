@@ -45,7 +45,7 @@ public class SoloDayLocale(string name, params string[] description)
   public IView SpecialDayEnd() {
     var lastAlive = PlayerUtil.GetAlive().FirstOrDefault();
     if (lastAlive == null)
-      return new SimpleView { PREFIX, Name, "has ended! No one won!" };
+      return new SimpleView { PREFIX, Name, "ended! No one won!" };
     return new SimpleView {
       PREFIX,
       Name,
