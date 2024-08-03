@@ -31,10 +31,7 @@ public class WardayDay(BasePlugin plugin, IServiceProvider provider)
         ct.SetSpeed(1.5f);
       }
 
-      foreach (var t in PlayerUtil.FromTeam(CsTeam.Terrorist)) {
-        t.SetHealth(Math.Min(25, t.Health));
-        t.SetArmor(0);
-      }
+      foreach (var t in PlayerUtil.FromTeam(CsTeam.Terrorist)) t.SetArmor(0);
     };
 
     base.Setup();
