@@ -51,8 +51,7 @@ public class TeamDayLocale(string name, params string[] description)
       PREFIX,
       Name,
       "ended.",
-      (winner == CsTeam.CounterTerrorist ? ChatColors.Blue : ChatColors.Red)
-      + (winner == CsTeam.CounterTerrorist ? "Guards" : "Prisoners"),
+      winner,
       "won!"
     };
   }
