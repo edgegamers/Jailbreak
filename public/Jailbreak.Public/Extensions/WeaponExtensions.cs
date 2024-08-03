@@ -130,14 +130,15 @@ public static class WeaponExtensions {
         return "UNKNOWN: Please Contact Tech";
     }
   }
-  public static void AddBulletsToMagazine(this CBasePlayerWeapon? weapon, 
+
+  public static void AddBulletsToMagazine(this CBasePlayerWeapon? weapon,
     int bullets) {
     if (weapon.Clip1 + bullets > weapon.VData!.MaxClip1) {
-      int overflowBullets = (weapon.Clip1 + bullets) - weapon.VData!.MaxClip1;
-      weapon.Clip1 = weapon.VData!.MaxClip1;
+      var overflowBullets = weapon.Clip1 + bullets - weapon.VData!.MaxClip1;
+      weapon.Clip1          =  weapon.VData!.MaxClip1;
       weapon.ReserveAmmo[0] += overflowBullets;
-    } 
-    else { weapon.Clip1 += bullets; }
+    } else { weapon.Clip1 += bullets; }
+
     Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_iClip1");
     Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_pReserveAmmo");
   }

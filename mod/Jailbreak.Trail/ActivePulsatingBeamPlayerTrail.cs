@@ -1,7 +1,5 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
-using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.Draw;
 
 namespace Jailbreak.Trail;
 
@@ -12,7 +10,7 @@ public class ActivePulsatingBeamPlayerTrail(BasePlugin plugin,
   : ActivePlayerTrail<BeamTrailSegment>(plugin, player, lifetime, maxPoints,
     updateRate) {
   private readonly PulsatingBeamTrail trail = new(plugin, lifetime, maxPoints,
-    updateRate, pulseRate, pulseMin, pulseMax);
+    updateRate);
 
   public override void Kill() {
     base.Kill();

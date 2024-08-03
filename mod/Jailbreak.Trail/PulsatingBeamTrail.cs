@@ -5,26 +5,18 @@ using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.Trail;
+using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.Trail;
 
 public class PulsatingBeamTrail : AbstractTrail<BeamTrailSegment> {
-  private readonly float pulseRate;
-  private readonly float pulseMin;
-  private readonly float pulseMax;
-  private readonly Func<float, float> transform;
   private readonly BasePlugin plugin;
-  private readonly CounterStrikeSharp.API.Modules.Timers.Timer timer;
+  private readonly Timer timer;
 
   public PulsatingBeamTrail(BasePlugin plugin, float lifetime = 20,
-    int maxPoints = 100, float updateRate = 0.25f, float pulseRate = 0.5f,
-    float pulseMin = 0.5f, float pulseMax = 2.5f,
+    int maxPoints = 100, float updateRate = 0.25f,
     Func<float, float>? transform = null) : base(lifetime, maxPoints) {
-    this.plugin    = plugin;
-    this.pulseRate = pulseRate;
-    this.pulseMin  = pulseMin;
-    this.pulseMax  = pulseMax;
-    this.transform = transform ?? MathF.Sin;
+    this.plugin = plugin;
 
     timer = plugin.AddTimer(updateRate, Update,
       TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
@@ -39,7 +31,7 @@ public class PulsatingBeamTrail : AbstractTrail<BeamTrailSegment> {
         line.SetColor(Color.FromArgb(0, 0, 0, 0));
       else
         line.SetColor(Color.FromArgb(
-          (int)Math.Clamp((width / 2.5f) * 255, 0, 255), 255, 255, 255));
+          (int)Math.Clamp(width / 2.5f * 255, 0, 255), 255, 255, 255));
       line.SetWidth(width);
       line.Update();
       i += 1;
@@ -52,11 +44,10 @@ public class PulsatingBeamTrail : AbstractTrail<BeamTrailSegment> {
   }
 
   public static PulsatingBeamTrail? FromTrail<T>(BasePlugin plugin,
-    AbstractTrail<T> trail, float updateRate = 0.25f, float pulseRate = 0.5f,
-    float pulseMin = 0.5f, float pulseMax = 1.5f,
+    AbstractTrail<T> trail, float updateRate = 0.25f,
     Func<float, float>? transform = null) where T : ITrailSegment {
     var beamTrail = new PulsatingBeamTrail(plugin, trail.Lifetime,
-      trail.MaxPoints, updateRate, pulseRate, pulseMin, pulseMax, transform);
+      trail.MaxPoints, updateRate, transform);
     foreach (var segment in trail)
       beamTrail.Segments.Add(
         beamTrail.CreateSegment(segment.GetStart(), segment.GetEnd()));

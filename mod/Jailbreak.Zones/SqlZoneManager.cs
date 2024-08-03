@@ -41,6 +41,13 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
       }
     }
 
+    foreach (var list in zones.Values) {
+      var zone = list.FirstOrDefault(z => z.Id == zoneId);
+      if (zone == null) continue;
+      list.Remove(zone);
+      break;
+    }
+
     var conn = createConnection();
     if (conn == null) return;
     await conn.OpenAsync();
@@ -59,7 +66,6 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
   }
 
   public async Task PushZoneWithID(IZone zone, ZoneType type, string map) {
-    Server.NextFrame(() => { Server.PrintToConsole("Pushing zone to SQL"); });
     if (!zones.TryGetValue(type, out var list)) {
       list        = new List<IZone>();
       zones[type] = list;
@@ -69,16 +75,12 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
 
     var conn = createConnection();
     if (conn == null) return;
-    Server.NextFrame(() => {
-      Server.PrintToConsole("Successfully connect to sql");
-    });
     await conn.OpenAsync();
 
     var insertPointCommand = $"""
         INSERT INTO {CvSqlTable.Value.Trim('"')} (map, type, zoneid, pointid, X, Y, Z)
         VALUES (@map, @type, @zoneid, @pointid, @X, @Y, @Z)
       """;
-    Server.NextFrame(() => { Server.PrintToConsole("Creating command"); });
     var pointId = 0;
 
     foreach (var point in zone.GetAllPoints()) {

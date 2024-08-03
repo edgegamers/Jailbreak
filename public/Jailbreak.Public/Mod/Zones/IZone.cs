@@ -8,7 +8,7 @@ namespace Jailbreak.Public.Mod.Zones;
 public interface IZone {
   public int Id { get; set; }
   bool IsInsideZone(Vector position);
-  float GetMinDistance(Vector position);
+  float GetMinDistanceSquared(Vector position);
 
   /// <summary>
   ///   Represents a valid center point that players are able to spawn into

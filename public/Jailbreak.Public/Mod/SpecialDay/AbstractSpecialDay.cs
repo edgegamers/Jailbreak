@@ -1,6 +1,5 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -32,6 +31,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   ///   Use for teleporting, stripping weapons, starting timers, etc.
   /// </summary>
   public virtual void Setup() {
+    Plugin.RegisterAllAttributes(this);
     Plugin.RegisterEventHandler<EventRoundEnd>(OnEnd);
 
     foreach (var entry in Settings.ConVarValues) {
@@ -77,7 +77,8 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     if (!Settings.AllowRebels)
       provider.GetRequiredService<IRebelService>().DisableRebelForRound();
 
-    if (Settings.OpenCells) MapUtil.OpenCells();
+    if (Settings.OpenCells)
+      MapUtil.OpenCells(provider.GetRequiredService<IZoneManager>());
 
     doTeleports();
 
@@ -139,12 +140,17 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
         spawnPositions = getRandomSpawns(false, false).ToList();
         // If we don't have enough manually specified spawns,
         // gradually pull from the other spawn types
-        if (spawnPositions.Count() < PlayerUtil.GetAlive().Count()) {
-          spawnPositions = getRandomSpawns(true, false).ToList();
-          if (spawnPositions.Count() < PlayerUtil.GetAlive().Count())
-            spawnPositions = getRandomSpawns().ToList();
-        }
-
+        if (spawnPositions.Count() < PlayerUtil.GetAlive().Count())
+          spawnPositions = getRandomSpawns(false).ToList();
+        if (spawnPositions.Count() < PlayerUtil.GetAlive().Count())
+          spawnPositions = getRandomSpawns().ToList();
+        break;
+      case SpecialDaySettings.TeleportType.RANDOM_STACKED:
+        spawnPositions = getRandomSpawns(false, false).Take(1).ToList();
+        if (!spawnPositions.Any())
+          spawnPositions = getRandomSpawns(false).Take(1).ToList();
+        if (!spawnPositions.Any())
+          spawnPositions = getRandomSpawns().Take(1).ToList();
         break;
       default:
         return;
@@ -155,7 +161,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       player.PlayerPawn.Value?.Teleport(baggedSpawns.GetNext());
   }
 
-  private IEnumerable<Vector> getRandomSpawns(bool includeSpawns = true,
+  private List<Vector> getRandomSpawns(bool includeSpawns = true,
     bool includeTps = true) {
     var result = new List<Vector>();
 
@@ -182,12 +188,11 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       result.AddRange(ctSpawns);
     }
 
-    var zoneManager = provider.GetRequiredService<IZoneManager>();
-    var zones = zoneManager.GetZones(ZoneType.SPAWN).GetAwaiter().GetResult();
+    var           zoneManager = provider.GetRequiredService<IZoneManager>();
+    var zones       = zoneManager.GetZones(ZoneType.SPAWN).GetAwaiter().GetResult();
     result.AddRange(zones.Select(z => z.GetCenterPoint()));
 
     result.Shuffle();
-
     return result;
   }
 
@@ -219,8 +224,6 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   protected void SetConvarValue(ConVar? cvar, object value) {
     if (cvar == null) return;
     try {
-      cvar.Flags |= ConVarFlags.FCVAR_REPLICATED | ConVarFlags.FCVAR_NOTIFY
-        | ConVarFlags.FCVAR_PER_USER;
       switch (cvar.Type) {
         case ConVarType.Bool:
           cvar.SetValue((bool)value);
@@ -253,13 +256,12 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
 
       Server.ExecuteCommand(cvar.Name + " " + value);
       if (cvar.Name == "mp_teammates_are_enemies") {
-        bool opposite = !((bool)value);
+        var opposite = !(bool)value;
         Server.ExecuteCommand("css_cvar mp_teammates_are_enemies " + opposite);
 
-        Plugin.AddTimer(0.1f,
-          () => {
-            Server.ExecuteCommand("css_cvar mp_teammates_are_enemies " + value);
-          });
+        Server.NextFrame(() => {
+          Server.ExecuteCommand("css_cvar mp_teammates_are_enemies " + value);
+        });
       }
     } catch (Exception e) {
       Server.PrintToChatAll(
@@ -300,18 +302,17 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     activeWeapon.NextPrimaryAttackTick   = Server.TickCount + 500;
   }
 
-  [GameEventHandler]
-  public virtual HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
+  virtual protected HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
     foreach (var entry in previousConvarValues) {
       var cv = ConVar.Find(entry.Key);
       if (cv == null || entry.Value == null) continue;
-      try { SetConvarValue(cv, entry.Value); } catch (InvalidOperationException
-        e) { Console.WriteLine(e); }
+      SetConvarValue(cv, entry.Value);
     }
+
+    previousConvarValues.Clear();
 
     if (Settings.RestrictWeapons)
       Plugin.RemoveListener<Listeners.OnTick>(OnTick);
-    previousConvarValues.Clear();
 
     Plugin.DeregisterEventHandler<EventRoundEnd>(OnEnd);
     return HookResult.Continue;

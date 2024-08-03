@@ -1,7 +1,5 @@
-﻿using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Utils;
+﻿using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Core;
-using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.Formatting.Objects;
 

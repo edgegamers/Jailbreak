@@ -198,7 +198,7 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
         }
 
         tpDestinations.Sort((a, b)
-          => a.GetMinDistance(position) <= b.GetMinDistance(position) ? -1 : 1);
+          => a.GetMinDistanceSquared(position) <= b.GetMinDistanceSquared(position) ? -1 : 1);
         executor.PlayerPawn.Value.Teleport(tpDestinations.First()
          .GetCenterPoint());
 

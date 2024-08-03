@@ -14,6 +14,11 @@ public enum ZoneType {
   CELL,
 
   /// <summary>
+  ///   This zone is a single point, and represents the cell button
+  /// </summary>
+  CELL_BUTTON,
+
+  /// <summary>
   ///   This zone captures a secret area that Ts may try to access
   /// </summary>
   SECRET,
@@ -50,7 +55,8 @@ public enum ZoneType {
   ZONE_LIMIT_CT,
 
   /// <summary>
-  ///   The center of the map (both vertically and horizontally)
+  ///   This zone is a single point, and represents
+  ///   the center of the map (both vertically and horizontally)
   /// </summary>
   CENTER
 }
@@ -72,6 +78,11 @@ public static class ZoneTypeExtensions {
   }
 
   public static bool IsSinglePoint(this ZoneType type) {
-    return type == ZoneType.SPAWN;
+    return type switch {
+      ZoneType.CELL_BUTTON => true,
+      ZoneType.SPAWN       => true,
+      ZoneType.CENTER      => true,
+      _                    => false
+    };
   }
 }

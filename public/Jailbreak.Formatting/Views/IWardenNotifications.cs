@@ -16,6 +16,8 @@ public interface IWardenNotifications {
   public IView NotWarden { get; }
   public IView FireCommandFailed { get; }
 
+  public IView CannotWardenDuringWarmup { get; }
+
   /// <summary>
   ///   Create a view for when the specified player passes warden
   /// </summary>
@@ -37,8 +39,6 @@ public interface IWardenNotifications {
   /// <param name="player"></param>
   /// <returns></returns>
   public IView CurrentWarden(CCSPlayerController? player);
-  
-  public IView CannotWardenDuringWarmup { get; }
 
   public IView FireCommandSuccess(CCSPlayerController player);
 

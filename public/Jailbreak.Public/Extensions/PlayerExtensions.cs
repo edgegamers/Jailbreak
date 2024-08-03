@@ -125,9 +125,11 @@ public static class PlayerExtensions {
     pawn.Render     = color;
     Utilities.SetStateChanged(pawn, "CBaseModelEntity", "m_clrRender");
   }
-  
-  public static CBasePlayerWeapon? GetWeaponBase(this CCSPlayerController player, string designerName) {
-    return player.PlayerPawn.Value?.WeaponServices?.MyWeapons.
-      FirstOrDefault(w => w.Value?.DesignerName == designerName)?.Value;
+
+  public static CBasePlayerWeapon?
+    GetWeaponBase(this CCSPlayerController player, string designerName) {
+    return player.PlayerPawn.Value?.WeaponServices?.MyWeapons
+     .FirstOrDefault(w => w.Value?.DesignerName == designerName)
+    ?.Value;
   }
 }
