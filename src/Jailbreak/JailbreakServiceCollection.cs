@@ -40,7 +40,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
     serviceCollection.AddSingleton<ILRRPSLocale, RPSLocale>();
     serviceCollection.AddSingleton<ILRRaceLocale, RaceLocale>();
     serviceCollection.AddSingleton<ILGLocale, LGLocale>();
-    serviceCollection.AddSingleton<ISDLocale, IsdLocale>();
+    serviceCollection.AddSingleton<ISDLocale, SDLocale>();
     serviceCollection.AddSingleton<IWardenLocale, WardenLocale>();
     serviceCollection.AddSingleton<IWardenSTLocale, IstLocale>();
     serviceCollection.AddSingleton<IWardenCmdOpenLocale, WardenCmdOpenLocale>();

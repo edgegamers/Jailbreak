@@ -5,7 +5,7 @@ using Jailbreak.Public.Utils;
 namespace Jailbreak.English.SpecialDay;
 
 public class SoloDayLocale(string name, params string[] description)
-  : IsdLocale, ISDInstanceLocale {
+  : SDLocale, ISDInstanceLocale {
   public string Name => name;
   public string[] Description => description;
 

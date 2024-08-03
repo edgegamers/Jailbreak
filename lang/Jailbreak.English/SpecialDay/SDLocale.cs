@@ -7,7 +7,7 @@ using Jailbreak.Formatting.Views;
 
 namespace Jailbreak.English.SpecialDay;
 
-public class IsdLocale : ISDLocale, ILanguage<Formatting.Languages.English> {
+public class SDLocale : ISDLocale, ILanguage<Formatting.Languages.English> {
   public static readonly FormatObject PREFIX =
     new HiddenFormatObject(
       $" {ChatColors.BlueGrey}[{ChatColors.Green}S{ChatColors.Blue}D{ChatColors.BlueGrey}]") {
