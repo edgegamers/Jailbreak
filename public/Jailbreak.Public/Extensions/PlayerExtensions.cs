@@ -126,6 +126,13 @@ public static class PlayerExtensions {
     Utilities.SetStateChanged(pawn, "CBaseModelEntity", "m_clrRender");
   }
 
+  public static Color? GetColor(this CCSPlayerController player) {
+    var pawn = player.PlayerPawn.Value;
+    if (!player.IsReal() || pawn == null) return null;
+
+    return pawn.Render;
+  }
+
   public static CBasePlayerWeapon?
     GetWeaponBase(this CCSPlayerController player, string designerName) {
     return player.PlayerPawn.Value?.WeaponServices?.MyWeapons

@@ -46,7 +46,8 @@ public class SpeedrunDayLocale() : SoloDayLocale("Speedrunners",
 
     return new SimpleView {
       {
-        PREFIX, $"Round #{ChatColors.Yellow}{round} begins! The slowest",
+        PREFIX,
+        $"Round {ChatColors.Yellow}#{round}{ChatColors.Default} begins! The slowest",
         eliminationCount, "players to reach the goal will be eliminated!"
       },
       SimpleView.NEWLINE,
@@ -63,6 +64,12 @@ public class SpeedrunDayLocale() : SoloDayLocale("Speedrunners",
   public IView RunnerAssigned(CCSPlayerController player) {
     return new SimpleView {
       PREFIX, player, "is the speedrunner! Follow them closely!"
+    };
+  }
+
+  public IView RunnerReassigned(CCSPlayerController player) {
+    return new SimpleView {
+      PREFIX, "The speedrunner left, so", player, "is now the speedrunner!"
     };
   }
 

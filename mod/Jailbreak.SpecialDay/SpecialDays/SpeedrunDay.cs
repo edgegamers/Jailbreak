@@ -136,7 +136,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     base.Setup();
 
     foreach (var player in PlayerUtil.GetAlive()) {
-      player.SetColor(Color.FromArgb(65, 255, 255, 255));
+      player.SetColor(Color.FromArgb(100, 255, 255, 255));
       player.RemoveWeapons();
     }
 
@@ -425,6 +425,10 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       <= 4  => 1,
       <= 8  => 2,
       <= 12 => 3,
+      <= 20 => 4,
+      <= 30 => 5,
+      <= 40 => 8,
+      <= 64 => 12,
       _     => 4
     };
   }

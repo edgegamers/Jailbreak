@@ -18,7 +18,7 @@ public class BulletForBullet : TeleportingRequest {
   ];
 
   private static readonly string[] GUN_NAMES = [
-    "Desert Eagle", "USP-S", "Tec9", "CZ75", "Scout", "Nova"
+    "Desert Eagle", "USP-S", "Tec9", "Scout", "Nova"
   ];
 
   private readonly ChatMenu chatMenu;

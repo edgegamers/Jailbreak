@@ -146,7 +146,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
         spawnPositions = getAtLeastRandom(PlayerUtil.GetAlive().Count());
         break;
       case SpecialDaySettings.TeleportType.RANDOM_STACKED:
-        spawnPositions = getAtLeastRandom(1);
+        spawnPositions = [getAtLeastRandom(1).First()];
         break;
       default:
         return;
