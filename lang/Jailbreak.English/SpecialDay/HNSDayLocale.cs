@@ -2,7 +2,7 @@
 
 namespace Jailbreak.English.SpecialDay;
 
-public class HnsDayLocale() : TeamDayLocale("Hide and Seek",
+public class HNSDayLocale() : TeamDayLocale("Hide and Seek",
   "CTs must hide while the Ts seek!", "Ts have 250 HP!") {
   public IView StayInArmory
     => new SimpleView { PREFIX, "Today is", Name, ", stay in the armory!" };

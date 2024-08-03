@@ -5,7 +5,7 @@ using Jailbreak.Public.Utils;
 namespace Jailbreak.English.SpecialDay;
 
 public class SoloDayLocale(string name, params string[] description)
-  : IsdLocale, ISDInstanceLocale {
+  : SDLocale, ISDInstanceLocale {
   public string Name => name;
   public string[] Description => description;
 
@@ -45,11 +45,11 @@ public class SoloDayLocale(string name, params string[] description)
   public IView SpecialDayEnd() {
     var lastAlive = PlayerUtil.GetAlive().FirstOrDefault();
     if (lastAlive == null)
-      return new SimpleView { PREFIX, Name, "has ended! No one won!" };
+      return new SimpleView { PREFIX, Name, "ended. No one won!" };
     return new SimpleView {
       PREFIX,
       Name,
-      "ended!",
+      "ended.",
       lastAlive,
       "won!"
     };

@@ -7,7 +7,7 @@ namespace Jailbreak.English.LastRequest;
 public class B4BLocale : LastRequestLocale, ILRB4BLocale {
   public IView PlayerGoesFirst(CCSPlayerController player) {
     return new SimpleView {
-      PREFIX, "Randomly selected ", player.PlayerName, "to go first."
+      PREFIX, "Randomly selected", player, "to go first."
     };
   }
 

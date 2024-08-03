@@ -7,7 +7,7 @@ using Jailbreak.Formatting.Views;
 
 namespace Jailbreak.English.SpecialDay;
 
-public class IsdLocale : ISDLocale, ILanguage<Formatting.Languages.English> {
+public class SDLocale : ISDLocale, ILanguage<Formatting.Languages.English> {
   public static readonly FormatObject PREFIX =
     new HiddenFormatObject(
       $" {ChatColors.BlueGrey}[{ChatColors.Green}S{ChatColors.Blue}D{ChatColors.BlueGrey}]") {
@@ -28,7 +28,7 @@ public class IsdLocale : ISDLocale, ILanguage<Formatting.Languages.English> {
       PREFIX,
       "You must wait",
       rounds,
-      "more rounds before starting a special day!"
+      "more rounds before starting a special day."
     };
   }
 
@@ -37,7 +37,7 @@ public class IsdLocale : ISDLocale, ILanguage<Formatting.Languages.English> {
       PREFIX,
       "You must start a special day within",
       maxTime,
-      "seconds of the round start!"
+      "seconds of the round start."
     };
   }
 }

@@ -9,10 +9,10 @@ namespace Jailbreak.Public.Mod.Draw;
 
 public class BeamLine(BasePlugin plugin, Vector position, Vector end)
   : DrawableShape(plugin, position), IColorable {
+  public readonly Vector End = end.Clone();
   private CEnvBeam? beam;
   private Color color = Color.White;
   private float width = 1f;
-  public Vector End => end.Clone();
 
   public void SetColor(Color _color) { color = _color; }
 

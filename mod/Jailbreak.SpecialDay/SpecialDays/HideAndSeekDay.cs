@@ -15,13 +15,13 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
   : AbstractArmoryRestrictedDay(plugin, provider), ISpecialDayMessageProvider {
   public override SDType Type => SDType.HNS;
 
-  private HnsDayLocale msg => (HnsDayLocale)Locale;
+  private HNSDayLocale msg => (HNSDayLocale)Locale;
 
   public override SpecialDaySettings Settings => new HNSSettings();
 
   public override IView ArmoryReminder => msg.StayInArmory;
 
-  public ISDInstanceLocale Locale => new HnsDayLocale();
+  public ISDInstanceLocale Locale => new HNSDayLocale();
 
   public override void Setup() {
     Timers[10] += () => {

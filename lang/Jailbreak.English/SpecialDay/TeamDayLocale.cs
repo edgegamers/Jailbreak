@@ -6,7 +6,7 @@ using Jailbreak.Public.Utils;
 namespace Jailbreak.English.SpecialDay;
 
 public class TeamDayLocale(string name, params string[] description)
-  : IsdLocale, ISDInstanceLocale {
+  : SDLocale, ISDInstanceLocale {
   public string Name => name;
 
   public string[] Description => description;
@@ -51,8 +51,7 @@ public class TeamDayLocale(string name, params string[] description)
       PREFIX,
       Name,
       "ended.",
-      (winner == CsTeam.CounterTerrorist ? ChatColors.Blue : ChatColors.Red)
-      + (winner == CsTeam.CounterTerrorist ? "Guards" : "Prisoners"),
+      winner,
       "won!"
     };
   }
