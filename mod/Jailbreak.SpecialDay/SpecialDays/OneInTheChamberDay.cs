@@ -12,8 +12,8 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
   : FFADay(plugin, provider) {
   public override SDType Type => SDType.OITC;
 
-  public override ISpecialDayInstanceMessages Messages
-    => new SoloDayMessages("One in the Chamber", "You only have one bullet.",
+  public override ISDInstanceLocale Locale
+    => new SoloDayLocale("One in the Chamber", "You only have one bullet.",
       "Kill someone to get another bullet.", "One-Hit-Kills! No camping!");
 
   public override SpecialDaySettings Settings => new OitcSettings();

@@ -12,10 +12,9 @@ using Jailbreak.Public.Utils;
 
 namespace Jailbreak.Warden.Commands;
 
-public class WardenCommandsBehavior(IWardenNotifications notifications,
+public class WardenCommandsBehavior(IWardenLocale locale,
   IWardenSelectionService queue, IWardenService warden,
-  IGenericCommandNotifications generics, WardenConfig config)
-  : IPluginBehavior {
+  IGenericCmdLocale generics, WardenConfig config) : IPluginBehavior {
   private readonly Dictionary<CCSPlayerController, DateTime> lastPassCommand =
     new();
 
@@ -34,14 +33,14 @@ public class WardenCommandsBehavior(IWardenNotifications notifications,
     if (!warden.IsWarden(player)) return;
 
     //	Handle warden pass
-    notifications.PassWarden(player).ToAllChat().ToAllCenter();
+    locale.PassWarden(player).ToAllChat().ToAllCenter();
 
     // GetPlayers() returns valid players, no need to error check here.
     foreach (var clients in Utilities.GetPlayers())
       clients.ExecuteClientCommand(
         $"play sounds/{config.WardenPassedSoundName}");
 
-    notifications.BecomeNextWarden.ToAllChat();
+    locale.BecomeNextWarden.ToAllChat();
 
     if (!warden.TryRemoveWarden(true))
       Server.PrintToChatAll("[BUG] Couldn't remove warden :^(");
@@ -55,26 +54,26 @@ public class WardenCommandsBehavior(IWardenNotifications notifications,
     if (player == null) return;
 
     if (!warden.HasWarden || warden.Warden == null) {
-      notifications.CurrentWarden(null).ToPlayerChat(player);
+      locale.CurrentWarden(null).ToChat(player);
       return;
     }
 
     if (!AdminManager.PlayerHasPermissions(player, "@css/ban")) {
-      generics.NoPermissionMessage("@css/ban").ToPlayerChat(player);
+      generics.NoPermissionMessage("@css/ban").ToChat(player);
       return;
     }
 
     foreach (var client in Utilities.GetPlayers()) {
       if (AdminManager.PlayerHasPermissions(client, "@css/chat"))
-        notifications.FireWarden(warden.Warden, player).ToPlayerChat(client);
+        locale.FireWarden(warden.Warden, player).ToChat(client);
       else
-        notifications.FireWarden(warden.Warden).ToPlayerChat(client);
+        locale.FireWarden(warden.Warden).ToChat(client);
 
       client.ExecuteClientCommand(
         $"play sounds/{config.WardenPassedSoundName}");
     }
 
-    notifications.BecomeNextWarden.ToAllChat();
+    locale.BecomeNextWarden.ToAllChat();
 
     lastPassCommand[warden.Warden] = DateTime.Now;
 
@@ -97,27 +96,26 @@ public class WardenCommandsBehavior(IWardenNotifications notifications,
     if (lastPassCommand.TryGetValue(player, out var last)) {
       var cooldown = last.AddSeconds(15);
       if (DateTime.Now < cooldown) {
-        generics.CommandOnCooldown(cooldown).ToPlayerChat(player);
+        generics.CommandOnCooldown(cooldown).ToChat(player);
         return;
       }
     }
 
     if (RoundUtil.IsWarmup()) {
-      notifications.CannotWardenDuringWarmup.ToPlayerChat(player);
+      locale.CannotWardenDuringWarmup.ToChat(player);
       return;
     }
 
     //  Queue is open ?
     if (queue.Active) {
       if (!queue.InQueue(player)) {
-        if (queue.TryEnter(player))
-          notifications.JoinRaffle.ToPlayerChat(player);
+        if (queue.TryEnter(player)) locale.JoinRaffle.ToChat(player);
         return;
       }
 
       if (queue.InQueue(player))
         if (queue.TryExit(player))
-          notifications.LeaveRaffle.ToPlayerChat(player);
+          locale.LeaveRaffle.ToChat(player);
 
       return;
     }
@@ -127,7 +125,7 @@ public class WardenCommandsBehavior(IWardenNotifications notifications,
       if (warden.TrySetWarden(player))
         return;
 
-    notifications.CurrentWarden(warden.Warden).ToPlayerChat(player);
+    locale.CurrentWarden(warden.Warden).ToChat(player);
   }
 
   /// <summary>

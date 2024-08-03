@@ -1,8 +1,6 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Timers;
-using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Zones;
@@ -13,15 +11,17 @@ namespace Jailbreak.Zones;
 
 public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory)
   : IPluginBehavior {
-  private Timer timer;
   private readonly BasePlugin? plugin;
   private IZone? cells;
-  private IList<IZone>? restrictedAreas;
   private IList<IZone>? randomPoints;
+  private IList<IZone>? restrictedAreas;
+  private Timer timer;
 
   public void Start(BasePlugin basePlugin) {
     basePlugin.RegisterListener<Listeners.OnMapStart>(OnNewMap);
   }
+
+  void IDisposable.Dispose() { timer.Kill(); }
 
   private void startTimer() {
     timer?.Kill();
@@ -100,8 +100,6 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory)
 
     return total / count;
   }
-
-  void IDisposable.Dispose() { timer.Kill(); }
 
   private IList<IZone>? getRandomPoints() {
     var zones = zoneManager.GetZones(ZoneType.SPAWN).GetAwaiter().GetResult();

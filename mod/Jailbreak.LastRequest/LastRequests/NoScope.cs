@@ -2,14 +2,14 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
-public class NoScope(BasePlugin plugin, ILastRequestManager manager,
-  CCSPlayerController prisoner, CCSPlayerController guard)
-  : WeaponizedRequest(plugin, manager, prisoner, guard) {
+public class NoScope(BasePlugin plugin, IServiceProvider provider,
+  CCSPlayerController prisoner, CCSPlayerController guard) : WeaponizedRequest(
+  plugin, provider.GetRequiredService<IServiceProvider>(), prisoner, guard) {
   public override LRType Type => LRType.NO_SCOPE;
 
   public override void Setup() {

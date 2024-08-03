@@ -10,6 +10,9 @@ using Jailbreak.English.Rebel;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.English.Warden;
 using Jailbreak.Formatting.Logistics;
+using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.LastRequest;
+using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Generic;
 using Jailbreak.LastGuard;
 using Jailbreak.LastRequest;
@@ -46,19 +49,28 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
 
     //	Add in english localization
     serviceCollection.AddLanguage<Formatting.Languages.English>(config => {
-      config.WithGenericCommand<GenericCommandNotifications>();
-      config.WithWarden<WardenNotifications>();
-      config.WithRebel<RebelNotifications>();
-      config.WithLogging<LogMessages>();
-      config.WithRollCommand<RollCommandNotifications>();
-      config.WithJihadC4<JihadC4Notifications>();
-      config.WithLastRequest<LastRequestMessages>();
-      config.WithSpecialTreatment<SpecialTreatmentNotifications>();
-      config.WithMute<PeaceMessages>();
-      config.WithRaceLR<RaceLRMessages>();
-      config.WithLastGuard<LastGuardNotifications>();
-      config.WithSpecialDay<SpecialDayMessages>();
-      config.WithOpenCommand<OpenCommandNotifications>();
+      var serviceMap = new Dictionary<Type, Type> {
+        { typeof(IC4Locale), typeof(Ic4Locale) },
+        { typeof(IGenericCmdLocale), typeof(GenericCmdLocale) },
+        { typeof(ILGLocale), typeof(IlgLocale) },
+        { typeof(ILRCFLocale), typeof(CoinflipLocale) },
+        { typeof(ILRLocale), typeof(LastRequestLocale) },
+        { typeof(ILRRPSLocale), typeof(RPSLocale) },
+        { typeof(ILRRaceLocale), typeof(RaceLocale) },
+        { typeof(ILogLocale), typeof(LogLocale) },
+        { typeof(IRebelLocale), typeof(RebelLocale) },
+        { typeof(ISDLocale), typeof(IsdLocale) },
+        { typeof(IWardenSTLocale), typeof(IstLocale) }, {
+          typeof(IWardenCmdOpenLocale),
+          typeof(WardenCmdOpenCommandNotifications)
+        }, {
+          typeof(IWardenCmdRollLocale),
+          typeof(WardenCmdRollCommandNotifications)
+        },
+        { typeof(IWardenLocale), typeof(WardenLocale) },
+        { typeof(IWardenPeaceLocale), typeof(WardenPeaceLocale) }
+      };
+      config.Configure(serviceMap);
     });
   }
 }

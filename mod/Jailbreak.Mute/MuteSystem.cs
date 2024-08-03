@@ -19,7 +19,7 @@ public class MuteSystem(IServiceProvider provider)
   private DateTime ctPeaceEnd = DateTime.MinValue;
   private DateTime lastPeace = DateTime.MinValue;
 
-  private IPeaceMessages? messages;
+  private IWardenPeaceLocale? messages;
   private BasePlugin? parent;
   private DateTime peaceEnd = DateTime.MinValue;
 
@@ -72,7 +72,7 @@ public class MuteSystem(IServiceProvider provider)
   public void Start(BasePlugin basePlugin) {
     parent = basePlugin;
 
-    messages = provider.GetRequiredService<IPeaceMessages>();
+    messages = provider.GetRequiredService<IWardenPeaceLocale>();
     warden   = provider.GetRequiredService<IWardenService>();
 
     basePlugin.RegisterListener<Listeners.OnClientVoice>(OnPlayerSpeak);

@@ -13,19 +13,19 @@ using Jailbreak.Public.Utils;
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
-  : ArmoryRestrictedDay(plugin, provider, CsTeam.CounterTerrorist),
+  : AbstractArmoryRestrictedDay(plugin, provider, CsTeam.CounterTerrorist),
     ISpecialDayMessageProvider {
   private readonly ICollection<int> swappedPrisoners = new HashSet<int>();
   public override SDType Type => SDType.INFECTION;
 
   public override SpecialDaySettings Settings => new InfectionSettings();
-  private InfectionDayMessages msg => (InfectionDayMessages)Messages;
+  private InfectionDayLocale msg => (InfectionDayLocale)Locale;
 
-  public ISpecialDayInstanceMessages Messages => new InfectionDayMessages();
+  public ISDInstanceLocale Locale => new InfectionDayLocale();
 
   public override void Setup() {
     Timers[15] += () => {
-      Messages.BeginsIn(15).ToAllChat();
+      Locale.BeginsIn(15).ToAllChat();
       msg.DamageWarning(5).ToAllChat();
     };
     Timers[20] += () => {
@@ -67,7 +67,7 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
 
     var target = nearest.FirstOrDefault();
     if (target != null && target.Team == CsTeam.Terrorist)
-      msg.InfectedWarning(player).ToPlayerChat(target);
+      msg.InfectedWarning(player).ToChat(target);
 
     var tpSpot = target != null ?
       target.PlayerPawn.Value!.AbsOrigin!.Clone() :
@@ -80,7 +80,7 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
         @event.Attacker != null && @event.Attacker.IsValid ?
           @event.Attacker :
           null)
-     .ToPlayerChat(player);
+     .ToChat(player);
     plugin.AddTimer(0.1f, () => {
       player.SwitchTeam(CsTeam.CounterTerrorist);
       player.Respawn();

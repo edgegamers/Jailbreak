@@ -1,19 +1,25 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Timers;
+using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
+using Jailbreak.Public.Utils;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
 public class RockPaperScissors : AbstractLastRequest {
   private readonly ChatMenu chatMenu;
+  private readonly ILRRPSLocale msg;
   private int prisonerChoice = -1, guardChoice = -1;
 
-  public RockPaperScissors(BasePlugin plugin, ILastRequestManager manager,
+  public RockPaperScissors(BasePlugin plugin, IServiceProvider provider,
     CCSPlayerController prisoner, CCSPlayerController guard) : base(plugin,
-    manager, prisoner, guard) {
+    provider.GetRequiredService<ILastRequestManager>(), prisoner, guard) {
     chatMenu = new ChatMenu("Rock Paper Scissors");
+    msg      = provider.GetRequiredService<ILRRPSLocale>();
     foreach (var option in new[] { "Rock", "Paper", "Scissors" })
       chatMenu.AddMenuOption(option, OnSelect);
   }
@@ -32,8 +38,7 @@ public class RockPaperScissors : AbstractLastRequest {
     if (player.Slot != Prisoner.Slot && player.Slot != Guard.Slot) return;
     MenuManager.CloseActiveMenu(player);
 
-    var choice = Array.IndexOf(new[] { "Rock", "Paper", "Scissors" },
-      option.Text);
+    var choice = Array.IndexOf(["Rock", "Paper", "Scissors"], option.Text);
 
     if (player.Slot == Prisoner.Slot)
       prisonerChoice = choice;
@@ -41,13 +46,13 @@ public class RockPaperScissors : AbstractLastRequest {
       guardChoice = choice;
 
     if (prisonerChoice == -1 || guardChoice == -1) {
-      PrintToParticipants(player.PlayerName + " has made their choice...");
+      msg.PlayerMadeChoice(player).ToChat(Prisoner, Guard);
       return;
     }
 
-    PrintToParticipants("Both players have made their choice!");
+    msg.BothPlayersMadeChoice().ToChat(Prisoner, Guard);
     if (prisonerChoice == guardChoice) {
-      PrintToParticipants("It's a tie!");
+      msg.Tie().ToAllChat();
       Setup();
       return;
     }
@@ -67,7 +72,8 @@ public class RockPaperScissors : AbstractLastRequest {
     MenuManager.OpenChatMenu(Prisoner, chatMenu);
     MenuManager.OpenChatMenu(Guard, chatMenu);
 
-    Plugin.AddTimer(20, timeout, TimerFlags.STOP_ON_MAPCHANGE);
+    Plugin.AddTimer(RoundUtil.GetTimeRemaining() - 1, timeout,
+      TimerFlags.STOP_ON_MAPCHANGE);
   }
 
   private void timeout() {
@@ -82,21 +88,15 @@ public class RockPaperScissors : AbstractLastRequest {
 
   public override void OnEnd(LRResult result) {
     State = LRState.COMPLETED;
-    if (result == LRResult.GUARD_WIN)
-      Prisoner.Pawn.Value!.CommitSuicide(false, true);
-    else if (result == LRResult.PRISONER_WIN)
-      Guard.Pawn.Value!.CommitSuicide(false, true);
+    switch (result) {
+      case LRResult.GUARD_WIN:
+        Prisoner.Pawn.Value!.CommitSuicide(false, true);
+        break;
+      case LRResult.PRISONER_WIN:
+        Guard.Pawn.Value!.CommitSuicide(false, true);
+        break;
+    }
 
-    PrintToParticipants(
-      $"Prisoner chose {getChoice(prisonerChoice)}, Guard chose {getChoice(guardChoice)}");
-  }
-
-  private string getChoice(int choice) {
-    return choice switch {
-      0 => "Rock",
-      1 => "Paper",
-      2 => "Scissors",
-      _ => "Unknown"
-    };
+    msg.Results(Guard, Prisoner, guardChoice, prisonerChoice).ToAllChat();
   }
 }

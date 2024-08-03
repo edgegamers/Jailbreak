@@ -2,37 +2,45 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Timers;
+using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
 public class BulletForBullet : TeleportingRequest {
   private static readonly string[] GUNS = [
-    "weapon_deagle", "weapon_glock", "weapon_hkp2000", "weapon_tec9",
-    "weapon_cz75a"
+    "weapon_deagle", "weapon_usp_silencer", "weapon_tec9", "weapon_ssg08",
+    "weapon_nova"
   ];
 
   private static readonly string[] GUN_NAMES = [
-    "Desert Eagle", "Glock 18", "USP-S", "Tec9", "CZ75"
+    "Desert Eagle", "USP-S", "Tec9", "CZ75", "Scout", "Nova"
   ];
 
   private readonly ChatMenu chatMenu;
-  private string? CHOSEN_PISTOL;
   private readonly bool magForMag;
+  private readonly ILRB4BLocale msg;
+  private string? CHOSEN_PISTOL;
   private int? whosShot, magSize;
 
-  public BulletForBullet(BasePlugin plugin, ILastRequestManager manager,
+  public BulletForBullet(BasePlugin plugin, IServiceProvider provider,
     CCSPlayerController prisoner, CCSPlayerController guard,
-    bool magForMag) : base(plugin, manager, prisoner, guard) {
+    bool magForMag) : base(plugin,
+    provider.GetRequiredService<ILastRequestManager>(), prisoner, guard) {
     this.magForMag = magForMag;
     chatMenu       = new ChatMenu(magForMag ? "Mag for Mag" : "Shot for Shot");
     foreach (var pistol in GUNS)
       chatMenu.AddMenuOption(pistol.GetFriendlyWeaponName(), OnSelect);
+
+    msg = provider.GetRequiredService<ILRB4BLocale>();
   }
 
-  public override LRType Type => LRType.SHOT_FOR_SHOT;
+  public override LRType Type
+    => magForMag ? LRType.MAG_FOR_MAG : LRType.SHOT_FOR_SHOT;
 
   private void OnSelect(CCSPlayerController player, ChatMenuOption option) {
     if (player.Slot != Prisoner.Slot) return;
@@ -40,8 +48,8 @@ public class BulletForBullet : TeleportingRequest {
 
     CHOSEN_PISTOL = GUNS[Array.IndexOf(GUN_NAMES, option.Text)];
 
-    PrintToParticipants(player.PlayerName + " chose the "
-      + CHOSEN_PISTOL.GetFriendlyWeaponName());
+    msg.WeaponSelected(player, CHOSEN_PISTOL).ToChat(Prisoner, Guard);
+
     State = LRState.ACTIVE;
 
     Prisoner.RemoveWeapons();
@@ -49,18 +57,15 @@ public class BulletForBullet : TeleportingRequest {
     Prisoner.GiveNamedItem(CHOSEN_PISTOL);
     Guard.GiveNamedItem(CHOSEN_PISTOL);
 
-    Server.NextFrame(() => {
-      magSize = magForMag ?
-        Prisoner.GetWeaponBase(CHOSEN_PISTOL)!.VData!.MaxClip1 :
-        1;
+    Plugin.AddTimer(0.5f, () => {
+      magSize = (magForMag ?
+        Prisoner.GetWeaponBase(CHOSEN_PISTOL)!.VData?.MaxClip1 :
+        1) ?? 1;
       Prisoner.GetWeaponBase(CHOSEN_PISTOL).SetAmmo(0, 0);
       Guard.GetWeaponBase(CHOSEN_PISTOL).SetAmmo(0, 0);
-      //steal the VData of the prisoners gun for mag size
-
       var shooter = new Random().Next(2) == 0 ? Prisoner : Guard;
       whosShot = shooter.Slot;
-      PrintToParticipants(shooter.PlayerName
-        + $" gets to shoot first {magSize} {magForMag}");
+      msg.PlayerGoesFirst(shooter).ToChat(Prisoner, Guard);
 
       shooter.GetWeaponBase(CHOSEN_PISTOL).SetAmmo(magSize.Value, 0);
     });
@@ -94,18 +99,19 @@ public class BulletForBullet : TeleportingRequest {
     });
     Plugin.AddTimer(60, () => {
       if (State != LRState.ACTIVE) return;
-      PrintToParticipants("Time's Up!");
       var result = Guard.Health > Prisoner.Health ?
         LRResult.GUARD_WIN :
         LRResult.PRISONER_WIN;
       if (Guard.Health == Prisoner.Health) {
-        var active = whosShot == Prisoner.Slot ? Prisoner : Guard;
-        PrintToParticipants("Even health, since " + active.PlayerName
-          + " had the shot, they lose.");
+        var winner = whosShot != Prisoner.Slot ? Prisoner : Guard;
+        msg.WinByReason(winner, "equal health");
+
         result = whosShot == Prisoner.Slot ?
           LRResult.GUARD_WIN :
           LRResult.PRISONER_WIN;
-      } else { PrintToParticipants("Health was the deciding factor. "); }
+      } else {
+        msg.WinByHealth(result == LRResult.GUARD_WIN ? Guard : Prisoner);
+      }
 
       if (result == LRResult.GUARD_WIN)
         Prisoner.Pawn.Value?.CommitSuicide(false, true);
@@ -142,7 +148,7 @@ public class BulletForBullet : TeleportingRequest {
     Server.NextFrame(() => {
       var opponent = player.Slot == Prisoner.Slot ? Guard : Prisoner;
       whosShot = opponent.Slot;
-      opponent.GetWeaponBase(CHOSEN_PISTOL!).SetAmmo(magSize.Value, 0);
+      opponent.GetWeaponBase(CHOSEN_PISTOL!)?.SetAmmo(magSize.Value, 0);
     });
     return HookResult.Continue;
   }

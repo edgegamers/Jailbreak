@@ -1,0 +1,23 @@
+using Jailbreak.Formatting.Base;
+using Jailbreak.Formatting.Logistics;
+using Jailbreak.Formatting.Views;
+
+namespace Jailbreak.English.Warden;
+
+public class WardenCmdOpenCommandNotifications : IWardenCmdOpenLocale,
+  ILanguage<Formatting.Languages.English> {
+  public IView CannotOpenYet(int seconds) {
+    return new SimpleView {
+      WardenLocale.PREFIX,
+      "You must wait",
+      seconds,
+      "seconds before opening the cells."
+    };
+  }
+
+  public IView CellsOpened
+    => new SimpleView { WardenLocale.PREFIX, "The warden opened cells." };
+
+  public IView OpeningFailed
+    => new SimpleView { WardenLocale.PREFIX, "Failed to open the cells." };
+}

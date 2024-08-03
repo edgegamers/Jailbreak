@@ -22,9 +22,9 @@ public class
 
   private readonly IPlayerState<QueueFavorState> favor;
 
-  private readonly ILogger<WardenSelectionBehavior> logger;
+  private readonly IWardenLocale locale;
 
-  private readonly IWardenNotifications notifications;
+  private readonly ILogger<WardenSelectionBehavior> logger;
 
   /// <summary>
   ///   A state dict that handles the player's current queue
@@ -41,14 +41,14 @@ public class
   private bool queueInactive;
 
   public WardenSelectionBehavior(IPlayerStateFactory factory,
-    IWardenService warden, IWardenNotifications notifications,
+    IWardenService warden, IWardenLocale locale,
     ILogger<WardenSelectionBehavior> logger, ICoroutines coroutines) {
-    this.warden        = warden;
-    this.notifications = notifications;
-    this.logger        = logger;
-    this.coroutines    = coroutines;
-    queue              = factory.Round<QueueState>();
-    favor              = factory.Global<QueueFavorState>();
+    this.warden     = warden;
+    this.locale     = locale;
+    this.logger     = logger;
+    this.coroutines = coroutines;
+    queue           = factory.Round<QueueState>();
+    favor           = factory.Global<QueueFavorState>();
 
     queueInactive = true;
   }
@@ -82,7 +82,7 @@ public class
     //	Enable the warden queue
     queueInactive = false;
 
-    notifications.PickingShortly.ToAllChat();
+    locale.PickingShortly.ToAllChat();
 
     //	Start a timer to pick the warden in 7 seconds
     ScheduleChooseWarden();
@@ -109,7 +109,7 @@ public class
       eligible);
 
     if (eligible.Count == 0) {
-      notifications.NoWardens.ToAllChat();
+      locale.NoWardens.ToAllChat();
       queueInactive = true;
 
       return;

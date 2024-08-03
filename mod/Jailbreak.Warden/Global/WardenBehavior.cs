@@ -31,7 +31,7 @@ internal struct PreWardenStats(int armorValue, int health, int maxHealth,
 }
 
 public class WardenBehavior(ILogger<WardenBehavior> logger,
-  IWardenNotifications notifications, IRichLogService logs,
+  IWardenLocale locale, IRichLogService logs,
   ISpecialTreatmentService specialTreatment, IRebelService rebels,
   WardenConfig config, IMuteService mute) : IPluginBehavior, IWardenService {
   private readonly ISet<CCSPlayerController> bluePrisoners =
@@ -100,7 +100,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
         "m_clrRender");
     }
 
-    notifications.NewWarden(Warden).ToAllChat().ToAllCenter();
+    locale.NewWarden(Warden).ToAllChat().ToAllCenter();
 
     Warden.Clan = "[WARDEN]";
     Utilities.SetStateChanged(Warden, "CCSPlayerController", "m_szClan");
@@ -249,7 +249,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
     //	Warden died!
-    notifications.WardenDied.ToAllChat().ToAllCenter();
+    locale.WardenDied.ToAllChat().ToAllCenter();
 
     foreach (var player in Utilities.GetPlayers()) {
       if (!player.IsReal()) continue;
@@ -257,7 +257,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
         $"play sounds/{config.WardenKilledSoundName}");
     }
 
-    notifications.BecomeNextWarden.ToAllChat();
+    locale.BecomeNextWarden.ToAllChat();
 
     unblueTimer
     ?.Kill(); // If the warden dies withing 3 seconds of becoming warden, we need to cancel the unblue timer
@@ -387,13 +387,13 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       logger.LogWarning("[Warden] BUG: Problem removing current warden :^(");
 
 
-    notifications.WardenLeft.ToAllChat().ToAllCenter();
+    locale.WardenLeft.ToAllChat().ToAllCenter();
 
     foreach (var player in Utilities.GetPlayers())
       player.ExecuteClientCommand(
         $"play sounds/{config.WardenPassedSoundName}");
 
-    notifications.BecomeNextWarden.ToAllChat();
+    locale.BecomeNextWarden.ToAllChat();
     return HookResult.Continue;
   }
 }

@@ -53,7 +53,8 @@ public class MultiZoneWrapper(IEnumerable<IZone>? zones = null)
       return;
     }
 
-    var minZone = zones.OrderBy(zone => zone.GetMinDistanceSquared(point)).First();
+    var minZone = zones.OrderBy(zone => zone.GetMinDistanceSquared(point))
+     .First();
 
     minZone.AddPoint(point);
   }

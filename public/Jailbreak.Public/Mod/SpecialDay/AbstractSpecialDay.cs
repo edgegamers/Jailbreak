@@ -188,8 +188,8 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       result.AddRange(ctSpawns);
     }
 
-    var           zoneManager = provider.GetRequiredService<IZoneManager>();
-    var zones       = zoneManager.GetZones(ZoneType.SPAWN).GetAwaiter().GetResult();
+    var zoneManager = provider.GetRequiredService<IZoneManager>();
+    var zones = zoneManager.GetZones(ZoneType.SPAWN).GetAwaiter().GetResult();
     result.AddRange(zones.Select(z => z.GetCenterPoint()));
 
     result.Shuffle();

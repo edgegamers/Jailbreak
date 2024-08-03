@@ -13,9 +13,9 @@ using Jailbreak.Public.Utils;
 
 namespace Jailbreak.Warden.Commands;
 
-public class OpenCommandsBehavior(IWardenService warden,
-  IWardenNotifications msg, IOpenCommandMessages openMsg,
-  IZoneManager zoneManager) : IPluginBehavior {
+public class OpenCommandsBehavior(IWardenService warden, IWardenLocale msg,
+  IWardenCmdOpenLocale wardenCmdOpenMsg, IZoneManager zoneManager)
+  : IPluginBehavior {
   public static readonly FakeConVar<int> CvOpenCommandCooldown = new(
     "css_jb_warden_open_cooldown",
     "Minimum seconds warden must wait before being able to open the cells.", 30,
@@ -27,16 +27,17 @@ public class OpenCommandsBehavior(IWardenService warden,
     if (executor != null
       && !AdminManager.PlayerHasPermissions(executor, "@css/cheat"))
       if (!warden.IsWarden(executor)) {
-        msg.NotWarden.ToPlayerChat(executor);
+        msg.NotWarden.ToChat(executor);
         return;
       }
 
     if (RoundUtil.GetTimeElapsed() < CvOpenCommandCooldown.Value) {
-      openMsg.CannotOpenYet(CvOpenCommandCooldown.Value);
+      wardenCmdOpenMsg.CannotOpenYet(CvOpenCommandCooldown.Value);
       return;
     }
 
     var result = MapUtil.OpenCells(zoneManager);
-    (result ? openMsg.CellsOpened : openMsg.OpeningFailed).ToAllChat();
+    (result ? wardenCmdOpenMsg.CellsOpened : wardenCmdOpenMsg.OpeningFailed)
+     .ToAllChat();
   }
 }

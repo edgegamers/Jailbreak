@@ -26,10 +26,6 @@ public class DistanceZone(IList<Vector> origins, float tolerance) : IZone {
     return ConvexHullUtil.GetMinDistanceSquared(position, cachedHull);
   }
 
-  public float GetMinDistance(Vector position) {
-    return (float)Math.Sqrt(GetMinDistanceSquared(position));
-  }
-
   public Vector GetCenterPoint() {
     return origins
      .OrderBy(origin => origins.Sum(point => point.DistanceSquared(origin)))
@@ -44,6 +40,10 @@ public class DistanceZone(IList<Vector> origins, float tolerance) : IZone {
     origins.Add(point);
 
     cachedHull = ConvexHullUtil.ComputeConvexHull(origins).ToList();
+  }
+
+  public float GetMinDistance(Vector position) {
+    return (float)Math.Sqrt(GetMinDistanceSquared(position));
   }
 
   public bool IsInsideRegion(Vector position) {

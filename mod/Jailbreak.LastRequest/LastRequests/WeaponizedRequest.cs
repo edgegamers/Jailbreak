@@ -1,6 +1,9 @@
 using CounterStrikeSharp.API.Core;
+using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
@@ -9,17 +12,19 @@ namespace Jailbreak.LastRequest.LastRequests;
 ///   Automatically strips weapons, counts down, and calls Execute after 4 seconds.
 /// </summary>
 public abstract class WeaponizedRequest(BasePlugin plugin,
-  ILastRequestManager manager, CCSPlayerController prisoner,
-  CCSPlayerController guard)
-  : TeleportingRequest(plugin, manager, prisoner, guard) {
+  IServiceProvider provider, CCSPlayerController prisoner,
+  CCSPlayerController guard) : TeleportingRequest(plugin,
+  provider.GetRequiredService<ILastRequestManager>(), prisoner, guard) {
   public override void Setup() {
     base.Setup();
 
     Prisoner.RemoveWeapons();
     Guard.RemoveWeapons();
+    var msgs = provider.GetRequiredService<ILRLocale>();
     for (var i = 3; i >= 1; i--) {
       var copy = i;
-      Plugin.AddTimer(3 - i, () => { PrintToParticipants($"{copy}..."); });
+      Plugin.AddTimer(3 - i,
+        () => { msgs.LastRequestCountdown(copy).ToChat(Prisoner, Guard); });
     }
 
     Plugin.AddTimer(3, () => {

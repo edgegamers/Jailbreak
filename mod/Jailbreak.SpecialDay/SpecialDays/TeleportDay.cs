@@ -12,8 +12,8 @@ public class TeleportDay(BasePlugin plugin, IServiceProvider provider)
   public override SDType Type => SDType.FFA;
   public override SpecialDaySettings Settings => new TeleportSettings();
 
-  public override ISpecialDayInstanceMessages Messages
-    => new SoloDayMessages("Teleport",
+  public override ISDInstanceLocale Locale
+    => new SoloDayLocale("Teleport",
       "Free for all! If you damage someone, you will swap places with them!");
 
   public override void Setup() {

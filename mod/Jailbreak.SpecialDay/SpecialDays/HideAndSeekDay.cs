@@ -12,26 +12,25 @@ using Jailbreak.Public.Utils;
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
-  : ArmoryRestrictedDay(plugin, provider), ISpecialDayMessageProvider {
+  : AbstractArmoryRestrictedDay(plugin, provider), ISpecialDayMessageProvider {
   public override SDType Type => SDType.HNS;
 
-  private HNSDayMessages msg => (HNSDayMessages)Messages;
+  private HnsDayLocale msg => (HnsDayLocale)Locale;
 
   public override SpecialDaySettings Settings => new HNSSettings();
 
   public override IView ArmoryReminder => msg.StayInArmory;
 
-  public ISpecialDayInstanceMessages Messages => new HNSDayMessages();
+  public ISDInstanceLocale Locale => new HnsDayLocale();
 
   public override void Setup() {
     Timers[10] += () => {
-      foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist)) {
+      foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist))
         ct.SetSpeed(1.5f);
-      }
 
       msg.DamageWarning(15).ToTeamChat(CsTeam.CounterTerrorist);
 
-      Messages.BeginsIn(35).ToAllChat();
+      Locale.BeginsIn(35).ToAllChat();
     };
     Timers[25] += () => {
       foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist)) {
@@ -42,7 +41,7 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
     Timers[30] += () => {
       foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist))
         ct.SetSpeed(1.1f);
-      Messages.BeginsIn(15).ToAllChat();
+      Locale.BeginsIn(15).ToAllChat();
     };
     Timers[45] += Execute;
 

@@ -1,5 +1,5 @@
 using CounterStrikeSharp.API.Core;
-using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.LastRequest.LastRequests;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
@@ -16,17 +16,17 @@ public class LastRequestFactory(ILastRequestManager manager,
   public AbstractLastRequest CreateLastRequest(CCSPlayerController prisoner,
     CCSPlayerController guard, LRType type) {
     return type switch {
-      LRType.KNIFE_FIGHT => new KnifeFight(plugin, manager, prisoner, guard),
+      LRType.KNIFE_FIGHT => new KnifeFight(plugin, services, prisoner, guard),
       LRType.GUN_TOSS    => new GunToss(plugin, manager, prisoner, guard),
-      LRType.NO_SCOPE    => new NoScope(plugin, manager, prisoner, guard),
-      LRType.SHOT_FOR_SHOT => new BulletForBullet(plugin, manager, prisoner,
+      LRType.NO_SCOPE    => new NoScope(plugin, services, prisoner, guard),
+      LRType.SHOT_FOR_SHOT => new BulletForBullet(plugin, services, prisoner,
         guard, false),
-      LRType.ROCK_PAPER_SCISSORS => new RockPaperScissors(plugin, manager,
+      LRType.ROCK_PAPER_SCISSORS => new RockPaperScissors(plugin, services,
         prisoner, guard),
-      LRType.COINFLIP => new Coinflip(plugin, manager, prisoner, guard),
+      LRType.COINFLIP => new Coinflip(plugin, services, prisoner, guard),
       LRType.RACE => new Race(plugin, manager, prisoner, guard,
-        services.GetRequiredService<IRaceLRMessages>()),
-      LRType.MAG_FOR_MAG => new BulletForBullet(plugin, manager, prisoner,
+        services.GetRequiredService<ILRRaceLocale>()),
+      LRType.MAG_FOR_MAG => new BulletForBullet(plugin, services, prisoner,
         guard, true),
       _ => throw new ArgumentException("Invalid last request type: " + type,
         nameof(type))

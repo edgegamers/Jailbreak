@@ -13,8 +13,8 @@ using MStatsShared;
 
 namespace Jailbreak.Rebel.JihadC4;
 
-public class JihadC4Behavior(IJihadC4Notifications jihadC4Notifications,
-  IRebelService rebelService) : IPluginBehavior, IJihadC4Service {
+public class JihadC4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
+  : IPluginBehavior, IJihadC4Service {
   private readonly Dictionary<CC4, JihadBombMetadata> bombs = new();
 
   // EmitSound(CBaseEntity* pEnt, const char* sSoundName, int nPitch, float flVolume, float flDelay)
@@ -31,8 +31,8 @@ public class JihadC4Behavior(IJihadC4Notifications jihadC4Notifications,
     var bombEntity = new CC4(player.GiveNamedItem("weapon_c4"));
     bombs.Add(bombEntity, new JihadBombMetadata(0.75f, false));
 
-    jihadC4Notifications.JihadC4Received.ToPlayerChat(player);
-    jihadC4Notifications.JihadC4Usage1.ToPlayerChat(player);
+    ic4Locale.JihadC4Received.ToChat(player);
+    ic4Locale.JihadC4Usage1.ToChat(player);
   }
 
   public void StartDetonationAttempt(CCSPlayerController player, float delay,

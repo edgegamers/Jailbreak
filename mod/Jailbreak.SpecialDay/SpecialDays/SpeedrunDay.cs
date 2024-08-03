@@ -52,7 +52,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   private AbstractTrail<BeamTrailSegment>? bestTrail;
   private Timer? finishCheckTimer;
 
-  private IGenericCommandNotifications generics = null!;
+  private IGenericCmdLocale generics = null!;
   private int round, playersAliveAtStart;
   private Timer? roundEndTimer;
 
@@ -62,13 +62,13 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   private BeamCircle? targetCircle;
   public override SDType Type => SDType.SPEEDRUN;
 
-  private SpeedrunDayMessages msg => (SpeedrunDayMessages)Messages;
+  private SpeedrunDayLocale msg => (SpeedrunDayLocale)Locale;
 
   public override SpecialDaySettings Settings => new SpeedrunSettings();
-  public ISpecialDayInstanceMessages Messages => new SpeedrunDayMessages();
+  public ISDInstanceLocale Locale => new SpeedrunDayLocale();
 
   public override void Setup() {
-    generics = provider.GetRequiredService<IGenericCommandNotifications>();
+    generics = provider.GetRequiredService<IGenericCmdLocale>();
 
     foreach (var player in Utilities.GetPlayers().Where(p => !p.PawnIsAlive))
       player.Respawn();
@@ -93,7 +93,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     Timers[FIRST_ROUND_FREEZE - 4] += () => {
       msg.RunnerAssigned(speedrunner).ToAllChat();
       speedrunner.SetColor(Color.DodgerBlue);
-      msg.YouAreRunner(FIRST_SPEEDRUNNER_TIME).ToPlayerChat(speedrunner);
+      msg.YouAreRunner(FIRST_SPEEDRUNNER_TIME).ToChat(speedrunner);
     };
     Timers[FIRST_ROUND_FREEZE] += () => {
       start = speedrunner.PlayerPawn.Value!.AbsOrigin!.Clone();
@@ -103,9 +103,9 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     };
 
     Timers[FIRST_SPEEDRUNNER_TIME + FIRST_ROUND_FREEZE - 30] += ()
-      => msg.RuntimeLeft(30).ToPlayerChat(speedrunner);
+      => msg.RuntimeLeft(30).ToChat(speedrunner);
     Timers[FIRST_SPEEDRUNNER_TIME + FIRST_ROUND_FREEZE - 10] += ()
-      => msg.RuntimeLeft(10).ToPlayerChat(speedrunner);
+      => msg.RuntimeLeft(10).ToChat(speedrunner);
     Timers[FIRST_SPEEDRUNNER_TIME + FIRST_ROUND_FREEZE] += () => {
       target       = speedrunner.PlayerPawn.Value?.AbsOrigin!.Clone();
       targetCircle = new BeamCircle(plugin, target!, 10, 16);
@@ -443,7 +443,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       var player = Utilities.GetPlayerFromSlot(slot);
       if (player == null) continue;
       if (time > 0)
-        msg.PlayerTime(player, times.Length - i - 1, time).ToPlayerChat(player);
+        msg.PlayerTime(player, times.Length - i - 1, time).ToChat(player);
     }
   }
 

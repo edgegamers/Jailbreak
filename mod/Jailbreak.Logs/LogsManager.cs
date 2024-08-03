@@ -11,12 +11,12 @@ using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.Logs;
 
-public class LogsManager(ILogMessages messages, IRichPlayerTag richPlayerTag)
+public class LogsManager(ILogLocale locale, IRichPlayerTag richPlayerTag)
   : IPluginBehavior, IRichLogService {
   private readonly List<IView> logMessages = [];
 
   public void Append(string message) {
-    logMessages.Add(messages.CreateLog(message));
+    logMessages.Add(locale.CreateLog(message));
   }
 
   public IEnumerable<string> GetMessages() {
@@ -27,20 +27,20 @@ public class LogsManager(ILogMessages messages, IRichPlayerTag richPlayerTag)
 
   public void PrintLogs(CCSPlayerController? player) {
     if (player == null || !player.IsReal()) {
-      messages.BeginJailbreakLogs.ToServerConsole();
+      locale.BeginJailbreakLogs.ToServerConsole();
       foreach (var log in logMessages) log.ToServerConsole();
-      messages.EndJailbreakLogs.ToServerConsole();
+      locale.EndJailbreakLogs.ToServerConsole();
       return;
     }
 
 
-    messages.BeginJailbreakLogs.ToPlayerConsole(player);
-    foreach (var log in logMessages) log.ToPlayerConsole(player);
-    messages.EndJailbreakLogs.ToPlayerConsole(player);
+    locale.BeginJailbreakLogs.ToConsole(player);
+    foreach (var log in logMessages) log.ToConsole(player);
+    locale.EndJailbreakLogs.ToConsole(player);
   }
 
   public void Append(params FormatObject[] objects) {
-    logMessages.Add(messages.CreateLog(objects));
+    logMessages.Add(locale.CreateLog(objects));
   }
 
   public FormatObject Player(CCSPlayerController playerController) {
@@ -53,12 +53,12 @@ public class LogsManager(ILogMessages messages, IRichPlayerTag richPlayerTag)
 
   [GameEventHandler]
   public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
-    messages.BeginJailbreakLogs.ToServerConsole().ToAllConsole();
+    locale.BeginJailbreakLogs.ToServerConsole().ToAllConsole();
 
     //  By default, print all logs to player consoles at the end of the round.
     foreach (var log in logMessages) log.ToServerConsole().ToAllConsole();
 
-    messages.EndJailbreakLogs.ToServerConsole().ToAllConsole();
+    locale.EndJailbreakLogs.ToServerConsole().ToAllConsole();
     return HookResult.Continue;
   }
 

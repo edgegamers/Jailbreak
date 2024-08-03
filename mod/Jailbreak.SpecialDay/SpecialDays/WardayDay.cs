@@ -11,16 +11,16 @@ using Jailbreak.Public.Utils;
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class WardayDay(BasePlugin plugin, IServiceProvider provider)
-  : ArmoryRestrictedDay(plugin, provider), ISpecialDayMessageProvider {
+  : AbstractArmoryRestrictedDay(plugin, provider), ISpecialDayMessageProvider {
   public override SDType Type => SDType.WARDAY;
-  private WardayInstanceMessages msg => (WardayInstanceMessages)Messages;
+  private WardayInstanceLocale msg => (WardayInstanceLocale)Locale;
 
   public override SpecialDaySettings Settings => new WardaySettings();
-  public ISpecialDayInstanceMessages Messages => new WardayInstanceMessages();
+  public ISDInstanceLocale Locale => new WardayInstanceLocale();
 
   public override void Setup() {
-    Timers[15]  += () => Messages.BeginsIn(15).ToAllChat();
-    Timers[30]  += () => Messages.BeginsIn(5).ToAllChat();
+    Timers[15]  += () => Locale.BeginsIn(15).ToAllChat();
+    Timers[30]  += () => Locale.BeginsIn(5).ToAllChat();
     Timers[35]  += Execute;
     Timers[120] += () => msg.ExpandIn(30).ToAllChat();
     Timers[150] += () => {

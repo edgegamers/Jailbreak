@@ -14,7 +14,7 @@ namespace Jailbreak.Debug.Subcommands;
 public class LastRequest : AbstractCommand {
   private readonly ILastRequestManager manager;
   private readonly LastRequestMenuSelector menuSelector;
-  private readonly ILastRequestMessages messages;
+  private readonly ILRLocale messages;
   private readonly LastRequestPlayerSelector playerSelector;
 
   private readonly BasePlugin plugin;
@@ -27,7 +27,7 @@ public class LastRequest : AbstractCommand {
     menuSelector = new LastRequestMenuSelector(
       services.GetRequiredService<ILastRequestFactory>(),
       type => "css_debug lastrequest " + type, plugin);
-    messages = services.GetRequiredService<ILastRequestMessages>();
+    messages = services.GetRequiredService<ILRLocale>();
   }
 
   // (debug) lastrequest [lr] [player] <target>
@@ -57,7 +57,7 @@ public class LastRequest : AbstractCommand {
 
     var type = LRTypeExtensions.FromString(info.GetArg(1));
     if (type is null) {
-      messages.InvalidLastRequest(info.GetArg(1)).ToPlayerChat(executor);
+      messages.InvalidLastRequest(info.GetArg(1)).ToChat(executor);
       return;
     }
 

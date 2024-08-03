@@ -16,8 +16,8 @@ using MStatsShared;
 
 namespace Jailbreak.LastGuard;
 
-public class LastGuard(ILastGuardNotifications notifications,
-  ILastRequestManager lrManager) : ILastGuardService, IPluginBehavior {
+public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager)
+  : ILastGuardService, IPluginBehavior {
   public readonly FakeConVar<bool> CvAlwaysOverrideCt = new(
     "css_jb_lg_apply_lower_hp",
     "If true, the LG will be forced lower health if calculated");

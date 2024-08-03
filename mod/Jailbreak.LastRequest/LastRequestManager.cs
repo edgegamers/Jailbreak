@@ -18,8 +18,8 @@ using MStatsShared;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestManager(ILastRequestMessages messages,
-  IServiceProvider provider) : ILastRequestManager, IBlockUserDamage {
+public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
+  : ILastRequestManager, IBlockUserDamage {
   public readonly FakeConVar<int> CvLRBaseTime = new("css_jb_lr_time_base",
     "Round time to set when LR is activated, 0 to disable", 60);
 

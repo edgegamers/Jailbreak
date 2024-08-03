@@ -3,7 +3,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
-using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.LastRequest;
@@ -14,7 +14,7 @@ namespace Jailbreak.LastRequest.LastRequests;
 
 public class Race(BasePlugin plugin, ILastRequestManager manager,
   CCSPlayerController prisoner, CCSPlayerController guard,
-  IRaceLRMessages messages)
+  ILRRaceLocale messages)
   : TeleportingRequest(plugin, manager, prisoner, guard) {
   private DateTime raceStart;
   private Timer? raceTimer;
@@ -38,9 +38,9 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
       Prisoner.GiveNamedItem("weapon_knife");
     });
 
-    messages.EndRaceInstruction.ToPlayerChat(Prisoner);
+    messages.EndRaceInstruction.ToChat(Prisoner);
 
-    messages.RaceStartingMessage(Prisoner).ToPlayerChat(Guard);
+    messages.RaceStartingMessage(Prisoner).ToChat(Guard);
 
     startLocation = Prisoner.Pawn.Value?.AbsOrigin?.Clone();
 
