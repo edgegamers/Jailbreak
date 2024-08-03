@@ -10,13 +10,13 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public abstract class AbstractCellRestrictedDay : AbstractZoneRestrictedDay {
-  private readonly IServiceProvider provider1;
+  private readonly IServiceProvider provider;
 
   protected AbstractCellRestrictedDay(BasePlugin plugin,
     IServiceProvider provider,
     CsTeam restrictedTeam = CsTeam.Terrorist) : base(plugin, provider,
     restrictedTeam) {
-    provider1 = provider;
+    this.provider = provider;
   }
 
   public override IView ZoneReminder => CellReminder;
@@ -29,7 +29,7 @@ public abstract class AbstractCellRestrictedDay : AbstractZoneRestrictedDay {
       new SimpleView { SDLocale.PREFIX, "Stay in cells!" };
 
   override protected IZone GetZone() {
-    var manager = provider1.GetRequiredService<IZoneManager>();
+    var manager = provider.GetRequiredService<IZoneManager>();
     var zones   = manager.GetZones(ZoneType.CELL).GetAwaiter().GetResult();
     if (zones.Count > 0) return new MultiZoneWrapper(zones);
 

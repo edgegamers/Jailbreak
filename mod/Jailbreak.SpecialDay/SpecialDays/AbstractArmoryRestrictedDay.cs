@@ -10,13 +10,13 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public abstract class AbstractArmoryRestrictedDay : AbstractZoneRestrictedDay {
-  private readonly IServiceProvider provider1;
+  private readonly IServiceProvider provider;
 
   protected AbstractArmoryRestrictedDay(BasePlugin plugin,
     IServiceProvider provider,
     CsTeam restrictedTeam = CsTeam.Terrorist) : base(plugin, provider,
     restrictedTeam) {
-    provider1 = provider;
+    this.provider = provider;
   }
 
   public override IView ZoneReminder => ArmoryReminder;
@@ -30,7 +30,7 @@ public abstract class AbstractArmoryRestrictedDay : AbstractZoneRestrictedDay {
 
 
   override protected IZone GetZone() {
-    var manager = provider1.GetRequiredService<IZoneManager>();
+    var manager = provider.GetRequiredService<IZoneManager>();
     var zones   = manager.GetZones(ZoneType.ARMORY).GetAwaiter().GetResult();
     if (zones.Count > 0) return new MultiZoneWrapper(zones);
 
