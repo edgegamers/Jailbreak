@@ -6,6 +6,8 @@ using Jailbreak.Formatting.Core;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Utils;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 namespace Jailbreak.Formatting.Extensions;
 
 public static class ViewExtensions {

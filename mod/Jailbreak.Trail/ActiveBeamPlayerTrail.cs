@@ -10,7 +10,7 @@ public class ActiveBeamPlayerTrail(BasePlugin plugin,
   : ActivePlayerTrail<BeamTrailSegment>(plugin, player, lifetime, maxPoints,
     updateRate) {
   public override BeamTrailSegment CreateSegment(Vector start, Vector end) {
-    var beam = new BeamLine(plugin, start, end);
+    var beam = new BeamLine(Plugin, start, end);
     return new BeamTrailSegment(beam);
   }
 }

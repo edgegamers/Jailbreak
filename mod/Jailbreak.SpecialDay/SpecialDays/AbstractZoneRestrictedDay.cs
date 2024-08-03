@@ -10,11 +10,17 @@ using Jailbreak.Zones;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
-public abstract class AbstractZoneRestrictedDay(BasePlugin plugin,
-  IServiceProvider provider, CsTeam restrictedTeam = CsTeam.Terrorist)
-  : AbstractSpecialDay(plugin, provider) {
+public abstract class AbstractZoneRestrictedDay : AbstractSpecialDay {
+  protected readonly CsTeam RestrictedTeam;
+
   protected readonly IList<MovementRestrictor> Restrictors =
     new List<MovementRestrictor>();
+
+  protected AbstractZoneRestrictedDay(BasePlugin plugin,
+    IServiceProvider provider,
+    CsTeam restrictedTeam = CsTeam.Terrorist) : base(plugin, provider) {
+    RestrictedTeam = restrictedTeam;
+  }
 
   public abstract IView ZoneReminder { get; }
 
@@ -23,11 +29,11 @@ public abstract class AbstractZoneRestrictedDay(BasePlugin plugin,
   public override void Setup() {
     base.Setup();
 
-    ZoneReminder.ToTeamChat(restrictedTeam);
-    GetZone().Draw(plugin, Color.Firebrick, 55);
+    ZoneReminder.ToTeamChat(RestrictedTeam);
+    GetZone().Draw(Plugin, Color.Firebrick, 55);
 
-    foreach (var t in PlayerUtil.FromTeam(restrictedTeam)) {
-      var zoneRestrictor = new ZoneMovementRestrictor(plugin, t, GetZone(),
+    foreach (var t in PlayerUtil.FromTeam(RestrictedTeam)) {
+      var zoneRestrictor = new ZoneMovementRestrictor(Plugin, t, GetZone(),
         DistanceZone.WIDTH_CELL, () => ZoneReminder.ToChat(t));
       Restrictors.Add(zoneRestrictor);
     }

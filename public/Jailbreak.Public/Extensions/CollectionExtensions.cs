@@ -11,4 +11,9 @@ public static class CollectionExtensions {
       (list[k], list[n]) = (list[n], list[k]);
     }
   }
+
+  public static void Shuffle<T>(this IEnumerable<T> enumerable) {
+    var list = enumerable.ToList();
+    list.Shuffle();
+  }
 }

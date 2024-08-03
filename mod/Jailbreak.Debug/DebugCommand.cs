@@ -24,7 +24,7 @@ public class DebugCommand(IServiceProvider serviceProvider) : IPluginBehavior {
     commands.Add("lg", new LastGuard(serviceProvider));
     commands.Add("zone", new Zone(serviceProvider, basePlugin));
     commands.Add("endround", new EndRound(serviceProvider));
-    commands.Add("opencells", new OpenCells(serviceProvider));
+    commands.Add("testnearopen", new TestNearOpen(serviceProvider));
   }
 
   [RequiresPermissions("@css/root")]

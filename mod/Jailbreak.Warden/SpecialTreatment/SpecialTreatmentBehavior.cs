@@ -29,7 +29,7 @@ public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
     if (rebel.IsRebel(player)) rebel.UnmarkRebel(player);
     setSpecialColor(player, true);
 
-    notifications.Granted.ToChat(player).ToPlayerCenter(player);
+    notifications.Granted.ToChat(player).ToCenter(player);
 
     notifications.GrantedTo(player).ToAllChat();
   }
@@ -42,7 +42,7 @@ public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
 
     setSpecialColor(player, false);
 
-    notifications.Revoked.ToChat(player).ToPlayerCenter(player);
+    notifications.Revoked.ToChat(player).ToCenter(player);
 
     notifications.RevokedFrom(player).ToAllChat();
   }

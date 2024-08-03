@@ -7,7 +7,7 @@ namespace Jailbreak.Trail;
 
 public class BeamTrail(BasePlugin plugin, float lifetime = 20,
   int maxPoints = 100) : AbstractTrail<BeamTrailSegment>(lifetime, maxPoints) {
-  public static BeamTrail? FromTrail<T>(BasePlugin plugin,
+  public static BeamTrail FromTrail<T>(BasePlugin plugin,
     AbstractTrail<T> trail) where T : ITrailSegment {
     var beamTrail = new BeamTrail(plugin, trail.Lifetime, trail.MaxPoints);
     foreach (var segment in trail)

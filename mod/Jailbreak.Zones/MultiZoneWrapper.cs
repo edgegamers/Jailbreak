@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Zones;
+using JetBrains.Annotations;
 
 namespace Jailbreak.Zones;
 
@@ -17,7 +18,10 @@ public class MultiZoneWrapper(IEnumerable<IZone>? zones = null)
   : IZone, IEnumerable<IZone> {
   private readonly IEnumerable<IZone> zones = zones ?? [];
 
+  [MustDisposeResource]
   public IEnumerator<IZone> GetEnumerator() { return zones.GetEnumerator(); }
+
+  [MustDisposeResource]
   IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
   public int Id { get; set; }

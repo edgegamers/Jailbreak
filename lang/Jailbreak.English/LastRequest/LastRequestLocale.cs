@@ -4,7 +4,7 @@ using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Logistics;
 using Jailbreak.Formatting.Objects;
-using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;

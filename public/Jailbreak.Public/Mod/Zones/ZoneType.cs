@@ -46,7 +46,7 @@ public enum ZoneType {
 
   /// <summary>
   ///   Similar to SPAWN, but this spawn location was automatically
-  /// generated
+  ///   generated
   /// </summary>
   SPAWN_AUTO,
 
@@ -80,7 +80,8 @@ public static class ZoneTypeExtensions {
       ZoneType.ZONE_LIMIT_T  => Color.OrangeRed,
       ZoneType.ZONE_LIMIT_CT => Color.LightBlue,
       ZoneType.SPAWN_AUTO    => Color.Gray,
-      _                      => Color.Black
+      ZoneType.CELL_BUTTON   => Color.DarkRed,
+      _                      => Color.Magenta
     };
   }
 

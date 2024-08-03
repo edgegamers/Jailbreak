@@ -3,7 +3,7 @@ using Jailbreak.Formatting.Base;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 
-namespace Jailbreak.Formatting.Views;
+namespace Jailbreak.Formatting.Views.LastRequest;
 
 /// <summary>
 ///   Last Request Locale

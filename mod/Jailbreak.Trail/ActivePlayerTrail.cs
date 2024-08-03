@@ -8,11 +8,13 @@ namespace Jailbreak.Trail;
 
 public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
   where T : ITrailSegment {
+  protected readonly BasePlugin Plugin;
   protected readonly Timer Timer;
 
   public ActivePlayerTrail(BasePlugin plugin, CCSPlayerController player,
     float lifetime = 20, int maxPoints = 100, float updateRate = 0.5f) : base(
     lifetime, maxPoints) {
+    Plugin = plugin;
     Player = player;
     Timer = plugin.AddTimer(updateRate, Tick,
       TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);

@@ -1,6 +1,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Utils;
+using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Zones;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -160,7 +160,6 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
         foreach (var listZone in toList)
           info.ReplyToCommand(
             $"Points: {listZone.GetBorderPoints().Count()}/{listZone.GetAllPoints().Count()}Center: {listZone.CalculateCenterPoint()} Area: {listZone.GetArea()}");
-
         return;
     }
 
@@ -176,12 +175,19 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
         attemptBeginCreation(executor, specifiedType.Value);
         return;
       case "set":
-        foreach (var zone in zoneManager.GetZones(specifiedType.Value)
+        var zones = zoneManager.GetZones(specifiedType.Value)
          .GetAwaiter()
-         .GetResult())
-          zoneManager.DeleteZone(zone.Id);
+         .GetResult();
 
-        attemptBeginCreation(executor, specifiedType.Value);
+        Server.NextFrameAsync(async () => {
+          var copy = zones.ToList();
+
+          foreach (var zone in copy) await zoneManager.DeleteZone(zone.Id);
+
+          Server.NextFrame(()
+            => attemptBeginCreation(executor, specifiedType.Value));
+        });
+
         return;
       case "tpto":
       case "tp":
@@ -207,6 +213,26 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
 
         info.ReplyToCommand("Teleported to zone #" + tpDestinations.First().Id);
         return;
+      case "generate":
+        if (specifiedType != ZoneType.ARMORY
+          && specifiedType != ZoneType.CELL) {
+          info.ReplyToCommand("Invalid zone type");
+          return;
+        }
+
+        var entName = specifiedType == ZoneType.CELL ?
+          "info_player_terrorist" :
+          "info_player_counterterrorist";
+
+        var spawns = Utilities
+         .FindAllEntitiesByDesignerName<SpawnPoint>(entName)
+         .Where(s => s.AbsOrigin != null)
+         .Select(s => s.AbsOrigin!);
+
+        var generated = factory.CreateZone(spawns);
+        generated.Draw(plugin, specifiedType.Value.GetColor(), 120);
+        info.ReplyToCommand($"Drawing auto-generated {specifiedType} zone");
+        return;
     }
   }
 
@@ -219,7 +245,8 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
 
     if (type.IsSinglePoint()) {
       if (executor.PlayerPawn.Value?.AbsOrigin != null) {
-        var zone = factory.CreateZone([executor.PlayerPawn.Value.AbsOrigin!]);
+        var zone =
+          factory.CreateZone([executor.PlayerPawn.Value.AbsOrigin!.Clone()]);
         zone.Draw(plugin, type.GetColor(), 1f);
         Server.NextFrameAsync(async () => {
           await zoneManager.PushZone(zone, type);
@@ -275,26 +302,21 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
       return null;
     }
 
-    var validZones = value.Where(zone
-        => zone.IsInsideZone(player.PlayerPawn.Value!.AbsOrigin!))
-     .ToList();
+    var validZones = value.MinBy(z
+      => z.GetMinDistanceSquared(player.PlayerPawn.Value!.AbsOrigin!));
 
-    switch (validZones.Count) {
-      case 0:
-        if (print) player.PrintToChat("No zones found");
-        return null;
-      case > 1:
-        if (print) player.PrintToChat("Multiple zones found.");
-        return null;
-      default:
-        return (validZones.First(), type.Value);
+    if (validZones == null) {
+      if (print) player.PrintToChat("No zones found");
+      return null;
     }
+
+    return (validZones, type.Value);
   }
 
   private void sendUsage(CCSPlayerController player) {
     player.PrintToChat("Usage: css_zone [add/set/remove/tp] [type]");
-    player.PrintToChat(ChatColors.Default
-      + "       css_zone [addinner/show/list] <type>");
-    player.PrintToChat(ChatColors.Default + "       css_zone [finish/reload]");
+    player.PrintToChat("css_zone [addinner/show/list] <type>");
+    player.PrintToChat("css_zone [finish/reload]");
+    player.PrintToChat("css_zone generate [cell/armory]");
   }
 }

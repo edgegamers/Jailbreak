@@ -72,7 +72,7 @@ public class RockPaperScissors : AbstractLastRequest {
     MenuManager.OpenChatMenu(Prisoner, chatMenu);
     MenuManager.OpenChatMenu(Guard, chatMenu);
 
-    Plugin.AddTimer(RoundUtil.GetTimeRemaining() - 1, timeout,
+    Plugin.AddTimer(Math.Min(RoundUtil.GetTimeRemaining() - 1, 25), timeout,
       TimerFlags.STOP_ON_MAPCHANGE);
   }
 

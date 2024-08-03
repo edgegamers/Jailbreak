@@ -20,8 +20,8 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
 
   public override void Setup() {
     base.Setup();
-    plugin.RegisterEventHandler<EventPlayerHurt>(OnPlayerDamage);
-    plugin.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
+    Plugin.RegisterEventHandler<EventPlayerHurt>(OnPlayerDamage);
+    Plugin.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
   }
 
   public override void Execute() {
@@ -52,8 +52,8 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
 
   override protected HookResult
     OnEnd(EventRoundEnd @event, GameEventInfo info) {
-    plugin.DeregisterEventHandler<EventPlayerHurt>(OnPlayerDamage);
-    plugin.DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
+    Plugin.DeregisterEventHandler<EventPlayerHurt>(OnPlayerDamage);
+    Plugin.DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
     return base.OnEnd(@event, info);
   }
 }
@@ -68,7 +68,7 @@ public class OitcSettings : SpecialDaySettings {
     ConVarValues["mp_death_drop_gun"] = 0;
   }
 
-  public override ISet<string>? AllowedWeapons(CCSPlayerController player) {
+  public override ISet<string> AllowedWeapons(CCSPlayerController player) {
     return new HashSet<string> { "weapon_deagle", "weapon_knife" };
   }
 }

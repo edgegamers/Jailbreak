@@ -1,6 +1,7 @@
 using System.Collections;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
+using JetBrains.Annotations;
 
 namespace Jailbreak.Public.Mod.Trail;
 
@@ -19,8 +20,10 @@ public abstract class AbstractTrail<T>(float lifetime = 20, int maxPoints = 100)
     set => maxPoints = value;
   }
 
+  [MustDisposeResource]
   public IEnumerator<T> GetEnumerator() { return Segments.GetEnumerator(); }
 
+  [MustDisposeResource]
   IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
   public virtual T? GetStartSegment() { return Segments.LastOrDefault(); }

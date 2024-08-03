@@ -16,8 +16,9 @@ namespace Jailbreak.Public.Mod.SpecialDay;
 
 public abstract class AbstractSpecialDay(BasePlugin plugin,
   IServiceProvider provider) {
+  protected readonly BasePlugin Plugin = plugin;
   private readonly Dictionary<string, object?> previousConvarValues = new();
-  protected BasePlugin Plugin = plugin;
+  protected readonly IServiceProvider Provider = provider;
 
   protected IDictionary<float, Action> Timers =
     new DefaultableDictionary<float, Action>(new Dictionary<float, Action>(),
@@ -70,15 +71,15 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     if (Settings.StartInvulnerable) DisableDamage();
 
     if (!Settings.AllowLastRequests)
-      provider.GetRequiredService<ILastRequestManager>().DisableLRForRound();
+      Provider.GetRequiredService<ILastRequestManager>().DisableLRForRound();
     if (!Settings.AllowLastGuard)
-      provider.GetRequiredService<ILastGuardService>()
+      Provider.GetRequiredService<ILastGuardService>()
        .DisableLastGuardForRound();
     if (!Settings.AllowRebels)
-      provider.GetRequiredService<IRebelService>().DisableRebelForRound();
+      Provider.GetRequiredService<IRebelService>().DisableRebelForRound();
 
     if (Settings.OpenCells)
-      MapUtil.OpenCells(provider.GetRequiredService<IZoneManager>());
+      MapUtil.OpenCells(Provider.GetRequiredService<IZoneManager>());
 
     doTeleports();
 
@@ -91,7 +92,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
 
     foreach (var entry in Timers)
       Plugin.AddTimer(entry.Key, () => {
-        if (provider.GetRequiredService<ISpecialDayManager>().CurrentSD != this)
+        if (Provider.GetRequiredService<ISpecialDayManager>().CurrentSD != this)
           return;
         entry.Value.Invoke();
       }, TimerFlags.STOP_ON_MAPCHANGE);
@@ -122,35 +123,30 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
      .FindAllEntitiesByDesignerName<SpawnPoint>("info_player_counterterrorist")
      .Where(s => s.AbsOrigin != null)
      .Select(s => s.AbsOrigin!);
+    var enumerable = tSpawns as Vector[] ?? tSpawns.ToArray();
+    enumerable.Shuffle();
+    var positions = ctSpawns as Vector[] ?? ctSpawns.ToArray();
+    positions.Shuffle();
+
     IEnumerable<Vector> spawnPositions;
     switch (type) {
       case SpecialDaySettings.TeleportType.CELL:
-        spawnPositions = tSpawns;
+        spawnPositions = enumerable;
         break;
       case SpecialDaySettings.TeleportType.CELL_STACKED:
-        spawnPositions = [tSpawns.First()];
+        spawnPositions = [enumerable.First()];
         break;
       case SpecialDaySettings.TeleportType.ARMORY:
-        spawnPositions = ctSpawns;
+        spawnPositions = positions;
         break;
       case SpecialDaySettings.TeleportType.ARMORY_STACKED:
-        spawnPositions = [ctSpawns.First()];
+        spawnPositions = [positions.First()];
         break;
       case SpecialDaySettings.TeleportType.RANDOM:
-        spawnPositions = getRandomSpawns(false, false).ToList();
-        // If we don't have enough manually specified spawns,
-        // gradually pull from the other spawn types
-        if (spawnPositions.Count() < PlayerUtil.GetAlive().Count())
-          spawnPositions = getRandomSpawns(false).ToList();
-        if (spawnPositions.Count() < PlayerUtil.GetAlive().Count())
-          spawnPositions = getRandomSpawns().ToList();
+        spawnPositions = getAtLeastRandom(PlayerUtil.GetAlive().Count());
         break;
       case SpecialDaySettings.TeleportType.RANDOM_STACKED:
-        spawnPositions = getRandomSpawns(false, false).Take(1).ToList();
-        if (!spawnPositions.Any())
-          spawnPositions = getRandomSpawns(false).Take(1).ToList();
-        if (!spawnPositions.Any())
-          spawnPositions = getRandomSpawns().Take(1).ToList();
+        spawnPositions = getAtLeastRandom(1);
         break;
       default:
         return;
@@ -161,8 +157,17 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       player.PlayerPawn.Value?.Teleport(baggedSpawns.GetNext());
   }
 
+  private List<Vector> getAtLeastRandom(int count) {
+    // Progressively get more lax with our "randomness quality"
+    var result                       = getRandomSpawns(false, false, false);
+    if (result.Count < count) result = getRandomSpawns(false, false);
+    if (result.Count < count) result = getRandomSpawns(false);
+    if (result.Count < count) result = getRandomSpawns();
+    return result;
+  }
+
   private List<Vector> getRandomSpawns(bool includeSpawns = true,
-    bool includeTps = true) {
+    bool includeTps = true, bool includeAuto = true) {
     var result = new List<Vector>();
 
     if (includeTps) {
@@ -188,7 +193,13 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       result.AddRange(ctSpawns);
     }
 
-    var zoneManager = provider.GetRequiredService<IZoneManager>();
+    var zoneManager = Provider.GetRequiredService<IZoneManager>();
+    if (includeAuto)
+      result.AddRange(zoneManager.GetZones(ZoneType.SPAWN_AUTO)
+       .GetAwaiter()
+       .GetResult()
+       .Select(z => z.GetCenterPoint()));
+
     var zones = zoneManager.GetZones(ZoneType.SPAWN).GetAwaiter().GetResult();
     result.AddRange(zones.Select(z => z.GetCenterPoint()));
 

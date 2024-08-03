@@ -5,8 +5,7 @@ namespace Jailbreak.Trail;
 
 public class ActivePulsatingBeamPlayerTrail(BasePlugin plugin,
   CCSPlayerController player, float lifetime = 20, int maxPoints = 100,
-  float updateRate = 0.5f, float pulseRate = 0.5f, float pulseMin = 0.5f,
-  float pulseMax = 2.5f)
+  float updateRate = 0.5f)
   : ActivePlayerTrail<BeamTrailSegment>(plugin, player, lifetime, maxPoints,
     updateRate) {
   private readonly PulsatingBeamTrail trail = new(plugin, lifetime, maxPoints,

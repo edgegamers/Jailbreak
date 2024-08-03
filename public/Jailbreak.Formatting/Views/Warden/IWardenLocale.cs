@@ -3,7 +3,7 @@ using Jailbreak.Formatting.Base;
 
 // ReSharper disable InconsistentNaming
 
-namespace Jailbreak.Formatting.Views;
+namespace Jailbreak.Formatting.Views.Warden;
 
 public interface IWardenLocale {
   public IView PickingShortly { get; }

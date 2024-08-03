@@ -1,6 +1,6 @@
 using CounterStrikeSharp.API.Core;
 using Jailbreak.Formatting.Extensions;
-using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 using Microsoft.Extensions.DependencyInjection;

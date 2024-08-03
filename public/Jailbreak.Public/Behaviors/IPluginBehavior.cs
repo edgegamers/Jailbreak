@@ -13,7 +13,5 @@ public interface IPluginBehavior : IDisposable {
   /// </summary>
   void Start(BasePlugin basePlugin) { }
 
-  void Start(BasePlugin basePlugin, bool hotreload) {
-    Start(basePlugin);
-  }
+  void Start(BasePlugin basePlugin, bool hotreload) { Start(basePlugin); }
 }

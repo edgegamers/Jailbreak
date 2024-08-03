@@ -16,7 +16,7 @@ public class TrailManager : ITrailManager<BeamTrailSegment> {
     throw new NotImplementedException();
   }
 
-  public BeamTrailSegment? GetPlayerTrail(CCSPlayerController player) {
+  public BeamTrailSegment GetPlayerTrail(CCSPlayerController player) {
     throw new NotImplementedException();
   }
 }

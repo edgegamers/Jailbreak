@@ -4,7 +4,7 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
-using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Mute;
@@ -150,14 +150,14 @@ public class MuteSystem(IServiceProvider provider)
 
     if (!player.PawnIsAlive && !bypassMute(player)) {
       // Normal players can't speak when dead
-      messages!.DeadReminder.ToPlayerCenter(player);
+      messages!.DeadReminder.ToCenter(player);
       mute(player);
       return;
     }
 
     if (isMuted(player)) {
       // Remind any muted players they're muted
-      messages!.MuteReminder.ToPlayerCenter(player);
+      messages!.MuteReminder.ToCenter(player);
       return;
     }
 
@@ -167,10 +167,10 @@ public class MuteSystem(IServiceProvider provider)
     if (IsPeaceEnabled()) {
       if (player.Team == CsTeam.CounterTerrorist && DateTime.Now >= ctPeaceEnd)
         return;
-      messages!.PeaceReminder.ToPlayerCenter(player);
+      messages!.PeaceReminder.ToCenter(player);
     }
 
-    if (!player.PawnIsAlive) messages!.AdminDeadReminder.ToPlayerCenter(player);
+    if (!player.PawnIsAlive) messages!.AdminDeadReminder.ToCenter(player);
   }
 
   private bool isMuted(CCSPlayerController player) {

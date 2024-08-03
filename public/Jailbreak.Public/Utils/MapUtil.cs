@@ -23,12 +23,17 @@ public static class MapUtil {
      .GetAwaiter()
      .GetResult();
 
-    if (zones.Count == 0) return OpenCells() <= Sensitivity.TARGET_CELL;
+    Server.PrintToChatAll("Attempting to open cells...");
 
-    return OpenCells(Sensitivity.ANY, zones[0].GetCenterPoint()) != null;
+    if (zones == null || zones.Count == 0) {
+      Server.PrintToChatAll("No cell buttons found.");
+      return OpenCells() <= Sensitivity.TARGET_CELL;
+    }
+
+    return OpenCells(Sensitivity.ANY, zones.First().GetCenterPoint()) != null;
   }
 
-  private static Sensitivity? OpenCells(
+  public static Sensitivity? OpenCells(
     Sensitivity sensitivity = Sensitivity.NAME_CELL_DOOR,
     Vector? source = null) {
     if (source == null) source = getCtSpawn();
@@ -80,8 +85,12 @@ public static class MapUtil {
   }
 
   private static void PressButton(CBaseEntity entity) {
-    entity.AcceptInput("Unlock");
-    entity.AcceptInput("Press");
+    Server.PrintToChatAll(
+      $"Pressing button {entity.Globalname} {entity.Target}");
+    entity.AcceptInput("Unlock",
+      PlayerUtil.FromTeam(CsTeam.CounterTerrorist).FirstOrDefault());
+    entity.AcceptInput("Press",
+      PlayerUtil.FromTeam(CsTeam.CounterTerrorist).FirstOrDefault());
   }
 
   private static bool IsCellButton(CBaseEntity ent, Sensitivity sen) {

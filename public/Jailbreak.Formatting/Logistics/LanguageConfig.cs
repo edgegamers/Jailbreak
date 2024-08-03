@@ -2,13 +2,8 @@
 
 namespace Jailbreak.Formatting.Logistics;
 
-public class LanguageConfig<TDialect> where TDialect : IDialect {
-  private readonly IServiceCollection collection;
-
-  public LanguageConfig(IServiceCollection collection) {
-    this.collection = collection;
-  }
-
+public class LanguageConfig<TDialect>(IServiceCollection collection)
+  where TDialect : IDialect {
   public void Configure(Dictionary<Type, Type> serviceMap) {
     foreach (var (service, implementation) in serviceMap) {
       var method = typeof(IServiceCollection).GetMethod("AddSingleton")

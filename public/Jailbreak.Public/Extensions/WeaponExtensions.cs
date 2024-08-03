@@ -133,6 +133,7 @@ public static class WeaponExtensions {
 
   public static void AddBulletsToMagazine(this CBasePlayerWeapon? weapon,
     int bullets) {
+    if (weapon == null) return;
     if (weapon.Clip1 + bullets > weapon.VData!.MaxClip1) {
       var overflowBullets = weapon.Clip1 + bullets - weapon.VData!.MaxClip1;
       weapon.Clip1          =  weapon.VData!.MaxClip1;

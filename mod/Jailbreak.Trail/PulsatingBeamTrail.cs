@@ -14,8 +14,7 @@ public class PulsatingBeamTrail : AbstractTrail<BeamTrailSegment> {
   private readonly Timer timer;
 
   public PulsatingBeamTrail(BasePlugin plugin, float lifetime = 20,
-    int maxPoints = 100, float updateRate = 0.25f,
-    Func<float, float>? transform = null) : base(lifetime, maxPoints) {
+    int maxPoints = 100, float updateRate = 0.25f) : base(lifetime, maxPoints) {
     this.plugin = plugin;
 
     timer = plugin.AddTimer(updateRate, Update,
@@ -43,11 +42,11 @@ public class PulsatingBeamTrail : AbstractTrail<BeamTrailSegment> {
     timer.Kill();
   }
 
-  public static PulsatingBeamTrail? FromTrail<T>(BasePlugin plugin,
+  public static PulsatingBeamTrail FromTrail<T>(BasePlugin plugin,
     AbstractTrail<T> trail, float updateRate = 0.25f,
     Func<float, float>? transform = null) where T : ITrailSegment {
     var beamTrail = new PulsatingBeamTrail(plugin, trail.Lifetime,
-      trail.MaxPoints, updateRate, transform);
+      trail.MaxPoints, updateRate);
     foreach (var segment in trail)
       beamTrail.Segments.Add(
         beamTrail.CreateSegment(segment.GetStart(), segment.GetEnd()));

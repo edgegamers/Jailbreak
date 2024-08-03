@@ -8,7 +8,7 @@ using Jailbreak.Public.Mod.SpecialDay.Enums;
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class TeleportDay(BasePlugin plugin, IServiceProvider provider)
-  : FFADay(plugin, provider), ISpecialDayMessageProvider {
+  : FFADay(plugin, provider) {
   public override SDType Type => SDType.FFA;
   public override SpecialDaySettings Settings => new TeleportSettings();
 
