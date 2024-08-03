@@ -32,21 +32,22 @@ namespace Jailbreak;
 public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
   /// <inheritdoc />
   public void ConfigureServices(IServiceCollection serviceCollection) {
-    serviceCollection.AddSingleton<ILogLocale, LogLocale>();
-    serviceCollection.AddSingleton<IRebelLocale, RebelLocale>();
+    serviceCollection.AddSingleton<IC4Locale, C4Locale>();
     serviceCollection.AddSingleton<IGenericCmdLocale, GenericCmdLocale>();
-    serviceCollection.AddSingleton<ILRLocale, LastRequestLocale>();
+    serviceCollection.AddSingleton<ILGLocale, LGLocale>();
+    serviceCollection.AddSingleton<ILRB4BLocale, B4BLocale>();
     serviceCollection.AddSingleton<ILRCFLocale, CoinflipLocale>();
+    serviceCollection.AddSingleton<ILRLocale, LastRequestLocale>();
     serviceCollection.AddSingleton<ILRRPSLocale, RPSLocale>();
     serviceCollection.AddSingleton<ILRRaceLocale, RaceLocale>();
-    serviceCollection.AddSingleton<ILGLocale, LGLocale>();
+    serviceCollection.AddSingleton<ILogLocale, LogLocale>();
+    serviceCollection.AddSingleton<IRebelLocale, RebelLocale>();
     serviceCollection.AddSingleton<ISDLocale, SDLocale>();
-    serviceCollection.AddSingleton<IWardenLocale, WardenLocale>();
-    serviceCollection.AddSingleton<IWardenSTLocale, WardenSTLocale>();
     serviceCollection.AddSingleton<IWardenCmdOpenLocale, WardenCmdOpenLocale>();
     serviceCollection.AddSingleton<IWardenCmdRollLocale, WardenCmdRollLocale>();
+    serviceCollection.AddSingleton<IWardenLocale, WardenLocale>();
     serviceCollection.AddSingleton<IWardenPeaceLocale, WardenPeaceLocale>();
-    serviceCollection.AddSingleton<IC4Locale, C4Locale>();
+    serviceCollection.AddSingleton<IWardenSTLocale, WardenSTLocale>();
 
     //	Do we want to make this scoped?
     //	Not sure how this will behave with multiple rounds and whatnot.
