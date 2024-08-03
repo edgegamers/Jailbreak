@@ -46,9 +46,9 @@ public class BulletForBullet : TeleportingRequest {
     State = LRState.ACTIVE;
 
     Prisoner.GiveNamedItem(CHOSEN_PISTOL);
-    Prisoner.GetWeaponBase(CHOSEN_PISTOL).SetAmmo(0, 0);
+    Server.NextFrame(() => Prisoner.GetWeaponBase(CHOSEN_PISTOL).SetAmmo(0, 0));
     Guard.GiveNamedItem(CHOSEN_PISTOL);
-    Guard.GetWeaponBase(CHOSEN_PISTOL).SetAmmo(0, 0);
+    Server.NextFrame(() => Guard.GetWeaponBase(CHOSEN_PISTOL).SetAmmo(0, 0));
 
     //steal the VData of the prisoners gun for mag size
     magSize = magForMag ?
