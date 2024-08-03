@@ -1,7 +1,6 @@
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Logistics;
 using Jailbreak.Formatting.Views;
-using Jailbreak.Public.Utils;
 
 namespace Jailbreak.English.Warden;
 
@@ -16,22 +15,13 @@ public class OpenCommandNotifications : IOpenCommandMessages,
     };
   }
 
-  public IView OpenResult(Sensitivity? sensitivity) {
-    return sensitivity switch {
-      Sensitivity.NAME_CELL_DOOR or Sensitivity.NAME_CELL => new SimpleView {
-        WardenNotifications.PREFIX, "The warden opened the cell doors."
-      },
-      Sensitivity.TARGET_CELL_DOOR or Sensitivity.TARGET_CELL => new
-        SimpleView {
-          WardenNotifications.PREFIX,
-          "The warden attempted to open the cell door."
-        },
-      Sensitivity.ANY_WITH_TARGET => new SimpleView {
-        WardenNotifications.PREFIX, "Attempting to open cell coors..."
-      },
-      _ => new SimpleView {
-        WardenNotifications.PREFIX, "Could not open cell doors."
-      }
+  public IView CellsOpened
+    => new SimpleView {
+      WardenNotifications.PREFIX, "The warden opened cells."
     };
-  }
+
+  public IView OpeningFailed
+    => new SimpleView {
+      WardenNotifications.PREFIX, "Failed to open the cells."
+    };
 }

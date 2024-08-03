@@ -40,7 +40,7 @@ public abstract class FormatObject {
   public static implicit operator FormatObject(float value) {
     return new FloatFormatObject(value);
   }
-  
+
   public static implicit operator FormatObject(CsTeam value) {
     return new TeamFormatObject(value);
   }

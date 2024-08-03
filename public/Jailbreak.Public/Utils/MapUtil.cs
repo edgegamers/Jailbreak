@@ -3,6 +3,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.Zones;
 
 namespace Jailbreak.Public.Utils;
 
@@ -17,8 +18,20 @@ public static class MapUtil {
      .First();
   }
 
-  public static Sensitivity? OpenCells(
-    Sensitivity sensitivity = Sensitivity.NAME_CELL_DOOR) {
+  public static bool OpenCells(IZoneManager zoneManager) {
+    var zones = zoneManager.GetZones(ZoneType.CELL_BUTTON)
+     .GetAwaiter()
+     .GetResult();
+
+    if (zones.Count == 0) return OpenCells() <= Sensitivity.TARGET_CELL;
+
+    return OpenCells(Sensitivity.ANY, zones[0].GetCenterPoint()) != null;
+  }
+
+  private static Sensitivity? OpenCells(
+    Sensitivity sensitivity = Sensitivity.NAME_CELL_DOOR,
+    Vector? source = null) {
+    if (source == null) source = getCtSpawn();
     var allButtons = Utilities
      .FindAllEntitiesByDesignerName<CEntityInstance>("func_button")
      .ToHashSet();
@@ -52,11 +65,10 @@ public static class MapUtil {
         }
       }
 
-      var ctSpawn = getCtSpawn();
-      var sorted  = entities.ToList();
+      var sorted = entities.ToList();
       sorted.Sort((a, b) => {
-        var aDist = a.AbsOrigin!.DistanceSquared(ctSpawn);
-        var bDist = b.AbsOrigin!.DistanceSquared(ctSpawn);
+        var aDist = a.AbsOrigin!.DistanceSquared(source);
+        var bDist = b.AbsOrigin!.DistanceSquared(source);
         return aDist.CompareTo(bDist);
       });
 

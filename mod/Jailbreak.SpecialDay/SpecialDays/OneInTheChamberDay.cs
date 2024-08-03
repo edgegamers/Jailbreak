@@ -1,7 +1,4 @@
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Entities;
-using CounterStrikeSharp.API.Modules.Entities.Constants;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Extensions;
@@ -53,7 +50,8 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
     return HookResult.Continue;
   }
 
-  public override HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
+  override protected HookResult
+    OnEnd(EventRoundEnd @event, GameEventInfo info) {
     plugin.DeregisterEventHandler<EventPlayerHurt>(OnPlayerDamage);
     plugin.DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
     return base.OnEnd(@event, info);

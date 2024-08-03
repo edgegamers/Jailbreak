@@ -1,9 +1,6 @@
-﻿using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
-using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.Trail;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
@@ -11,7 +8,6 @@ namespace Jailbreak.Trail;
 
 public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
   where T : ITrailSegment {
-  public CCSPlayerController Player { get; protected set; }
   protected readonly Timer Timer;
 
   public ActivePlayerTrail(BasePlugin plugin, CCSPlayerController player,
@@ -21,6 +17,8 @@ public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
     Timer = plugin.AddTimer(updateRate, Tick,
       TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
   }
+
+  public CCSPlayerController Player { get; protected set; }
 
   virtual protected void Tick() {
     if (!Player.IsValid) Kill();
@@ -41,7 +39,7 @@ public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
   public virtual void StopTracking() { Timer.Kill(); }
 
   public override void Kill() {
-    foreach (var segment in Segments) { segment.Remove(); }
+    foreach (var segment in Segments) segment.Remove();
 
     StopTracking();
   }

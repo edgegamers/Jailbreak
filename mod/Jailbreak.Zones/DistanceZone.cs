@@ -18,12 +18,16 @@ public class DistanceZone(IList<Vector> origins, float tolerance) : IZone {
 
   public bool IsInsideZone(Vector position) {
     if (ConvexHullUtil.IsInsideZone(position, cachedHull)) return true;
-    var minDistance = GetMinDistance(position);
+    var minDistance = GetMinDistanceSquared(position);
     return minDistance < tolerance;
   }
 
+  public float GetMinDistanceSquared(Vector position) {
+    return ConvexHullUtil.GetMinDistanceSquared(position, cachedHull);
+  }
+
   public float GetMinDistance(Vector position) {
-    return ConvexHullUtil.GetMinDistance(position, cachedHull);
+    return (float)Math.Sqrt(GetMinDistanceSquared(position));
   }
 
   public Vector GetCenterPoint() {

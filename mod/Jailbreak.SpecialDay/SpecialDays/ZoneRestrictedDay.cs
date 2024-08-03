@@ -42,7 +42,8 @@ public abstract class ZoneRestrictedDay(BasePlugin plugin,
     Restrictors.Clear();
   }
 
-  public override HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
+  override protected HookResult
+    OnEnd(EventRoundEnd @event, GameEventInfo info) {
     var result = base.OnEnd(@event, info);
     foreach (var restrictor in Restrictors) restrictor.Kill();
     Restrictors.Clear();

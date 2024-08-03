@@ -61,7 +61,8 @@ public abstract class AbstractTrail<T>(float lifetime = 20, int maxPoints = 100)
 
   public IList<Vector> GetTrailPoints() { return GetTrailPoints(Lifetime); }
 
-  public virtual T? GetNearestSegment(Vector position, float since, int max = 0) {
+  public virtual T?
+    GetNearestSegment(Vector position, float since, int max = 0) {
     var nearest     = default(T);
     var minDistance = double.MaxValue;
     foreach (var segment in GetTrail(since, max)) {

@@ -59,7 +59,6 @@ public abstract class MovementRestrictor {
     }
 
     onTeleport?.Invoke();
-    if (lastValid == null) return;
     player.PlayerPawn.Value?.Teleport(lastValid ?? GetCenter());
   }
 

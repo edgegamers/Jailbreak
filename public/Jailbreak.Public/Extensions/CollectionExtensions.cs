@@ -1,7 +1,7 @@
 ﻿namespace Jailbreak.Public.Extensions;
 
 public static class CollectionExtensions {
-  private static readonly Random Random = new Random();
+  private static readonly Random Random = new();
 
   public static void Shuffle<T>(this IList<T> list) {
     var n = list.Count;

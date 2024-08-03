@@ -23,7 +23,7 @@ public abstract class CellRestrictedDay(BasePlugin plugin,
       new SimpleView { SpecialDayMessages.PREFIX, "Stay in cells!" };
 
   override protected IZone GetZone() {
-    var manager = provider.GetRequiredService<IZoneManager>();
+    var           manager = provider.GetRequiredService<IZoneManager>();
     var zones   = manager.GetZones(ZoneType.CELL).GetAwaiter().GetResult();
     if (zones.Count > 0) return new MultiZoneWrapper(zones);
 

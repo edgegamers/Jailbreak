@@ -26,8 +26,8 @@ public class MultiZoneWrapper(IEnumerable<IZone>? zones = null)
     return zones.Any(zone => zone.IsInsideZone(position));
   }
 
-  public float GetMinDistance(Vector position) {
-    return zones.Min(zone => zone.GetMinDistance(position));
+  public float GetMinDistanceSquared(Vector position) {
+    return zones.Min(zone => zone.GetMinDistanceSquared(position));
   }
 
   public Vector GetCenterPoint() {
@@ -53,7 +53,7 @@ public class MultiZoneWrapper(IEnumerable<IZone>? zones = null)
       return;
     }
 
-    var minZone = zones.OrderBy(zone => zone.GetMinDistance(point)).First();
+    var minZone = zones.OrderBy(zone => zone.GetMinDistanceSquared(point)).First();
 
     minZone.AddPoint(point);
   }

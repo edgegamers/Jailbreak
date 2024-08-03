@@ -1,7 +1,6 @@
 ﻿using System.Drawing;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Extensions;
@@ -114,7 +113,8 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
     return HookResult.Continue;
   }
 
-  public override HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
+  override protected HookResult
+    OnEnd(EventRoundEnd @event, GameEventInfo info) {
     var result = base.OnEnd(@event, info);
     plugin.DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
     plugin.DeregisterEventHandler<EventPlayerSpawn>(OnRespawn);

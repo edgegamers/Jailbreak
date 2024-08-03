@@ -14,7 +14,7 @@ public class ZoneMovementRestrictor : MovementRestrictor {
   }
 
   public override float DistanceFrom(Vector vec) {
-    return zone.GetMinDistance(vec);
+    return zone.GetMinDistanceSquared(vec);
   }
 
   public override Vector GetCenter() { return zone.GetCenterPoint(); }

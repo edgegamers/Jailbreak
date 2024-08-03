@@ -1,9 +1,9 @@
 using Jailbreak.Formatting.Base;
-using Jailbreak.Public.Utils;
 
 namespace Jailbreak.Formatting.Views;
 
 public interface IOpenCommandMessages {
+  public IView CellsOpened { get; }
+  public IView OpeningFailed { get; }
   public IView CannotOpenYet(int seconds);
-  public IView OpenResult(Sensitivity? sensitivity);
 }

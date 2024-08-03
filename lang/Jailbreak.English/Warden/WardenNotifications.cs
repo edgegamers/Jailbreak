@@ -98,9 +98,8 @@ public class WardenNotifications : IWardenNotifications,
       new SimpleView { PREFIX, "There is no warden." };
   }
 
-  public IView CannotWardenDuringWarmup => new SimpleView {
-    PREFIX, "You cannot warden during warmup."
-  };
+  public IView CannotWardenDuringWarmup
+    => new SimpleView { PREFIX, "You cannot warden during warmup." };
 
   public IView FireCommandSuccess(CCSPlayerController player) {
     return new SimpleView {
