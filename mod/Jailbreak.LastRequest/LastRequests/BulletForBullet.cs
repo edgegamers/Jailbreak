@@ -16,7 +16,7 @@ public class BulletForBullet : TeleportingRequest {
   private bool magForMag = false;
 
   private static readonly string[] GUNS = new string[] {
-    "weapon_deagle", "weapon_glock", "weapon_hkp2000", "weapon_tec9",
+    "weapon_deagle", "weapon_glock", "weapon_usp_silencer", "weapon_tec9",
     "weapon_cz75a", "weapon_revolver"
   };
 
@@ -28,8 +28,8 @@ public class BulletForBullet : TeleportingRequest {
     CCSPlayerController prisoner, CCSPlayerController guard,
     bool magForMag) : base(plugin, manager, prisoner, guard) {
     chatMenu = new ChatMenu(magForMag ? "Mag for Mag" : "Shot for Shot");
-    foreach (var pistol in Tag.PISTOLS) {
-      chatMenu.AddMenuOption(pistol.GetFriendlyWeaponName(), OnSelect);
+    foreach (var pistol in GUN_NAMES) {
+      chatMenu.AddMenuOption(pistol, OnSelect);
     }
   }
 
@@ -117,27 +117,30 @@ public class BulletForBullet : TeleportingRequest {
 
   private HookResult OnPlayerShoot(EventBulletImpact @event,
     GameEventInfo info) {
-    if (State != LRState.ACTIVE) return HookResult.Continue;
+      if (State != LRState.ACTIVE) return HookResult.Continue;
 
-    var player = @event.Userid;
-    if (player == null || whosShot == null || !player.IsValid
-      || magSize == null)
-      return HookResult.Continue;
+      var player = @event.Userid;
+      if (player == null || whosShot == null || !player.IsValid
+        || magSize == null)
+        return HookResult.Continue;
 
-    if (player.Slot != Prisoner.Slot && player.Slot != Guard.Slot)
-      return HookResult.Continue;
-    if (player.Slot != whosShot) {
-      PrintToParticipants(player.PlayerName + " cheated.");
-      player.Pawn.Value?.CommitSuicide(false, true);
-      return HookResult.Handled;
-    }
+      if (player.Slot != Prisoner.Slot && player.Slot != Guard.Slot)
+        return HookResult.Continue;
+      
+      if (player.Slot != whosShot) {
+        PrintToParticipants(player.PlayerName + " cheated.");
+        player.Pawn.Value?.CommitSuicide(false, true);
+        return HookResult.Handled;
+      }
 
-    if (player.GetWeaponBase(CHOSEN_PISTOL).Clip1 != 0)
-      return HookResult.Continue;
+      if (player.GetWeaponBase(CHOSEN_PISTOL!)?.Clip1 != 0)
+        return HookResult.Continue;
+      Server.NextFrame(() => {
 
-    var opponent = player.Slot == Prisoner.Slot ? Guard : Prisoner;
-    opponent.GetWeaponBase(CHOSEN_PISTOL).SetAmmo(magSize.Value, 0);
-    whosShot = opponent.Slot;
+      var opponent = player.Slot == Prisoner.Slot ? Guard : Prisoner;
+      opponent.GetWeaponBase(CHOSEN_PISTOL!).SetAmmo(magSize.Value, 0);
+      whosShot = opponent.Slot;
+    });
     return HookResult.Continue;
   }
 
