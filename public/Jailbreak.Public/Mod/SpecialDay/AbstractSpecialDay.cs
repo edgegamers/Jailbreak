@@ -193,6 +193,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     result.AddRange(zones.Select(z => z.GetCenterPoint()));
 
     result.Shuffle();
+
     return result;
   }
 
