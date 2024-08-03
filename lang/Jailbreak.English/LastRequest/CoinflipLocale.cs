@@ -20,7 +20,7 @@ public class CoinflipLocale : LastRequestLocale, ILRCFLocale {
       guard,
       " chose " + ChatColors.Green,
       choice ? "Heads" : "Tails",
-      ", flipping..."
+      ChatColors.Default + ", flipping..."
     };
   }
 
