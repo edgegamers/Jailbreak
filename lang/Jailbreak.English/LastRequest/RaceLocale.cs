@@ -11,15 +11,15 @@ public class RaceLocale : LastRequestLocale, ILRRaceLocale {
     => new SimpleView {
       {
         PREFIX,
-        $"Type ${ChatColors.Blue}!endrace${ChatColors.White} to set the end point!"
+        $"Type {ChatColors.Blue}!endrace{ChatColors.White} to set the end point!"
       },
       SimpleView.NEWLINE, {
         PREFIX,
-        $"Type ${ChatColors.Blue}!endrace${ChatColors.White} to set the end point!"
+        $"Type {ChatColors.Blue}!endrace{ChatColors.White} to set the end point!"
       },
       SimpleView.NEWLINE, {
         PREFIX,
-        $"Type ${ChatColors.Blue}!endrace${ChatColors.White} to set the end point!"
+        $"Type {ChatColors.Blue}!endrace{ChatColors.White} to set the end point!"
       },
       SimpleView.NEWLINE
     };
