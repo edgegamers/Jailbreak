@@ -11,31 +11,39 @@ namespace Jailbreak.Zones;
 
 public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory)
   : IPluginBehavior {
-  private readonly BasePlugin? plugin;
+  private BasePlugin plugin = null!;
   private IZone? cells;
-  private IList<IZone>? randomPoints;
+  private IList<IZone>? manualSpawnPoints;
   private IList<IZone>? restrictedAreas;
-  private Timer timer;
+  private Timer? timer;
+  private string? currentMap;
 
-  public void Start(BasePlugin basePlugin) {
-    basePlugin.RegisterListener<Listeners.OnMapStart>(OnNewMap);
+  public void Start(BasePlugin basePlugin, bool hotreload) {
+    plugin = basePlugin;
+
+    startTimer();
   }
 
-  void IDisposable.Dispose() { timer.Kill(); }
+  void IDisposable.Dispose() { timer?.Kill(); }
 
   private void startTimer() {
     timer?.Kill();
-    timer = plugin.AddTimer(63f, tick, TimerFlags.REPEAT);
+    timer = plugin.AddTimer(1f, tick, TimerFlags.REPEAT);
   }
 
-  private void OnNewMap(string mapname) {
-    cells           = getCells();
-    restrictedAreas = getRestrictedAreas();
-    randomPoints    = getRandomPoints();
+  private void reload() {
+    cells             = getCells();
+    restrictedAreas   = getRestrictedAreas();
+    manualSpawnPoints = getManualSpawnPoints();
+
+    if (manualSpawnPoints?.Count > Server.MaxPlayers) return;
+
     startTimer();
   }
 
   private void tick() {
+    if (currentMap != Server.MapName) reload();
+    currentMap = Server.MapName;
     foreach (var player in PlayerUtil.GetAlive()) tick(player);
   }
 
@@ -46,63 +54,93 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory)
     var pos = pawn.AbsOrigin;
     if (pos == null) return;
     pos = pos.Clone();
-    if (cells != null && cells.IsInsideZone(pos)) return;
-    if (restrictedAreas == null) return;
-    var dist = restrictedAreas.Min(a => a.GetMinDistanceSquared(pos));
-    if (dist <= DistanceZone.WIDTH_MEDIUM_ROOM) return;
-    dist = restrictedAreas.Min(a => a.GetMinDistanceSquared(pos));
-    if (dist <= DistanceZone.WIDTH_MEDIUM_ROOM) return;
+    float dist;
+    if (cells != null) {
+      if (cells.IsInsideZone(pos)) return;
+      dist = cells.GetMinDistanceSquared(pos);
+      if (dist <= DistanceZone.WIDTH_CELL) return;
+    }
 
-    if (randomPoints?.Count > Server.MaxPlayers) {
-      var nearestPoint = randomPoints.OrderBy(z => z.GetMinDistanceSquared(pos))
+    if (restrictedAreas is { Count: > 0 }) {
+      dist = restrictedAreas.Min(a => a.GetMinDistanceSquared(pos));
+      if (dist <= DistanceZone.WIDTH_MEDIUM_ROOM) return;
+    }
+
+    if (manualSpawnPoints != null
+      && manualSpawnPoints.Count >= Server.MaxPlayers)
+      return;
+
+    var autoSpawnPoints = getAutoSpawnPoints();
+
+    var allSpawnPoints = (manualSpawnPoints ?? []).Concat(autoSpawnPoints ?? [])
+     .ToList();
+
+    if (allSpawnPoints.Count > 0) {
+      dist = allSpawnPoints.Min(a => a.GetMinDistanceSquared(pos));
+      if (dist <= DistanceZone.WIDTH_CELL * 2) return;
+    }
+
+    if (allSpawnPoints.Count > Server.MaxPlayers && autoSpawnPoints != null) {
+      var nearestPoint = autoSpawnPoints
+       .OrderBy(z => z.GetMinDistanceSquared(pos))
        .First();
-      var currentScore = zoneScore(randomPoints);
-      var newPoints    = new List<IZone>(randomPoints);
+      var currentScore = zoneScore(manualSpawnPoints);
+      var newPoints    = new List<IZone>(allSpawnPoints);
+      var zone         = factory.CreateZone([pos]);
       newPoints.Remove(nearestPoint);
-      if (!(zoneScore(newPoints) > currentScore)) return;
+      newPoints.Add(zone);
 
-      randomPoints = newPoints;
-      var map  = Server.MapName;
-      var zone = factory.CreateZone([pos]);
+      var newScore = zoneScore(newPoints);
+
+      Server.PrintToChatAll(
+        $"Attempting to replace spawnpoint, old: {currentScore}, new: {newScore}");
+
+      if (newScore <= currentScore) return;
+
+      var map = Server.MapName;
       zone.Id = nearestPoint.Id;
       Server.NextFrameAsync(async () => {
         await zoneManager.DeleteZone(zone.Id, map);
-        await zoneManager.PushZoneWithID(zone, ZoneType.SPAWN, map);
-        randomPoints = getRandomPoints();
+        await zoneManager.PushZoneWithID(zone, ZoneType.SPAWN_AUTO, map);
       });
 
       return;
     }
 
+    Server.PrintToChatAll(
+      $"Creating new spawn point, not yet reached population limit. {allSpawnPoints.Count}/{Server.MaxPlayers}");
+
     var spawn = factory.CreateZone([pos]);
-    zoneManager.PushZone(spawn, ZoneType.SPAWN);
+    autoSpawnPoints?.Add(spawn);
+    Server.NextFrameAsync(async () => {
+      await zoneManager.PushZone(spawn, ZoneType.SPAWN_AUTO, currentMap!);
+    });
   }
 
   private float zoneScore(IList<IZone>? zones) {
+    // We want our spawnpoints to be as far away from each other as possible,
+    // and as equally distributed as possible.
+
+    if (zones == null) return 0;
+
     var total = 0f;
-    var count = 0;
-
-    switch (zones?.Count) {
-      case 1:
-        return float.NegativeInfinity;
-      case < 2:
-        return 0f;
+    foreach (var zone in zones) {
+      var min = zones.Min(z => z.GetMinDistanceSquared(zone.GetCenterPoint()));
+      total += min;
     }
 
-    for (var i = 0; i < zones?.Count; i++) {
-      for (var j = i + 1; j < zones.Count; j++) {
-        total += zones[i]
-         .GetCenterPoint()
-         .DistanceSquared(zones[j].GetCenterPoint());
-        count++;
-      }
-    }
-
-    return total / count;
+    return total;
   }
 
-  private IList<IZone>? getRandomPoints() {
+  private IList<IZone>? getManualSpawnPoints() {
     var zones = zoneManager.GetZones(ZoneType.SPAWN).GetAwaiter().GetResult();
+    return zones;
+  }
+
+  private IList<IZone>? getAutoSpawnPoints() {
+    var zones = zoneManager.GetZones(ZoneType.SPAWN_AUTO)
+     .GetAwaiter()
+     .GetResult();
     return zones;
   }
 

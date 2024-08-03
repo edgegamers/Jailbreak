@@ -11,11 +11,11 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rebel;
 using MStatsShared;
 
-namespace Jailbreak.Rebel.JihadC4;
+namespace Jailbreak.Rebel.C4Bomb;
 
-public class JihadC4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
-  : IPluginBehavior, IJihadC4Service {
-  private readonly Dictionary<CC4, JihadBombMetadata> bombs = new();
+public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
+  : IPluginBehavior, IC4Service {
+  private readonly Dictionary<CC4, C4Metadata> bombs = new();
 
   // EmitSound(CBaseEntity* pEnt, const char* sSoundName, int nPitch, float flVolume, float flDelay)
   private readonly MemoryFunctionVoid<CBaseEntity, string, int, float, float>
@@ -29,7 +29,7 @@ public class JihadC4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
 
   public void TryGiveC4ToPlayer(CCSPlayerController player) {
     var bombEntity = new CC4(player.GiveNamedItem("weapon_c4"));
-    bombs.Add(bombEntity, new JihadBombMetadata(0.75f, false));
+    bombs.Add(bombEntity, new C4Metadata(0.75f, false));
 
     ic4Locale.JihadC4Received.ToChat(player);
     ic4Locale.JihadC4Usage1.ToChat(player);
@@ -183,7 +183,7 @@ public class JihadC4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
       volume, delay);
   }
 
-  private class JihadBombMetadata(float delay, bool isDetonating) {
+  private class C4Metadata(float delay, bool isDetonating) {
     public float Delay { get; set; } = delay;
     public bool IsDetonating { get; set; } = isDetonating;
   }

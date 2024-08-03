@@ -33,20 +33,6 @@ namespace Jailbreak;
 public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
   /// <inheritdoc />
   public void ConfigureServices(IServiceCollection serviceCollection) {
-    //	Do we want to make this scoped?
-    //	Not sure how this will behave with multiple rounds and whatnot.
-    serviceCollection.AddTransient<IConfigService, ConfigService>();
-    serviceCollection.AddJailbreakGeneric();
-    serviceCollection.AddJailbreakLogs();
-    serviceCollection.AddJailbreakRebel();
-    serviceCollection.AddJailbreakMute();
-    serviceCollection.AddJailbreakWarden();
-    serviceCollection.AddJailbreakDebug();
-    serviceCollection.AddJailbreakLastRequest();
-    serviceCollection.AddJailbreakLastGuard();
-    serviceCollection.AddJailbreakSpecialDay();
-    serviceCollection.AddJailbreakZones();
-
     serviceCollection.AddSingleton<ILogLocale, LogLocale>();
     serviceCollection.AddSingleton<IRebelLocale, RebelLocale>();
     serviceCollection.AddSingleton<IGenericCmdLocale, GenericCmdLocale>();
@@ -63,26 +49,18 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
     serviceCollection.AddSingleton<IWardenPeaceLocale, WardenPeaceLocale>();
     serviceCollection.AddSingleton<IC4Locale, C4Locale>();
 
-    //	Add in english localization
-    serviceCollection.AddLanguage<Formatting.Languages.English>(config => {
-      var serviceMap = new Dictionary<Type, Type> {
-        { typeof(IC4Locale), typeof(C4Locale) },
-        { typeof(IGenericCmdLocale), typeof(GenericCmdLocale) },
-        { typeof(ILGLocale), typeof(IlgLocale) },
-        { typeof(ILRCFLocale), typeof(CoinflipLocale) },
-        { typeof(ILRLocale), typeof(LastRequestLocale) },
-        { typeof(ILRRPSLocale), typeof(RPSLocale) },
-        { typeof(ILRRaceLocale), typeof(RaceLocale) },
-        { typeof(ILogLocale), typeof(LogLocale) },
-        { typeof(IRebelLocale), typeof(RebelLocale) },
-        { typeof(ISDLocale), typeof(IsdLocale) },
-        { typeof(IWardenSTLocale), typeof(IstLocale) },
-        { typeof(IWardenCmdOpenLocale), typeof(WardenCmdOpenLocale) },
-        { typeof(IWardenCmdRollLocale), typeof(WardenCmdRollLocale) },
-        { typeof(IWardenLocale), typeof(WardenLocale) },
-        { typeof(IWardenPeaceLocale), typeof(WardenPeaceLocale) }
-      };
-      config.Configure(serviceMap);
-    });
+    //	Do we want to make this scoped?
+    //	Not sure how this will behave with multiple rounds and whatnot.
+    serviceCollection.AddTransient<IConfigService, ConfigService>();
+    serviceCollection.AddJailbreakGeneric();
+    serviceCollection.AddJailbreakLogs();
+    serviceCollection.AddJailbreakRebel();
+    serviceCollection.AddJailbreakMute();
+    serviceCollection.AddJailbreakWarden();
+    serviceCollection.AddJailbreakDebug();
+    serviceCollection.AddJailbreakLastRequest();
+    serviceCollection.AddJailbreakLastGuard();
+    serviceCollection.AddJailbreakSpecialDay();
+    serviceCollection.AddJailbreakZones();
   }
 }

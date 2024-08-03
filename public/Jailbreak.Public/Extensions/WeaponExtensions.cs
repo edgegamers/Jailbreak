@@ -145,6 +145,7 @@ public static class WeaponExtensions {
 
   public static void SetAmmo(this CBasePlayerWeapon? weapon, int clip,
     int reserve) {
+    if (weapon == null) return;
     weapon.Clip1          = clip;
     weapon.ReserveAmmo[0] = reserve;
     Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_iClip1");

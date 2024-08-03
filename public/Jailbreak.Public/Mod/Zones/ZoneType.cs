@@ -45,6 +45,12 @@ public enum ZoneType {
   SPAWN,
 
   /// <summary>
+  ///   Similar to SPAWN, but this spawn location was automatically
+  /// generated
+  /// </summary>
+  SPAWN_AUTO,
+
+  /// <summary>
   ///   This zone represents an area on the map that only Ts can access
   /// </summary>
   ZONE_LIMIT_T,
@@ -73,6 +79,7 @@ public static class ZoneTypeExtensions {
       ZoneType.SPAWN         => Color.White,
       ZoneType.ZONE_LIMIT_T  => Color.OrangeRed,
       ZoneType.ZONE_LIMIT_CT => Color.LightBlue,
+      ZoneType.SPAWN_AUTO    => Color.Gray,
       _                      => Color.Black
     };
   }
@@ -82,6 +89,7 @@ public static class ZoneTypeExtensions {
       ZoneType.CELL_BUTTON => true,
       ZoneType.SPAWN       => true,
       ZoneType.CENTER      => true,
+      ZoneType.SPAWN_AUTO  => true,
       _                    => false
     };
   }

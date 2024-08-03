@@ -2,7 +2,7 @@
 
 namespace Jailbreak.Public.Mod.Rebel;
 
-public interface IJihadC4Service {
+public interface IC4Service {
   /// <summary>
   ///   Tries to give the jihad C4 to the player, assuming the player object passed in is valid.
   /// </summary>
