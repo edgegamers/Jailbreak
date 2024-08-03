@@ -21,7 +21,7 @@ namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
-  private const int FIRST_SPEEDRUNNER_TIME = 30;
+  private const int FIRST_SPEEDRUNNER_TIME = 40;
   private const int FIRST_ROUND_FREEZE = 8;
   private const int FREEZE_TIME = 2;
   private const int MAX_POINTS = 500;
@@ -335,12 +335,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
       targetCircle?.Remove();
       targetCircle = null;
-
-      Plugin.AddTimer(0.1f, () => {
-        // Killing this while it's running seems to cause crashes
-        finishCheckTimer?.Kill();
-        finishCheckTimer = null;
-      });
 
       var loser = PlayerUtil.GetAlive()
        .FirstOrDefault(p => p.IsValid && p.Slot != winner.Slot);
