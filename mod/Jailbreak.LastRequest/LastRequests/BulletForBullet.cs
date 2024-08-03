@@ -63,7 +63,7 @@ public class BulletForBullet : TeleportingRequest {
   }
 
   public override void Setup() {
-    Plugin.RegisterEventHandler<EventWeaponFire>(OnPlayerShoot);
+    Plugin.RegisterEventHandler<EventBulletImpact>(OnPlayerShoot);
 
     Prisoner.RemoveWeapons();
     Guard.RemoveWeapons();
@@ -115,7 +115,7 @@ public class BulletForBullet : TeleportingRequest {
       Manager.EndLastRequest(this, LRResult.TIMED_OUT);
   }
 
-  private HookResult OnPlayerShoot(EventWeaponFire @event,
+  private HookResult OnPlayerShoot(EventBulletImpact @event,
     GameEventInfo info) {
     if (State != LRState.ACTIVE) return HookResult.Continue;
 
@@ -142,7 +142,7 @@ public class BulletForBullet : TeleportingRequest {
   }
 
   public override void OnEnd(LRResult result) {
-    Plugin.DeregisterEventHandler<EventWeaponFire>(OnPlayerShoot);
+    Plugin.DeregisterEventHandler<EventBulletImpact>(OnPlayerShoot);
     State = LRState.COMPLETED;
   }
 }
