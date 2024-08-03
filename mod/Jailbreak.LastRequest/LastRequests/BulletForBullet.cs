@@ -18,13 +18,13 @@ public class BulletForBullet : TeleportingRequest {
   ];
 
   private static readonly string[] GUN_NAMES = [
-    "Desert Eagle", "USP-S", "Tec9", "Scout", "Nova"
+    "Desert Eagle", "USPS", "Tec9", "Scout", "Nova"
   ];
 
   private readonly ChatMenu chatMenu;
   private readonly bool magForMag;
   private readonly ILRB4BLocale msg;
-  private string? CHOSEN_PISTOL;
+  private string? designerName;
   private int? whosShot, magSize;
 
   public BulletForBullet(BasePlugin plugin, IServiceProvider provider,
@@ -34,7 +34,8 @@ public class BulletForBullet : TeleportingRequest {
     this.magForMag = magForMag;
     chatMenu       = new ChatMenu(magForMag ? "Mag for Mag" : "Shot for Shot");
     foreach (var pistol in GUNS)
-      chatMenu.AddMenuOption(pistol.GetFriendlyWeaponName(), OnSelect);
+      chatMenu.AddMenuOption(pistol.GetFriendlyWeaponName(),
+        (player, option) => OnSelect(player, option, pistol));
 
     msg = provider.GetRequiredService<ILRB4BLocale>();
   }
@@ -42,32 +43,32 @@ public class BulletForBullet : TeleportingRequest {
   public override LRType Type
     => magForMag ? LRType.MAG_FOR_MAG : LRType.SHOT_FOR_SHOT;
 
-  private void OnSelect(CCSPlayerController player, ChatMenuOption option) {
+  private void OnSelect(CCSPlayerController player, ChatMenuOption option,
+    string designer) {
     if (player.Slot != Prisoner.Slot) return;
+    designerName = designer;
     MenuManager.CloseActiveMenu(player);
 
-    CHOSEN_PISTOL = GUNS[Array.IndexOf(GUN_NAMES, option.Text)];
-
-    msg.WeaponSelected(player, CHOSEN_PISTOL).ToChat(Prisoner, Guard);
+    msg.WeaponSelected(player, designerName).ToChat(Prisoner, Guard);
 
     State = LRState.ACTIVE;
 
     Prisoner.RemoveWeapons();
     Guard.RemoveWeapons();
-    Prisoner.GiveNamedItem(CHOSEN_PISTOL);
-    Guard.GiveNamedItem(CHOSEN_PISTOL);
+    Prisoner.GiveNamedItem(designerName);
+    Guard.GiveNamedItem(designerName);
 
     Plugin.AddTimer(0.5f, () => {
       magSize = (magForMag ?
-        Prisoner.GetWeaponBase(CHOSEN_PISTOL)!.VData?.MaxClip1 :
+        Prisoner.GetWeaponBase(designerName)!.VData?.MaxClip1 :
         1) ?? 1;
-      Prisoner.GetWeaponBase(CHOSEN_PISTOL).SetAmmo(0, 0);
-      Guard.GetWeaponBase(CHOSEN_PISTOL).SetAmmo(0, 0);
+      Prisoner.GetWeaponBase(designerName).SetAmmo(0, 0);
+      Guard.GetWeaponBase(designerName).SetAmmo(0, 0);
       var shooter = new Random().Next(2) == 0 ? Prisoner : Guard;
       whosShot = shooter.Slot;
       msg.PlayerGoesFirst(shooter).ToChat(Prisoner, Guard);
 
-      shooter.GetWeaponBase(CHOSEN_PISTOL).SetAmmo(magSize.Value, 0);
+      shooter.GetWeaponBase(designer).SetAmmo(magSize.Value, 0);
     });
   }
 
@@ -80,7 +81,6 @@ public class BulletForBullet : TeleportingRequest {
     base.Setup();
     Execute();
 
-    CHOSEN_PISTOL = string.Empty;
     chatMenu.Title =
       $"{chatMenu.Title} - {Prisoner.PlayerName} vs {Guard.PlayerName}";
   }
@@ -121,7 +121,7 @@ public class BulletForBullet : TeleportingRequest {
   }
 
   private void timeout() {
-    if (CHOSEN_PISTOL == string.Empty)
+    if (string.IsNullOrEmpty(designerName))
       Manager.EndLastRequest(this, LRResult.TIMED_OUT);
   }
 
@@ -142,13 +142,13 @@ public class BulletForBullet : TeleportingRequest {
       return HookResult.Handled;
     }
 
-    var bullets = player.GetWeaponBase(CHOSEN_PISTOL!)?.Clip1 ?? 1;
+    var bullets = player.GetWeaponBase(designerName!)?.Clip1 ?? 1;
     if (bullets > 1) return HookResult.Continue;
 
     Server.NextFrame(() => {
       var opponent = player.Slot == Prisoner.Slot ? Guard : Prisoner;
       whosShot = opponent.Slot;
-      opponent.GetWeaponBase(CHOSEN_PISTOL!)?.SetAmmo(magSize.Value, 0);
+      opponent.GetWeaponBase(designerName!)?.SetAmmo(magSize.Value, 0);
     });
     return HookResult.Continue;
   }
