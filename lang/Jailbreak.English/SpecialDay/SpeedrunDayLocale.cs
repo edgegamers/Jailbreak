@@ -112,6 +112,9 @@ public class SpeedrunDayLocale() : SoloDayLocale("Speedrunners",
     return new SimpleView { PREFIX, player, "was eliminated!" };
   }
 
+  public IView StayStillToSpeedup
+    => new SimpleView { PREFIX, "Stay still to start the round sooner..." };
+
   public IView PlayerWon(CCSPlayerController player) {
     return new SimpleView { PREFIX, player, "won the game!" };
   }

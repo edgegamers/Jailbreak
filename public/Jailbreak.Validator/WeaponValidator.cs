@@ -4,7 +4,7 @@ namespace Jailbreak.Validator;
 
 public class WeaponValidator(
   WeaponValidator.WeaponType type = WeaponValidator.WeaponType.WEAPON,
-  bool allowEmpty = true) : IValidator<string> {
+  bool allowEmpty = true, bool allowMultiple = false) : IValidator<string> {
   public enum WeaponType {
     GRENADE,
     UTILITY,
@@ -18,23 +18,39 @@ public class WeaponValidator(
   }
 
   public bool Validate(string value, out string? errorMessage) {
+    if (value.Contains(',') && !allowMultiple) {
+      errorMessage = "Value cannot contain multiple values";
+      return false;
+    }
+
     if (string.IsNullOrWhiteSpace(value)) {
-      errorMessage = allowEmpty ? null : "Value cannot be empty";
+      errorMessage = allowEmpty ? null : "weapon cannot be empty";
       return allowEmpty;
     }
 
-    errorMessage = "Value must be a " + nameof(type).ToLower();
-    return type switch {
-      WeaponType.GRENADE  => Tag.GRENADES.Contains(value),
-      WeaponType.UTILITY  => Tag.UTILITY.Contains(value),
-      WeaponType.WEAPON   => Tag.GUNS.Contains(value),
-      WeaponType.SNIPERS  => Tag.SNIPERS.Contains(value),
-      WeaponType.RIFLES   => Tag.RIFLES.Contains(value),
-      WeaponType.PISTOLS  => Tag.PISTOLS.Contains(value),
-      WeaponType.SHOTGUNS => Tag.SHOTGUNS.Contains(value),
-      WeaponType.SMGS     => Tag.SMGS.Contains(value),
-      WeaponType.HEAVY    => Tag.HEAVY.Contains(value),
-      _                   => throw new ArgumentOutOfRangeException("value")
-    };
+    foreach (var weapon in value.Split(',')) {
+      if (string.IsNullOrWhiteSpace(weapon)) {
+        errorMessage = allowEmpty ? null : "weapon cannot be empty";
+        return allowEmpty;
+      }
+
+      errorMessage = $"invalid {nameof(type).ToLower()}: {weapon}";
+      var result = type switch {
+        WeaponType.GRENADE  => Tag.GRENADES.Contains(weapon),
+        WeaponType.UTILITY  => Tag.UTILITY.Contains(weapon),
+        WeaponType.WEAPON   => Tag.WEAPONS.Contains(weapon),
+        WeaponType.SNIPERS  => Tag.SNIPERS.Contains(weapon),
+        WeaponType.RIFLES   => Tag.RIFLES.Contains(weapon),
+        WeaponType.PISTOLS  => Tag.PISTOLS.Contains(weapon),
+        WeaponType.SHOTGUNS => Tag.SHOTGUNS.Contains(weapon),
+        WeaponType.SMGS     => Tag.SMGS.Contains(weapon),
+        WeaponType.HEAVY    => Tag.HEAVY.Contains(weapon),
+        _                   => throw new ArgumentOutOfRangeException("weapon")
+      };
+      if (!result) return false;
+    }
+
+    errorMessage = null;
+    return true;
   }
 }

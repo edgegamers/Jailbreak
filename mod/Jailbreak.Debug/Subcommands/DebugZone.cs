@@ -8,7 +8,7 @@ namespace Jailbreak.Debug.Subcommands;
 
 // css_zone [add/set/remove/tpto] [type]
 // css_zone draw <type>
-public class Zone(IServiceProvider services, BasePlugin plugin)
+public class DebugZone(IServiceProvider services, BasePlugin plugin)
   : AbstractCommand(services) {
   private readonly IDictionary<ulong, ITypedZoneCreator> creators =
     new Dictionary<ulong, ITypedZoneCreator>();

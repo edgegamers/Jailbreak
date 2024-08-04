@@ -25,4 +25,6 @@ public interface ISpeedDayLocale : ISDInstanceLocale {
   public IView PlayerWon(CCSPlayerController player);
 
   public IView PlayerEliminated(CCSPlayerController player);
+  
+  public IView StayStillToSpeedup { get; }
 }
