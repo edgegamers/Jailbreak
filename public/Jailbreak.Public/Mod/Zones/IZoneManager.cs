@@ -10,6 +10,12 @@ public interface IZoneManager : IPluginBehavior {
 
   Task<IList<IZone>> GetZones(string map, ZoneType type);
 
+  async Task<IList<IZone>> GetZones(params ZoneType[] type) {
+    List<Task<IList<IZone>>> tasks = [];
+    tasks.AddRange(type.Select(GetZones));
+    return (await Task.WhenAll(tasks)).SelectMany(x => x).ToList();
+  }
+
   Task<IList<IZone>> GetZones(ZoneType type) {
     return GetZones(Server.MapName, type);
   }

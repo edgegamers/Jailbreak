@@ -175,6 +175,10 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory)
      .GetAwaiter()
      .GetResult();
 
+    var hazards = zoneManager.GetZones(ZoneType.HAZARD)
+     .GetAwaiter()
+     .GetResult();
+
     result.AddRange(tZones);
     result.AddRange(ctZones);
     result.Add(getArmory());
