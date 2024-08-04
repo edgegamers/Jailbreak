@@ -9,14 +9,11 @@ public class SpeedrunDayLocale() : SoloDayLocale("Speedrunners",
     $"Follow the {ChatColors.Blue}blue{ChatColors.Default} player!",
     "They will run to a spot on the map.",
     $"Each round, the {ChatColors.Red}slowest players{ChatColors.Default} to reach the target will be eliminated."),
-  ISDInstanceLocale {
+  ISpeedDayLocale {
   public IView RoundEnded
     => new SimpleView {
       PREFIX, "Round over! The next one will start shortly."
     };
-
-  public IView NoneEliminated
-    => new SimpleView { PREFIX, "No one was eliminated this round!" };
 
   public IView NoneReachedGoal
     => new SimpleView {
@@ -24,6 +21,9 @@ public class SpeedrunDayLocale() : SoloDayLocale("Speedrunners",
       SimpleView.NEWLINE,
       { PREFIX, "Going off of distance to target for those who didn't." }
     };
+
+  public IView NoneEliminated
+    => new SimpleView { PREFIX, "No one was eliminated this round!" };
 
   public IView YouAreRunner(int seconds) {
     return new SimpleView {

@@ -1,19 +1,11 @@
-using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
 
 namespace Jailbreak.Formatting.Views;
 
-public interface ISDInstanceLocale : ISDLocale {
-  public string Name { get; }
-  public string[] Description { get; }
-
-  public IView SpecialDayStart { get; }
-
-  public IView SpecialDayEnd { get; }
-
-  public IView BeginsIn(int seconds);
-
+public interface ISpeedDayLocale : ISDInstanceLocale {
+  public IView NoneEliminated { get; }
   public IView RunnerAssigned(CCSPlayerController player);
 
   public IView YouAreRunner(int seconds);
@@ -31,8 +23,6 @@ public interface ISDInstanceLocale : ISDLocale {
   public IView ImpossibleLocation(CsTeam team, CCSPlayerController player);
 
   public IView PlayerWon(CCSPlayerController player);
-
-  public IView NoneEliminated { get; }
 
   public IView PlayerEliminated(CCSPlayerController player);
 }

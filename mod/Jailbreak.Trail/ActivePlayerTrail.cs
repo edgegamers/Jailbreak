@@ -10,10 +10,6 @@ public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
   where T : ITrailSegment {
   protected readonly BasePlugin Plugin;
   protected Timer? Timer;
-  public virtual event Action OnPlayerInvalid = () => { };
-  public virtual event Action OnPlayerDidntMove = () => { };
-
-  public float UpdateRate { get; protected set; }
 
   public ActivePlayerTrail(BasePlugin plugin, CCSPlayerController player,
     float lifetime = 20, int maxPoints = 100, float updateRate = 0.5f) : base(
@@ -25,7 +21,11 @@ public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
       TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
   }
 
+  public float UpdateRate { get; protected set; }
+
   public CCSPlayerController? Player { get; protected set; }
+  public virtual event Action OnPlayerInvalid = () => { };
+  public virtual event Action OnPlayerDidntMove = () => { };
 
   virtual protected void Tick() {
     if (Player == null) return;

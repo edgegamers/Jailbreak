@@ -2,7 +2,6 @@ using System.Drawing;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
-using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
@@ -59,19 +58,20 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   private Timer? roundEndTimer;
 
   private float? roundStartTime;
+  private CCSPlayerController? speedrunner;
   private Vector? start;
   private Vector? target;
   private BeamCircle? targetCircle;
-  private CCSPlayerController? speedrunner;
+  private ISpeedDayLocale msg => (ISpeedDayLocale)Locale;
 
   private bool isRoundActive
     => provider.GetRequiredService<ISpecialDayManager>().CurrentSD == this;
 
   public override SDType Type => SDType.SPEEDRUN;
 
-  public ISDInstanceLocale Locale => new SpeedrunDayLocale();
-
   public override SpecialDaySettings Settings => new SpeedrunSettings();
+
+  public ISDInstanceLocale Locale => new SpeedrunDayLocale();
 
   public override void Setup() {
     generics = Provider.GetRequiredService<IGenericCmdLocale>();
@@ -106,9 +106,9 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         return;
       }
 
-      Locale.RunnerAssigned(speedrunner).ToAllChat();
+      msg.RunnerAssigned(speedrunner).ToAllChat();
       speedrunner.SetColor(Color.DodgerBlue);
-      Locale.YouAreRunner(CvInitialSpeedrunTime.Value).ToChat(speedrunner);
+      msg.YouAreRunner(CvInitialSpeedrunTime.Value).ToChat(speedrunner);
     };
     Timers[CvFirstRoundFreeze.Value] += () => {
       if (!speedrunner.IsValid) {
@@ -120,8 +120,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         }
 
         speedrunner.SetColor(Color.DodgerBlue);
-        Locale.RunnerReassigned(speedrunner).ToAllChat();
-        Locale.YouAreRunner(CvInitialSpeedrunTime.Value).ToChat(speedrunner);
+        msg.RunnerReassigned(speedrunner).ToAllChat();
+        msg.YouAreRunner(CvInitialSpeedrunTime.Value).ToChat(speedrunner);
       }
 
       start = speedrunner.PlayerPawn.Value!.AbsOrigin!.Clone();
@@ -137,11 +137,11 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         return;
       }
 
-      Locale.RuntimeLeft(30).ToChat(speedrunner);
+      msg.RuntimeLeft(30).ToChat(speedrunner);
     };
 
     Timers[CvInitialSpeedrunTime.Value + CvFirstRoundFreeze.Value - 10] += ()
-      => Locale.RuntimeLeft(10).ToChat(speedrunner);
+      => msg.RuntimeLeft(10).ToChat(speedrunner);
     Timers[CvInitialSpeedrunTime.Value + CvFirstRoundFreeze.Value] += () => {
       target = speedrunner.Pawn.Value?.AbsOrigin;
       if (target == null) {
@@ -208,8 +208,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       speedrunner = nearest;
       nearest.Teleport(end);
       player.SetColor(Color.DodgerBlue);
-      Locale.RunnerReassigned(player).ToAllChat();
-      Locale.YouAreRunner(RoundUtil.GetTimeRemaining()).ToChat(player);
+      msg.RunnerReassigned(player).ToAllChat();
+      msg.YouAreRunner(RoundUtil.GetTimeRemaining()).ToChat(player);
       trail.StartTracking(player);
     };
     return trail;
@@ -232,7 +232,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
     var alive = PlayerUtil.GetAlive().ToArray();
     playersAliveAtStart = PlayerUtil.GetAlive().Count();
-    Locale.BeginRound(++round, getEliminations(playersAliveAtStart), seconds)
+    msg.BeginRound(++round, getEliminations(playersAliveAtStart), seconds)
      .ToAllChat();
 
     RoundUtil.SetTimeRemaining(seconds + CvFreezeTime.Value);
@@ -291,10 +291,10 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     if (bestTime == null || time < bestTime) {
       bestTime           = time;
       bestTimePlayerSlot = player.Slot;
-      Locale.BestTime(player, time).ToAllChat();
+      msg.BestTime(player, time).ToAllChat();
       player.SetColor(Color.FromArgb(255, Color.Gold));
     } else {
-      Locale.PlayerTime(player, finishTimestamps.Count + 1, -time).ToAllChat();
+      msg.PlayerTime(player, finishTimestamps.Count + 1, -time).ToAllChat();
     }
 
     finishTimestamps[player.Slot] = -Server.CurrentTime;
@@ -390,7 +390,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
         if (random != null && activeTrails.TryGetValue(random.Slot,
           out var randomTrail)) {
-          Locale.ImpossibleLocation(
+          msg.ImpossibleLocation(
             ctMade ? CsTeam.Terrorist : CsTeam.CounterTerrorist, random);
 
           bestTrail?.Kill();
@@ -429,7 +429,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       var loser = PlayerUtil.GetAlive()
        .FirstOrDefault(p => p.IsValid && p.Slot != winner.Slot);
 
-      Locale.PlayerWon(winner).ToAllChat();
+      msg.PlayerWon(winner).ToAllChat();
       if (loser == null || !loser.IsValid) {
         RoundUtil.SetTimeRemaining(10);
         Server.ExecuteCommand("mp_ignore_round_win_conditions 0");
@@ -453,7 +453,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     var nextRoundTime = (int)Math.Ceiling((bestTime ?? 20) + 10 - round * 2);
 
     if (toEliminate <= 0) {
-      Locale.NoneEliminated.ToAllChat();
+      msg.NoneEliminated.ToAllChat();
       Plugin.AddTimer(3f, () => { startRound(nextRoundTime); },
         TimerFlags.STOP_ON_MAPCHANGE);
       return;
@@ -492,7 +492,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       if (player == null || !player.IsValid) continue;
       EnableDamage(player);
       player.CommitSuicide(false, true);
-      Locale.PlayerEliminated(player).ToAllChat();
+      msg.PlayerEliminated(player).ToAllChat();
     }
 
     slowestEnumerator.Dispose();
@@ -504,7 +504,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   private void eliminatePlayer(CCSPlayerController player) {
     EnableDamage(player);
     player.CommitSuicide(false, true);
-    Locale.PlayerEliminated(player).ToAllChat();
+    msg.PlayerEliminated(player).ToAllChat();
   }
 
   private void panic(string reason) {
@@ -534,7 +534,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       var player = Utilities.GetPlayerFromSlot(slot);
       if (player == null) continue;
       if (time > 0)
-        Locale.PlayerTime(player, times.Length - i, time).ToChat(player);
+        msg.PlayerTime(player, times.Length - i, time).ToChat(player);
     }
   }
 

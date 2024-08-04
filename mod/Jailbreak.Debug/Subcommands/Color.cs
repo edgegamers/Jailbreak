@@ -1,6 +1,5 @@
 ﻿using CounterStrikeSharp.API.Core;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Utils;
 
 namespace Jailbreak.Debug.Subcommands;
 

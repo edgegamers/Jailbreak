@@ -56,8 +56,8 @@ public enum ZoneType {
   ZONE_LIMIT_CT,
 
   /// <summary>
-  /// This zone represents an area on the map where it is possible to be
-  /// locked in.
+  ///   This zone represents an area on the map where it is possible to be
+  ///   locked in.
   /// </summary>
   SOLITAIRE,
 
@@ -68,11 +68,10 @@ public enum ZoneType {
   CENTER,
 
   /// <summary>
-  ///  This zone represents an area that is a hazard to players, and which
-  /// should be avoided (especially for teleporting into).
-  ///
-  /// May also represent a zone that is not guaranteed to be safe (eg: a platform
-  /// is moving around, and may not be safe to teleport to).
+  ///   This zone represents an area that is a hazard to players, and which
+  ///   should be avoided (especially for teleporting into).
+  ///   May also represent a zone that is not guaranteed to be safe (eg: a platform
+  ///   is moving around, and may not be safe to teleport to).
   /// </summary>
   HAZARD
 }
