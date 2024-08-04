@@ -6,6 +6,8 @@ namespace Jailbreak.Formatting.Views;
 
 public interface ISpeedDayLocale : ISDInstanceLocale {
   public IView NoneEliminated { get; }
+
+  public IView StayStillToSpeedup { get; }
   public IView RunnerAssigned(CCSPlayerController player);
 
   public IView YouAreRunner(int seconds);
@@ -25,6 +27,4 @@ public interface ISpeedDayLocale : ISDInstanceLocale {
   public IView PlayerWon(CCSPlayerController player);
 
   public IView PlayerEliminated(CCSPlayerController player);
-  
-  public IView StayStillToSpeedup { get; }
 }

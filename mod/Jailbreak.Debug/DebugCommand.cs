@@ -19,8 +19,7 @@ public class DebugCommand(IServiceProvider serviceProvider) : IPluginBehavior {
     plugin = basePlugin;
     commands.Add("markrebel", new DebugMarkRebel(serviceProvider));
     commands.Add("pardon", new DebugPardon(serviceProvider));
-    commands.Add("lr",
-      new Subcommands.DebugLastRequest(serviceProvider, plugin));
+    commands.Add("lr", new DebugLastRequest(serviceProvider, plugin));
     commands.Add("st", new DebugMarkST(serviceProvider));
     commands.Add("lg", new DebugLastGuard(serviceProvider));
     commands.Add("zone", new DebugZone(serviceProvider, basePlugin));

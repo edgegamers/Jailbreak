@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Trail;

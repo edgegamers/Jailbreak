@@ -167,21 +167,23 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory)
 
   private IList<IZone> getRestrictedAreas() {
     List<IZone> result = [];
-    var tZones = zoneManager.GetZones(ZoneType.ZONE_LIMIT_T)
-     .GetAwaiter()
-     .GetResult();
+    foreach (var zone in ZoneTypeExtensions.DoNotTeleports()) {
+      var zones = zoneManager.GetZones(zone).GetAwaiter().GetResult();
+      result.AddRange(zones);
+    }
 
-    var ctZones = zoneManager.GetZones(ZoneType.ZONE_LIMIT_CT)
-     .GetAwaiter()
-     .GetResult();
+    var armory = zoneManager.GetZones(ZoneType.ARMORY).GetAwaiter().GetResult();
+    if (armory.Count == 0) {
+      var bounds = new DistanceZone(
+        Utilities
+         .FindAllEntitiesByDesignerName<
+            SpawnPoint>("info_player_counterterrorist")
+         .Where(s => s.AbsOrigin != null)
+         .Select(s => s.AbsOrigin!)
+         .ToList(), DistanceZone.WIDTH_MEDIUM_ROOM);
+      result.Add(bounds);
+    }
 
-    var hazards = zoneManager.GetZones(ZoneType.HAZARD)
-     .GetAwaiter()
-     .GetResult();
-
-    result.AddRange(tZones);
-    result.AddRange(ctZones);
-    result.Add(getArmory());
     return result;
   }
 }

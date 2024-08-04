@@ -389,19 +389,18 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       var linkedList = new LinkedList<string>();
 
       // Determine the range to display
-      int startIndex = Math.Max(0, i - TOTAL_LINES / 2);
-      int endIndex   = Math.Min(playerCount - 1, i + TOTAL_LINES / 2);
+      var startIndex = Math.Max(0, i - TOTAL_LINES / 2);
+      var endIndex   = Math.Min(playerCount - 1, i + TOTAL_LINES / 2);
 
       // Adjust the range to always show TOTAL_LINES players
       if (endIndex - startIndex + 1 < TOTAL_LINES) {
-        if (startIndex == 0) {
+        if (startIndex == 0)
           endIndex = Math.Min(TOTAL_LINES - 1, playerCount - 1);
-        } else if (endIndex == playerCount - 1) {
+        else if (endIndex == playerCount - 1)
           startIndex = Math.Max(0, playerCount - TOTAL_LINES);
-        }
       }
 
-      for (int j = startIndex; j <= endIndex; j++) {
+      for (var j = startIndex; j <= endIndex; j++) {
         var (slot, dist) = sortedDistances[j];
         var player = Utilities.GetPlayerFromSlot(slot);
         if (player == null || !player.IsValid) continue;
@@ -428,9 +427,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     var winningScoreboard = scoreboards.First().Value;
     var winningMessage    = string.Join("<br>", winningScoreboard);
     foreach (var player in Utilities.GetPlayers()
-     .Where(p => p is { PawnIsAlive: false, IsBot: false })) {
+     .Where(p => p is { PawnIsAlive: false, IsBot: false }))
       player.PrintToCenterHtml(winningMessage);
-    }
   }
 
   private string generateHTMLLine(CCSPlayerController player, int position,

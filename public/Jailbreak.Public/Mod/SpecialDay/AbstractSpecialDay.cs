@@ -269,8 +269,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
         var opposite = !(bool)value;
         Server.ExecuteCommand($"{cvar.Name} {opposite}");
         Server.NextFrame(() => Server.ExecuteCommand($"{cvar.Name} {value}"));
-      } else
-        Server.ExecuteCommand(cvar.Name + " " + value);
+      } else { Server.ExecuteCommand(cvar.Name + " " + value); }
     } catch (Exception e) {
       Server.PrintToChatAll(
         $"There was an error setting {cvar.Name} ({cvar.Type}) to {value}");

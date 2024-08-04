@@ -105,17 +105,19 @@ public static class ZoneTypeExtensions {
     };
   }
 
+
   public static bool DoNotTeleport(this ZoneType type) {
     return type switch {
       ZoneType.HAZARD        => true,
       ZoneType.SOLITAIRE     => true,
       ZoneType.ZONE_LIMIT_T  => true,
       ZoneType.ZONE_LIMIT_CT => true,
+      ZoneType.ARMORY        => true,
       _                      => false
     };
   }
 
-  public static IEnumerable<ZoneType> DoNotTeleport() {
+  public static IEnumerable<ZoneType> DoNotTeleports() {
     return Enum.GetValues<ZoneType>().Where(DoNotTeleport);
   }
 }

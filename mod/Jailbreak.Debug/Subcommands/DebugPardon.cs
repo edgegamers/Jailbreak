@@ -5,7 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jailbreak.Debug.Subcommands;
 
 // css_pardon [player]
-public class DebugPardon(IServiceProvider services) : AbstractCommand(services) {
+public class DebugPardon(IServiceProvider services)
+  : AbstractCommand(services) {
   public override void OnCommand(CCSPlayerController? executor,
     WrappedInfo info) {
     if (info.ArgCount == 1) {
