@@ -183,6 +183,9 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     var trail = new ActivePulsatingBeamPlayerTrail(Plugin, player, 0f,
       MAX_POINTS, 0.15f);
     trail.OnPlayerInvalid += trail.StopTracking;
+    trail.OnPlayerDidntMove += () => {
+      Server.PrintToChatAll("Player didn't move");
+    };
     trail.OnPlayerInvalid += () => {
       // If the player left mid-run, we need to pick the nearest player
       // to continue the run

@@ -17,9 +17,9 @@ public class FFADay(BasePlugin plugin, IServiceProvider provider)
       "Everyone for themselves! No camping, actively pursue!");
 
   public override void Setup() {
-    Timers[10] += () => Locale.BeginsIn(10).ToAllChat();
-    Timers[15] += () => Locale.BeginsIn(5).ToAllChat();
-    Timers[20] += Execute;
+    Timers[10] += () => Locale.BeginsIn(20).ToAllChat();
+    Timers[20] += () => Locale.BeginsIn(10).ToAllChat();
+    Timers[30] += Execute;
     base.Setup();
   }
 
