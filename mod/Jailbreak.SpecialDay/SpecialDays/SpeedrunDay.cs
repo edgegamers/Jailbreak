@@ -1,5 +1,4 @@
 using System.Drawing;
-using System.Text.Json;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
@@ -115,7 +114,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   private ISpeedDayLocale msg => (ISpeedDayLocale)Locale;
 
   private bool isRoundActive
-    => provider.GetRequiredService<ISpecialDayManager>().CurrentSD == this;
+    => Provider.GetRequiredService<ISpecialDayManager>().CurrentSD == this;
 
   public override SDType Type => SDType.SPEEDRUN;
 
@@ -390,19 +389,19 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       var linkedList = new LinkedList<string>();
 
       // Determine the range to display
-      int start = Math.Max(0, i - TOTAL_LINES / 2);
-      int end   = Math.Min(playerCount - 1, i + TOTAL_LINES / 2);
+      int startIndex = Math.Max(0, i - TOTAL_LINES / 2);
+      int endIndex   = Math.Min(playerCount - 1, i + TOTAL_LINES / 2);
 
       // Adjust the range to always show TOTAL_LINES players
-      if (end - start + 1 < TOTAL_LINES) {
-        if (start == 0) {
-          end = Math.Min(TOTAL_LINES - 1, playerCount - 1);
-        } else if (end == playerCount - 1) {
-          start = Math.Max(0, playerCount - TOTAL_LINES);
+      if (endIndex - startIndex + 1 < TOTAL_LINES) {
+        if (startIndex == 0) {
+          endIndex = Math.Min(TOTAL_LINES - 1, playerCount - 1);
+        } else if (endIndex == playerCount - 1) {
+          startIndex = Math.Max(0, playerCount - TOTAL_LINES);
         }
       }
 
-      for (int j = start; j <= end; j++) {
+      for (int j = startIndex; j <= endIndex; j++) {
         var (slot, dist) = sortedDistances[j];
         var player = Utilities.GetPlayerFromSlot(slot);
         if (player == null || !player.IsValid) continue;
