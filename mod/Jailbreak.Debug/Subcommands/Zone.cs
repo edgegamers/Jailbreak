@@ -159,7 +159,7 @@ public class Zone(IServiceProvider services, BasePlugin plugin)
          .GetResult();
         foreach (var listZone in toList)
           info.ReplyToCommand(
-            $"Points: {listZone.GetBorderPoints().Count()}/{listZone.GetAllPoints().Count()}Center: {listZone.CalculateCenterPoint()} Area: {listZone.GetArea()}");
+            $"#{listZone.Id} Points: {listZone.GetBorderPoints().Count()}/{listZone.GetAllPoints().Count()} Center: {listZone.CalculateCenterPoint()} Area: {listZone.GetArea()}");
         return;
     }
 

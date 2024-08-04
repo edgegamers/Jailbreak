@@ -60,8 +60,8 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
 
 public class OitcSettings : SpecialDaySettings {
   public OitcSettings() {
-    CtTeleport      = TeleportType.ARMORY;
-    TTeleport       = TeleportType.ARMORY;
+    CtTeleport      = TeleportType.RANDOM;
+    TTeleport       = TeleportType.RANDOM;
     RestrictWeapons = true;
     WithFriendlyFire();
 

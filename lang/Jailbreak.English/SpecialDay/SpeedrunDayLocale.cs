@@ -1,13 +1,15 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
+using Jailbreak.Formatting.Views;
 
 namespace Jailbreak.English.SpecialDay;
 
 public class SpeedrunDayLocale() : SoloDayLocale("Speedrunners",
-  $"Follow the {ChatColors.Blue}blue{ChatColors.Default} player!",
-  "They will run to a spot on the map.",
-  $"Each round, the {ChatColors.Red}slowest players{ChatColors.Default} to reach the target will be eliminated.") {
+    $"Follow the {ChatColors.Blue}blue{ChatColors.Default} player!",
+    "They will run to a spot on the map.",
+    $"Each round, the {ChatColors.Red}slowest players{ChatColors.Default} to reach the target will be eliminated."),
+  ISDInstanceLocale {
   public IView RoundEnded
     => new SimpleView {
       PREFIX, "Round over! The next one will start shortly."
@@ -69,7 +71,10 @@ public class SpeedrunDayLocale() : SoloDayLocale("Speedrunners",
 
   public IView RunnerReassigned(CCSPlayerController player) {
     return new SimpleView {
-      PREFIX, "The speedrunner left, so", player, "is now the speedrunner!"
+      PREFIX,
+      "The original speedrunner left, so",
+      player,
+      "is now the speedrunner!"
     };
   }
 

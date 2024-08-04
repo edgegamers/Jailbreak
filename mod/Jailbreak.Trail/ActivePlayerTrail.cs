@@ -9,21 +9,32 @@ namespace Jailbreak.Trail;
 public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
   where T : ITrailSegment {
   protected readonly BasePlugin Plugin;
-  protected readonly Timer Timer;
+  protected Timer? Timer;
+  public virtual event Action OnPlayerInvalid = () => { };
+  public virtual event Action OnPlayerDidntMove = () => { };
+
+  public float UpdateRate { get; protected set; }
 
   public ActivePlayerTrail(BasePlugin plugin, CCSPlayerController player,
     float lifetime = 20, int maxPoints = 100, float updateRate = 0.5f) : base(
     lifetime, maxPoints) {
-    Plugin = plugin;
-    Player = player;
-    Timer = plugin.AddTimer(updateRate, Tick,
+    Plugin     = plugin;
+    Player     = player;
+    UpdateRate = updateRate;
+    Timer = plugin.AddTimer(UpdateRate, Tick,
       TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
   }
 
-  public CCSPlayerController Player { get; protected set; }
+  public CCSPlayerController? Player { get; protected set; }
 
   virtual protected void Tick() {
-    if (!Player.IsValid) Kill();
+    if (Player == null) return;
+    if (!Player.IsValid) {
+      OnPlayerInvalid.Invoke();
+      Player = null;
+      return;
+    }
+
     var pos = Player.PlayerPawn.Value?.AbsOrigin;
     if (pos == null) return;
     pos = pos.Clone();
@@ -32,13 +43,26 @@ public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
     if (dist < 1000) {
       // Still want to remove old segments
       Cleanup();
+      OnPlayerDidntMove.Invoke();
       return;
     }
 
     AddTrailPoint(pos);
   }
 
-  public virtual void StopTracking() { Timer.Kill(); }
+  public virtual void StopTracking() {
+    Timer?.Kill();
+    Timer = null;
+  }
+
+  public virtual void StartTracking(CCSPlayerController? player = null,
+    float? updateRate = null) {
+    UpdateRate = updateRate ?? UpdateRate;
+    if (player != null) Player = player;
+    Timer?.Kill();
+    Timer = Plugin.AddTimer(UpdateRate, Tick,
+      TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
+  }
 
   public override void Kill() {
     foreach (var segment in Segments) segment.Remove();
