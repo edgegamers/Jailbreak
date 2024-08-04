@@ -1,11 +1,11 @@
 using CounterStrikeSharp.API.Core;
-using Jailbreak.Public.Mod.Rebel;
+using Jailbreak.Public.Mod.Warden;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Debug.Subcommands;
 
-// css_pardon [player]
-public class Pardon(IServiceProvider services) : AbstractCommand(services) {
+// css_markst [player]
+public class DebugMarkST(IServiceProvider services) : AbstractCommand(services) {
   public override void OnCommand(CCSPlayerController? executor,
     WrappedInfo info) {
     if (info.ArgCount == 1) {
@@ -16,9 +16,12 @@ public class Pardon(IServiceProvider services) : AbstractCommand(services) {
     var target = GetVulnerableTarget(info);
     if (target == null) return;
 
+    var stService = Services.GetRequiredService<ISpecialTreatmentService>();
     foreach (var player in target.Players)
-      Services.GetRequiredService<IRebelService>().UnmarkRebel(player);
+      stService.SetSpecialTreatment(player,
+        !stService.IsSpecialTreatment(player));
 
-    info.ReplyToCommand($"Pardoned {GetTargetLabel(info)}");
+    info.ReplyToCommand("Toggled special treatment for " + GetTargetLabel(info)
+      + ".");
   }
 }

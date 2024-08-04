@@ -3,7 +3,7 @@ using Jailbreak.Public.Utils;
 
 namespace Jailbreak.Debug.Subcommands;
 
-public class TestNearOpen(IServiceProvider services)
+public class DebugTestNearOpen(IServiceProvider services)
   : AbstractCommand(services) {
   public override void OnCommand(CCSPlayerController? executor,
     WrappedInfo info) {

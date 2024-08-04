@@ -3,7 +3,7 @@ using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.Debug.Subcommands;
 
-public class Color(IServiceProvider services) : AbstractCommand(services) {
+public class DebugColor(IServiceProvider services) : AbstractCommand(services) {
   public override void OnCommand(CCSPlayerController? executor,
     WrappedInfo info) {
     if (info.ArgCount == 1 || executor == null) {
@@ -44,6 +44,6 @@ public class Color(IServiceProvider services) : AbstractCommand(services) {
     }
 
     executor.SetColor(System.Drawing.Color.FromArgb(alpha, red, green, blue));
-    executor.PrintToChat($"Color set to {alpha} {red} {green} {blue}");
+    executor.PrintToChat($"DebugColor set to {alpha} {red} {green} {blue}");
   }
 }

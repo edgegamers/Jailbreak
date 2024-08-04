@@ -19,7 +19,7 @@ public class CustomDay(BasePlugin plugin, IServiceProvider provider)
     };
 
   public ISDInstanceLocale Locale
-    => new TeamDayLocale("Custom Day",
+    => new TeamDayLocale("Custom",
       "Listen to the Warden's orders. Anything goes!");
 
   public override void Setup() {

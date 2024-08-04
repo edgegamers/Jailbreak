@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Debug.Subcommands;
 
-public class LastRequest : AbstractCommand {
+public class DebugLastRequest : AbstractCommand {
   private readonly ILastRequestManager manager;
   private readonly LastRequestMenuSelector menuSelector;
   private readonly ILRLocale messages;
@@ -19,7 +19,7 @@ public class LastRequest : AbstractCommand {
 
   private readonly BasePlugin plugin;
 
-  public LastRequest(IServiceProvider services, BasePlugin plugin) :
+  public DebugLastRequest(IServiceProvider services, BasePlugin plugin) :
     base(services) {
     this.plugin    = plugin;
     manager        = services.GetRequiredService<ILastRequestManager>();

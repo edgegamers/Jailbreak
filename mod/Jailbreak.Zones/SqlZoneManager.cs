@@ -261,7 +261,6 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
 
   private MySqlConnection? createConnection() {
     var str = CvSqlConnectionString.Value.Trim('"');
-    if (string.IsNullOrWhiteSpace(str)) return null;
-    return new MySqlConnection(str);
+    return string.IsNullOrWhiteSpace(str) ? null : new MySqlConnection(str);
   }
 }

@@ -17,14 +17,18 @@ public class DebugCommand(IServiceProvider serviceProvider) : IPluginBehavior {
 
   public void Start(BasePlugin basePlugin) {
     plugin = basePlugin;
-    commands.Add("markrebel", new MarkRebel(serviceProvider));
-    commands.Add("pardon", new Pardon(serviceProvider));
-    commands.Add("lr", new Subcommands.LastRequest(serviceProvider, plugin));
-    commands.Add("st", new MarkST(serviceProvider));
-    commands.Add("lg", new LastGuard(serviceProvider));
-    commands.Add("zone", new Zone(serviceProvider, basePlugin));
+    commands.Add("markrebel", new DebugMarkRebel(serviceProvider));
+    commands.Add("pardon", new DebugPardon(serviceProvider));
+    commands.Add("lr",
+      new Subcommands.DebugLastRequest(serviceProvider, plugin));
+    commands.Add("st", new DebugMarkST(serviceProvider));
+    commands.Add("lg", new DebugLastGuard(serviceProvider));
+    commands.Add("zone", new DebugZone(serviceProvider, basePlugin));
     commands.Add("endround", new EndRound(serviceProvider));
-    commands.Add("testnearopen", new TestNearOpen(serviceProvider));
+    commands.Add("testnearopen", new DebugTestNearOpen(serviceProvider));
+    commands.Add("settime", new DebugSetTime(serviceProvider));
+    commands.Add("centerhud", new DebugCenterHud(serviceProvider));
+    commands.Add("csay", new DebugCSay(serviceProvider));
   }
 
   [RequiresPermissions("@css/root")]

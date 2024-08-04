@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using System.Runtime.CompilerServices;
+using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Trail;
@@ -19,13 +20,15 @@ public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
     UpdateRate = updateRate;
     Timer = plugin.AddTimer(UpdateRate, Tick,
       TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
+    OnPlayerInvalid += StopTracking;
   }
 
   public float UpdateRate { get; protected set; }
+  public int DidntMoveTicks { get; protected set; }
 
   public CCSPlayerController? Player { get; protected set; }
-  public virtual event Action OnPlayerInvalid = () => { };
-  public virtual event Action OnPlayerDidntMove = () => { };
+  public event Action OnPlayerInvalid = () => { };
+  public event Action OnPlayerDidntMove = () => { };
 
   virtual protected void Tick() {
     if (Player == null) return;
@@ -43,10 +46,12 @@ public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
     if (dist < 1000) {
       // Still want to remove old segments
       Cleanup();
+      DidntMoveTicks++;
       OnPlayerDidntMove.Invoke();
       return;
     }
 
+    DidntMoveTicks = 0;
     AddTrailPoint(pos);
   }
 
