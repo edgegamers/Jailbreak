@@ -1,4 +1,5 @@
 using System.Drawing;
+using System.Text.Json;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
@@ -27,12 +28,12 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
   public static readonly FakeConVar<int> CvInitialSpeedrunTime =
     new("css_jb_speedrun_initial_time",
-      "Duration in seconds to grant the speedrunner", 40);
+      "Duration in seconds to grant the speedrunner", 20);
 
   public static readonly FakeConVar<int> CvFirstRoundFreeze =
     new("css_jb_speedrun_first_round_freeze",
       "Duration in seconds to give players time to read the rules of speedrun",
-      8);
+      6);
 
   public static readonly FakeConVar<int> CvFreezeTime =
     new("css_jb_speedrun_freeze_time",
@@ -78,6 +79,12 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     "css_jb_speedrun_finish_at",
     "Number of players required to declare a winner", 2,
     customValidators: new RangeValidator<int>(2, 10));
+
+  public static readonly FakeConVar<int> CvOffset1 = new(
+    "css_lines", "Offset 1", 8);
+
+  public static readonly FakeConVar<int> CvOffset2 = new(
+    "css_lines_below", "Offset 2", 4);
 
   private readonly Dictionary<int, ActivePlayerTrail<VectorTrailSegment>>
     activeTrails = new();
@@ -309,7 +316,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     foreach (var player in alive) {
       var pawn = player.PlayerPawn.Value;
       if (pawn == null) continue;
-      pawn.Teleport(start);
+      pawn.Teleport(start, velocity: Vector.Zero);
       player.Freeze();
       player.RemoveWeapons();
     }
@@ -360,68 +367,69 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       return;
     }
 
-    var losers = SlowestTimes(distances).ToList();
+    ServerExtensions.GetGameRules().GameRestart = true;
 
-    const int LINES = 5; // Max number of lines to show in the center message
+    const int TOTAL_LINES = 8; // Total number of lines to display
 
-    // var messages   = new string?[Math.Min(LINES, losers.Count)];
-    var linkedList = new LinkedList<string>();
+    // Sort distances by score (ascending order)
+    var sortedDistances = distances.OrderBy(d => d.Value).ToList();
 
-    for (var i = 0; i < Math.Min(LINES, losers.Count); i++) {
-      var (slot, dist) = losers[i];
-      var player = Utilities.GetPlayerFromSlot(slot);
-      if (player == null || !player.IsValid) {
-        i--;
-        losers.RemoveAt(slot);
-        continue;
+    // Total number of players
+    var playerCount = sortedDistances.Count;
+
+    // Dictionary to store scoreboards for each player
+    var scoreboards = new Dictionary<int, LinkedList<string>>();
+
+    for (var i = 0; i < playerCount; i++) {
+      var linkedList = new LinkedList<string>();
+
+      // Determine the range to display
+      int start = Math.Max(0, i - TOTAL_LINES / 2);
+      int end   = Math.Min(playerCount - 1, i + TOTAL_LINES / 2);
+
+      // Adjust the range to always show TOTAL_LINES players
+      if (end - start + 1 < TOTAL_LINES) {
+        if (start == 0) {
+          end = Math.Min(TOTAL_LINES - 1, playerCount - 1);
+        } else if (end == playerCount - 1) {
+          start = Math.Max(0, playerCount - TOTAL_LINES);
+        }
       }
 
-      linkedList.AddFirst(generateHTMLLine(player, losers.Count - i, dist));
-    }
+      for (int j = start; j <= end; j++) {
+        var (slot, dist) = sortedDistances[j];
+        var player = Utilities.GetPlayerFromSlot(slot);
+        if (player == null || !player.IsValid) continue;
 
-    // Now we have the first LINES players of the bottom,
-    // ordered from slowest to fastest (of the LINES slowest)
-
-    var bottom = string.Join("<br>", linkedList);
-    for (int i = 0; i < Math.Min(2, losers.Count); i++) {
-      var (slot, dist) = losers[i];
-      var player = Utilities.GetPlayerFromSlot(slot);
-      if (player == null || !player.IsValid) continue;
-      player.PrintToCenterHtml(bottom);
-    }
-
-    var position = losers.Count - 1;
-
-    var middleTop = losers.Skip(2).ToList();
-    foreach (var (slot, _) in middleTop) {
-      position--;
-
-      if (position <= middleTop.Count - 3) {
-        var leader      = middleTop.ElementAt(middleTop.Count - position);
-        var addedPlayer = Utilities.GetPlayerFromSlot(leader.Key);
-        if (addedPlayer == null || !addedPlayer.IsValid) continue;
-        linkedList.RemoveLast();
-        linkedList.AddFirst(generateHTMLLine(addedPlayer, position,
-          leader.Value));
+        var line         = generateHTMLLine(player, j + 1, dist);
+        if (j != i) line = $"<span class=\"fontSize-sm\">{line}</span>";
+        linkedList.AddLast(line);
       }
 
+      scoreboards[sortedDistances[i].Key] = linkedList;
+    }
+
+    // Print scoreboards for each player
+    foreach (var (slot, _) in sortedDistances) {
       var player = Utilities.GetPlayerFromSlot(slot);
       if (player == null || !player.IsValid) continue;
 
-      var message = string.Join("<br>", linkedList);
+      var scoreboard = scoreboards[slot];
+      var message    = string.Join("<br>", scoreboard);
       player.PrintToCenterHtml(message);
     }
 
+    // Handle disconnected players
+    var winningScoreboard = scoreboards.First().Value;
+    var winningMessage    = string.Join("<br>", winningScoreboard);
     foreach (var player in Utilities.GetPlayers()
      .Where(p => p is { PawnIsAlive: false, IsBot: false })) {
-      var message = string.Join("<br>", linkedList);
-      player.PrintToCenterHtml(message);
+      player.PrintToCenterHtml(winningMessage);
     }
   }
 
   private string generateHTMLLine(CCSPlayerController player, int position,
     float distance) {
-    var    text = $"{position} {player.PlayerName}";
     string color;
     var    eliminations = getEliminations(playersAliveAtStart);
     var    suffix       = "";
@@ -429,17 +437,28 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     var isSafe     = position < eliminations && distance < 0;
     var isInDanger = position > playersAliveAtStart - eliminations;
 
+    var text = $"{position} {player.PlayerName}";
+
     if (isSafe) {
       color  = "00FF00";
-      suffix = "<font color=\"#00FF00\" size=1> | S</font>";
-    } else if (!isInDanger) { color = "FFFF00"; } else {
+      suffix = "<font color=\"#00FF00\"> | S</font>";
+    } else if (!isInDanger) {
+      var percentDanger = (position - 1 - finishTimestamps.Count)
+        / (float)eliminations;
+      // Gradient from green to yellow
+      percentDanger = Math.Clamp(percentDanger, 0, 1);
+      var green = 255;
+      var red   = (int)(255 * percentDanger);
+      color = $"{red:X2}{green:X2}00";
+    } else {
       var precentLosing = (position - playersAliveAtStart + eliminations)
         / (float)eliminations;
-      // Gradient from yellow to red
-      var red   = (int)(255 * precentLosing);
-      var green = 255 - red;
+      // Gradient from orange to red, with red being the most losing
+      precentLosing = Math.Clamp(precentLosing, 0, 1);
+      var red   = 255;
+      var green = 255 - (int)(255 * precentLosing);
       color  = $"{red:X2}{green:X2}00";
-      suffix = "<font color=\"#FF0000\" size=1> | E</font>";
+      suffix = "<font color=\"#FF0000\"> | E</font>";
     }
 
     if (distance < 0) {
@@ -447,13 +466,9 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         0 :
         MathF.Abs(distance) - roundStartTime.Value;
       text += $" - {time:F4}";
-    } else {
-      if (distance >= 100000000) { text += $"{distance:e2}"; } else {
-        text += $" - {distance:N0}";
-      }
-    }
+    } else { text += $" - {distance:N0}"; }
 
-    return $"<font color=\"#{color}\" size=1>{text}</font>{suffix}";
+    return $"<font color=\"#{color}\">{text}</font>{suffix}";
   }
 
   private void onFinish(CCSPlayerController player) {
@@ -750,6 +765,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       StripToKnife = true;
       RestrictWeapons = true;
       ConVarValues["mp_ignore_round_win_conditions"] = true;
+      WithAutoBhop();
       WithFriendlyFire();
     }
 
