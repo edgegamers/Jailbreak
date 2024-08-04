@@ -265,15 +265,11 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
           break;
       }
 
-      Server.ExecuteCommand(cvar.Name + " " + value);
-      if (cvar.Name == "mp_teammates_are_enemies") {
+      if (cvar.Name is "mp_teammates_are_enemies" or "sv_autobunnyhopping") {
         var opposite = !(bool)value;
-        Server.ExecuteCommand("css_cvar mp_teammates_are_enemies " + opposite);
-
-        Server.NextFrame(() => {
-          Server.ExecuteCommand("css_cvar mp_teammates_are_enemies " + value);
-        });
-      }
+        Server.ExecuteCommand($"{cvar.Name} {opposite}");
+        Server.NextFrame(() => Server.ExecuteCommand($"{cvar.Name} {value}"));
+      } else { Server.ExecuteCommand(cvar.Name + " " + value); }
     } catch (Exception e) {
       Server.PrintToChatAll(
         $"There was an error setting {cvar.Name} ({cvar.Type}) to {value}");

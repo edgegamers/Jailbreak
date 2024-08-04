@@ -1,5 +1,4 @@
 using System.Drawing;
-using System.Text.Json;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
@@ -115,7 +114,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   private ISpeedDayLocale msg => (ISpeedDayLocale)Locale;
 
   private bool isRoundActive
-    => provider.GetRequiredService<ISpecialDayManager>().CurrentSD == this;
+    => Provider.GetRequiredService<ISpecialDayManager>().CurrentSD == this;
 
   public override SDType Type => SDType.SPEEDRUN;
 
@@ -150,7 +149,9 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       }
     };
     Timers[CvFirstRoundFreeze.Value - 4] += () => {
-      if (!speedrunner.IsValid) speedrunner = getRunner();
+      if (!speedrunner.IsValid || speedrunner.Connected
+        != PlayerConnectedState.PlayerConnected)
+        speedrunner = getRunner();
       if (speedrunner == null) {
         panic("Speedrunner is invalid, and we cannot find a new one");
         return;
@@ -161,7 +162,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       msg.YouAreRunner(CvInitialSpeedrunTime.Value).ToChat(speedrunner);
     };
     Timers[CvFirstRoundFreeze.Value] += () => {
-      if (!speedrunner.IsValid) {
+      if (!speedrunner.IsValid || speedrunner.Connected
+        != PlayerConnectedState.PlayerConnected) {
         speedrunner = getRunner();
         if (speedrunner == null) {
           panic(
@@ -183,7 +185,9 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       Timers[CvInitialSpeedrunTime.Value + CvFirstRoundFreeze.Value - 30] += ()
         => {
         if (target != null) return;
-        if (!speedrunner.IsValid) speedrunner = getRunner();
+        if (!speedrunner.IsValid || speedrunner.Connected
+          != PlayerConnectedState.PlayerConnected)
+          speedrunner = getRunner();
         if (speedrunner == null) {
           panic(
             "Original speedrunner is invalid, and we cannot find a new one");
@@ -245,8 +249,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     CCSPlayerController player) {
     var trail = new ActivePulsatingBeamPlayerTrail(Plugin, player, 0f,
       MAX_POINTS, 0.15f);
-    trail.OnPlayerInvalid -= trail.Kill;
-    trail.OnPlayerInvalid += trail.StopTracking;
     trail.OnPlayerDidntMove += () => {
       if (trail.Player == null) {
         panic("OnPlayerDidntMove: Player is null");
@@ -262,6 +264,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       if (didntMoveSeconds % 3 == 0) RoundUtil.AddTimeRemaining(-1);
       if (RoundUtil.GetTimeRemaining() <= 0) Execute();
     };
+    trail.OnPlayerInvalid -= trail.Kill;
+    trail.OnPlayerInvalid += trail.StopTracking;
     trail.OnPlayerInvalid += () => {
       // If the player left mid-run, we need to pick the nearest player
       // to continue the run
@@ -282,11 +286,11 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       }
 
       speedrunner = nearest;
-      nearest.Teleport(end);
-      player.SetColor(Color.DodgerBlue);
-      msg.RunnerReassigned(player).ToAllChat();
-      msg.YouAreRunner(RoundUtil.GetTimeRemaining()).ToChat(player);
-      trail.StartTracking(player);
+      nearest.Pawn.Value?.Teleport(end);
+      nearest.SetColor(Color.DodgerBlue);
+      msg.RunnerReassigned(nearest).ToAllChat();
+      msg.YouAreRunner(RoundUtil.GetTimeRemaining()).ToChat(nearest);
+      trail.StartTracking(nearest);
     };
     return trail;
   }
@@ -367,7 +371,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       return;
     }
 
-    ServerExtensions.GetGameRules().GameRestart = true;
+    ServerExtensions.GetGameRules().GameRestart =
+      ServerExtensions.GetGameRules().RestartRoundTime < Server.CurrentTime;
 
     const int TOTAL_LINES = 8; // Total number of lines to display
 
@@ -384,19 +389,18 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       var linkedList = new LinkedList<string>();
 
       // Determine the range to display
-      int start = Math.Max(0, i - TOTAL_LINES / 2);
-      int end   = Math.Min(playerCount - 1, i + TOTAL_LINES / 2);
+      var startIndex = Math.Max(0, i - TOTAL_LINES / 2);
+      var endIndex   = Math.Min(playerCount - 1, i + TOTAL_LINES / 2);
 
       // Adjust the range to always show TOTAL_LINES players
-      if (end - start + 1 < TOTAL_LINES) {
-        if (start == 0) {
-          end = Math.Min(TOTAL_LINES - 1, playerCount - 1);
-        } else if (end == playerCount - 1) {
-          start = Math.Max(0, playerCount - TOTAL_LINES);
-        }
+      if (endIndex - startIndex + 1 < TOTAL_LINES) {
+        if (startIndex == 0)
+          endIndex = Math.Min(TOTAL_LINES - 1, playerCount - 1);
+        else if (endIndex == playerCount - 1)
+          startIndex = Math.Max(0, playerCount - TOTAL_LINES);
       }
 
-      for (int j = start; j <= end; j++) {
+      for (var j = startIndex; j <= endIndex; j++) {
         var (slot, dist) = sortedDistances[j];
         var player = Utilities.GetPlayerFromSlot(slot);
         if (player == null || !player.IsValid) continue;
@@ -423,9 +427,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     var winningScoreboard = scoreboards.First().Value;
     var winningMessage    = string.Join("<br>", winningScoreboard);
     foreach (var player in Utilities.GetPlayers()
-     .Where(p => p is { PawnIsAlive: false, IsBot: false })) {
+     .Where(p => p is { PawnIsAlive: false, IsBot: false }))
       player.PrintToCenterHtml(winningMessage);
-    }
   }
 
   private string generateHTMLLine(CCSPlayerController player, int position,
@@ -715,6 +718,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     return players switch {
       <= 3  => 1,
       <= 4  => 2,
+      <= 6  => 2,
       <= 8  => 3,
       <= 12 => 3,
       <= 20 => 6,
