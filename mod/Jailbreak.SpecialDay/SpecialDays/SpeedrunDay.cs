@@ -150,7 +150,9 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       }
     };
     Timers[CvFirstRoundFreeze.Value - 4] += () => {
-      if (!speedrunner.IsValid) speedrunner = getRunner();
+      if (!speedrunner.IsValid || speedrunner.Connected
+        != PlayerConnectedState.PlayerConnected)
+        speedrunner = getRunner();
       if (speedrunner == null) {
         panic("Speedrunner is invalid, and we cannot find a new one");
         return;
@@ -161,7 +163,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       msg.YouAreRunner(CvInitialSpeedrunTime.Value).ToChat(speedrunner);
     };
     Timers[CvFirstRoundFreeze.Value] += () => {
-      if (!speedrunner.IsValid) {
+      if (!speedrunner.IsValid || speedrunner.Connected
+        != PlayerConnectedState.PlayerConnected) {
         speedrunner = getRunner();
         if (speedrunner == null) {
           panic(
@@ -183,7 +186,9 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       Timers[CvInitialSpeedrunTime.Value + CvFirstRoundFreeze.Value - 30] += ()
         => {
         if (target != null) return;
-        if (!speedrunner.IsValid) speedrunner = getRunner();
+        if (!speedrunner.IsValid || speedrunner.Connected
+          != PlayerConnectedState.PlayerConnected)
+          speedrunner = getRunner();
         if (speedrunner == null) {
           panic(
             "Original speedrunner is invalid, and we cannot find a new one");
@@ -245,8 +250,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     CCSPlayerController player) {
     var trail = new ActivePulsatingBeamPlayerTrail(Plugin, player, 0f,
       MAX_POINTS, 0.15f);
-    trail.OnPlayerInvalid -= trail.Kill;
-    trail.OnPlayerInvalid += trail.StopTracking;
     trail.OnPlayerDidntMove += () => {
       if (trail.Player == null) {
         panic("OnPlayerDidntMove: Player is null");
@@ -262,6 +265,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       if (didntMoveSeconds % 3 == 0) RoundUtil.AddTimeRemaining(-1);
       if (RoundUtil.GetTimeRemaining() <= 0) Execute();
     };
+    trail.OnPlayerInvalid -= trail.Kill;
+    trail.OnPlayerInvalid += trail.StopTracking;
     trail.OnPlayerInvalid += () => {
       // If the player left mid-run, we need to pick the nearest player
       // to continue the run
@@ -282,11 +287,11 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       }
 
       speedrunner = nearest;
-      nearest.Teleport(end);
-      player.SetColor(Color.DodgerBlue);
-      msg.RunnerReassigned(player).ToAllChat();
-      msg.YouAreRunner(RoundUtil.GetTimeRemaining()).ToChat(player);
-      trail.StartTracking(player);
+      nearest.Pawn.Value?.Teleport(end);
+      nearest.SetColor(Color.DodgerBlue);
+      msg.RunnerReassigned(nearest).ToAllChat();
+      msg.YouAreRunner(RoundUtil.GetTimeRemaining()).ToChat(nearest);
+      trail.StartTracking(nearest);
     };
     return trail;
   }
@@ -367,7 +372,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       return;
     }
 
-    ServerExtensions.GetGameRules().GameRestart = true;
+    ServerExtensions.GetGameRules().GameRestart =
+      ServerExtensions.GetGameRules().RestartRoundTime < Server.CurrentTime;
 
     const int TOTAL_LINES = 8; // Total number of lines to display
 
@@ -715,6 +721,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     return players switch {
       <= 3  => 1,
       <= 4  => 2,
+      <= 6  => 2,
       <= 8  => 3,
       <= 12 => 3,
       <= 20 => 6,

@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 using Jailbreak.Public.Extensions;
@@ -32,9 +33,9 @@ public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
 
   virtual protected void Tick() {
     if (Player == null) return;
-    if (!Player.IsValid) {
+    if (!Player.IsValid
+      || Player.Connected != PlayerConnectedState.PlayerConnected) {
       OnPlayerInvalid.Invoke();
-      Player = null;
       return;
     }
 
