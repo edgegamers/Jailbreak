@@ -51,6 +51,8 @@ public static class ServiceCollectionExtensions {
   /// <param name="collection"></param>
   /// <param name="sectionName">The section where the configuration object will be loaded from</param>
   /// <typeparam name="TConfig">The configuration object. Must auto-fill all default values!</typeparam>
+  [Obsolete(
+    "Conguration is up to each module, and should ideally be done through CVars")]
   public static void AddConfig<TConfig>(this IServiceCollection collection,
     string sectionName) where TConfig : class, new() {
     //	Get the object by resolving IConfigService

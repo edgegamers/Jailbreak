@@ -3,16 +3,9 @@ using JetBrains.Annotations;
 
 namespace Jailbreak.Public.Mod.SpecialDay;
 
-public class DefaultableDictionary<TKey, TValue> : IDictionary<TKey, TValue> {
-  private readonly TValue defaultValue;
-  private readonly IDictionary<TKey, TValue> dictionary;
-
-  public DefaultableDictionary(IDictionary<TKey, TValue> dictionary,
-    TValue defaultValue) {
-    this.dictionary   = dictionary;
-    this.defaultValue = defaultValue;
-  }
-
+public class DefaultableDictionary<TKey, TValue>(
+  IDictionary<TKey, TValue> dictionary, TValue defaultValue)
+  : IDictionary<TKey, TValue> {
   [MustDisposeResource]
   public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
     return dictionary.GetEnumerator();
@@ -48,16 +41,14 @@ public class DefaultableDictionary<TKey, TValue> : IDictionary<TKey, TValue> {
   public bool Remove(TKey key) { return dictionary.Remove(key); }
 
   public bool TryGetValue(TKey key, out TValue value) {
-    if (!dictionary.TryGetValue(key, out value)) value = defaultValue;
-
+    value = dictionary.ContainsKey(key) ? dictionary[key] : defaultValue;
     return true;
   }
 
   public TValue this[TKey key] {
     get {
-      try { return dictionary[key]; } catch (KeyNotFoundException) {
-        return defaultValue;
-      }
+      if (!TryGetValue(key, out var value)) value = defaultValue;
+      return value;
     }
 
     set => dictionary[key] = value;

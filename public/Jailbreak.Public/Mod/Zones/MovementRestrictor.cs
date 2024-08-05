@@ -18,12 +18,13 @@ public abstract class MovementRestrictor {
   private float maxSpeed = 0.6f;
 
   public MovementRestrictor(BasePlugin plugin, CCSPlayerController player,
-    float radiusSquared = 250000f, Action? onTeleport = null) {
+    float radiusSquared = 250000f, Action? onTeleport = null,
+    float updateRate = 0.1f) {
     this.player        = player;
     this.radiusSquared = radiusSquared;
     this.onTeleport    = onTeleport;
 
-    timer = plugin.AddTimer(0.1f, tick,
+    timer = plugin.AddTimer(updateRate, tick,
       TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
     plugin.RegisterEventHandler<EventRoundEnd>(OnEnd);
   }

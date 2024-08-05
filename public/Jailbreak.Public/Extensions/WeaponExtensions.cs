@@ -11,7 +11,7 @@ public static class WeaponExtensions {
   public static string GetFriendlyWeaponName(this string designerName) {
     switch (designerName) {
       case "weapon_ak47":
-        return "AK47";
+        return "AK-47";
       case "weapon_aug":
         return "AUG";
       case "weapon_awp":
@@ -41,7 +41,7 @@ public static class WeaponExtensions {
       case "weapon_m4a1":
         return "M4A1";
       case "weapon_m4a1_silencer":
-        return "M4A1S";
+        return "M4A1-S";
       case "weapon_m4a4":
         return "M4A4";
       case "weapon_mac10":
@@ -123,17 +123,16 @@ public static class WeaponExtensions {
       case "weapon_diversion":
         return "Diversion";
       case "weapon_knife_t":
-        return "Knife";
       case "weapon_knife":
         return "Knife";
       default:
-        return "UNKNOWN: Please Contact Tech";
+        return designerName.Replace("weapon_", "").ToUpper();
     }
   }
 
-  public static void AddBulletsToMagazine(this CBasePlayerWeapon? weapon,
+  public static bool AddBulletsToMagazine(this CBasePlayerWeapon? weapon,
     int bullets) {
-    if (weapon == null) return;
+    if (weapon == null) return false;
     if (weapon.Clip1 + bullets > weapon.VData!.MaxClip1) {
       var overflowBullets = weapon.Clip1 + bullets - weapon.VData!.MaxClip1;
       weapon.Clip1          =  weapon.VData!.MaxClip1;
@@ -142,14 +141,16 @@ public static class WeaponExtensions {
 
     Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_iClip1");
     Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_pReserveAmmo");
+    return true;
   }
 
-  public static void SetAmmo(this CBasePlayerWeapon? weapon, int clip,
+  public static bool SetAmmo(this CBasePlayerWeapon? weapon, int clip,
     int reserve) {
-    if (weapon == null) return;
+    if (weapon == null) return false;
     weapon.Clip1          = clip;
     weapon.ReserveAmmo[0] = reserve;
     Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_iClip1");
     Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_pReserveAmmo");
+    return true;
   }
 }

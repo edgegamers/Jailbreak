@@ -7,6 +7,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 namespace Jailbreak.Public.Extensions;
 
 public static class PlayerExtensions {
+  [Obsolete("Use CCSPlayerController#Team instead")]
   public static CsTeam GetTeam(this CCSPlayerController controller) {
     return (CsTeam)controller.TeamNum;
   }

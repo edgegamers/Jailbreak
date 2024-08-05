@@ -19,7 +19,7 @@ using MStatsShared;
 namespace Jailbreak.LastRequest;
 
 public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
-  : ILastRequestManager, IBlockUserDamage {
+  : ILastRequestManager, IDamageBlocker {
   public readonly FakeConVar<int> CvLRBaseTime = new("css_jb_lr_time_base",
     "Round time to set when LR is activated, 0 to disable", 60);
 
@@ -146,8 +146,8 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
   [GameEventHandler(HookMode.Pre)]
   public HookResult OnTakeDamage(EventPlayerHurt @event, GameEventInfo info) {
-    IBlockUserDamage damageHandler = this;
-    return damageHandler.BlockUserDamage(@event, info);
+    IDamageBlocker damageBlockerHandler = this;
+    return damageBlockerHandler.BlockUserDamage(@event, info);
   }
 
   [GameEventHandler]
