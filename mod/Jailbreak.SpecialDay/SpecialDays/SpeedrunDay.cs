@@ -81,9 +81,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     "Number of players required to declare a winner", 2,
     customValidators: new RangeValidator<int>(2, 10));
 
-  public static readonly FakeConVar<int> CvOffset1 = new(
-    "css_benchmark", "Offset 1", 10);
-
   private readonly Dictionary<int, ActivePlayerTrail<VectorTrailSegment>>
     activeTrails = new();
 
@@ -324,21 +321,19 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       if (pawn == null) continue;
       pawn.Teleport(start, velocity: Vector.Zero);
       player.Freeze();
-      player.RemoveWeapons();
+      resetTrails();
+      finishedPlayers.Clear();
+      finishTimestampList.Clear();
+
+      Plugin.AddTimer(CvFreezeTime.Value, () => {
+        if (!isRoundActive) return;
+        foreach (var player in PlayerUtil.GetAlive()) player.UnFreeze();
+        roundStartTime = Server.CurrentTime;
+      }, TimerFlags.STOP_ON_MAPCHANGE);
+
+      roundEndTimer = Plugin.AddTimer(seconds + CvFreezeTime.Value, endRound,
+        TimerFlags.STOP_ON_MAPCHANGE);
     }
-
-    resetTrails();
-    finishedPlayers.Clear();
-    finishTimestampList.Clear();
-
-    Plugin.AddTimer(CvFreezeTime.Value, () => {
-      if (!isRoundActive) return;
-      foreach (var player in PlayerUtil.GetAlive()) player.UnFreeze();
-      roundStartTime = Server.CurrentTime;
-    }, TimerFlags.STOP_ON_MAPCHANGE);
-
-    roundEndTimer = Plugin.AddTimer(seconds + CvFreezeTime.Value, endRound,
-      TimerFlags.STOP_ON_MAPCHANGE);
   }
 
   private void checkFinishers() {
@@ -348,19 +343,18 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       return;
     }
 
-    targetCircle?.SetRadius(getRequiredDistance() / 2);
+    var minDist = getRequiredDistance();
+    targetCircle?.SetRadius(minDist / 2);
     targetCircle?.Update();
-    var required = MathF.Pow(getRequiredDistance(), 2);
+    var required = MathF.Pow(minDist, 2);
 
-    LinkedList<(int, float)> notFinished     = new();
-    Dictionary<int, float>   notFinishedDict = new();
+    LinkedList<(int, float)> notFinished = [];
 
     foreach (var player in PlayerUtil.GetAlive()) {
       if (finishedPlayers.Contains(player.Slot)) continue;
       var pos = player.Pawn.Value?.AbsOrigin;
       if (pos == null) continue;
       var dist = pos.DistanceSquared(target);
-      notFinishedDict[player.Slot] = dist;
       if (dist >= required * 1.25f) {
         notFinished.AddLast((player.Slot, dist));
         continue;
@@ -375,14 +369,18 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       onFinish(player);
     }
 
+    if (notFinished.Count == 0) {
+      panic("Should have ended the round by now");
+      return;
+    }
+
     notFinished =
       new LinkedList<(int, float)>(notFinished.OrderBy(x => x.Item2));
 
-    var benches = CvOffset1.Value;
     sendDistances(notFinished);
   }
 
-  private void sendDistances(LinkedList<(int, float)> unfinished, bool cache) {
+  private void sendDistances(LinkedList<(int, float)> unfinished) {
     if (target == null) {
       panic("sendDistances: Target is null");
       return;
@@ -393,20 +391,20 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
     var originalCompletions = new LinkedList<(int, float)>(finishTimestampList);
 
-    foreach (var (slot, dist) in unfinished)
-      finishTimestampList.AddLast((slot, dist));
+    if (unfinished.Count > 0)
+      foreach (var (slot, dist) in unfinished)
+        finishTimestampList.AddLast((slot, dist));
 
     const int TOTAL_LINES = 8;
     var       pos         = 1;
     var       current     = finishTimestampList.First;
 
-    Dictionary<int, CCSPlayerController> players = new();
-
     string? top = null;
     while (current != null) {
       var display = 0;
       var lines   = "";
-      var player = Utilities.GetPlayerFromSlot(current.Value.Item1);
+      var player  = Utilities.GetPlayerFromSlot(current.Value.Item1);
+
       if (player == null || !player.IsValid || player.IsBot) {
         pos++;
         current = current.Next;
@@ -449,7 +447,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       foreach (var player in Utilities.GetPlayers().Where(p => !p.PawnIsAlive))
         player.PrintToCenter(top);
 
-    finishTimestampList = new LinkedList<(int, float)>(originalCompletions);
+    finishTimestampList = originalCompletions;
   }
 
   private string generateHTMLLine(CCSPlayerController player, int position,
@@ -511,7 +509,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       msg.PlayerTime(player, finishedPlayers.Count + 1, -time).ToAllChat();
     }
 
-    // finishTimestamps[player.Slot] = -Server.CurrentTime;
     finishTimestampList.AddLast((player.Slot, -Server.CurrentTime));
     finishedPlayers.Add(player.Slot);
     var eliminations = getEliminations(PlayerUtil.GetAlive().Count());
