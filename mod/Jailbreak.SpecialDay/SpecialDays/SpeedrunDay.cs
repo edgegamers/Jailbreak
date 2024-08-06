@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Diagnostics;
 using System.Drawing;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
@@ -80,10 +82,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     customValidators: new RangeValidator<int>(2, 10));
 
   public static readonly FakeConVar<int> CvOffset1 = new(
-    "css_lines", "Offset 1", 8);
-
-  public static readonly FakeConVar<int> CvOffset2 = new(
-    "css_lines_below", "Offset 2", 4);
+    "css_benchmark", "Offset 1", 10);
 
   private readonly Dictionary<int, ActivePlayerTrail<VectorTrailSegment>>
     activeTrails = new();
@@ -93,7 +92,10 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   ///   Positive values represent players who are still alive, and the value
   ///   being the distance they are from the target.
   /// </summary>
-  private readonly SortedDictionary<int, float> finishTimestamps = new();
+  private readonly HashSet<int> finishedPlayers = new();
+
+  // private readonly LinkedList<(int, float)> finishTimestampList = new();
+  private LinkedList<(int, float)> finishTimestampList = new();
 
   private readonly Random rng = new();
   private float? bestTime;
@@ -326,7 +328,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     resetTrails();
-    finishTimestamps.Clear();
+    finishedPlayers.Clear();
+    finishTimestampList.Clear();
 
     Plugin.AddTimer(CvFreezeTime.Value, () => {
       if (!isRoundActive) return;
@@ -349,23 +352,37 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     targetCircle?.Update();
     var required = MathF.Pow(getRequiredDistance(), 2);
 
-    var distances = new Dictionary<int, float>(finishTimestamps);
+    LinkedList<(int, float)> notFinished     = new();
+    Dictionary<int, float>   notFinishedDict = new();
+
     foreach (var player in PlayerUtil.GetAlive()) {
-      if (finishTimestamps.ContainsKey(player.Slot)) continue;
+      if (finishedPlayers.Contains(player.Slot)) continue;
       var pos = player.Pawn.Value?.AbsOrigin;
       if (pos == null) continue;
       var dist = pos.DistanceSquared(target);
-      distances[player.Slot] = dist;
-      if (dist >= required * 1.25f) continue;
+      notFinishedDict[player.Slot] = dist;
+      if (dist >= required * 1.25f) {
+        notFinished.AddLast((player.Slot, dist));
+        continue;
+      }
+
       var hdist = pos.HorizontalDistanceSquared(target);
-      if (hdist >= required) continue;
+      if (hdist >= required) {
+        notFinished.AddLast((player.Slot, dist));
+        continue;
+      }
+
       onFinish(player);
     }
 
-    sendDistances(distances);
+    notFinished =
+      new LinkedList<(int, float)>(notFinished.OrderBy(x => x.Item2));
+
+    var benches = CvOffset1.Value;
+    sendDistances(notFinished);
   }
 
-  private void sendDistances(IDictionary<int, float> distances) {
+  private void sendDistances(LinkedList<(int, float)> unfinished, bool cache) {
     if (target == null) {
       panic("sendDistances: Target is null");
       return;
@@ -374,61 +391,65 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     ServerExtensions.GetGameRules().GameRestart =
       ServerExtensions.GetGameRules().RestartRoundTime < Server.CurrentTime;
 
-    const int TOTAL_LINES = 8; // Total number of lines to display
+    var originalCompletions = new LinkedList<(int, float)>(finishTimestampList);
 
-    // Sort distances by score (ascending order)
-    var sortedDistances = distances.OrderBy(d => d.Value).ToList();
+    foreach (var (slot, dist) in unfinished)
+      finishTimestampList.AddLast((slot, dist));
 
-    // Total number of players
-    var playerCount = sortedDistances.Count;
+    const int TOTAL_LINES = 8;
+    var       pos         = 1;
+    var       current     = finishTimestampList.First;
 
-    // Dictionary to store scoreboards for each player
-    var scoreboards = new Dictionary<int, LinkedList<string>>();
+    Dictionary<int, CCSPlayerController> players = new();
 
-    for (var i = 0; i < playerCount; i++) {
-      var linkedList = new LinkedList<string>();
-
-      // Determine the range to display
-      var startIndex = Math.Max(0, i - TOTAL_LINES / 2);
-      var endIndex   = Math.Min(playerCount - 1, i + TOTAL_LINES / 2);
-
-      // Adjust the range to always show TOTAL_LINES players
-      if (endIndex - startIndex + 1 < TOTAL_LINES) {
-        if (startIndex == 0)
-          endIndex = Math.Min(TOTAL_LINES - 1, playerCount - 1);
-        else if (endIndex == playerCount - 1)
-          startIndex = Math.Max(0, playerCount - TOTAL_LINES);
+    string? top = null;
+    while (current != null) {
+      var display = 0;
+      var lines   = "";
+      var player = Utilities.GetPlayerFromSlot(current.Value.Item1);
+      if (player == null || !player.IsValid || player.IsBot) {
+        pos++;
+        current = current.Next;
+        continue;
       }
 
-      for (var j = startIndex; j <= endIndex; j++) {
-        var (slot, dist) = sortedDistances[j];
-        var player = Utilities.GetPlayerFromSlot(slot);
-        if (player == null || !player.IsValid) continue;
+      var playerLine = current;
 
-        var line         = generateHTMLLine(player, j + 1, dist);
-        if (j != i) line = $"<span class=\"fontSize-sm\">{line}</span>";
-        linkedList.AddLast(line);
+      var d = 0;
+      while (playerLine != null && (display < TOTAL_LINES / 2
+        || pos - d > finishTimestampList.Count - TOTAL_LINES
+        && display < TOTAL_LINES)) {
+        var (slot, dist) = playerLine.Value;
+        playerLine       = playerLine.Previous;
+        var p = Utilities.GetPlayerFromSlot(slot);
+        if (p == null) continue;
+        lines = generateHTMLLine(p, pos - (d++), dist) + (d == 1 ? "" : "<br>")
+          + lines;
+        display++;
       }
 
-      scoreboards[sortedDistances[i].Key] = linkedList;
+      current    = current.Next;
+      playerLine = current;
+
+      d = 0;
+      while (playerLine != null && display < TOTAL_LINES) {
+        var (slot, dist) = playerLine.Value;
+        playerLine       = playerLine.Next;
+        var p = Utilities.GetPlayerFromSlot(slot);
+        if (p == null) continue;
+        lines += "<br>" + generateHTMLLine(p, pos + (++d), dist);
+        display++;
+      }
+
+      top ??= lines;
+      player.PrintToCenterHtml(lines);
     }
 
-    // Print scoreboards for each player
-    foreach (var (slot, _) in sortedDistances) {
-      var player = Utilities.GetPlayerFromSlot(slot);
-      if (player == null || !player.IsValid) continue;
+    if (top != null)
+      foreach (var player in Utilities.GetPlayers().Where(p => !p.PawnIsAlive))
+        player.PrintToCenter(top);
 
-      var scoreboard = scoreboards[slot];
-      var message    = string.Join("<br>", scoreboard);
-      player.PrintToCenterHtml(message);
-    }
-
-    // Handle disconnected players
-    var winningScoreboard = scoreboards.First().Value;
-    var winningMessage    = string.Join("<br>", winningScoreboard);
-    foreach (var player in Utilities.GetPlayers()
-     .Where(p => p is { PawnIsAlive: false, IsBot: false }))
-      player.PrintToCenterHtml(winningMessage);
+    finishTimestampList = new LinkedList<(int, float)>(originalCompletions);
   }
 
   private string generateHTMLLine(CCSPlayerController player, int position,
@@ -446,7 +467,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       color  = "00FF00";
       suffix = "<font color=\"#00FF00\"> | S</font>";
     } else if (!isInDanger) {
-      var percentDanger = (position - 1 - finishTimestamps.Count)
+      var percentDanger = (position - 1 - finishedPlayers.Count)
         / (float)eliminations;
       // Gradient from green to yellow
       percentDanger = Math.Clamp(percentDanger, 0, 1);
@@ -487,16 +508,18 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       msg.BestTime(player, time).ToAllChat();
       player.SetColor(Color.FromArgb(255, Color.Gold));
     } else {
-      msg.PlayerTime(player, finishTimestamps.Count + 1, -time).ToAllChat();
+      msg.PlayerTime(player, finishedPlayers.Count + 1, -time).ToAllChat();
     }
 
-    finishTimestamps[player.Slot] = -Server.CurrentTime;
+    // finishTimestamps[player.Slot] = -Server.CurrentTime;
+    finishTimestampList.AddLast((player.Slot, -Server.CurrentTime));
+    finishedPlayers.Add(player.Slot);
     var eliminations = getEliminations(PlayerUtil.GetAlive().Count());
     activeTrails[player.Slot].StopTracking();
 
     var taking = playersAliveAtStart - eliminations;
 
-    if (finishTimestamps.Count >= taking) endRound();
+    if (finishedPlayers.Count >= taking) endRound();
 
     if (!player.IsValid) {
       generics.Error("completer is not valid").ToAllChat();
@@ -505,27 +528,22 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
     if (bestTimePlayerSlot != null && bestTimePlayerSlot == player.Slot) return;
 
-    var alpha = Math.Max(255 - finishTimestamps.Count * 20, 0);
+    var alpha = Math.Max(255 - finishedPlayers.Count * 20, 0);
     player.SetColor(Color.FromArgb(alpha, Color.White));
   }
 
   private void resetTrails() {
-    if (activeTrails.Count != 0 && finishTimestamps.Count != 0) {
-      var completers = finishTimestamps.Where(x => x.Value < 0).ToArray();
-      if (completers.Length > 0) {
-        // Of the players who finished, find the one who finished the fastest
-        // since these times are negative timestamps, we want the "largest"
-        // value (i.e. least negative)
-        var best       = completers.MaxBy(x => x.Value);
-        var bestPlayer = best.Key;
-        var time       = best.Value;
-        if (bestTime == null || time <= bestTime) {
-          bestTrail?.Kill();
-          activeTrails[bestPlayer].StopTracking();
-          // bestTrail = BeamTrail.FromTrail(Plugin, activeTrails[bestPlayer]);
-          bestTrail = PulsatingBeamTrail.FromTrail(Plugin,
-            activeTrails[bestPlayer]);
-        }
+    if (activeTrails.Count != 0 && finishedPlayers.Count != 0) {
+      // var completers = finishTimestamps.Where(x => x.Value < 0).ToArray();
+      var best = finishTimestampList.First;
+      if (best == null) return;
+      var slot = best.Value.Item1;
+      if (slot == bestTimePlayerSlot) {
+        var bestPlayer = best.Value.Item1;
+        bestTrail?.Kill();
+        activeTrails[bestPlayer].StopTracking();
+        bestTrail = PulsatingBeamTrail.FromTrail(Plugin,
+          activeTrails[bestPlayer]);
       }
     }
 
@@ -565,15 +583,19 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     var ctMade = PlayerUtil.FromTeam(CsTeam.CounterTerrorist).Count() < 4;
     var tMade  = PlayerUtil.FromTeam(CsTeam.Terrorist).Count() < 4;
 
+    var unfinished = new LinkedList<(int, float)>();
     foreach (var player in PlayerUtil.GetAlive()) {
       if (player.Team == CsTeam.CounterTerrorist) ctMade = true;
       if (player.Team == CsTeam.Terrorist) tMade         = true;
-      if (finishTimestamps.ContainsKey(player.Slot)) continue;
+      if (finishedPlayers.Contains(player.Slot)) continue;
 
       var dist = player.PlayerPawn.Value?.AbsOrigin?.Distance(target);
       if (dist == null) continue;
-      finishTimestamps[player.Slot] = dist.Value;
+      unfinished.AddLast((player.Slot, dist.Value));
     }
+
+    unfinished = new LinkedList<(int, float)>(unfinished.OrderBy(p => p.Item2));
+    if (unfinished.First != null) finishTimestampList.AddLast(unfinished.First);
 
     if (aliveCount > 1)
       if (ctMade != tMade && round == 1) {
@@ -597,19 +619,20 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       }
 
     announceTimes();
-    var slowTimes     = SlowestTimes(finishTimestamps);
-    var keyValuePairs = slowTimes.ToList();
+    // var slowTimes     = SlowestTimes(finishTimestamps);
+    // var keyValuePairs = slowTimes.ToList();
 
     if (aliveCount <= CvMaxPlayersToFinish.Value) {
       // Announce winners, end the round, etc.
       // Maybe tp the loser to the winner and let the winner kill them
 
-      if (keyValuePairs.Count == 0) {
+      if (finishedPlayers.Count == 0) {
         generics.Error("No slowest times found").ToAllChat();
         return;
       }
 
-      var winner = Utilities.GetPlayerFromSlot(keyValuePairs.Last().Key);
+      var winner =
+        Utilities.GetPlayerFromSlot(finishTimestampList.First!.Value.Item1);
 
       if (winner == null || !winner.IsValid) {
         panic("endRound: Winner is null");
@@ -661,12 +684,13 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     nextRoundTime = (int)Math.Min(roundTimeWas, Math.Max(nextRoundTime, 5));
-    var slowestEnumerator = SlowestTimes(finishTimestamps).GetEnumerator();
+    // var slowestEnumerator = SlowestTimes(finishTimestamps).GetEnumerator();
+    var slowest = finishTimestampList.Last;
 
     if (ctMade != tMade && round == 0) {
       bool killedCt = false, killedT = false;
-      while (slowestEnumerator.MoveNext()) {
-        var (slot, _) = slowestEnumerator.Current;
+      while (slowest != null) {
+        var (slot, _) = slowest.Value;
         var player = Utilities.GetPlayerFromSlot(slot);
         if (player == null || !player.IsValid) continue;
         switch (player.Team) {
@@ -683,20 +707,20 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         }
 
         if (killedCt && killedT) break;
+        slowest = slowest.Previous;
       }
     }
 
     for (var i = 0; i < toEliminate; i++) {
-      if (!slowestEnumerator.MoveNext()) break;
-      var (slot, _) = slowestEnumerator.Current;
+      if (slowest == null) break;
+      var (slot, _) = slowest.Value;
       var player = Utilities.GetPlayerFromSlot(slot);
       if (player == null || !player.IsValid) continue;
       EnableDamage(player);
       player.CommitSuicide(false, true);
       msg.PlayerEliminated(player).ToAllChat();
+      slowest = slowest.Previous;
     }
-
-    slowestEnumerator.Dispose();
 
     Plugin.AddTimer(3f, () => { startRound(nextRoundTime); },
       TimerFlags.STOP_ON_MAPCHANGE);
@@ -730,21 +754,17 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   }
 
   private void announceTimes() {
-    var times = SlowestTimes(finishTimestamps).ToArray();
-    for (var i = 0; i < times.Length; i++) {
-      var (slot, time) = times[i];
-      var player = Utilities.GetPlayerFromSlot(slot);
-      if (player == null) continue;
-      if (time > 0)
-        msg.PlayerTime(player, times.Length - i, time).ToChat(player);
-    }
-  }
+    // var times = SlowestTimes(finishTimestamps).ToArray();
+    int position = finishedPlayers.Count;
+    var slowest  = finishTimestampList.Last;
 
-  public static IEnumerable<KeyValuePair<int, float>>
-    SlowestTimes(IDictionary<int, float> timeDistances) {
-    return timeDistances.OrderByDescending(entry => entry.Value >= 0)
-     .ThenByDescending(entry => entry.Value >= 0 ? entry.Value : float.MinValue)
-     .ThenBy(entry => entry.Value < 0 ? entry.Value : float.MaxValue);
+    while (slowest != null) {
+      if (slowest.Value.Item2 <= 0) break;
+      var player = Utilities.GetPlayerFromSlot(slowest.Value.Item1);
+      if (player == null) continue;
+      msg.PlayerTime(player, position--, slowest.Value.Item2).ToAllChat();
+      slowest = slowest.Previous;
+    }
   }
 
   override protected HookResult
