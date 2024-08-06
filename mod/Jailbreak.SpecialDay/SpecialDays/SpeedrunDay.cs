@@ -99,7 +99,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   private int? bestTimePlayerSlot;
 
   private AbstractTrail<BeamTrailSegment>? bestTrail;
-  // private Timer? finishCheckTimer;
 
   private IGenericCmdLocale generics = null!;
   private int round, playersAliveAtStart;
@@ -260,7 +259,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       if (trail.DidntMoveTicks < thresholdTicks) return;
       if (trail.DidntMoveTicks == thresholdTicks)
         msg.StayStillToSpeedup.ToChat(trail.Player);
-      if (didntMoveSeconds % 3 == 0) RoundUtil.AddTimeRemaining(-1);
+      if (didntMoveSeconds % 2 == 0) RoundUtil.AddTimeRemaining(-1);
       if (RoundUtil.GetTimeRemaining() <= 0) Execute();
     };
     trail.OnPlayerInvalid -= trail.Kill;
@@ -455,7 +454,12 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     var isSafe     = position < eliminations && distance < 0;
     var isInDanger = position > playersAliveAtStart - eliminations;
 
-    var text = $"{position} {player.PlayerName}";
+    var formattedPosition = (position < 10 ? " ​" : "");
+    var formattedName =
+      player.PlayerName + " ​".Repeat(10 - player.PlayerName.Length);
+
+    var text   = $"{formattedPosition} {formattedName}";
+    var length = text.Length;
 
     if (isSafe) {
       color  = "00FF00";
@@ -479,12 +483,13 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       suffix = "<font color=\"#FF0000\"> | E</font>";
     }
 
+    text += " -" + new string(' ', Math.Max(0, 20 - length));
     if (distance < 0) {
       var time = roundStartTime == null ?
         0 :
         MathF.Abs(distance) - roundStartTime.Value;
-      text += $" - {time:F4}";
-    } else { text += $" - {distance:N0}"; }
+      text += $"{time:F4}";
+    } else { text += $"{distance:N0}"; }
 
     return $"<font color=\"#{color}\">{text}</font>{suffix}";
   }
@@ -778,7 +783,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       StripToKnife = true;
       RestrictWeapons = true;
       ConVarValues["mp_ignore_round_win_conditions"] = true;
-      WithAutoBhop();
+      if (new Random().Next(5) == 0) WithAutoBhop();
       WithFriendlyFire();
     }
 

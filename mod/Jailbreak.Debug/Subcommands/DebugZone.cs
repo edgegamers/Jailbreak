@@ -161,6 +161,36 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
           info.ReplyToCommand(
             $"#{listZone.Id} Points: {listZone.GetBorderPoints().Count()}/{listZone.GetAllPoints().Count()} Center: {listZone.CalculateCenterPoint()} Area: {listZone.GetArea()}");
         return;
+      case "cleanup":
+        // Cleanup auto-generated zones
+        // Remove spawns that are inside of any DO NOT TELEPORT zones
+        var spawns = zoneManager.GetZones(ZoneType.SPAWN_AUTO)
+         .GetAwaiter()
+         .GetResult();
+        if (spawns.Count == 0) {
+          info.ReplyToCommand("No auto-generated zones found");
+          return;
+        }
+
+        var doNotTeleport = zoneManager
+         .GetZones(ZoneTypeExtensions.DoNotTeleports().ToArray())
+         .GetAwaiter()
+         .GetResult();
+
+        var toRemove = new List<IZone>();
+        foreach (var spawn in spawns) {
+          if (doNotTeleport.Any(d
+            => d.IsInsideZone(spawn.CalculateCenterPoint()))) {
+            toRemove.Add(spawn);
+          }
+        }
+
+        info.ReplyToCommand("Removing " + toRemove.Count
+          + " auto-generated zones");
+        Server.NextFrameAsync(async () => {
+          foreach (var z in toRemove) await zoneManager.DeleteZone(z.Id);
+        });
+        return;
     }
 
     if (info.ArgCount != 3) {
@@ -316,7 +346,7 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
   private void sendUsage(CCSPlayerController player) {
     player.PrintToChat("Usage: css_zone [add/set/remove/tp] [type]");
     player.PrintToChat("css_zone [addinner/show/list] <type>");
-    player.PrintToChat("css_zone [finish/reload]");
+    player.PrintToChat("css_zone [finish/cleanup/reload]");
     player.PrintToChat("css_zone generate [cell/armory]");
   }
 }

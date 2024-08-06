@@ -151,20 +151,6 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory)
     return bounds;
   }
 
-  private IZone getArmory() {
-    var armory = zoneManager.GetZones(ZoneType.ARMORY).GetAwaiter().GetResult();
-    if (armory.Count > 0) return new MultiZoneWrapper(armory);
-
-    var bounds = new DistanceZone(
-      Utilities
-       .FindAllEntitiesByDesignerName<
-          SpawnPoint>("info_player_counterterrorist")
-       .Where(s => s.AbsOrigin != null)
-       .Select(s => s.AbsOrigin!)
-       .ToList(), DistanceZone.WIDTH_CELL);
-    return bounds;
-  }
-
   private IList<IZone> getRestrictedAreas() {
     List<IZone> result = [];
     foreach (var zone in ZoneTypeExtensions.DoNotTeleports()) {
