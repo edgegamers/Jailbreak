@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Drawing;
+using System.Runtime.InteropServices.Marshalling;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
@@ -91,7 +92,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   /// </summary>
   private readonly HashSet<int> finishedPlayers = new();
 
-  // private readonly LinkedList<(int, float)> finishTimestampList = new();
   private LinkedList<(int, float)> finishTimestampList = new();
 
   private readonly Random rng = new();
@@ -321,19 +321,20 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       if (pawn == null) continue;
       pawn.Teleport(start, velocity: Vector.Zero);
       player.Freeze();
-      resetTrails();
-      finishedPlayers.Clear();
-      finishTimestampList.Clear();
-
-      Plugin.AddTimer(CvFreezeTime.Value, () => {
-        if (!isRoundActive) return;
-        foreach (var player in PlayerUtil.GetAlive()) player.UnFreeze();
-        roundStartTime = Server.CurrentTime;
-      }, TimerFlags.STOP_ON_MAPCHANGE);
-
-      roundEndTimer = Plugin.AddTimer(seconds + CvFreezeTime.Value, endRound,
-        TimerFlags.STOP_ON_MAPCHANGE);
     }
+
+    resetTrails();
+    finishedPlayers.Clear();
+    finishTimestampList.Clear();
+
+    Plugin.AddTimer(CvFreezeTime.Value, () => {
+      if (!isRoundActive) return;
+      foreach (var player in PlayerUtil.GetAlive()) player.UnFreeze();
+      roundStartTime = Server.CurrentTime;
+    }, TimerFlags.STOP_ON_MAPCHANGE);
+
+    roundEndTimer = Plugin.AddTimer(seconds + CvFreezeTime.Value, endRound,
+      TimerFlags.STOP_ON_MAPCHANGE);
   }
 
   private void checkFinishers() {
@@ -367,11 +368,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       }
 
       onFinish(player);
-    }
-
-    if (notFinished.Count == 0) {
-      panic("Should have ended the round by now");
-      return;
     }
 
     notFinished =
@@ -445,7 +441,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
     if (top != null)
       foreach (var player in Utilities.GetPlayers().Where(p => !p.PawnIsAlive))
-        player.PrintToCenter(top);
+        player.PrintToCenterHtml(top);
 
     finishTimestampList = originalCompletions;
   }
@@ -531,7 +527,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
   private void resetTrails() {
     if (activeTrails.Count != 0 && finishedPlayers.Count != 0) {
-      // var completers = finishTimestamps.Where(x => x.Value < 0).ToArray();
       var best = finishTimestampList.First;
       if (best == null) return;
       var slot = best.Value.Item1;
@@ -580,19 +575,22 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     var ctMade = PlayerUtil.FromTeam(CsTeam.CounterTerrorist).Count() < 4;
     var tMade  = PlayerUtil.FromTeam(CsTeam.Terrorist).Count() < 4;
 
-    var unfinished = new LinkedList<(int, float)>();
+    var nonCompleters = new LinkedList<(int, float)>();
     foreach (var player in PlayerUtil.GetAlive()) {
       if (player.Team == CsTeam.CounterTerrorist) ctMade = true;
       if (player.Team == CsTeam.Terrorist) tMade         = true;
       if (finishedPlayers.Contains(player.Slot)) continue;
+      finishedPlayers.Add(player.Slot);
 
       var dist = player.PlayerPawn.Value?.AbsOrigin?.Distance(target);
       if (dist == null) continue;
-      unfinished.AddLast((player.Slot, dist.Value));
+      nonCompleters.AddLast((player.Slot, dist.Value));
     }
 
-    unfinished = new LinkedList<(int, float)>(unfinished.OrderBy(p => p.Item2));
-    if (unfinished.First != null) finishTimestampList.AddLast(unfinished.First);
+    nonCompleters =
+      new LinkedList<(int, float)>(nonCompleters.OrderBy(t => t.Item2));
+
+    foreach (var nc in nonCompleters) finishTimestampList.AddLast(nc);
 
     if (aliveCount > 1)
       if (ctMade != tMade && round == 1) {
@@ -616,14 +614,9 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       }
 
     announceTimes();
-    // var slowTimes     = SlowestTimes(finishTimestamps);
-    // var keyValuePairs = slowTimes.ToList();
 
     if (aliveCount <= CvMaxPlayersToFinish.Value) {
-      // Announce winners, end the round, etc.
-      // Maybe tp the loser to the winner and let the winner kill them
-
-      if (finishedPlayers.Count == 0) {
+      if (finishTimestampList.Count == 0) {
         generics.Error("No slowest times found").ToAllChat();
         return;
       }
@@ -664,12 +657,12 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       foreach (var weapon in CvWinWeapon.Value.Split(','))
         winner.GiveNamedItem(weapon);
 
+      Plugin.RemoveListener<Listeners.OnTick>(checkFinishers);
       RoundUtil.SetTimeRemaining(Math.Min(timeToSet, CvWinTimeMax.Value));
       Server.ExecuteCommand("mp_ignore_round_win_conditions 0");
       return;
     }
 
-    // var fastTime = MathF.Abs(fastTimestamp) - roundStartTime!;
     var roundTimeWas = Math.Ceiling(Server.CurrentTime - roundStartTime!.Value);
     var nextRoundTime = (int)Math.Ceiling((bestTime ?? 20) + 10 - round * 1.5);
 
@@ -681,7 +674,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     nextRoundTime = (int)Math.Min(roundTimeWas, Math.Max(nextRoundTime, 5));
-    // var slowestEnumerator = SlowestTimes(finishTimestamps).GetEnumerator();
     var slowest = finishTimestampList.Last;
 
     if (ctMade != tMade && round == 0) {
@@ -711,12 +703,12 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     for (var i = 0; i < toEliminate; i++) {
       if (slowest == null) break;
       var (slot, _) = slowest.Value;
+      slowest       = slowest.Previous;
       var player = Utilities.GetPlayerFromSlot(slot);
       if (player == null || !player.IsValid) continue;
       EnableDamage(player);
       player.CommitSuicide(false, true);
       msg.PlayerEliminated(player).ToAllChat();
-      slowest = slowest.Previous;
     }
 
     Plugin.AddTimer(3f, () => { startRound(nextRoundTime); },
@@ -751,16 +743,16 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   }
 
   private void announceTimes() {
-    // var times = SlowestTimes(finishTimestamps).ToArray();
-    int position = finishedPlayers.Count;
+    var position = finishedPlayers.Count;
     var slowest  = finishTimestampList.Last;
 
     while (slowest != null) {
       if (slowest.Value.Item2 <= 0) break;
-      var player = Utilities.GetPlayerFromSlot(slowest.Value.Item1);
-      if (player == null) continue;
-      msg.PlayerTime(player, position--, slowest.Value.Item2).ToAllChat();
+      var (slot, dist) = slowest.Value;
+      var player = Utilities.GetPlayerFromSlot(slot);
       slowest = slowest.Previous;
+      if (player == null) continue;
+      msg.PlayerTime(player, position--, dist).ToChat(player);
     }
   }
 
