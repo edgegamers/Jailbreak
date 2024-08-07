@@ -16,6 +16,14 @@ public class FFADay(BasePlugin plugin, IServiceProvider provider)
     => new SoloDayLocale("Free for All",
       "Everyone for themselves! No camping, actively pursue!");
 
+  public override void Setup() {
+    Timers[10] += () => Locale.BeginsIn(10).ToAllChat();
+    Timers[15] += () => Locale.BeginsIn(5).ToAllChat();
+    Timers[20] += Execute;
+    base.Setup();
+  }
+
+
   public override void Execute() {
     base.Execute();
     Locale.BeginsIn(0).ToAllChat();

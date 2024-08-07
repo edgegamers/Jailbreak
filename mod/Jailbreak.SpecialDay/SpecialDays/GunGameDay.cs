@@ -55,6 +55,9 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
   private IGunDayLocale msg => (IGunDayLocale)Locale;
 
   public override void Setup() {
+    Timers[5]  += () => Locale.BeginsIn(5).ToAllChat();
+    Timers[10] += Execute;
+
     base.Setup();
     spawns =
       new ShuffleBag<Vector>(getAtLeastRandom(Utilities.GetPlayers().Count));
@@ -177,6 +180,7 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
       TTeleport                               = TeleportType.RANDOM;
       FreezePlayers                           = false;
       ConVarValues["mp_respawn_immunitytime"] = 5.0f;
+      ConVarValues["mp_death_drop_gun"]       = 0;
       WithFriendlyFire();
       WithRespawns();
     }
