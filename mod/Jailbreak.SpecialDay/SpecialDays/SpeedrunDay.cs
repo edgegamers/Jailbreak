@@ -454,11 +454,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     var isSafe     = position < eliminations && distance < 0;
     var isInDanger = position > playersAliveAtStart - eliminations;
 
-    var formattedPosition = (position < 10 ? " ​" : "");
-    var formattedName =
-      player.PlayerName + " ​".Repeat(10 - player.PlayerName.Length);
-
-    var text   = $"{formattedPosition} {formattedName}";
+    var text   = $"{position} {player.PlayerName}";
     var length = text.Length;
 
     if (isSafe) {
@@ -483,7 +479,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       suffix = "<font color=\"#FF0000\"> | E</font>";
     }
 
-    text += " -" + new string(' ', Math.Max(0, 20 - length));
     if (distance < 0) {
       var time = roundStartTime == null ?
         0 :
