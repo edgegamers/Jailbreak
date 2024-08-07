@@ -1,6 +1,6 @@
 using Jailbreak.Formatting.Base;
 
-namespace Jailbreak.Formatting.Views;
+namespace Jailbreak.Formatting.Views.SpecialDay;
 
 public interface ISDLocale {
   public IView SpecialDayRunning(string name);

@@ -17,10 +17,6 @@ public class BulletForBullet : TeleportingRequest {
     "weapon_nova"
   ];
 
-  private static readonly string[] GUN_NAMES = [
-    "Desert Eagle", "USPS", "Tec9", "Scout", "Nova"
-  ];
-
   private readonly ChatMenu chatMenu;
   private readonly bool magForMag;
   private readonly ILRB4BLocale msg;
@@ -43,7 +39,7 @@ public class BulletForBullet : TeleportingRequest {
   public override LRType Type
     => magForMag ? LRType.MAG_FOR_MAG : LRType.SHOT_FOR_SHOT;
 
-  private void OnSelect(CCSPlayerController player, ChatMenuOption option,
+  private void OnSelect(CCSPlayerController player, ChatMenuOption _,
     string designer) {
     if (player.Slot != Prisoner.Slot) return;
     designerName = designer;

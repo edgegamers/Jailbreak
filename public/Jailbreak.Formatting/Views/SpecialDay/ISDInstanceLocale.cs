@@ -1,6 +1,6 @@
 using Jailbreak.Formatting.Base;
 
-namespace Jailbreak.Formatting.Views;
+namespace Jailbreak.Formatting.Views.SpecialDay;
 
 public interface ISDInstanceLocale : ISDLocale {
   public string Name { get; }

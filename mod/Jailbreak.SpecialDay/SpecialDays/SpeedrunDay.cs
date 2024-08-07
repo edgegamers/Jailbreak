@@ -8,6 +8,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.SpecialDay;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.SpecialDay;
@@ -378,8 +379,9 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       return;
     }
 
-    ServerExtensions.GetGameRules().GameRestart =
-      ServerExtensions.GetGameRules().RestartRoundTime < Server.CurrentTime;
+    var rules = ServerExtensions.GetGameRules();
+    if (rules != null)
+      rules.GameRestart = rules.RestartRoundTime < Server.CurrentTime;
 
     var originalCompletions = new LinkedList<(int, float)>(finishTimestampList);
 

@@ -187,7 +187,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
     if (!IsLREnabledForRound) return HookResult.Continue;
 
-    if (player.GetTeam() != CsTeam.Terrorist) return HookResult.Continue;
+    if (player.Team != CsTeam.Terrorist) return HookResult.Continue;
 
     if (countAlivePrisoners() - 1 > CvPrisonerToLR.Value)
       return HookResult.Continue;
@@ -221,7 +221,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
     if (!IsLREnabledForRound) return HookResult.Continue;
 
-    if (player.GetTeam() != CsTeam.Terrorist) return HookResult.Continue;
+    if (player.Team != CsTeam.Terrorist) return HookResult.Continue;
     if (countAlivePrisoners() > CvPrisonerToLR.Value)
       return HookResult.Continue;
 
@@ -236,6 +236,6 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   private bool prisonerCountsToLR(CCSPlayerController player) {
     if (!player.IsReal()) return false;
     if (!player.PawnIsAlive) return false;
-    return player.GetTeam() == CsTeam.Terrorist;
+    return player.Team == CsTeam.Terrorist;
   }
 }

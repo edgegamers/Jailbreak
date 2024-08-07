@@ -89,7 +89,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       Provider.GetService<IRebelService>()?.DisableRebelForRound();
 
     if (Settings.OpenCells) {
-      var zones = provider.GetService<IZoneManager>();
+      var zones = Provider.GetService<IZoneManager>();
       if (zones == null)
         MapUtil.OpenCells();
       else

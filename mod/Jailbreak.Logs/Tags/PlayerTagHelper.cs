@@ -3,7 +3,6 @@ using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Objects;
 using Jailbreak.Formatting.Views.Logging;
-using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.Warden;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +24,7 @@ public class PlayerTagHelper(IServiceProvider provider) : IRichPlayerTag {
   public FormatObject Rich(CCSPlayerController player) {
     if (wardenService.Value != null && wardenService.Value.IsWarden(player))
       return new StringFormatObject("(WARDEN)", ChatColors.DarkBlue);
-    if (player.GetTeam() == CsTeam.CounterTerrorist)
+    if (player.Team == CsTeam.CounterTerrorist)
       return new StringFormatObject("(CT)", ChatColors.BlueGrey);
     if (rebelService.Value != null && rebelService.Value.IsRebel(player))
       return new StringFormatObject("(REBEL)", ChatColors.DarkRed);
