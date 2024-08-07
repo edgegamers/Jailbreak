@@ -15,8 +15,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jailbreak.Public.Mod.SpecialDay;
 
 /// <summary>
-/// Represents a special day that will last for the entire round and affect
-/// all players.
+///   Represents a special day that will last for the entire round and affect
+///   all players.
 /// </summary>
 /// <param name="plugin"></param>
 /// <param name="provider"></param>
@@ -25,8 +25,8 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   protected readonly BasePlugin Plugin = plugin;
 
   /// <summary>
-  /// Responsible for tracking what convars we've changed to be able
-  /// to change them back to their original values once the day ends.
+  ///   Responsible for tracking what convars we've changed to be able
+  ///   to change them back to their original values once the day ends.
   /// </summary>
   private readonly Dictionary<string, object?> previousConvarValues = new();
 
@@ -89,7 +89,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       Provider.GetService<IRebelService>()?.DisableRebelForRound();
 
     if (Settings.OpenCells) {
-      var zones = provider.GetService<IZoneManager>();
+      var zones = Provider.GetService<IZoneManager>();
       if (zones == null)
         MapUtil.OpenCells();
       else

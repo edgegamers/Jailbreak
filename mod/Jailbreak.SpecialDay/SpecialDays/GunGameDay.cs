@@ -1,28 +1,27 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.SpecialDay;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Utils;
-using Microsoft.VisualBasic.CompilerServices;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
   : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
-  private readonly IList<string> weaponProgression = [];
+  private readonly IList<string> BAD = [
+    "weapon_deagle", "weapon_elite", "weapon_fiveseven", "weapon_glock",
+    "weapon_hkp2000", "weapon_p250", "weapon_usp_silencer", "weapon_tec9",
+    "weapon_cz75a", "weapon_revolver"
+  ];
 
   private readonly IList<string> BEST = [
     "weapon_awp", "weapon_scar20", "weapon_g3sg1"
-  ];
-
-  private readonly IList<string> GREAT = [
-    "weapon_ak47", "weapon_m4a1", "weapon_m4a1_silencer",
   ];
 
   private readonly IList<string> GOOD = [
@@ -30,29 +29,29 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     "weapon_p90", "weapon_ump45", "weapon_negev"
   ];
 
+  private readonly IList<string> GREAT = [
+    "weapon_ak47", "weapon_m4a1", "weapon_m4a1_silencer"
+  ];
+
+  private readonly IList<string> LAST = ["weapon_knife", "weapon_taser"];
+
   private readonly IList<string> OKAY = [
     "weapon_mag7", "weapon_nova", "weapon_sawedoff", "weapon_xm1014",
     "weapon_ssg08"
   ];
 
-  private readonly IList<string> BAD = [
-    "weapon_deagle", "weapon_elite", "weapon_fiveseven", "weapon_glock",
-    "weapon_hkp2000", "weapon_p250", "weapon_usp_silencer", "weapon_tec9",
-    "weapon_cz75a", "weapon_revolver"
-  ];
-
-  private readonly IList<string> LAST = ["weapon_knife", "weapon_taser"];
-
   private readonly IDictionary<int, int> progressions =
     new Dictionary<int, int>();
 
-  private ShuffleBag<Vector>? spawns;
+  private readonly IList<string> weaponProgression = [];
 
-  public ISDInstanceLocale Locale => new GunDayLocale();
+  private ShuffleBag<Vector>? spawns;
 
   public override SDType Type => SDType.GUNGAME;
   public override SpecialDaySettings Settings => new GunGameSettings();
   private IGunDayLocale msg => (IGunDayLocale)Locale;
+
+  public ISDInstanceLocale Locale => new GunDayLocale();
 
   public override void Setup() {
     Timers[5]  += () => Locale.BeginsIn(5).ToAllChat();
@@ -100,8 +99,10 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     if (player == null || !player.IsValid) return HookResult.Continue;
     if (!progressions.TryGetValue(player.Slot, out var index)) index = 0;
     Plugin.AddTimer(0.1f, () => {
+      if (!player.IsValid || player.Pawn.Value == null || !player.Pawn.IsValid)
+        return;
       player.GiveNamedItem(weaponProgression[index]);
-      if (spawns != null) player.Teleport(spawns.GetNext());
+      if (spawns != null) player.Pawn.Value.Teleport(spawns.GetNext());
     });
     return HookResult.Continue;
   }
@@ -115,11 +116,10 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     if (!progressions.TryGetValue(player.Slot, out playerIndex))
       playerIndex = 0;
     if (attacker == null || !attacker.IsValid) {
-      if (playerIndex > 0) {
-        playerIndex--;
-        msg.DemotedDueToSuicide.ToChat(player);
-        progressions[player.Slot] = playerIndex;
-      }
+      if (playerIndex <= 0) return HookResult.Continue;
+      playerIndex--;
+      msg.DemotedDueToSuicide.ToChat(player);
+      progressions[player.Slot] = playerIndex;
 
       return HookResult.Continue;
     }
@@ -137,6 +137,7 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
         p.RemoveWeapons();
       }
 
+      attacker.SetSpeed(2f);
       attacker.RemoveWeapons();
       attacker.GiveNamedItem("weapon_negev");
       attacker.GiveNamedItem("weapon_knife");
@@ -145,22 +146,22 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
       Server.ExecuteCommand("mp_respawn_on_death_t 0");
       Server.ExecuteCommand("mp_respawn_on_death_ct 0");
 
+      RoundUtil.SetTimeRemaining(Math.Min(RoundUtil.GetTimeRemaining(), 30));
+
       Plugin.DeregisterEventHandler<EventPlayerDeath>(OnDeath, HookMode.Pre);
       return HookResult.Continue;
     }
 
-
+    attackerProgress += 1;
     if (@event.Weapon.Contains("knife")) {
-      progressions[attacker.Slot] = Math.Min(attackerProgress + 2,
-        weaponProgression.Count - 1);
-      msg.DemotedDueToSuicide.ToChat(player);
+      attackerProgress += 1;
+      msg.DemotedDueToKnife.ToChat(player);
       progressions[player.Slot] = Math.Max(playerIndex - 1, 0);
-    } else {
-      progressions[attacker.Slot] = Math.Min(attackerProgress + 1,
-        weaponProgression.Count - 1);
     }
 
-    attackerProgress = attackerProgress + 1;
+    attackerProgress = Math.Min(attackerProgress, weaponProgression.Count - 1);
+
+    progressions[attacker.Slot] = attackerProgress;
 
     if (attackerProgress == weaponProgression.Count - 1)
       msg.PlayerOnLastPromotion(attacker).ToAllChat();

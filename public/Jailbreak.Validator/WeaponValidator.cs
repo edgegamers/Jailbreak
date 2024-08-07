@@ -45,7 +45,7 @@ public class WeaponValidator(
         WeaponType.SHOTGUNS => Tag.SHOTGUNS.Contains(weapon),
         WeaponType.SMGS     => Tag.SMGS.Contains(weapon),
         WeaponType.HEAVY    => Tag.HEAVY.Contains(weapon),
-        _                   => throw new ArgumentOutOfRangeException("weapon")
+        _                   => throw new ArgumentOutOfRangeException(nameof(weapon))
       };
       if (!result) return false;
     }

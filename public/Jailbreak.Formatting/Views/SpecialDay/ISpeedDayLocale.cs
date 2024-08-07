@@ -2,7 +2,7 @@
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
 
-namespace Jailbreak.Formatting.Views;
+namespace Jailbreak.Formatting.Views.SpecialDay;
 
 public interface ISpeedDayLocale : ISDInstanceLocale {
   public IView NoneEliminated { get; }

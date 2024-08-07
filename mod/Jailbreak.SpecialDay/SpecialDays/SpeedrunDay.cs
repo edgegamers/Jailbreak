@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Diagnostics;
 using System.Drawing;
-using System.Runtime.InteropServices.Marshalling;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
@@ -11,6 +8,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.SpecialDay;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.SpecialDay;
@@ -92,13 +90,13 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   /// </summary>
   private readonly HashSet<int> finishedPlayers = new();
 
-  private LinkedList<(int, float)> finishTimestampList = new();
-
   private readonly Random rng = new();
   private float? bestTime;
   private int? bestTimePlayerSlot;
 
   private AbstractTrail<BeamTrailSegment>? bestTrail;
+
+  private LinkedList<(int, float)> finishTimestampList = new();
 
   private IGenericCmdLocale generics = null!;
   private int round, playersAliveAtStart;
@@ -381,8 +379,9 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       return;
     }
 
-    ServerExtensions.GetGameRules().GameRestart =
-      ServerExtensions.GetGameRules().RestartRoundTime < Server.CurrentTime;
+    var rules = ServerExtensions.GetGameRules();
+    if (rules != null)
+      rules.GameRestart = rules.RestartRoundTime < Server.CurrentTime;
 
     var originalCompletions = new LinkedList<(int, float)>(finishTimestampList);
 
@@ -416,7 +415,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         playerLine       = playerLine.Previous;
         var p = Utilities.GetPlayerFromSlot(slot);
         if (p == null) continue;
-        lines = generateHTMLLine(p, pos - (d++), dist) + (d == 1 ? "" : "<br>")
+        lines = generateHTMLLine(p, pos - d++, dist) + (d == 1 ? "" : "<br>")
           + lines;
         display++;
       }
@@ -430,7 +429,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         playerLine       = playerLine.Next;
         var p = Utilities.GetPlayerFromSlot(slot);
         if (p == null) continue;
-        lines += "<br>" + generateHTMLLine(p, pos + (++d), dist);
+        lines += "<br>" + generateHTMLLine(p, pos + ++d, dist);
         display++;
       }
 
@@ -454,7 +453,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     var isSafe     = position < eliminations && distance < 0;
     var isInDanger = position > playersAliveAtStart - eliminations;
 
-    var text   = $"{position} {player.PlayerName}";
+    var text = $"{position} {player.PlayerName}";
 
     if (isSafe) {
       color  = "00FF00";

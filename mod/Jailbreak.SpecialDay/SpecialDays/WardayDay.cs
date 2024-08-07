@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.SpecialDay;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
@@ -45,7 +46,7 @@ public class WardayDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     public override float FreezeTime(CCSPlayerController player) {
-      return player.GetTeam() == CsTeam.CounterTerrorist ? 3 : 5;
+      return player.Team == CsTeam.CounterTerrorist ? 3 : 5;
     }
   }
 }

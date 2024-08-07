@@ -85,7 +85,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     if (HasWarden) return false;
 
     //	Verify player is a CT
-    if (controller.GetTeam() != CsTeam.CounterTerrorist) return false;
+    if (controller.Team != CsTeam.CounterTerrorist) return false;
     if (!controller.PawnIsAlive) return false;
 
     mute.UnPeaceMute();

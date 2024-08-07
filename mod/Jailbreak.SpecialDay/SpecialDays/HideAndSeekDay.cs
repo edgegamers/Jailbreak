@@ -4,6 +4,7 @@ using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.SpecialDay;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
@@ -66,11 +67,11 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     public override int InitialHealth(CCSPlayerController player) {
-      return player.GetTeam() == CsTeam.Terrorist ? 250 : 50;
+      return player.Team == CsTeam.Terrorist ? 250 : 50;
     }
 
     public override int InitialArmor(CCSPlayerController player) {
-      if (player.GetTeam() != CsTeam.Terrorist) return -1;
+      if (player.Team != CsTeam.Terrorist) return -1;
       return 500;
     }
 

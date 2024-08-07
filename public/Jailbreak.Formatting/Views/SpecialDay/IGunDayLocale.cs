@@ -1,7 +1,7 @@
 ﻿using CounterStrikeSharp.API.Core;
 using Jailbreak.Formatting.Base;
 
-namespace Jailbreak.Formatting.Views;
+namespace Jailbreak.Formatting.Views.SpecialDay;
 
 public interface IGunDayLocale : ISDInstanceLocale {
   IView DemotedDueToSuicide { get; }
