@@ -63,7 +63,7 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
       new ShuffleBag<Vector>(getAtLeastRandom(Utilities.GetPlayers().Count));
 
     Plugin.RegisterEventHandler<EventPlayerDeath>(OnDeath, HookMode.Pre);
-    Plugin.RegisterEventHandler<EventPlayerSpawn>(OnRespawn, HookMode.Pre);
+    Plugin.RegisterEventHandler<EventPlayerSpawn>(OnRespawn);
 
     BEST.Shuffle();
     GREAT.Shuffle();
@@ -86,6 +86,7 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
 
   public override void Execute() {
     base.Execute();
+    Locale.BeginsIn(0).ToAllChat();
     foreach (var player in PlayerUtil.GetAlive()) {
       progressions[player.Slot] = 0;
       player.RemoveWeapons();
