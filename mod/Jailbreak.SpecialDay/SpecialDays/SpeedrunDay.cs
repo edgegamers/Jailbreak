@@ -30,7 +30,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
   public static readonly FakeConVar<int> CvInitialSpeedrunTime =
     new("css_jb_speedrun_initial_time",
-      "Duration in seconds to grant the speedrunner", 20);
+      "Duration in seconds to grant the speedrunner", 40);
 
   public static readonly FakeConVar<int> CvFirstRoundFreeze =
     new("css_jb_speedrun_first_round_freeze",
@@ -455,7 +455,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     var isInDanger = position > playersAliveAtStart - eliminations;
 
     var text   = $"{position} {player.PlayerName}";
-    var length = text.Length;
 
     if (isSafe) {
       color  = "00FF00";
