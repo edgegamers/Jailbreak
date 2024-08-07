@@ -3,8 +3,12 @@ using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.Public.Mod.Damage;
 
-public interface IBlockUserDamage {
-  HookResult BlockUserDamage(EventPlayerHurt @event, GameEventInfo info) {
+/// <summary>
+/// Wrapper for managing a player's health and preventing a player from
+/// taking damage.
+/// </summary>
+public interface IDamageBlocker {
+  HookResult BlockUserDamage(EventPlayerHurt @event, GameEventInfo _) {
     var player   = @event.Userid;
     var attacker = @event.Attacker;
     if (player == null || !player.IsReal()) return HookResult.Continue;

@@ -101,7 +101,7 @@ public class
   protected void OnChooseWarden() {
     var eligible = Utilities.GetPlayers()
      .Where(player => player.PawnIsAlive)
-     .Where(player => player.GetTeam() == CsTeam.CounterTerrorist)
+     .Where(player => player.Team == CsTeam.CounterTerrorist)
      .Where(player => queue.Get(player).InQueue)
      .ToList();
 
@@ -144,7 +144,7 @@ public class
   }
 
   private bool canEnterQueue(CCSPlayerController player) {
-    if (player.GetTeam() != CsTeam.CounterTerrorist) return false;
+    if (player.Team != CsTeam.CounterTerrorist) return false;
 
     if (!player.PawnIsAlive) return false;
 

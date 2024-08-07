@@ -3,6 +3,9 @@ using CounterStrikeSharp.API.Modules.Utils;
 
 namespace Jailbreak.Public.Mod.Draw;
 
+/// <summary>
+/// An implementation of BeamedShape that allows for drawing a circle
+/// </summary>
 public class BeamCircle : BeamedShape {
   private readonly BeamLine?[] lines;
   private Vector[] offsets;
