@@ -99,8 +99,10 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     var player = @event.Userid;
     if (player == null || !player.IsValid) return HookResult.Continue;
     if (!progressions.TryGetValue(player.Slot, out var index)) index = 0;
-    player.GiveNamedItem(weaponProgression[index]);
-    if (spawns != null) player.Teleport(spawns.GetNext());
+    Plugin.AddTimer(0.1f, () => {
+      player.GiveNamedItem(weaponProgression[index]);
+      if (spawns != null) player.Teleport(spawns.GetNext());
+    });
     return HookResult.Continue;
   }
 
@@ -109,20 +111,23 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     var attacker = @event.Attacker;
     info.DontBroadcast = true;
     if (player == null || !player.IsValid) return HookResult.Continue;
-    int index;
+    int playerIndex;
+    if (!progressions.TryGetValue(player.Slot, out playerIndex))
+      playerIndex = 0;
     if (attacker == null || !attacker.IsValid) {
-      if (!progressions.TryGetValue(player.Slot, out index)) index = 0;
-      if (index > 0) {
-        index--;
+      if (playerIndex > 0) {
+        playerIndex--;
         msg.DemotedDueToSuicide.ToChat(player);
-        progressions[player.Slot] = index;
+        progressions[player.Slot] = playerIndex;
       }
 
       return HookResult.Continue;
     }
 
     var attackerProgress =
-      progressions.TryGetValue(attacker.Slot, out index) ? index : 0;
+      progressions.TryGetValue(attacker.Slot, out var attackerIndex) ?
+        attackerIndex :
+        0;
     if (attackerProgress == weaponProgression.Count - 1) {
       info.DontBroadcast = false;
       msg.PlayerWon(attacker).ToAllChat();
@@ -147,6 +152,8 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     if (@event.Weapon.Contains("knife")) {
       progressions[attacker.Slot] = Math.Min(attackerProgress + 2,
         weaponProgression.Count - 1);
+      msg.DemotedDueToSuicide.ToChat(player);
+      progressions[player.Slot] = Math.Max(playerIndex - 1, 0);
     } else {
       progressions[attacker.Slot] = Math.Min(attackerProgress + 1,
         weaponProgression.Count - 1);
@@ -155,7 +162,8 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     if (attackerProgress == weaponProgression.Count - 1)
       msg.PlayerOnLastPromotion(attacker).ToAllChat();
 
-    msg.PromotedTo(weaponProgression[attackerProgress + 1],
+    msg.PromotedTo(
+        weaponProgression[attackerProgress + 1].GetFriendlyWeaponName(),
         weaponProgression.Count - attackerProgress - 1)
      .ToChat(attacker);
 
