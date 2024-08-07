@@ -47,7 +47,6 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   ///   know why you are not calling it.
   /// </summary>
   public virtual void Setup() {
-    Plugin.RegisterAllAttributes(this);
     Plugin.RegisterEventHandler<EventRoundEnd>(OnEnd);
 
     foreach (var entry in Settings.ConVarValues) {
@@ -172,7 +171,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       player.PlayerPawn.Value?.Teleport(baggedSpawns.GetNext());
   }
 
-  private List<Vector> getAtLeastRandom(int count) {
+  protected List<Vector> getAtLeastRandom(int count) {
     // Progressively get more lax with our "randomness quality"
     var result                       = getRandomSpawns(false, false, false);
     if (result.Count < count) result = getRandomSpawns(false, false);
@@ -181,7 +180,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     return result;
   }
 
-  private List<Vector> getRandomSpawns(bool includeSpawns = true,
+  protected List<Vector> getRandomSpawns(bool includeSpawns = true,
     bool includeTps = true, bool includeAuto = true) {
     var result = new List<Vector>();
 

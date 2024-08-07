@@ -122,11 +122,13 @@ public class InfectionDay : AbstractArmoryRestrictedDay,
     Plugin.DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
     Plugin.DeregisterEventHandler<EventPlayerSpawn>(OnRespawn);
 
-    foreach (var index in swappedPrisoners) {
-      var player = Utilities.GetPlayerFromSlot(index);
-      if (player == null) continue;
-      player.SwitchTeam(CsTeam.Terrorist);
-    }
+    Plugin.AddTimer(0.1f, () => {
+      foreach (var index in swappedPrisoners) {
+        var player = Utilities.GetPlayerFromSlot(index);
+        if (player == null) continue;
+        player.SwitchTeam(CsTeam.Terrorist);
+      }
+    });
 
     return result;
   }

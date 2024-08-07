@@ -24,8 +24,4 @@ public abstract class BeamedShape(BasePlugin plugin, Vector position,
       Beams[i] = null;
     }
   }
-
-  public override void Update() {
-    foreach (var beam in Beams) { beam?.Update(); }
-  }
 }
