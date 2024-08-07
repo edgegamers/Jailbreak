@@ -61,18 +61,6 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager)
   private bool isLastGuard;
   private List<CCSPlayerController> lastGuardPrisoners = [];
 
-  public int CalculateHealth() {
-    var aliveTerrorists = Utilities.GetPlayers()
-     .Where(plr => plr is { PawnIsAlive: true, Team: CsTeam.Terrorist })
-     .ToList();
-
-    return (int)Math.Floor(aliveTerrorists
-     .Select(player => player.PlayerPawn.Value?.Health ?? 0)
-     .Select(playerHealth
-        => Math.Min(playerHealth, CvMaxTHealthContribution.Value))
-     .Sum() * CvGuardHealthRatio.Value);
-  }
-
   public void StartLastGuard(CCSPlayerController lastGuard) {
     var guardPlayerPawn = lastGuard.PlayerPawn.Value;
 
@@ -120,6 +108,18 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager)
   }
 
   public void DisableLastGuardForRound() { canStart = false; }
+
+  public int CalculateHealth() {
+    var aliveTerrorists = Utilities.GetPlayers()
+     .Where(plr => plr is { PawnIsAlive: true, Team: CsTeam.Terrorist })
+     .ToList();
+
+    return (int)Math.Floor(aliveTerrorists
+     .Select(player => player.PlayerPawn.Value?.Health ?? 0)
+     .Select(playerHealth
+        => Math.Min(playerHealth, CvMaxTHealthContribution.Value))
+     .Sum() * CvGuardHealthRatio.Value);
+  }
 
   [GameEventHandler]
   public HookResult OnPlayerDeathEvent(EventPlayerDeath @event,

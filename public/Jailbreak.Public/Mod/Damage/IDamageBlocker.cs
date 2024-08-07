@@ -4,8 +4,8 @@ using Jailbreak.Public.Extensions;
 namespace Jailbreak.Public.Mod.Damage;
 
 /// <summary>
-/// Wrapper for managing a player's health and preventing a player from
-/// taking damage.
+///   Wrapper for managing a player's health and preventing a player from
+///   taking damage.
 /// </summary>
 public interface IDamageBlocker {
   HookResult BlockUserDamage(EventPlayerHurt @event, GameEventInfo _) {

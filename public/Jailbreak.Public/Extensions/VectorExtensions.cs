@@ -8,8 +8,8 @@ public static class VectorExtensions {
   }
 
   /// <summary>
-  /// Calculates the (Euclidean) distance between the two vectors
-  /// Where possible, use DistanceSquared instead for performance reasons
+  ///   Calculates the (Euclidean) distance between the two vectors
+  ///   Where possible, use DistanceSquared instead for performance reasons
   /// </summary>
   /// <param name="vector"></param>
   /// <param name="other"></param>
@@ -19,7 +19,7 @@ public static class VectorExtensions {
   }
 
   /// <summary>
-  /// Calculates the squared (Euclidean) distance between the two vectors
+  ///   Calculates the squared (Euclidean) distance between the two vectors
   /// </summary>
   /// <param name="vector"></param>
   /// <param name="other"></param>
@@ -30,8 +30,8 @@ public static class VectorExtensions {
   }
 
   /// <summary>
-  /// Calculates the horizontal distance between the two vectors
-  /// Where possible, use HorizontalDistanceSquared instead for performance reasons
+  ///   Calculates the horizontal distance between the two vectors
+  ///   Where possible, use HorizontalDistanceSquared instead for performance reasons
   /// </summary>
   /// <param name="vector"></param>
   /// <param name="other"></param>
@@ -41,7 +41,7 @@ public static class VectorExtensions {
   }
 
   /// <summary>
-  /// Calculates the squared horizontal distance between the two vectors
+  ///   Calculates the squared horizontal distance between the two vectors
   /// </summary>
   /// <param name="vector"></param>
   /// <param name="other"></param>

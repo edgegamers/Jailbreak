@@ -10,10 +10,11 @@ namespace Jailbreak.Public.Mod.Draw;
 ///   Represents a drawable shape
 /// </summary>
 public abstract class DrawableShape(BasePlugin plugin, Vector position) {
+  protected readonly BasePlugin Plugin = plugin;
+
   protected Timer?
     KillTimer; // Internal timer used to remove the shape after a certain amount of time
 
-  protected readonly BasePlugin Plugin = plugin;
   private Vector position = position.Clone();
 
   // Note that this can mean different things for different shapes
@@ -32,7 +33,7 @@ public abstract class DrawableShape(BasePlugin plugin, Vector position) {
   }
 
   /// <summary>
-  /// Tells the shape to draw itself and then remove itself after a certain amount of time
+  ///   Tells the shape to draw itself and then remove itself after a certain amount of time
   /// </summary>
   /// <param name="lifetime">Time in seconds the shape should be shown</param>
   public void Draw(float lifetime) {

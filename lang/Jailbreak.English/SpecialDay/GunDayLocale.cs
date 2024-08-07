@@ -1,7 +1,6 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
-using Jailbreak.Formatting.Objects;
 using Jailbreak.Formatting.Views;
 
 namespace Jailbreak.English.SpecialDay;
@@ -21,27 +20,28 @@ public class GunDayLocale() : SoloDayLocale("Gun Game",
     if (weaponsLeft == 1)
       return new SimpleView {
         PREFIX,
-        $"You were promoted to",
+        "You were promoted to",
         weapon + ".",
         ChatColors.Green + "LAST WEAPON!"
       };
 
     return new SimpleView {
       PREFIX,
-      $"You were promoted to",
+      "You were promoted to",
       weapon + ".",
       weaponsLeft,
       "weapons left."
     };
   }
 
-  public IView PlayerOnLastPromotion(CCSPlayerController player)
-    => new SimpleView {
+  public IView PlayerOnLastPromotion(CCSPlayerController player) {
+    return new SimpleView {
       PREFIX,
       player,
       "is on their last weapon!",
       ChatColors.LightRed + "Watch out!"
     };
+  }
 
   public IView PlayerWon(CCSPlayerController player) {
     var view = new SimpleView { PREFIX, player, "won the game!" };

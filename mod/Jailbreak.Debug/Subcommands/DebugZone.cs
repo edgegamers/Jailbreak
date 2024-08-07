@@ -178,12 +178,10 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
          .GetResult();
 
         var toRemove = new List<IZone>();
-        foreach (var spawn in spawns) {
+        foreach (var spawn in spawns)
           if (doNotTeleport.Any(d
-            => d.IsInsideZone(spawn.CalculateCenterPoint()))) {
+            => d.IsInsideZone(spawn.CalculateCenterPoint())))
             toRemove.Add(spawn);
-          }
-        }
 
         info.ReplyToCommand("Removing " + toRemove.Count
           + " auto-generated zones");
