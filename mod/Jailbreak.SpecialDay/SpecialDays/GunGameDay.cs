@@ -134,6 +134,7 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
       foreach (var p in PlayerUtil.GetAlive()) {
         if (p.Slot == attacker.Slot) continue;
         p.Teleport(attacker);
+        p.RemoveWeapons();
       }
 
       attacker.RemoveWeapons();
@@ -159,16 +160,17 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
         weaponProgression.Count - 1);
     }
 
+    attackerProgress = attackerProgress + 1;
+
     if (attackerProgress == weaponProgression.Count - 1)
       msg.PlayerOnLastPromotion(attacker).ToAllChat();
 
-    msg.PromotedTo(
-        weaponProgression[attackerProgress + 1].GetFriendlyWeaponName(),
+    msg.PromotedTo(weaponProgression[attackerProgress].GetFriendlyWeaponName(),
         weaponProgression.Count - attackerProgress - 1)
      .ToChat(attacker);
 
     attacker.RemoveWeapons();
-    attacker.GiveNamedItem(weaponProgression[attackerProgress + 1]);
+    attacker.GiveNamedItem(weaponProgression[attackerProgress]);
     attacker.GiveNamedItem("weapon_knife");
     return HookResult.Continue;
   }
