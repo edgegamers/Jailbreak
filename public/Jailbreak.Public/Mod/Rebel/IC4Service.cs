@@ -19,11 +19,11 @@ public interface IC4Service {
     CC4 bombEntity);
 
   /// <summary>
-  ///   Attempts to give the Jihad C4 to a random Terrorist, if they already have one and they are chosen then nothing will
+  ///   Attempts to give the Jihad C4 to a random Terrorist,
+  ///   if they already have one and they are chosen then nothing will
   ///   happen.
   /// </summary>
   void TryGiveC4ToRandomTerrorist();
 
-  // ReSharper disable once InconsistentNaming
   void ClearActiveC4s();
 }

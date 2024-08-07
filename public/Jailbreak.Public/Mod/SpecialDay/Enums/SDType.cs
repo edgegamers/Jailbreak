@@ -22,17 +22,16 @@ public static class SDTypeExtensions {
     if (Enum.TryParse<SDType>(type, true, out var result)) return result;
     type = type.ToLower().Replace(" ", "");
     return type switch {
-      "freeforall"                   => SDType.FFA,
-      "hide" or "hideseek" or "seek" => SDType.HNS,
-      "ns"                           => SDType.NOSCOPE,
-      "war"                          => SDType.WARDAY,
-      "tron"                         => SDType.SNAKE,
-      "gun"                          => SDType.GUNGAME,
-      "zomb" or "zombie"             => SDType.INFECTION,
-      "speed" or "speedrun" or "speeders" or "speedrunners" or "race" => SDType
-       .SPEEDRUN,
-      "tp" => SDType.TELEPORT,
-      _    => null
+      "freeforall"                                      => SDType.FFA,
+      "hide" or "hideseek" or "seek"                    => SDType.HNS,
+      "ns"                                              => SDType.NOSCOPE,
+      "war"                                             => SDType.WARDAY,
+      "tron"                                            => SDType.SNAKE,
+      "gun"                                             => SDType.GUNGAME,
+      "zomb" or "zombie"                                => SDType.INFECTION,
+      "speed" or "speeders" or "speedrunners" or "race" => SDType.SPEEDRUN,
+      "tp"                                              => SDType.TELEPORT,
+      _                                                 => null
     };
   }
 }

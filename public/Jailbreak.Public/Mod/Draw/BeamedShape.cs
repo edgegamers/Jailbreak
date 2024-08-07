@@ -11,7 +11,6 @@ public abstract class BeamedShape(BasePlugin plugin, Vector position,
   int resolution) : DrawableShape(plugin, position), IColorable {
   protected readonly BeamLine?[] Beams = new BeamLine[resolution];
   protected Color Color = Color.White;
-  protected int Resolution;
 
   // TODO: Add support for rotation across arbitrary axis
 

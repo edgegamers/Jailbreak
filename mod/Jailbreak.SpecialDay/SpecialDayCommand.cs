@@ -21,7 +21,7 @@ public class SpecialDayCommand(IWardenService warden,
   ISpecialDayFactory factory, IWardenLocale wardenMsg, ISDLocale sdMsg,
   ISpecialDayManager sd) : IPluginBehavior {
   public static FakeConVar<int> CvRoundsBetweenSD = new(
-    "css_jb_sd_round_cooldown", "Rounds between special days", 5);
+    "css_jb_sd_round_cooldown", "Rounds between special days", 4);
 
   public static FakeConVar<int> CvMaxElapsedTime = new(
     "css_jb_sd_max_elapsed_time",

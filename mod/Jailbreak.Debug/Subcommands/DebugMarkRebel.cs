@@ -5,7 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jailbreak.Debug.Subcommands;
 
 // css_markrebel [player] <duration>
-public class MarkRebel(IServiceProvider services) : AbstractCommand(services) {
+public class DebugMarkRebel(IServiceProvider services)
+  : AbstractCommand(services) {
   public override void OnCommand(CCSPlayerController? executor,
     WrappedInfo info) {
     if (info.ArgCount == 1) {

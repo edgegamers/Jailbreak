@@ -14,10 +14,22 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Public.Mod.SpecialDay;
 
+/// <summary>
+/// Represents a special day that will last for the entire round and affect
+/// all players.
+/// </summary>
+/// <param name="plugin"></param>
+/// <param name="provider"></param>
 public abstract class AbstractSpecialDay(BasePlugin plugin,
   IServiceProvider provider) {
   protected readonly BasePlugin Plugin = plugin;
+
+  /// <summary>
+  /// Responsible for tracking what convars we've changed to be able
+  /// to change them back to their original values once the day ends.
+  /// </summary>
   private readonly Dictionary<string, object?> previousConvarValues = new();
+
   protected readonly IServiceProvider Provider = provider;
 
   protected readonly IDictionary<float, Action> Timers =
@@ -30,9 +42,11 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   /// <summary>
   ///   Called when the warden initially picks the special day.
   ///   Use for teleporting, stripping weapons, starting timers, etc.
+  ///   Nearly every day should call base.Setup(). If you are overriding
+  ///   this, make sure to look at what base.Setup() does and ensure you
+  ///   know why you are not calling it.
   /// </summary>
   public virtual void Setup() {
-    Plugin.RegisterAllAttributes(this);
     Plugin.RegisterEventHandler<EventRoundEnd>(OnEnd);
 
     foreach (var entry in Settings.ConVarValues) {
@@ -48,9 +62,12 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
 
     RoundUtil.SetTimeRemaining(Settings.RoundTime());
 
-    foreach (var player in Utilities.GetPlayers()) {
+    foreach (var player in Utilities.GetPlayers()
+     .Where(p => p.Team is CsTeam.Terrorist or CsTeam.CounterTerrorist)) {
+      if (Settings.RespawnPlayers && !player.PawnIsAlive) player.Respawn();
+
       var val = Settings.InitialHealth(player);
-      if (val != -1) player.SetHealth(Settings.InitialHealth(player));
+      if (val != -1) player.SetHealth(val);
       val = Settings.InitialMaxHealth(player);
       if (val != -1) player.SetMaxHealth(val);
       val = Settings.InitialArmor(player);
@@ -60,26 +77,24 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
         player.RemoveWeapons();
         player.GiveNamedItem("weapon_knife");
       }
-
-      if (!Settings.RespawnPlayers) continue;
-      if (player is {
-        PawnIsAlive: false, Team : CsTeam.Terrorist or CsTeam.CounterTerrorist
-      })
-        player.Respawn();
     }
 
     if (Settings.StartInvulnerable) DisableDamage();
 
     if (!Settings.AllowLastRequests)
-      Provider.GetRequiredService<ILastRequestManager>().DisableLRForRound();
+      Provider.GetService<ILastRequestManager>()?.DisableLRForRound();
     if (!Settings.AllowLastGuard)
-      Provider.GetRequiredService<ILastGuardService>()
-       .DisableLastGuardForRound();
+      Provider.GetService<ILastGuardService>()?.DisableLastGuardForRound();
     if (!Settings.AllowRebels)
-      Provider.GetRequiredService<IRebelService>().DisableRebelForRound();
+      Provider.GetService<IRebelService>()?.DisableRebelForRound();
 
-    if (Settings.OpenCells)
-      MapUtil.OpenCells(Provider.GetRequiredService<IZoneManager>());
+    if (Settings.OpenCells) {
+      var zones = provider.GetService<IZoneManager>();
+      if (zones == null)
+        MapUtil.OpenCells();
+      else
+        MapUtil.OpenCells(zones);
+    }
 
     doTeleports();
 
@@ -122,24 +137,24 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
      .FindAllEntitiesByDesignerName<SpawnPoint>("info_player_counterterrorist")
      .Where(s => s.AbsOrigin != null)
      .Select(s => s.AbsOrigin!);
-    var enumerable = tSpawns as Vector[] ?? tSpawns.ToArray();
-    enumerable.Shuffle();
-    var positions = ctSpawns as Vector[] ?? ctSpawns.ToArray();
-    positions.Shuffle();
+    var tVectors = tSpawns.ToArray();
+    tVectors.Shuffle();
+    var ctVectors = ctSpawns.ToArray();
+    ctVectors.Shuffle();
 
     IEnumerable<Vector> spawnPositions;
     switch (type) {
       case SpecialDaySettings.TeleportType.CELL:
-        spawnPositions = enumerable;
+        spawnPositions = tVectors;
         break;
       case SpecialDaySettings.TeleportType.CELL_STACKED:
-        spawnPositions = [enumerable.First()];
+        spawnPositions = [tVectors.First()];
         break;
       case SpecialDaySettings.TeleportType.ARMORY:
-        spawnPositions = positions;
+        spawnPositions = ctVectors;
         break;
       case SpecialDaySettings.TeleportType.ARMORY_STACKED:
-        spawnPositions = [positions.First()];
+        spawnPositions = [ctVectors.First()];
         break;
       case SpecialDaySettings.TeleportType.RANDOM:
         spawnPositions = getAtLeastRandom(PlayerUtil.GetAlive().Count());
@@ -156,7 +171,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       player.PlayerPawn.Value?.Teleport(baggedSpawns.GetNext());
   }
 
-  private List<Vector> getAtLeastRandom(int count) {
+  protected List<Vector> getAtLeastRandom(int count) {
     // Progressively get more lax with our "randomness quality"
     var result                       = getRandomSpawns(false, false, false);
     if (result.Count < count) result = getRandomSpawns(false, false);
@@ -165,7 +180,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     return result;
   }
 
-  private List<Vector> getRandomSpawns(bool includeSpawns = true,
+  protected List<Vector> getRandomSpawns(bool includeSpawns = true,
     bool includeTps = true, bool includeAuto = true) {
     var result = new List<Vector>();
 
@@ -192,18 +207,19 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       result.AddRange(ctSpawns);
     }
 
-    var zoneManager = Provider.GetRequiredService<IZoneManager>();
-    if (includeAuto)
-      result.AddRange(zoneManager.GetZones(ZoneType.SPAWN_AUTO)
-       .GetAwaiter()
-       .GetResult()
-       .Select(z => z.GetCenterPoint()));
+    var zoneManager = Provider.GetService<IZoneManager>();
+    if (zoneManager != null) {
+      if (includeAuto)
+        result.AddRange(zoneManager.GetZones(ZoneType.SPAWN_AUTO)
+         .GetAwaiter()
+         .GetResult()
+         .Select(z => z.GetCenterPoint()));
 
-    var zones = zoneManager.GetZones(ZoneType.SPAWN).GetAwaiter().GetResult();
-    result.AddRange(zones.Select(z => z.GetCenterPoint()));
+      var zones = zoneManager.GetZones(ZoneType.SPAWN).GetAwaiter().GetResult();
+      result.AddRange(zones.Select(z => z.GetCenterPoint()));
+    }
 
     result.Shuffle();
-
     return result;
   }
 
@@ -265,15 +281,13 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
           break;
       }
 
-      Server.ExecuteCommand(cvar.Name + " " + value);
-      if (cvar.Name == "mp_teammates_are_enemies") {
+      if (cvar.Name is "mp_teammates_are_enemies" or "sv_autobunnyhopping") {
+        // These convars require a frame to take effect, otherwise client-side
+        // stuff is not properly updated
         var opposite = !(bool)value;
-        Server.ExecuteCommand("css_cvar mp_teammates_are_enemies " + opposite);
-
-        Server.NextFrame(() => {
-          Server.ExecuteCommand("css_cvar mp_teammates_are_enemies " + value);
-        });
-      }
+        Server.ExecuteCommand($"{cvar.Name} {opposite}");
+        Server.NextFrame(() => Server.ExecuteCommand($"{cvar.Name} {value}"));
+      } else { Server.ExecuteCommand(cvar.Name + " " + value); }
     } catch (Exception e) {
       Server.PrintToChatAll(
         $"There was an error setting {cvar.Name} ({cvar.Type}) to {value}");

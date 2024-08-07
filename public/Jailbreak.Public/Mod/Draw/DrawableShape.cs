@@ -13,11 +13,11 @@ public abstract class DrawableShape(BasePlugin plugin, Vector position) {
   protected Timer?
     KillTimer; // Internal timer used to remove the shape after a certain amount of time
 
-  protected BasePlugin Plugin = plugin;
+  protected readonly BasePlugin Plugin = plugin;
   private Vector position = position.Clone();
 
   // Note that this can mean different things for different shapes
-  protected DateTime StartTime = DateTime.Now;
+  public DateTime StartTime { get; protected set; } = DateTime.Now;
 
   public Vector Position {
     get => position.Clone();
@@ -31,8 +31,10 @@ public abstract class DrawableShape(BasePlugin plugin, Vector position) {
     Draw();
   }
 
-  public virtual void Tick() { }
-
+  /// <summary>
+  /// Tells the shape to draw itself and then remove itself after a certain amount of time
+  /// </summary>
+  /// <param name="lifetime">Time in seconds the shape should be shown</param>
   public void Draw(float lifetime) {
     Draw();
     KillTimer = Plugin.AddTimer(lifetime, Remove, TimerFlags.STOP_ON_MAPCHANGE);

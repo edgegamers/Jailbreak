@@ -1,20 +1,19 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
+using Jailbreak.Formatting.Views;
 
 namespace Jailbreak.English.SpecialDay;
 
 public class SpeedrunDayLocale() : SoloDayLocale("Speedrunners",
-  $"Follow the {ChatColors.Blue}blue{ChatColors.Default} player!",
-  "They will run to a spot on the map.",
-  $"Each round, the {ChatColors.Red}slowest players{ChatColors.Default} to reach the target will be eliminated.") {
+    $"Follow the {ChatColors.Blue}blue{ChatColors.Default} player!",
+    "They will run to a spot on the map.",
+    $"Each round, the {ChatColors.Red}slowest players{ChatColors.Default} to reach the target will be eliminated."),
+  ISpeedDayLocale {
   public IView RoundEnded
     => new SimpleView {
       PREFIX, "Round over! The next one will start shortly."
     };
-
-  public IView NoneEliminated
-    => new SimpleView { PREFIX, "No one was eliminated this round!" };
 
   public IView NoneReachedGoal
     => new SimpleView {
@@ -22,6 +21,9 @@ public class SpeedrunDayLocale() : SoloDayLocale("Speedrunners",
       SimpleView.NEWLINE,
       { PREFIX, "Going off of distance to target for those who didn't." }
     };
+
+  public IView NoneEliminated
+    => new SimpleView { PREFIX, "No one was eliminated this round!" };
 
   public IView YouAreRunner(int seconds) {
     return new SimpleView {
@@ -69,7 +71,10 @@ public class SpeedrunDayLocale() : SoloDayLocale("Speedrunners",
 
   public IView RunnerReassigned(CCSPlayerController player) {
     return new SimpleView {
-      PREFIX, "The speedrunner left, so", player, "is now the speedrunner!"
+      PREFIX,
+      "The original speedrunner left, so",
+      player,
+      "is now the speedrunner!"
     };
   }
 
@@ -106,6 +111,9 @@ public class SpeedrunDayLocale() : SoloDayLocale("Speedrunners",
   public IView PlayerEliminated(CCSPlayerController player) {
     return new SimpleView { PREFIX, player, "was eliminated!" };
   }
+
+  public IView StayStillToSpeedup
+    => new SimpleView { PREFIX, "Stay still to start the round sooner..." };
 
   public IView PlayerWon(CCSPlayerController player) {
     return new SimpleView { PREFIX, player, "won the game!" };

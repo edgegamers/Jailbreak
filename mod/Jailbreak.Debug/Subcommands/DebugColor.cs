@@ -1,10 +1,10 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using System.Drawing;
+using CounterStrikeSharp.API.Core;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Utils;
 
 namespace Jailbreak.Debug.Subcommands;
 
-public class Color(IServiceProvider services) : AbstractCommand(services) {
+public class DebugColor(IServiceProvider services) : AbstractCommand(services) {
   public override void OnCommand(CCSPlayerController? executor,
     WrappedInfo info) {
     if (info.ArgCount == 1 || executor == null) {
@@ -44,7 +44,7 @@ public class Color(IServiceProvider services) : AbstractCommand(services) {
       int.TryParse(info.GetArg(info.ArgCount - 1), out blue);
     }
 
-    executor.SetColor(System.Drawing.Color.FromArgb(alpha, red, green, blue));
-    executor.PrintToChat($"Color set to {alpha} {red} {green} {blue}");
+    executor.SetColor(Color.FromArgb(alpha, red, green, blue));
+    executor.PrintToChat($"DebugColor set to {alpha} {red} {green} {blue}");
   }
 }

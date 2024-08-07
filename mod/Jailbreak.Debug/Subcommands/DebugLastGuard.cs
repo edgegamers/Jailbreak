@@ -7,7 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jailbreak.Debug.Subcommands;
 
 // css_lastguard <target>
-public class LastGuard(IServiceProvider services) : AbstractCommand(services) {
+public class DebugLastGuard(IServiceProvider services)
+  : AbstractCommand(services) {
   public override void OnCommand(CCSPlayerController? executor,
     WrappedInfo info) {
     var lgService = Services.GetRequiredService<ILastGuardService>();

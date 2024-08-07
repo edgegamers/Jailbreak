@@ -7,6 +7,12 @@ using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
 namespace Jailbreak.Public.Mod.Draw;
 
+/// <summary>
+/// An implementation of DrawableShape that uses a CEnvBeam to draw a line
+/// </summary>
+/// <param name="plugin"></param>
+/// <param name="position"></param>
+/// <param name="end"></param>
 public class BeamLine(BasePlugin plugin, Vector position, Vector end)
   : DrawableShape(plugin, position), IColorable {
   private CEnvBeam? beam;

@@ -21,6 +21,7 @@ public class SpecialDayFactory(IServiceProvider provider) : ISpecialDayFactory {
       SDType.SPEEDRUN  => new SpeedrunDay(plugin, provider),
       SDType.OITC      => new OneInTheChamberDay(plugin, provider),
       SDType.TELEPORT  => new TeleportDay(plugin, provider),
+      SDType.GUNGAME   => new GunGameDay(plugin, provider),
       _                => throw new NotImplementedException()
     };
   }
