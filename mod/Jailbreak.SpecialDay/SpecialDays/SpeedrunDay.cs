@@ -433,6 +433,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         display++;
       }
 
+      pos++;
       top ??= lines;
       player.PrintToCenterHtml(lines);
     }
@@ -481,8 +482,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       var time = roundStartTime == null ?
         0 :
         MathF.Abs(distance) - roundStartTime.Value;
-      text += $"{time:F4}";
-    } else { text += $"{distance:N0}"; }
+      text += $" - {time:F4}";
+    } else { text += $" - {distance:N0}"; }
 
     return $"<font color=\"#{color}\">{text}</font>{suffix}";
   }

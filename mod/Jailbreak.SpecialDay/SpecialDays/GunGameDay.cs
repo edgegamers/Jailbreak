@@ -115,7 +115,7 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     int playerIndex;
     if (!progressions.TryGetValue(player.Slot, out playerIndex))
       playerIndex = 0;
-    if (attacker == null || !attacker.IsValid) {
+    if (attacker == null || !attacker.IsValid || attacker.Slot == player.Slot) {
       if (playerIndex <= 0) return HookResult.Continue;
       playerIndex--;
       msg.DemotedDueToSuicide.ToChat(player);
