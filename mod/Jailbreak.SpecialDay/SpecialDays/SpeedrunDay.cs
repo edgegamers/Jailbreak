@@ -433,6 +433,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         display++;
       }
 
+      pos++;
       top ??= lines;
       player.PrintToCenterHtml(lines);
     }
