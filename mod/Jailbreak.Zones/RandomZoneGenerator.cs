@@ -127,19 +127,23 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory)
   }
 
   private IList<IZone> getManualSpawnPoints() {
-    var zones = zoneManager.GetZones(ZoneType.SPAWN).GetAwaiter().GetResult();
+    var zones = zoneManager.GetZones(Server.MapName, ZoneType.SPAWN)
+     .GetAwaiter()
+     .GetResult();
     return zones;
   }
 
   private IList<IZone> getAutoSpawnPoints() {
-    var zones = zoneManager.GetZones(ZoneType.SPAWN_AUTO)
+    var zones = zoneManager.GetZones(Server.MapName, ZoneType.SPAWN_AUTO)
      .GetAwaiter()
      .GetResult();
     return zones;
   }
 
   private IZone getCells() {
-    var result = zoneManager.GetZones(ZoneType.CELL).GetAwaiter().GetResult();
+    var result = zoneManager.GetZones(Server.MapName, ZoneType.CELL)
+     .GetAwaiter()
+     .GetResult();
     if (result.Count > 0) return new MultiZoneWrapper(result);
 
     var bounds = new DistanceZone(
@@ -154,11 +158,15 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory)
   private IList<IZone> getRestrictedAreas() {
     List<IZone> result = [];
     foreach (var zone in ZoneTypeExtensions.DoNotTeleports()) {
-      var zones = zoneManager.GetZones(zone).GetAwaiter().GetResult();
+      var zones = zoneManager.GetZones(Server.MapName, zone)
+       .GetAwaiter()
+       .GetResult();
       result.AddRange(zones);
     }
 
-    var armory = zoneManager.GetZones(ZoneType.ARMORY).GetAwaiter().GetResult();
+    var armory = zoneManager.GetZones(Server.MapName, ZoneType.ARMORY)
+     .GetAwaiter()
+     .GetResult();
     if (armory.Count == 0) {
       var bounds = new DistanceZone(
         Utilities

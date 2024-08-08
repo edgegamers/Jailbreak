@@ -132,10 +132,10 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     await PushZoneWithID(zone, type, map);
   }
 
-  public async Task UpdateZone(IZone zone, ZoneType type, int id) {
-    await DeleteZone(id, Server.MapName);
+  public async Task UpdateZone(IZone zone, ZoneType type, int id, string map) {
+    await DeleteZone(id, map);
     zone.Id = id;
-    await PushZoneWithID(zone, type, Server.MapName);
+    await PushZoneWithID(zone, type, map);
   }
 
   public Task<Dictionary<ZoneType, IList<IZone>>> GetAllZones() {

@@ -48,6 +48,7 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
       specifiedType = success;
     }
 
+    string map = Server.MapName;
     switch (info.GetArg(1).ToLower()) {
       case "finish":
       case "done":
@@ -76,8 +77,9 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
         var zoneCount = 0;
         foreach (var type in Enum.GetValues<ZoneType>()) {
           if (specifiedType != null && type != specifiedType) continue;
-          var displayZones =
-            zoneManager.GetZones(type).GetAwaiter().GetResult();
+          var displayZones = zoneManager.GetZones(map, type)
+           .GetAwaiter()
+           .GetResult();
           foreach (var z in displayZones) z.Draw(plugin, type.GetColor(), 120);
 
           zoneCount += displayZones.Count;
@@ -101,7 +103,7 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
         var toDelete = getUniqueZone(executor, specifiedType);
         if (toDelete == null) return;
         Server.NextFrameAsync(async () => {
-          await zoneManager.DeleteZone(toDelete.Value.Item1.Id);
+          await zoneManager.DeleteZone(toDelete.Value.Item1.Id, map);
           Server.NextFrame(() => {
             executor.PrintToChat("Deleted zone #" + toDelete.Value.Item1.Id);
           });
@@ -113,9 +115,8 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
         if (innerPair == null) return;
         var innerZone = innerPair.Value.Item1;
         innerZone.AddPoint(position);
-        var map = Server.MapName;
         Server.NextFrameAsync(async () => {
-          await zoneManager.DeleteZone(innerZone.Id);
+          await zoneManager.DeleteZone(innerZone.Id, map);
           await zoneManager.PushZoneWithID(innerZone, innerPair.Value.Item2,
             map);
           Server.NextFrame(() => {
@@ -145,7 +146,9 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
 
         if (specifiedType == null) {
           foreach (var type in Enum.GetValues<ZoneType>()) {
-            var zones = zoneManager.GetZones(type).GetAwaiter().GetResult();
+            var zones = zoneManager.GetZones(Server.MapName, type)
+             .GetAwaiter()
+             .GetResult();
             if (!allZones.ContainsKey(type)) continue;
 
             info.ReplyToCommand($"{type} zones: {zones.Count}");
@@ -154,7 +157,7 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
           return;
         }
 
-        var toList = zoneManager.GetZones(specifiedType.Value)
+        var toList = zoneManager.GetZones(map, specifiedType.Value)
          .GetAwaiter()
          .GetResult();
         foreach (var listZone in toList)
@@ -164,7 +167,7 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
       case "cleanup":
         // Cleanup auto-generated zones
         // Remove spawns that are inside of any DO NOT TELEPORT zones
-        var spawns = zoneManager.GetZones(ZoneType.SPAWN_AUTO)
+        var spawns = zoneManager.GetZones(map, ZoneType.SPAWN_AUTO)
          .GetAwaiter()
          .GetResult();
         if (spawns.Count == 0) {
@@ -173,7 +176,8 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
         }
 
         var doNotTeleport = zoneManager
-         .GetZones(ZoneTypeExtensions.DoNotTeleports().ToArray())
+         .GetZones(Server.MapName,
+            ZoneTypeExtensions.DoNotTeleports().ToArray())
          .GetAwaiter()
          .GetResult();
 
@@ -186,7 +190,8 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
         info.ReplyToCommand("Removing " + toRemove.Count
           + " auto-generated zones");
         Server.NextFrameAsync(async () => {
-          foreach (var z in toRemove) await zoneManager.DeleteZone(z.Id);
+          foreach (var z in toRemove)
+            await zoneManager.DeleteZone(z.Id, map);
         });
         return;
     }
@@ -203,14 +208,15 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
         attemptBeginCreation(executor, specifiedType.Value);
         return;
       case "set":
-        var zones = zoneManager.GetZones(specifiedType.Value)
+        var zones = zoneManager.GetZones(Server.MapName, specifiedType.Value)
          .GetAwaiter()
          .GetResult();
 
         Server.NextFrameAsync(async () => {
           var copy = zones.ToList();
 
-          foreach (var zone in copy) await zoneManager.DeleteZone(zone.Id);
+          foreach (var zone in copy)
+            await zoneManager.DeleteZone(zone.Id, Server.MapName);
 
           Server.NextFrame(()
             => attemptBeginCreation(executor, specifiedType.Value));

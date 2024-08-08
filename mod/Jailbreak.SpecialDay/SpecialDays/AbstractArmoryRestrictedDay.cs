@@ -31,7 +31,7 @@ public abstract class AbstractArmoryRestrictedDay : AbstractZoneRestrictedDay {
 
   override protected IZone GetZone() {
     var manager = provider.GetRequiredService<IZoneManager>();
-    var zones   = manager.GetZones(ZoneType.ARMORY).GetAwaiter().GetResult();
+    var zones   = manager.GetZones(Server.MapName, ZoneType.ARMORY).GetAwaiter().GetResult();
     if (zones.Count > 0) return new MultiZoneWrapper(zones);
 
     var bounds = new DistanceZone(

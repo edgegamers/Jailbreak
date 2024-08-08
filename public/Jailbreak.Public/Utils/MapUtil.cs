@@ -19,7 +19,7 @@ public static class MapUtil {
   }
 
   public static bool OpenCells(IZoneManager zoneManager) {
-    var zones = zoneManager.GetZones(ZoneType.CELL_BUTTON)
+    var zones = zoneManager.GetZones(Server.MapName, ZoneType.CELL_BUTTON)
      .GetAwaiter()
      .GetResult();
 
