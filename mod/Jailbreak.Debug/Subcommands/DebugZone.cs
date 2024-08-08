@@ -48,7 +48,7 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
       specifiedType = success;
     }
 
-    string? map = Server.MapName;
+    string map = Server.MapName;
     switch (info.GetArg(1).ToLower()) {
       case "finish":
       case "done":
@@ -77,7 +77,7 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
         var zoneCount = 0;
         foreach (var type in Enum.GetValues<ZoneType>()) {
           if (specifiedType != null && type != specifiedType) continue;
-          var displayZones = zoneManager.GetZones(Server.MapName, type)
+          var displayZones = zoneManager.GetZones(map, type)
            .GetAwaiter()
            .GetResult();
           foreach (var z in displayZones) z.Draw(plugin, type.GetColor(), 120);
@@ -102,7 +102,6 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
       case "delete":
         var toDelete = getUniqueZone(executor, specifiedType);
         if (toDelete == null) return;
-        map = Server.MapName;
         Server.NextFrameAsync(async () => {
           await zoneManager.DeleteZone(toDelete.Value.Item1.Id, map);
           Server.NextFrame(() => {
@@ -116,9 +115,8 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
         if (innerPair == null) return;
         var innerZone = innerPair.Value.Item1;
         innerZone.AddPoint(position);
-        map = Server.MapName;
         Server.NextFrameAsync(async () => {
-          await zoneManager.DeleteZone(innerZone.Id);
+          await zoneManager.DeleteZone(innerZone.Id, map);
           await zoneManager.PushZoneWithID(innerZone, innerPair.Value.Item2,
             map);
           Server.NextFrame(() => {
@@ -159,7 +157,7 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
           return;
         }
 
-        var toList = zoneManager.GetZones(Server.MapName, specifiedType.Value)
+        var toList = zoneManager.GetZones(map, specifiedType.Value)
          .GetAwaiter()
          .GetResult();
         foreach (var listZone in toList)
@@ -169,7 +167,7 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
       case "cleanup":
         // Cleanup auto-generated zones
         // Remove spawns that are inside of any DO NOT TELEPORT zones
-        var spawns = zoneManager.GetZones(Server.MapName, ZoneType.SPAWN_AUTO)
+        var spawns = zoneManager.GetZones(map, ZoneType.SPAWN_AUTO)
          .GetAwaiter()
          .GetResult();
         if (spawns.Count == 0) {
@@ -193,7 +191,7 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
           + " auto-generated zones");
         Server.NextFrameAsync(async () => {
           foreach (var z in toRemove)
-            await zoneManager.DeleteZone(z.Id, Server.MapName);
+            await zoneManager.DeleteZone(z.Id, map);
         });
         return;
     }
