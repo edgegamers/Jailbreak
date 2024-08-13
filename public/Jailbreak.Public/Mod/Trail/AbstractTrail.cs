@@ -82,6 +82,10 @@ public abstract class AbstractTrail<T>(float lifetime = 20, int maxPoints = 100)
     return MathF.Sqrt(GetTrailLengthSquared(since, max));
   }
 
+  public float GetTrailLengthSquared() {
+    return GetTrailLengthSquared(Lifetime);
+  }
+
   public float GetTrailLengthSquared(float since, int max = 0) {
     var length = 0f;
     var last   = default(Vector);

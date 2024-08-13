@@ -69,10 +69,19 @@ public class SpeedrunDayLocale() : SoloDayLocale("Speedrunners",
     };
   }
 
-  public IView RunnerReassigned(CCSPlayerController player) {
+  public IView RunnerLeftAndReassigned(CCSPlayerController player) {
     return new SimpleView {
       PREFIX,
       "The original speedrunner left, so",
+      player,
+      "is now the speedrunner!"
+    };
+  }
+
+  public IView RunnerAFKAndReassigned(CCSPlayerController player) {
+    return new SimpleView {
+      PREFIX,
+      "The original speedrunner isn't moving, so",
       player,
       "is now the speedrunner!"
     };

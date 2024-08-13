@@ -52,9 +52,9 @@ public class LastRequestLocale : ILRLocale,
     return new SimpleView {
       PREFIX,
       lr.Prisoner,
-      "is preparing a",
-      lr.Type.ToFriendlyString(),
-      "Last Request against",
+      ChatColors.Grey + "is preparing a",
+      ChatColors.White + lr.Type.ToFriendlyString(),
+      ChatColors.Grey + "Last Request against",
       lr.Guard
     };
   }

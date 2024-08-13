@@ -284,7 +284,8 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
           break;
       }
 
-      if (cvar.Name is "mp_teammates_are_enemies" or "sv_autobunnyhopping") {
+      if (cvar.Name is "mp_teammates_are_enemies" or "sv_autobunnyhopping"
+        or "mp_death_drop_gun") {
         // These convars require a frame to take effect, otherwise client-side
         // stuff is not properly updated
         var opposite = !(bool)value;

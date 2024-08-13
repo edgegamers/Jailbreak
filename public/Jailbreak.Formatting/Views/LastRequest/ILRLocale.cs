@@ -16,7 +16,10 @@ public interface ILRLocale {
   public IView LastRequestNotEnabled();
   public IView InvalidLastRequest(string query);
   public IView InformLastRequest(AbstractLastRequest lr);
+
+  [Obsolete("Unused, use InformLastRequest instead")]
   public IView AnnounceLastRequest(AbstractLastRequest lr);
+
   public IView LastRequestDecided(AbstractLastRequest lr, LRResult result);
   public IView CannotLR(string reason);
   public IView CannotLR(CCSPlayerController player, string reason);

@@ -374,7 +374,6 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     firstWarden    = true;
     preWardenStats = null;
 
-
     return HookResult.Continue;
   }
 

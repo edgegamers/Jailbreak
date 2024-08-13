@@ -3,7 +3,6 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Extensions;
-using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.SpecialDay;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDay;
@@ -115,7 +114,8 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     int playerIndex;
     if (!progressions.TryGetValue(player.Slot, out playerIndex))
       playerIndex = 0;
-    if (attacker == null || !attacker.IsValid || attacker.Slot == player.Slot) {
+    if (attacker == null || !attacker.IsValid) return HookResult.Continue;
+    if (attacker.Slot == player.Slot) {
       if (playerIndex <= 0) return HookResult.Continue;
       playerIndex--;
       msg.DemotedDueToSuicide.ToChat(player);
@@ -167,7 +167,7 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
       msg.PlayerOnLastPromotion(attacker).ToAllChat();
 
     msg.PromotedTo(weaponProgression[attackerProgress].GetFriendlyWeaponName(),
-        weaponProgression.Count - attackerProgress - 1)
+        weaponProgression.Count - attackerProgress)
      .ToChat(attacker);
 
     attacker.RemoveWeapons();

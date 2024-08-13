@@ -168,7 +168,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         }
 
         speedrunner.SetColor(Color.DodgerBlue);
-        msg.RunnerReassigned(speedrunner).ToAllChat();
+        msg.RunnerLeftAndReassigned(speedrunner).ToAllChat();
         msg.YouAreRunner(CvInitialSpeedrunTime.Value).ToChat(speedrunner);
       }
 
@@ -254,6 +254,49 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       var tps              = 1 / trail.UpdateRate;
       var didntMoveSeconds = (int)Math.Ceiling(trail.DidntMoveTicks / tps);
       var thresholdTicks   = (int)Math.Ceiling(tps * 3);
+      if (start == null) {
+        panic("start is null");
+        return;
+      }
+
+      if (start.DistanceSquared(speedrunner?.Pawn.Value?.AbsOrigin!) < 100) {
+        if (trail.DidntMoveTicks <= tps * 10) return;
+        // If the player is afk, we need to pick the closet player
+        // that has moved to continue the run
+        var end = trail.GetEndSegment()?.GetEnd() ?? start;
+        if (end == null) {
+          panic("Speedrunner is invalid, and we cannot find the start");
+          return;
+        }
+
+        var furthest = PlayerUtil.GetAlive()
+         .Where(p => p.Pawn.IsValid && p.Pawn.Value != null)
+         .Where(p => p.Pawn.Value!.IsValid && p.Pawn.Value.AbsOrigin != null)
+         .Where(p
+            => p.Pawn.Value!.AbsOrigin!.DistanceSquared(speedrunner?.Pawn.Value!
+             .AbsOrigin!) > 100) // Ensure they have moved
+         .MinBy(p => p.Pawn.Value!.AbsOrigin!.DistanceSquared(end));
+
+        if (furthest == null) {
+          panic("Speedrunner is invalid, and we cannot find a new one");
+          return;
+        }
+
+        speedrunner = furthest;
+        foreach (var p in PlayerUtil.GetAlive()) {
+          if (p.Slot == speedrunner.Slot) continue;
+          p.Teleport(speedrunner);
+        }
+
+        furthest.Pawn.Value?.Teleport(end);
+        furthest.SetColor(Color.DodgerBlue);
+        msg.RunnerAFKAndReassigned(furthest).ToAllChat();
+        msg.YouAreRunner(RoundUtil.GetTimeRemaining()).ToChat(furthest);
+        trail.StartTracking(furthest);
+        trail.DidntMoveTicks = 0;
+        return;
+      }
+
       if (trail.DidntMoveTicks < thresholdTicks) return;
       if (trail.DidntMoveTicks == thresholdTicks)
         msg.StayStillToSpeedup.ToChat(trail.Player);
@@ -284,7 +327,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       speedrunner = nearest;
       nearest.Pawn.Value?.Teleport(end);
       nearest.SetColor(Color.DodgerBlue);
-      msg.RunnerReassigned(nearest).ToAllChat();
+      msg.RunnerLeftAndReassigned(nearest).ToAllChat();
       msg.YouAreRunner(RoundUtil.GetTimeRemaining()).ToChat(nearest);
       trail.StartTracking(nearest);
     };

@@ -12,7 +12,8 @@ public interface ISpeedDayLocale : ISDInstanceLocale {
 
   public IView YouAreRunner(int seconds);
 
-  public IView RunnerReassigned(CCSPlayerController player);
+  public IView RunnerLeftAndReassigned(CCSPlayerController player);
+  public IView RunnerAFKAndReassigned(CCSPlayerController player);
 
   public IView RuntimeLeft(int seconds);
 

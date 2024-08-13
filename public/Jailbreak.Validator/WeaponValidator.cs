@@ -36,16 +36,16 @@ public class WeaponValidator(
 
       errorMessage = $"invalid {nameof(type).ToLower()}: {weapon}";
       var result = type switch {
-        WeaponType.GRENADE  => Tag.GRENADES.Contains(weapon),
-        WeaponType.UTILITY  => Tag.UTILITY.Contains(weapon),
-        WeaponType.WEAPON   => Tag.WEAPONS.Contains(weapon),
-        WeaponType.SNIPERS  => Tag.SNIPERS.Contains(weapon),
-        WeaponType.RIFLES   => Tag.RIFLES.Contains(weapon),
-        WeaponType.PISTOLS  => Tag.PISTOLS.Contains(weapon),
+        WeaponType.GRENADE => Tag.GRENADES.Contains(weapon),
+        WeaponType.UTILITY => Tag.UTILITY.Contains(weapon),
+        WeaponType.WEAPON => Tag.WEAPONS.Contains(weapon),
+        WeaponType.SNIPERS => Tag.SNIPERS.Contains(weapon),
+        WeaponType.RIFLES => Tag.RIFLES.Contains(weapon),
+        WeaponType.PISTOLS => Tag.PISTOLS.Contains(weapon),
         WeaponType.SHOTGUNS => Tag.SHOTGUNS.Contains(weapon),
-        WeaponType.SMGS     => Tag.SMGS.Contains(weapon),
-        WeaponType.HEAVY    => Tag.HEAVY.Contains(weapon),
-        _                   => throw new ArgumentOutOfRangeException(nameof(weapon))
+        WeaponType.SMGS => Tag.SMGS.Contains(weapon),
+        WeaponType.HEAVY => Tag.HEAVY.Contains(weapon),
+        _ => throw new ArgumentOutOfRangeException(nameof(weapon))
       };
       if (!result) return false;
     }

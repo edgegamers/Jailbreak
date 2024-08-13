@@ -23,7 +23,7 @@ public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
   }
 
   public float UpdateRate { get; protected set; }
-  public int DidntMoveTicks { get; protected set; }
+  public int DidntMoveTicks { get; set; }
 
   public CCSPlayerController? Player { get; protected set; }
   public event Action OnPlayerInvalid = () => { };
@@ -51,6 +51,8 @@ public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
     }
 
     DidntMoveTicks = 0;
+    if (dist < 5000) return;
+
     AddTrailPoint(pos);
   }
 
