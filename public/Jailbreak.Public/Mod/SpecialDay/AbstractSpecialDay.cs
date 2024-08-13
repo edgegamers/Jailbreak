@@ -210,12 +210,15 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     var zoneManager = Provider.GetService<IZoneManager>();
     if (zoneManager != null) {
       if (includeAuto)
-        result.AddRange(zoneManager.GetZones(ZoneType.SPAWN_AUTO)
+        result.AddRange(zoneManager
+         .GetZones(Server.MapName, ZoneType.SPAWN_AUTO)
          .GetAwaiter()
          .GetResult()
          .Select(z => z.GetCenterPoint()));
 
-      var zones = zoneManager.GetZones(ZoneType.SPAWN).GetAwaiter().GetResult();
+      var zones = zoneManager.GetZones(Server.MapName, ZoneType.SPAWN)
+       .GetAwaiter()
+       .GetResult();
       result.AddRange(zones.Select(z => z.GetCenterPoint()));
     }
 
