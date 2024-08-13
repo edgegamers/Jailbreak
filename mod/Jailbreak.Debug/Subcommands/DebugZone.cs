@@ -48,7 +48,7 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
       specifiedType = success;
     }
 
-    string map = Server.MapName;
+    var map = Server.MapName;
     switch (info.GetArg(1).ToLower()) {
       case "finish":
       case "done":
@@ -190,8 +190,7 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
         info.ReplyToCommand("Removing " + toRemove.Count
           + " auto-generated zones");
         Server.NextFrameAsync(async () => {
-          foreach (var z in toRemove)
-            await zoneManager.DeleteZone(z.Id, map);
+          foreach (var z in toRemove) await zoneManager.DeleteZone(z.Id, map);
         });
         return;
     }

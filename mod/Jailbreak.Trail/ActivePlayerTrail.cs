@@ -51,7 +51,7 @@ public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
     }
 
     DidntMoveTicks = 0;
-    if (dist < 5000) { return; }
+    if (dist < 5000) return;
 
     AddTrailPoint(pos);
   }

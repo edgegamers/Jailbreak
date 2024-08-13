@@ -6,7 +6,6 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Menu;
 using Jailbreak.Formatting.Extensions;
-using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.SpecialDay;
 using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public.Behaviors;

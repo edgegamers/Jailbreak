@@ -8,6 +8,7 @@ using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Generic;
 using Jailbreak.Public.Mod.Warden;
+using Jailbreak.Public.Utils;
 using Microsoft.Extensions.Logging;
 
 namespace Jailbreak.Warden.Selection;
@@ -78,6 +79,7 @@ public class
 
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart ev, GameEventInfo info) {
+    if (RoundUtil.IsWarmup()) return HookResult.Continue;
     //	Enable the warden queue
     queueInactive = false;
 
