@@ -115,7 +115,8 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     int playerIndex;
     if (!progressions.TryGetValue(player.Slot, out playerIndex))
       playerIndex = 0;
-    if (attacker == null || !attacker.IsValid || attacker.Slot == player.Slot) {
+    if (attacker == null || !attacker.IsValid) return HookResult.Continue;
+    if (attacker.Slot == player.Slot) {
       if (playerIndex <= 0) return HookResult.Continue;
       playerIndex--;
       msg.DemotedDueToSuicide.ToChat(player);
@@ -167,7 +168,7 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
       msg.PlayerOnLastPromotion(attacker).ToAllChat();
 
     msg.PromotedTo(weaponProgression[attackerProgress].GetFriendlyWeaponName(),
-        weaponProgression.Count - attackerProgress - 1)
+        weaponProgression.Count - attackerProgress)
      .ToChat(attacker);
 
     attacker.RemoveWeapons();

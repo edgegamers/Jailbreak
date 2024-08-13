@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Views.SpecialDay;
+using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Utils;
 
 namespace Jailbreak.English.SpecialDay;
@@ -29,7 +30,13 @@ public class TeamDayLocale(string name, params string[] description)
   }
 
   public IView GenerateStartMessage() {
-    var result = new SimpleView { PREFIX, { "Today is a", Name, "day!" } };
+    // Put "an" if name starts with a vowel
+    var result = new SimpleView {
+      PREFIX,
+      { "Today is a" + (Name.ToLower()[0].IsVowel() ? "n" : ""), Name, "day!" }
+    };
+
+    // var result = new SimpleView { PREFIX, { "Today is a" + Name.ToLower()[0].), Name, "day!" } };
 
     if (description.Length == 0) return result;
 

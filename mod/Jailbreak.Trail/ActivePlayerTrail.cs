@@ -42,7 +42,7 @@ public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
     pos = pos.Clone();
     var end  = GetEndSegment();
     var dist = end?.GetStart().DistanceSquared(pos) ?? float.MaxValue;
-    if (dist < 1000) {
+    if (dist < 2000) {
       // Still want to remove old segments
       Cleanup();
       DidntMoveTicks++;
