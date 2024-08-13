@@ -254,10 +254,15 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       var tps              = 1 / trail.UpdateRate;
       var didntMoveSeconds = (int)Math.Ceiling(trail.DidntMoveTicks / tps);
       var thresholdTicks   = (int)Math.Ceiling(tps * 3);
-      if (trail.GetTrailLengthSquared() < 500) {
+      if (start == null) {
+        panic("start is null");
+        return;
+      }
+
+      if (start.DistanceSquared(speedrunner?.Pawn.Value?.AbsOrigin!) < 100) {
         if (trail.DidntMoveTicks <= tps * 10) return;
-        // If the player left mid-run, we need to pick the nearest player
-        // to continue the run
+        // If the player is afk, we need to pick the closet player
+        // that has moved to continue the run
         var end = trail.GetEndSegment()?.GetEnd() ?? start;
         if (end == null) {
           panic("Speedrunner is invalid, and we cannot find the start");
@@ -267,6 +272,9 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         var furthest = PlayerUtil.GetAlive()
          .Where(p => p.Pawn.IsValid && p.Pawn.Value != null)
          .Where(p => p.Pawn.Value!.IsValid && p.Pawn.Value.AbsOrigin != null)
+         .Where(p
+            => p.Pawn.Value!.AbsOrigin!.DistanceSquared(speedrunner?.Pawn.Value!
+             .AbsOrigin!) > 100) // Ensure they have moved
          .MinBy(p => p.Pawn.Value!.AbsOrigin!.DistanceSquared(end));
 
         if (furthest == null) {
@@ -277,16 +285,15 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         speedrunner = furthest;
         foreach (var p in PlayerUtil.GetAlive()) {
           if (p.Slot == speedrunner.Slot) continue;
-          p.Teleport(furthest);
+          p.Teleport(speedrunner);
         }
 
-        start = furthest.Pawn.Value?.AbsOrigin!.Clone();
         furthest.Pawn.Value?.Teleport(end);
         furthest.SetColor(Color.DodgerBlue);
         msg.RunnerAFKAndReassigned(furthest).ToAllChat();
         msg.YouAreRunner(RoundUtil.GetTimeRemaining()).ToChat(furthest);
         trail.StartTracking(furthest);
-
+        trail.DidntMoveTicks = 0;
         return;
       }
 
