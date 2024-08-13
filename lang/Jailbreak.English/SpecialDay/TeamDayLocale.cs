@@ -31,8 +31,7 @@ public class TeamDayLocale(string name, params string[] description)
 
   public IView GenerateStartMessage() {
     var result = new SimpleView {
-      PREFIX,
-      { "Today is a" + (Name.ToLower()[0].IsVowel() ? "n" : ""), Name, "day!" }
+      PREFIX, { "Today is a" + (Name[0].IsVowel() ? "n" : ""), Name, "day!" }
     };
 
     if (description.Length == 0) return result;
