@@ -248,9 +248,12 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       Server.NextFrameAsync(async () => {
         if ("[WARDEN]" != await API.Actain.getTagService().GetTag(steam))
           return;
-        API.Actain.getTagService().SetTag(player, "", false);
-        API.Actain.getTagService()
-         .SetTagColor(player, ChatColors.Default, false);
+        Server.NextFrame(() => {
+          if (!player.IsValid) return;
+          API.Actain.getTagService().SetTag(player, "", false);
+          API.Actain.getTagService()
+           .SetTagColor(player, ChatColors.Default, false);
+        });
       });
     }
 
