@@ -110,10 +110,19 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     API.Stats?.PushStat(new ServerStat("JB_WARDEN_ASSIGNED",
       Warden.SteamID.ToString()));
 
-    oldTag      = API.Actain?.getTagService().GetTag(Warden);
-    oldTagColor = API.Actain?.getTagService().GetTagColor(Warden);
-    API.Actain?.getTagService().SetTag(Warden, "[WARDEN]");
-    API.Actain?.getTagService().SetTagColor(Warden, ChatColors.DarkBlue);
+    if (API.Actain != null) {
+      var steam = Warden.SteamID;
+      Server.NextFrameAsync(async () => {
+        oldTag      = await API.Actain.getTagService().GetTag(steam);
+        oldTagColor = await API.Actain.getTagService().GetTagColor(steam);
+        Server.NextFrame(() => {
+          if (!Warden.IsValid) return;
+          API.Actain.getTagService().SetTag(Warden, "[WARDEN]", false);
+          API.Actain.getTagService()
+           .SetTagColor(Warden, ChatColors.DarkBlue, false);
+        });
+      });
+    }
 
     foreach (var player in Utilities.GetPlayers())
       player.ExecuteClientCommand($"play sounds/{config.WardenNewSoundName}");
@@ -181,9 +190,11 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       var ev = new EventNextlevelChanged(true);
       ev.FireEvent(false);
 
-      API.Actain?.getTagService().SetTag(Warden, oldTag!);
+      if (oldTag != null)
+        API.Actain?.getTagService().SetTag(Warden, oldTag, false);
       if (oldTagColor != null)
-        API.Actain?.getTagService().SetTagColor(Warden, oldTagColor.Value);
+        API.Actain?.getTagService()
+         .SetTagColor(Warden, oldTagColor.Value, false);
 
       logs.Append(logs.Player(Warden), "is no longer the warden.");
     }
@@ -230,11 +241,20 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   [GameEventHandler]
   public HookResult OnChangeTeam(EventPlayerTeam @event, GameEventInfo info) {
     var player = @event.Userid;
-    if (player == null) return HookResult.Continue;
+    if (player == null || !player.IsValid) return HookResult.Continue;
 
-    if ("[WARDEN]" == API.Actain?.getTagService().GetTag(player)) {
-      API.Actain.getTagService().SetTag(player, "");
-      API.Actain.getTagService().SetTagColor(player, ChatColors.Default);
+    if (API.Actain != null) {
+      var steam = player.SteamID;
+      Server.NextFrameAsync(async () => {
+        if ("[WARDEN]" != await API.Actain.getTagService().GetTag(steam))
+          return;
+        Server.NextFrame(() => {
+          if (!player.IsValid) return;
+          API.Actain.getTagService().SetTag(player, "", false);
+          API.Actain.getTagService()
+           .SetTagColor(player, ChatColors.Default, false);
+        });
+      });
     }
 
     if (!((IWardenService)this).IsWarden(player)) return HookResult.Continue;
