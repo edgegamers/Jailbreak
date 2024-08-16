@@ -97,7 +97,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     RoundUtil.AddTimeRemaining(CvLRGuardTime.Value * cts);
 
     foreach (var player in Utilities.GetPlayers()) {
-      // player.ExecuteClientCommand($"play sounds/lr");
+      player.ExecuteClientCommand($"play sounds/lr");
       if (player.Team != CsTeam.Terrorist || !player.PawnIsAlive) continue;
       if (died != null && player.SteamID == died.SteamID) continue;
       player.ExecuteClientCommandFromServer("css_lr");
