@@ -8,6 +8,7 @@ using Jailbreak.Public.Mod.LastGuard;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
+using Jailbreak.Public.Mod.Warden;
 using Jailbreak.Public.Mod.Zones;
 using Jailbreak.Public.Utils;
 using Microsoft.Extensions.DependencyInjection;
@@ -94,6 +95,8 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
         MapUtil.OpenCells();
       else
         MapUtil.OpenCells(zones);
+      var openCmd = Provider.GetService<IWardenOpenCommand>();
+      if (openCmd != null) openCmd.OpenedCells = true;
     }
 
     doTeleports();
