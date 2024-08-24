@@ -294,7 +294,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       } else { Server.ExecuteCommand(cvar.Name + " " + value); }
     } catch (Exception e) {
       Server.PrintToChatAll(
-        $"There was an error setting {cvar.Name} ({cvar.Type}) to {value}");
+        $"There was an error setting {cvar.Name} ({cvar.Type}) to {value} ({value.GetType()}");
       Server.PrintToConsole(e.Message);
       Server.PrintToConsole(e.StackTrace ?? "");
     }
