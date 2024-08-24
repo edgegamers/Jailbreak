@@ -3,14 +3,16 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.Zones;
 using Jailbreak.Public.Utils;
+using Microsoft.Extensions.DependencyInjection;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.Zones;
 
-public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory)
-  : IPluginBehavior {
+public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory,
+  IServiceProvider provider) : IPluginBehavior {
   private IZone? cells;
   private string? currentMap;
   private IList<IZone>? manualSpawnPoints;
@@ -44,13 +46,17 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory)
   private void tick() {
     if (currentMap != Server.MapName) reload();
     currentMap = Server.MapName;
+
+    var sdManager = provider.GetService<ISpecialDayManager>();
+    if (sdManager is { IsSDRunning: true }) return;
+
     foreach (var player in PlayerUtil.GetAlive()) tick(player);
   }
 
   private void tick(CCSPlayerController player) {
     var pawn = player.PlayerPawn.Value;
     if (pawn == null) return;
-    if (!pawn.OnGroundLastTick) return;
+    if (!pawn.OnGroundLastTick || !pawn.TakesDamage) return;
     var pos = pawn.AbsOrigin;
     if (pos == null) return;
     pos = pos.Clone();

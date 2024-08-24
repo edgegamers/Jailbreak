@@ -8,6 +8,7 @@ using Jailbreak.Public.Mod.LastGuard;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
+using Jailbreak.Public.Mod.Warden;
 using Jailbreak.Public.Mod.Zones;
 using Jailbreak.Public.Utils;
 using Microsoft.Extensions.DependencyInjection;
@@ -94,6 +95,8 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
         MapUtil.OpenCells();
       else
         MapUtil.OpenCells(zones);
+      var openCmd = Provider.GetService<IWardenOpenCommand>();
+      if (openCmd != null) openCmd.OpenedCells = true;
     }
 
     doTeleports();
@@ -252,6 +255,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   }
 
   protected void SetConvarValue(ConVar? cvar, object value) {
+    var previous = GetConvarValue(cvar);
     if (cvar == null) return;
     try {
       switch (cvar.Type) {
@@ -288,13 +292,12 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
         or "mp_death_drop_gun") {
         // These convars require a frame to take effect, otherwise client-side
         // stuff is not properly updated
-        var opposite = !(bool)value;
-        Server.ExecuteCommand($"{cvar.Name} {opposite}");
+        Server.ExecuteCommand($"{cvar.Name} {previous}");
         Server.NextFrame(() => Server.ExecuteCommand($"{cvar.Name} {value}"));
       } else { Server.ExecuteCommand(cvar.Name + " " + value); }
     } catch (Exception e) {
       Server.PrintToChatAll(
-        $"There was an error setting {cvar.Name} ({cvar.Type}) to {value}");
+        $"There was an error setting {cvar.Name} ({cvar.Type}) to {value} ({value.GetType()}");
       Server.PrintToConsole(e.Message);
       Server.PrintToConsole(e.StackTrace ?? "");
     }

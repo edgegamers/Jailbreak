@@ -14,6 +14,9 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Mute;
 using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.Warden;
+using Jailbreak.Public.Mod.Zones;
+using Jailbreak.Public.Utils;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MStatsShared;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
@@ -21,7 +24,7 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 namespace Jailbreak.Warden.Global;
 
 // By making it a struct we ensure values from the CCSPlayerPawn are passed by VALUE.
-internal struct PreWardenStats(int armorValue, int health, int maxHealth,
+public struct PreWardenStats(int armorValue, int health, int maxHealth,
   bool headHealthShot, bool hadHelmetArmor) {
   public readonly int ArmorValue = armorValue;
   public readonly int Health = health;
@@ -33,7 +36,8 @@ internal struct PreWardenStats(int armorValue, int health, int maxHealth,
 public class WardenBehavior(ILogger<WardenBehavior> logger,
   IWardenLocale locale, IRichLogService logs,
   ISpecialTreatmentService specialTreatment, IRebelService rebels,
-  WardenConfig config, IMuteService mute) : IPluginBehavior, IWardenService {
+  WardenConfig config, IMuteService mute, IServiceProvider provider)
+  : IPluginBehavior, IWardenService {
   private readonly ISet<CCSPlayerController> bluePrisoners =
     new HashSet<CCSPlayerController>();
 
@@ -61,13 +65,17 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     "Max HP for the warden", 100, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 200));
 
+  public readonly FakeConVar<int> CvWardenAutoOpenCells =
+    new("css_jb_warden_opencells_delay",
+      "Delay in seconds to auto-open cells at, -1 to disable", 60);
+
   private bool firstWarden;
   private string? oldTag;
   private char? oldTagColor;
 
-  private BasePlugin? parent;
+  private BasePlugin parent = null!;
   private PreWardenStats? preWardenStats;
-  private Timer? unblueTimer;
+  private Timer? unblueTimer, openCellsTimer;
 
   public void Start(BasePlugin basePlugin) { parent = basePlugin; }
 
@@ -386,6 +394,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   public HookResult OnRoundEnd(EventRoundEnd ev, GameEventInfo info) {
     TryRemoveWarden();
     mute.UnPeaceMute();
+    openCellsTimer?.Kill();
     return HookResult.Continue;
   }
 
@@ -393,6 +402,23 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   public HookResult OnRoundStart(EventRoundStart ev, GameEventInfo info) {
     firstWarden    = true;
     preWardenStats = null;
+
+    if (CvWardenAutoOpenCells.Value < 0 || RoundUtil.IsWarmup())
+      return HookResult.Continue;
+    var openCmd = provider.GetService<IWardenOpenCommand>();
+    if (openCmd == null) return HookResult.Continue;
+    var cmdLocale = provider.GetRequiredService<IWardenCmdOpenLocale>();
+
+    openCellsTimer?.Kill();
+    openCellsTimer = parent.AddTimer(CvWardenAutoOpenCells.Value, () => {
+      if (openCmd.OpenedCells) return;
+      var zone = provider.GetService<IZoneManager>();
+      if (zone != null)
+        MapUtil.OpenCells(zone);
+      else
+        MapUtil.OpenCells();
+      cmdLocale.CellsOpened.ToAllChat();
+    });
 
     return HookResult.Continue;
   }
