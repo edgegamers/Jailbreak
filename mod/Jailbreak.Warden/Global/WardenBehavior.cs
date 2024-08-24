@@ -75,7 +75,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
   private BasePlugin parent = null!;
   private PreWardenStats? preWardenStats;
-  private Timer? unblueTimer;
+  private Timer? unblueTimer, openCellsTimer;
 
   public void Start(BasePlugin basePlugin) { parent = basePlugin; }
 
@@ -394,6 +394,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   public HookResult OnRoundEnd(EventRoundEnd ev, GameEventInfo info) {
     TryRemoveWarden();
     mute.UnPeaceMute();
+    openCellsTimer?.Kill();
     return HookResult.Continue;
   }
 
@@ -402,12 +403,14 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     firstWarden    = true;
     preWardenStats = null;
 
-    if (CvWardenAutoOpenCells.Value < 0) return HookResult.Continue;
+    if (CvWardenAutoOpenCells.Value < 0 || RoundUtil.IsWarmup())
+      return HookResult.Continue;
     var openCmd = provider.GetService<IWardenOpenCommand>();
     if (openCmd == null) return HookResult.Continue;
     var cmdLocale = provider.GetRequiredService<IWardenCmdOpenLocale>();
 
-    parent.AddTimer(CvWardenAutoOpenCells.Value, () => {
+    openCellsTimer?.Kill();
+    openCellsTimer = parent.AddTimer(CvWardenAutoOpenCells.Value, () => {
       if (openCmd.OpenedCells) return;
       var zone = provider.GetService<IZoneManager>();
       if (zone != null)
