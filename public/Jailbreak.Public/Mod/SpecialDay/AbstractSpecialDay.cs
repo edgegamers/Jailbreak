@@ -252,6 +252,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   }
 
   protected void SetConvarValue(ConVar? cvar, object value) {
+    var previous = GetConvarValue(cvar);
     if (cvar == null) return;
     try {
       switch (cvar.Type) {
@@ -288,8 +289,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
         or "mp_death_drop_gun") {
         // These convars require a frame to take effect, otherwise client-side
         // stuff is not properly updated
-        var opposite = !(bool)value;
-        Server.ExecuteCommand($"{cvar.Name} {opposite}");
+        Server.ExecuteCommand($"{cvar.Name} {previous}");
         Server.NextFrame(() => Server.ExecuteCommand($"{cvar.Name} {value}"));
       } else { Server.ExecuteCommand(cvar.Name + " " + value); }
     } catch (Exception e) {
