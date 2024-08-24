@@ -409,6 +409,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     if (openCmd == null) return HookResult.Continue;
     var cmdLocale = provider.GetRequiredService<IWardenCmdOpenLocale>();
 
+    openCellsTimer?.Kill();
     openCellsTimer = parent.AddTimer(CvWardenAutoOpenCells.Value, () => {
       if (openCmd.OpenedCells) return;
       var zone = provider.GetService<IZoneManager>();
