@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
+using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public.Behaviors;
@@ -13,19 +14,19 @@ using Jailbreak.Public.Utils;
 
 namespace Jailbreak.Warden.Commands;
 
-public class OpenCommandsBehavior(IWardenService warden, IWardenLocale msg,
+public class WardenOpenCommandsBehavior(IWardenService warden, IWardenLocale msg,
   IWardenCmdOpenLocale wardenCmdOpenMsg, IZoneManager zoneManager)
-  : IPluginBehavior {
+  : IPluginBehavior, IWardenOpenCommand {
   public static readonly FakeConVar<int> CvOpenCommandCooldown = new(
     "css_jb_warden_open_cooldown",
     "Minimum seconds warden must wait before being able to open the cells.", 30,
     customValidators: new RangeValidator<int>(0, 300));
 
-  private bool openedCells;
+  public bool OpenedCells { get; set; }
 
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
-    openedCells = false;
+    OpenedCells = false;
     return HookResult.Continue;
   }
 
@@ -45,15 +46,21 @@ public class OpenCommandsBehavior(IWardenService warden, IWardenLocale msg,
         return;
       }
 
-      if (openedCells) {
+      if (OpenedCells) {
         wardenCmdOpenMsg.AlreadyOpened.ToChat(executor);
         return;
       }
     }
 
-    openedCells = true;
-    var result = MapUtil.OpenCells(zoneManager);
-    (result ? wardenCmdOpenMsg.CellsOpened : wardenCmdOpenMsg.OpeningFailed)
-     .ToAllChat();
+    OpenedCells = true;
+    var   result = MapUtil.OpenCells(zoneManager);
+    IView message;
+    if (result) {
+      if (executor != null || !warden.IsWarden(executor)) {
+        message = wardenCmdOpenMsg.CellsOpenedBy(executor);
+      } else { message = wardenCmdOpenMsg.CellsOpenedBy(null); }
+    } else { message = wardenCmdOpenMsg.OpeningFailed; }
+
+    message.ToAllChat();
   }
 }

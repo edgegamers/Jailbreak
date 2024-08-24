@@ -1,3 +1,5 @@
+using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Logistics;
 using Jailbreak.Formatting.Views.Warden;
@@ -16,10 +18,19 @@ public class WardenCmdOpenLocale : IWardenCmdOpenLocale,
   }
 
   public IView AlreadyOpened
-    => new SimpleView { WardenLocale.PREFIX, "You already opened cells." };
+    => new SimpleView { WardenLocale.PREFIX, "Cells are already opened." };
+
+  public IView CellsOpenedBy(CCSPlayerController? player) {
+    return player == null ?
+      new SimpleView {
+        WardenLocale.PREFIX,
+        $"{ChatColors.Blue}The warden {ChatColors.Default}opened the cells."
+      } :
+      new SimpleView { WardenLocale.PREFIX, player, "opened the cells." };
+  }
 
   public IView CellsOpened
-    => new SimpleView { WardenLocale.PREFIX, "The warden opened cells." };
+    => new SimpleView { WardenLocale.PREFIX, "Cells were auto-opened." };
 
   public IView OpeningFailed
     => new SimpleView { WardenLocale.PREFIX, "Failed to open the cells." };
