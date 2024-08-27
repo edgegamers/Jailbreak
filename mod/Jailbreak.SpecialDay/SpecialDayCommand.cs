@@ -27,8 +27,8 @@ public class SpecialDayCommand(IWardenService warden,
     "css_jb_sd_max_elapsed_time",
     "Max time elapsed in a round to be able to call a special day", 30);
 
-  private SpecialDayMenuSelector? menuSelector;
-  private BasePlugin? plugin;
+  private SpecialDayMenuSelector menuSelector = null!;
+  private BasePlugin plugin = null!;
 
   // css_lr <player> <LRType>
   public void Start(BasePlugin basePlugin) {
@@ -77,8 +77,7 @@ public class SpecialDayCommand(IWardenService warden,
         return;
       }
 
-      MenuManager.OpenCenterHtmlMenu(plugin!, executor,
-        menuSelector!.GetMenu());
+      MenuManager.OpenCenterHtmlMenu(plugin, executor, menuSelector.GetMenu());
       return;
     }
 

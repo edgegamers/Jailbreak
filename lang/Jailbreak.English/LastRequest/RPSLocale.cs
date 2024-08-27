@@ -11,7 +11,7 @@ public class RPSLocale : LastRequestLocale, ILRRPSLocale {
 
   public IView BothPlayersMadeChoice() {
     return new SimpleView {
-      PREFIX, "Both players have rocked, papered, and scissored! (ew)"
+      PREFIX, "Both players rocked, papered, and scissored! (ew)"
     };
   }
 
@@ -23,13 +23,13 @@ public class RPSLocale : LastRequestLocale, ILRRPSLocale {
     int guardPick, int prisonerPick) {
     return new SimpleView {
       PREFIX,
-      "Results: ",
+      "Results:",
       guard,
-      " picked ",
+      "picked",
       toRPS(guardPick),
-      " and ",
+      "and",
       prisoner,
-      " picked ",
+      "picked",
       toRPS(prisonerPick)
     };
   }

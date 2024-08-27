@@ -45,7 +45,8 @@ public class BulletForBullet : TeleportingRequest {
     designerName = designer;
     MenuManager.CloseActiveMenu(player);
 
-    msg.WeaponSelected(player, designerName).ToChat(Prisoner, Guard);
+    msg.WeaponSelected(player, designerName.GetFriendlyWeaponName())
+     .ToChat(Prisoner, Guard);
 
     State = LRState.ACTIVE;
 
