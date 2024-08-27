@@ -1,11 +1,14 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Cvars;
+using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Views.SpecialDay;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Utils;
+using Jailbreak.Validator;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
@@ -17,20 +20,42 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
     => new SoloDayLocale("No Scope",
       "Your scope broke! Fight against everyone else. No camping!");
 
-  public override SpecialDaySettings Settings => new NoScopeSettings();
+  public override SpecialDaySettings Settings => new NoScopeSettings(this);
+
+  public readonly FakeConVar<string> CvWeapon = new("jb_sd_noscope_weapon",
+    "Weapon to give to all players, recommended it be a weapon with a scope (duh)",
+    "weapon_ssg08", ConVarFlags.FCVAR_NONE,
+    new ItemValidator(allowMultiple: true));
+
+  public readonly FakeConVar<string> CvWeaponWhitelist = new(
+    "jb_sd_noscope_allowedweapons",
+    "Weapons to allow players to use, empty for no restrictions",
+    string.Join(",",
+      Tag.UTILITY.Union(new[] { "weapon_ssg08", "weapon_knife" }.ToHashSet())),
+    ConVarFlags.FCVAR_NONE, new ItemValidator(allowMultiple: true));
+
+  public readonly FakeConVar<int> CvKnifeDelay = new(
+    "jb_sd_noscope_knife_delay",
+    "Time delay in seconds to give knives at, 0 to disable", 120,
+    ConVarFlags.FCVAR_NONE, new RangeValidator<int>(0, 500));
+
+  public readonly FakeConVar<float> CvGravity = new("jb_sd_noscope_gravity",
+    "Gravity to set during the special day, default is 800", 200f);
 
   public override void Setup() {
-    Timers[120] += () => {
-      foreach (var player in PlayerUtil.GetAlive())
-        player.GiveNamedItem("weapon_knife");
-    };
+    if (CvKnifeDelay.Value > 0)
+      Timers[CvKnifeDelay.Value] += () => {
+        foreach (var player in PlayerUtil.GetAlive())
+          player.GiveNamedItem("weapon_knife");
+      };
     base.Setup();
   }
 
   public override void Execute() {
     foreach (var player in PlayerUtil.GetAlive()) {
       player.RemoveWeapons();
-      player.GiveNamedItem("weapon_ssg08");
+      foreach (var weapon in CvWeapon.Value.Split(","))
+        player.GiveNamedItem(weapon);
     }
 
     base.Execute();
@@ -50,18 +75,22 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
     if (activeWeapon == null || !activeWeapon.IsValid) return;
     activeWeapon.NextSecondaryAttackTick = Server.TickCount + 500;
 
-    if (activeWeapon.DesignerName is "weapon_ssg08" or "weapon_knife") return;
-    if (Tag.UTILITY.Contains(activeWeapon.DesignerName)) return;
+    if (CvWeaponWhitelist.Value.Contains(activeWeapon.DesignerName,
+      StringComparison.CurrentCultureIgnoreCase))
+      return;
     activeWeapon.NextPrimaryAttackTick = Server.TickCount + 500;
   }
 
   private class NoScopeSettings : FFASettings {
-    public NoScopeSettings() {
+    private readonly NoScopeDay day;
+
+    public NoScopeSettings(NoScopeDay day) {
+      this.day        = day;
       CtTeleport      = TeleportType.RANDOM;
       TTeleport       = TeleportType.RANDOM;
       RestrictWeapons = true;
 
-      ConVarValues["sv_gravity"]       = (float)200;
+      ConVarValues["sv_gravity"]       = day.CvGravity.Value;
       ConVarValues["sv_infinite_ammo"] = 2;
     }
 

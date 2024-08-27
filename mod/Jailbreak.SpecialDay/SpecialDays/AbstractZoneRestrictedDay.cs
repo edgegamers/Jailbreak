@@ -49,8 +49,8 @@ public abstract class AbstractZoneRestrictedDay : AbstractSpecialDay {
   }
 
   override protected HookResult
-    OnEnd(EventRoundEnd @event, GameEventInfo info) {
-    var result = base.OnEnd(@event, info);
+    onEnd(EventRoundEnd @event, GameEventInfo info) {
+    var result = base.onEnd(@event, info);
     foreach (var restrictor in Restrictors) restrictor.Kill();
     Restrictors.Clear();
     return result;

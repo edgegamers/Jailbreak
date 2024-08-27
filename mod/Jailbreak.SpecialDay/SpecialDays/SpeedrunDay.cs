@@ -799,8 +799,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   }
 
   override protected HookResult
-    OnEnd(EventRoundEnd @event, GameEventInfo info) {
-    var result = base.OnEnd(@event, info);
+    onEnd(EventRoundEnd @event, GameEventInfo info) {
+    var result = base.onEnd(@event, info);
 
     Plugin.RemoveListener<Listeners.OnTick>(checkFinishers);
     bestTrail?.Kill();

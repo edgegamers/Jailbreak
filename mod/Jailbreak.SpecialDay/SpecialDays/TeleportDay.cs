@@ -40,9 +40,9 @@ public class TeleportDay(BasePlugin plugin, IServiceProvider provider)
   }
 
   override protected HookResult
-    OnEnd(EventRoundEnd @event, GameEventInfo info) {
+    onEnd(EventRoundEnd @event, GameEventInfo info) {
     Plugin.DeregisterEventHandler<EventPlayerHurt>(onDamage);
-    return base.OnEnd(@event, info);
+    return base.onEnd(@event, info);
   }
 
   public class TeleportSettings : SpecialDaySettings {
