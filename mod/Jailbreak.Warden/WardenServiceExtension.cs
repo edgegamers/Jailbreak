@@ -19,7 +19,8 @@ public static class WardenServiceExtension {
      .AddPluginBehavior<IWardenSelectionService, WardenSelectionBehavior>();
     serviceCollection
      .AddPluginBehavior<ISpecialTreatmentService, SpecialTreatmentBehavior>();
-    serviceCollection.AddPluginBehavior<IWardenOpenCommand, WardenOpenCommandsBehavior>();
+    serviceCollection
+     .AddPluginBehavior<IWardenOpenCommand, WardenOpenCommandsBehavior>();
 
     serviceCollection.AddPluginBehavior<SpecialTreatmentCommandsBehavior>();
     serviceCollection.AddPluginBehavior<PeaceCommandsBehavior>();

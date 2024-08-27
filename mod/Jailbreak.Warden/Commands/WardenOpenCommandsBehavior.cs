@@ -56,9 +56,10 @@ public class WardenOpenCommandsBehavior(IWardenService warden,
     var   result = MapUtil.OpenCells(zoneManager);
     IView message;
     if (result) {
-      if (executor != null && !warden.IsWarden(executor)) {
+      if (executor != null && !warden.IsWarden(executor))
         message = wardenCmdOpenMsg.CellsOpenedBy(executor);
-      } else { message = wardenCmdOpenMsg.CellsOpenedBy(null); }
+      else
+        message = wardenCmdOpenMsg.CellsOpenedBy(null);
     } else { message = wardenCmdOpenMsg.OpeningFailed; }
 
     message.ToAllChat();

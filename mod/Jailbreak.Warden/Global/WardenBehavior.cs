@@ -57,6 +57,10 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     "Armor for the warden", 125, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 200));
 
+  public readonly FakeConVar<int> CvWardenAutoOpenCells =
+    new("css_jb_warden_opencells_delay",
+      "Delay in seconds to auto-open cells at, -1 to disable", 60);
+
   public readonly FakeConVar<int> CvWardenHealth = new("css_jb_warden_hp",
     "HP for the warden", 125, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 200));
@@ -64,10 +68,6 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   public readonly FakeConVar<int> CvWardenMaxHealth = new("css_jb_warden_maxhp",
     "Max HP for the warden", 100, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 200));
-
-  public readonly FakeConVar<int> CvWardenAutoOpenCells =
-    new("css_jb_warden_opencells_delay",
-      "Delay in seconds to auto-open cells at, -1 to disable", 60);
 
   private bool firstWarden;
   private string? oldTag;
