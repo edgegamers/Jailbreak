@@ -56,12 +56,12 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     "css_jb_speedrun_win_weapons",
     "Weapon(s) to give to the winner to kill other competitors",
     "weapon_knife,weapon_negev",
-    customValidators: new WeaponValidator(allowMultiple: true));
+    customValidators: new ItemValidator(allowMultiple: true));
 
   public static readonly FakeConVar<string> CvLosersWeapon = new(
     "css_jb_speedrun_loser_weapons",
     "Weapon(s) to give to the losers to use against the winner", "",
-    customValidators: new WeaponValidator(allowMultiple: true));
+    customValidators: new ItemValidator(allowMultiple: true));
 
   public static readonly FakeConVar<bool> CvWinnerDamageable = new(
     "css_jb_speedrun_winner_damageable", "Whether the winner can be damaged");

@@ -61,41 +61,70 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
   public readonly FakeConVar<string> CvGuardWeapons = new(
     "jb_sd_hns_weapons_ct",
     "List of weapons/items CTs may use, empty for no restrictions",
-    string.Join(",", Tag.PISTOLS.Union(Tag.UTILITY)));
+    string.Join(",", Tag.PISTOLS.Union(Tag.UTILITY)), ConVarFlags.FCVAR_NONE,
+    new ItemValidator(allowMultiple: true));
 
   public readonly FakeConVar<string> CvPrisonerWeapons = new(
     "jb_sd_hns_weapons_t",
-    "List of weapons/items Ts may use, empty for no restrictions", "");
+    "List of weapons/items Ts may use, empty for no restrictions", "",
+    ConVarFlags.FCVAR_NONE, new ItemValidator(allowMultiple: true));
+
+  public readonly FakeConVar<string> CvSeekerTeam = new("jb_sd_hns_seekers",
+    "Team to assign as seekers and restrict to armory", "t",
+    ConVarFlags.FCVAR_NONE, new TeamValidator(false));
+
+  public readonly FakeConVar<int> CvSeekTime = new("jb_sd_hns_seektime",
+    "Duration in seconds to give the hiders time to hide", 45,
+    ConVarFlags.FCVAR_NONE, new RangeValidator<int>(5, 120));
+
+  private CsTeam? seekerTeam => TeamUtil.FromString(CvSeekerTeam.Value);
+
+  private CsTeam? hiderTeam
+    => (seekerTeam ?? CsTeam.Terrorist) == CsTeam.Terrorist ?
+      CsTeam.CounterTerrorist :
+      CsTeam.Terrorist;
 
   public override void Setup() {
-    Timers[10] += () => {
-      foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist))
-        ct.SetSpeed(1.5f);
+    if (seekerTeam == null || hiderTeam == null) return;
+    RestrictedTeam = seekerTeam.Value;
 
-      msg.DamageWarning(15).ToTeamChat(CsTeam.CounterTerrorist);
+    if (CvSeekTime.Value >= 10)
+      Timers[10] += () => {
+        foreach (var ct in PlayerUtil.FromTeam(seekerTeam.Value))
+          ct.SetSpeed(1.5f);
 
-      Locale.BeginsIn(35).ToAllChat();
-    };
-    Timers[25] += () => {
-      foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist)) {
-        ct.SetSpeed(1.25f);
-        EnableDamage(ct);
-      }
-    };
-    Timers[30] += () => {
-      foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist))
-        ct.SetSpeed(1.1f);
-      Locale.BeginsIn(15).ToAllChat();
-    };
-    Timers[45] += Execute;
+        msg.DamageWarning(15).ToTeamChat(seekerTeam.Value);
+      };
+    if (CvSeekTime.Value >= 25)
+      Timers[25] += () => {
+        foreach (var player in PlayerUtil.FromTeam(seekerTeam.Value)) {
+          player.SetSpeed(1.25f);
+          EnableDamage(player);
+        }
+      };
+
+    if (CvSeekTime.Value >= 30)
+      Timers[30] += () => {
+        foreach (var ct in PlayerUtil.FromTeam(seekerTeam.Value))
+          ct.SetSpeed(1.1f);
+      };
+
+    for (var offset = 15; offset < CvSeekTime.Value; offset += 15) {
+      var beginsIn = CvSeekTime.Value - offset;
+      Timers[CvSeekTime.Value - offset] +=
+        () => Locale.BeginsIn(beginsIn).ToAllChat();
+    }
+
+    Timers[CvSeekTime.Value] += Execute;
 
     base.Setup();
 
-    foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist))
-      ct.SetSpeed(2f);
+    foreach (var player in PlayerUtil.FromTeam(seekerTeam.Value))
+      player.SetSpeed(2f);
   }
 
   public override void Execute() {
+    if (seekerTeam == null || hiderTeam == null) return;
     base.Execute();
     foreach (var player in PlayerUtil.GetAlive()) {
       var hp = (player.Team == CsTeam.Terrorist ?
@@ -110,8 +139,7 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
       if (armor != -1) player.SetArmor(armor);
     }
 
-    foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist))
-      ct.SetSpeed(1);
+    foreach (var ct in PlayerUtil.FromTeam(seekerTeam.Value)) ct.SetSpeed(1);
   }
 
   public class HNSSettings : SpecialDaySettings {

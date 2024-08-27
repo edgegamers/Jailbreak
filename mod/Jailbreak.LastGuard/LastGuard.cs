@@ -42,7 +42,7 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager)
 
   public readonly FakeConVar<string> CvLGWeapon = new("css_jb_lg_t_weapon",
     "Weapon to give remaining prisoners once LG activates", "",
-    ConVarFlags.FCVAR_NONE, new WeaponValidator());
+    ConVarFlags.FCVAR_NONE, new ItemValidator());
 
   public readonly FakeConVar<int> CvMaxCtHealth = new("css_jb_lg_max_hp",
     "Max HP that the LG can have otherwise", 125, ConVarFlags.FCVAR_NONE,
