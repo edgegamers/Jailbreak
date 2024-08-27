@@ -82,10 +82,7 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
   }
 
   private class NoScopeSettings : FFASettings {
-    private readonly NoScopeDay day;
-
     public NoScopeSettings(NoScopeDay day) {
-      this.day        = day;
       CtTeleport      = TeleportType.RANDOM;
       TTeleport       = TeleportType.RANDOM;
       RestrictWeapons = true;
