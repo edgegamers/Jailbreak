@@ -20,16 +20,16 @@ namespace Jailbreak.LastRequest;
 
 public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   : ILastRequestManager, IDamageBlocker {
-  public readonly FakeConVar<int> CvLRBaseTime = new("css_jb_lr_time_base",
+  public static readonly FakeConVar<int> CV_LR_BASE_TIME = new("css_jb_lr_time_base",
     "Round time to set when LR is activated, 0 to disable", 60);
 
-  public readonly FakeConVar<int> CvLRBonusTime = new("css_jb_lr_time_per_lr",
+  public static readonly FakeConVar<int> CV_LR_BONUS_TIME = new("css_jb_lr_time_per_lr",
     "Additional round time to add per LR completion", 30);
 
-  public readonly FakeConVar<int> CvLRGuardTime =
+  public static readonly FakeConVar<int> CV_LR_GUARD_TIME =
     new("css_jb_lr_time_per_guard", "Additional round time to add per guard");
 
-  public readonly FakeConVar<int> CvPrisonerToLR =
+  public static readonly FakeConVar<int> CV_PRISONER_TO_LR =
     new("css_jb_lr_activate_lr_at", "Number of prisoners to activate LR at", 2,
       ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 32));
 
@@ -92,9 +92,9 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     var cts = Utilities.GetPlayers()
      .Count(p => p is { Team: CsTeam.CounterTerrorist, PawnIsAlive: true });
 
-    if (CvLRBaseTime.Value != 0) RoundUtil.SetTimeRemaining(CvLRBaseTime.Value);
+    if (CV_LR_BASE_TIME.Value != 0) RoundUtil.SetTimeRemaining(CV_LR_BASE_TIME.Value);
 
-    RoundUtil.AddTimeRemaining(CvLRGuardTime.Value * cts);
+    RoundUtil.AddTimeRemaining(CV_LR_GUARD_TIME.Value * cts);
 
     foreach (var player in Utilities.GetPlayers()) {
       player.ExecuteClientCommand("play sounds/lr");
@@ -132,7 +132,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
   public bool EndLastRequest(AbstractLastRequest lr, LRResult result) {
     if (result is LRResult.GUARD_WIN or LRResult.PRISONER_WIN) {
-      RoundUtil.AddTimeRemaining(CvLRBonusTime.Value);
+      RoundUtil.AddTimeRemaining(CV_LR_BONUS_TIME.Value);
       messages.LastRequestDecided(lr, result).ToAllChat();
     }
 
@@ -189,7 +189,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
     if (player.Team != CsTeam.Terrorist) return HookResult.Continue;
 
-    if (countAlivePrisoners() - 1 > CvPrisonerToLR.Value)
+    if (countAlivePrisoners() - 1 > CV_PRISONER_TO_LR.Value)
       return HookResult.Continue;
 
     if (Utilities.GetPlayers().All(p => p.Team != CsTeam.CounterTerrorist))
@@ -222,7 +222,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     if (!IsLREnabledForRound) return HookResult.Continue;
 
     if (player.Team != CsTeam.Terrorist) return HookResult.Continue;
-    if (countAlivePrisoners() > CvPrisonerToLR.Value)
+    if (countAlivePrisoners() > CV_PRISONER_TO_LR.Value)
       return HookResult.Continue;
 
     EnableLR();

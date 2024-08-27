@@ -115,8 +115,8 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
   }
 
   override protected HookResult
-    onEnd(EventRoundEnd @event, GameEventInfo info) {
-    var result = base.onEnd(@event, info);
+    OnEnd(EventRoundEnd @event, GameEventInfo info) {
+    var result = base.OnEnd(@event, info);
     Plugin.DeregisterEventHandler<EventPlayerDeath>(onPlayerDeath);
     Plugin.DeregisterEventHandler<EventPlayerSpawn>(onRespawn);
 

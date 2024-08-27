@@ -177,8 +177,8 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
   }
 
   override protected HookResult
-    onEnd(EventRoundEnd @event, GameEventInfo info) {
-    var result = base.onEnd(@event, info);
+    OnEnd(EventRoundEnd @event, GameEventInfo info) {
+    var result = base.OnEnd(@event, info);
 
     Plugin.DeregisterEventHandler<EventPlayerDeath>(OnDeath, HookMode.Pre);
     Plugin.DeregisterEventHandler<EventPlayerSpawn>(OnRespawn);

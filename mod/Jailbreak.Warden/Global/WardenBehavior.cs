@@ -41,31 +41,31 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   private readonly ISet<CCSPlayerController> bluePrisoners =
     new HashSet<CCSPlayerController>();
 
-  public readonly FakeConVar<int> CvArmorEqual = new("css_jb_hp_outnumbered",
+  public static readonly FakeConVar<int> CV_ARMOR_EQUAL = new("css_jb_hp_outnumbered",
     "Health points for CTs have equal balance", 50, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 200));
 
-  public readonly FakeConVar<int> CvArmorOutnumber = new("css_jb_hp_outnumber",
+  public static readonly FakeConVar<int> CV_ARMOR_OUTNUMBER = new("css_jb_hp_outnumber",
     "HP for CTs when outnumbering Ts", 25, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 200));
 
-  public readonly FakeConVar<int> CvArmorOutnumbered =
+  public static readonly FakeConVar<int> CV_ARMOR_OUTNUMBERED =
     new("css_jb_hp_outnumbered", "Health points for CTs when outnumbered by Ts",
       100, ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 200));
 
-  public readonly FakeConVar<int> CvWardenArmor = new("css_jb_warden_armor",
+  public static readonly FakeConVar<int> CV_WARDEN_ARMOR = new("css_jb_warden_armor",
     "Armor for the warden", 125, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 200));
 
-  public readonly FakeConVar<int> CvWardenAutoOpenCells =
+  public static readonly FakeConVar<int> CV_WARDEN_AUTO_OPEN_CELLS =
     new("css_jb_warden_opencells_delay",
       "Delay in seconds to auto-open cells at, -1 to disable", 60);
 
-  public readonly FakeConVar<int> CvWardenHealth = new("css_jb_warden_hp",
+  public static readonly FakeConVar<int> CV_WARDEN_HEALTH = new("css_jb_warden_hp",
     "HP for the warden", 125, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 200));
 
-  public readonly FakeConVar<int> CvWardenMaxHealth = new("css_jb_warden_maxhp",
+  public static readonly FakeConVar<int> CV_WARDEN_MAX_HEALTH = new("css_jb_warden_maxhp",
     "Max HP for the warden", 100, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 200));
 
@@ -157,10 +157,10 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       if (!hasHelmet) Warden.GiveNamedItem("item_assaultsuit");
 
       var ctArmorValue = getBalance() switch {
-        0  => CvArmorEqual.Value,       // Balanced teams
-        1  => CvArmorOutnumbered.Value, // Ts outnumber CTs
-        -1 => CvArmorOutnumber.Value,   // CTs outnumber Ts
-        _  => CvArmorEqual.Value        // default (should never happen)
+        0  => CV_ARMOR_EQUAL.Value,       // Balanced teams
+        1  => CV_ARMOR_OUTNUMBERED.Value, // Ts outnumber CTs
+        -1 => CV_ARMOR_OUTNUMBER.Value,   // CTs outnumber Ts
+        _  => CV_ARMOR_EQUAL.Value        // default (should never happen)
       };
 
       /* Round start CT buff */
@@ -173,8 +173,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
         Utilities.SetStateChanged(guardPawn, "CCSPlayerPawn", "m_ArmorValue");
       }
 
-      setWardenStats(wardenPawn, CvWardenArmor.Value, CvWardenHealth.Value,
-        CvWardenMaxHealth.Value);
+      setWardenStats(wardenPawn, CV_WARDEN_ARMOR.Value, CV_WARDEN_HEALTH.Value,
+        CV_WARDEN_MAX_HEALTH.Value);
       if (!hasHealthshot) Warden.GiveNamedItem("weapon_healthshot");
     } else { preWardenStats = null; }
 
@@ -403,14 +403,14 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     firstWarden    = true;
     preWardenStats = null;
 
-    if (CvWardenAutoOpenCells.Value < 0 || RoundUtil.IsWarmup())
+    if (CV_WARDEN_AUTO_OPEN_CELLS.Value < 0 || RoundUtil.IsWarmup())
       return HookResult.Continue;
     var openCmd = provider.GetService<IWardenOpenCommand>();
     if (openCmd == null) return HookResult.Continue;
     var cmdLocale = provider.GetRequiredService<IWardenCmdOpenLocale>();
 
     openCellsTimer?.Kill();
-    openCellsTimer = parent.AddTimer(CvWardenAutoOpenCells.Value, () => {
+    openCellsTimer = parent.AddTimer(CV_WARDEN_AUTO_OPEN_CELLS.Value, () => {
       if (openCmd.OpenedCells) return;
       var zone = provider.GetService<IZoneManager>();
       if (zone != null)

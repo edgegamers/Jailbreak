@@ -49,7 +49,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   /// </summary>
   public virtual void Setup() {
     Plugin.RegisterFakeConVars(this);
-    Plugin.RegisterEventHandler<EventRoundEnd>(onEnd);
+    Plugin.RegisterEventHandler<EventRoundEnd>(OnEnd);
 
     foreach (var entry in Settings.ConVarValues) {
       var cv = ConVar.Find(entry.Key);
@@ -335,7 +335,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     activeWeapon.NextPrimaryAttackTick   = Server.TickCount + 500;
   }
 
-  virtual protected HookResult onEnd(EventRoundEnd @event, GameEventInfo info) {
+  virtual protected HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
     foreach (var entry in previousConvarValues) {
       var cv = ConVar.Find(entry.Key);
       if (cv == null || entry.Value == null) continue;
@@ -347,7 +347,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     if (Settings.RestrictWeapons)
       Plugin.RemoveListener<Listeners.OnTick>(OnTick);
 
-    Plugin.DeregisterEventHandler<EventRoundEnd>(onEnd);
+    Plugin.DeregisterEventHandler<EventRoundEnd>(OnEnd);
     return HookResult.Continue;
   }
 

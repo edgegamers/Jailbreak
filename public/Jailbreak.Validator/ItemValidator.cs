@@ -16,7 +16,8 @@ public class ItemValidator(
     PISTOLS,
     SHOTGUNS,
     SMGS,
-    HEAVY
+    HEAVY,
+    GUNS
   }
 
   public bool Validate(string value, out string? errorMessage) {
@@ -61,6 +62,7 @@ public class ItemValidator(
       WeaponType.SHOTGUNS => Tag.SHOTGUNS.Contains(weapon),
       WeaponType.SMGS => Tag.SMGS.Contains(weapon),
       WeaponType.HEAVY => Tag.HEAVY.Contains(weapon),
+      WeaponType.GUNS => Tag.GUNS.Contains(weapon),
       _ => throw new ArgumentOutOfRangeException(nameof(weapon))
     };
     return result;

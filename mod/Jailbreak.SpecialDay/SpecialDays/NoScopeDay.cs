@@ -20,31 +20,33 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
     => new SoloDayLocale("No Scope",
       "Your scope broke! Fight against everyone else. No camping!");
 
-  public override SpecialDaySettings Settings => new NoScopeSettings(this);
+  public override SpecialDaySettings Settings => new NoScopeSettings();
 
-  public readonly FakeConVar<string> CvWeapon = new("jb_sd_noscope_weapon",
+  public static readonly FakeConVar<string> CV_WEAPON = new(
+    "jb_sd_noscope_weapon",
     "Weapon to give to all players, recommended it be a weapon with a scope (duh)",
     "weapon_ssg08", ConVarFlags.FCVAR_NONE,
     new ItemValidator(allowMultiple: true));
 
-  public readonly FakeConVar<string> CvWeaponWhitelist = new(
+  public static readonly FakeConVar<string> CV_WEAPON_WHITELIST = new(
     "jb_sd_noscope_allowedweapons",
     "Weapons to allow players to use, empty for no restrictions",
     string.Join(",",
       Tag.UTILITY.Union(new[] { "weapon_ssg08", "weapon_knife" }.ToHashSet())),
     ConVarFlags.FCVAR_NONE, new ItemValidator(allowMultiple: true));
 
-  public readonly FakeConVar<int> CvKnifeDelay = new(
+  public static readonly FakeConVar<int> CV_KNIFE_DELAY = new(
     "jb_sd_noscope_knife_delay",
     "Time delay in seconds to give knives at, 0 to disable", 120,
     ConVarFlags.FCVAR_NONE, new RangeValidator<int>(0, 500));
 
-  public readonly FakeConVar<float> CvGravity = new("jb_sd_noscope_gravity",
-    "Gravity to set during the special day, default is 800", 200f);
+  public static readonly FakeConVar<float> CV_GRAVITY =
+    new("jb_sd_noscope_gravity",
+      "Gravity to set during the special day, default is 800", 200f);
 
   public override void Setup() {
-    if (CvKnifeDelay.Value > 0)
-      Timers[CvKnifeDelay.Value] += () => {
+    if (CV_KNIFE_DELAY.Value > 0)
+      Timers[CV_KNIFE_DELAY.Value] += () => {
         foreach (var player in PlayerUtil.GetAlive())
           player.GiveNamedItem("weapon_knife");
       };
@@ -54,7 +56,7 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
   public override void Execute() {
     foreach (var player in PlayerUtil.GetAlive()) {
       player.RemoveWeapons();
-      foreach (var weapon in CvWeapon.Value.Split(","))
+      foreach (var weapon in CV_WEAPON.Value.Split(","))
         player.GiveNamedItem(weapon);
     }
 
@@ -75,19 +77,19 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
     if (activeWeapon == null || !activeWeapon.IsValid) return;
     activeWeapon.NextSecondaryAttackTick = Server.TickCount + 500;
 
-    if (CvWeaponWhitelist.Value.Contains(activeWeapon.DesignerName,
+    if (CV_WEAPON_WHITELIST.Value.Contains(activeWeapon.DesignerName,
       StringComparison.CurrentCultureIgnoreCase))
       return;
     activeWeapon.NextPrimaryAttackTick = Server.TickCount + 500;
   }
 
   private class NoScopeSettings : FFASettings {
-    public NoScopeSettings(NoScopeDay day) {
+    public NoScopeSettings() {
       CtTeleport      = TeleportType.RANDOM;
       TTeleport       = TeleportType.RANDOM;
       RestrictWeapons = true;
 
-      ConVarValues["sv_gravity"]       = day.CvGravity.Value;
+      ConVarValues["sv_gravity"]       = CV_GRAVITY.Value;
       ConVarValues["sv_infinite_ammo"] = 2;
     }
 
