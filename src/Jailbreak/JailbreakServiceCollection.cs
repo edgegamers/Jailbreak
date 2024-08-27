@@ -1,5 +1,4 @@
 ﻿using CounterStrikeSharp.API.Core;
-using Jailbreak.Config;
 using Jailbreak.Debug;
 using Jailbreak.English.Generic;
 using Jailbreak.English.LastGuard;
@@ -18,7 +17,6 @@ using Jailbreak.LastGuard;
 using Jailbreak.LastRequest;
 using Jailbreak.Logs;
 using Jailbreak.Mute;
-using Jailbreak.Public.Configuration;
 using Jailbreak.Rebel;
 using Jailbreak.SpecialDay;
 using Jailbreak.Warden;
@@ -52,7 +50,6 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
 
     //	Do we want to make this scoped?
     //	Not sure how this will behave with multiple rounds and whatnot.
-    serviceCollection.AddTransient<IConfigService, ConfigService>();
     serviceCollection.AddJailbreakGeneric();
     serviceCollection.AddJailbreakLogs();
     serviceCollection.AddJailbreakRebel();

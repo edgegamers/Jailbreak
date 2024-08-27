@@ -36,38 +36,53 @@ public struct PreWardenStats(int armorValue, int health, int maxHealth,
 public class WardenBehavior(ILogger<WardenBehavior> logger,
   IWardenLocale locale, IRichLogService logs,
   ISpecialTreatmentService specialTreatment, IRebelService rebels,
-  WardenConfig config, IMuteService mute, IServiceProvider provider)
+  IMuteService mute, IServiceProvider provider)
   : IPluginBehavior, IWardenService {
   private readonly ISet<CCSPlayerController> bluePrisoners =
     new HashSet<CCSPlayerController>();
 
-  public static readonly FakeConVar<int> CV_ARMOR_EQUAL = new("css_jb_hp_outnumbered",
-    "Health points for CTs have equal balance", 50, ConVarFlags.FCVAR_NONE,
-    new RangeValidator<int>(1, 200));
+  public static readonly FakeConVar<int> CV_ARMOR_EQUAL =
+    new("css_jb_hp_outnumbered", "Health points for CTs have equal balance", 50,
+      ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 200));
 
-  public static readonly FakeConVar<int> CV_ARMOR_OUTNUMBER = new("css_jb_hp_outnumber",
-    "HP for CTs when outnumbering Ts", 25, ConVarFlags.FCVAR_NONE,
-    new RangeValidator<int>(1, 200));
+  public static readonly FakeConVar<int> CV_ARMOR_OUTNUMBER =
+    new("css_jb_hp_outnumber", "HP for CTs when outnumbering Ts", 25,
+      ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 200));
 
   public static readonly FakeConVar<int> CV_ARMOR_OUTNUMBERED =
     new("css_jb_hp_outnumbered", "Health points for CTs when outnumbered by Ts",
       100, ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 200));
 
-  public static readonly FakeConVar<int> CV_WARDEN_ARMOR = new("css_jb_warden_armor",
-    "Armor for the warden", 125, ConVarFlags.FCVAR_NONE,
-    new RangeValidator<int>(1, 200));
+  public static readonly FakeConVar<int> CV_WARDEN_ARMOR =
+    new("css_jb_warden_armor", "Armor for the warden", 125,
+      ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 200));
 
   public static readonly FakeConVar<int> CV_WARDEN_AUTO_OPEN_CELLS =
     new("css_jb_warden_opencells_delay",
       "Delay in seconds to auto-open cells at, -1 to disable", 60);
 
-  public static readonly FakeConVar<int> CV_WARDEN_HEALTH = new("css_jb_warden_hp",
-    "HP for the warden", 125, ConVarFlags.FCVAR_NONE,
-    new RangeValidator<int>(1, 200));
+  public static readonly FakeConVar<int> CV_WARDEN_HEALTH =
+    new("css_jb_warden_hp", "HP for the warden", 125, ConVarFlags.FCVAR_NONE,
+      new RangeValidator<int>(1, 200));
 
-  public static readonly FakeConVar<int> CV_WARDEN_MAX_HEALTH = new("css_jb_warden_maxhp",
-    "Max HP for the warden", 100, ConVarFlags.FCVAR_NONE,
-    new RangeValidator<int>(1, 200));
+  public static readonly FakeConVar<int> CV_WARDEN_MAX_HEALTH =
+    new("css_jb_warden_maxhp", "Max HP for the warden", 100,
+      ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 200));
+
+  public static readonly FakeConVar<string> CV_WARDEN_SOUND_KILLED =
+    new("css_jb_warden_sound_killed", "Sound to play when the warden is killed",
+      "wardenKilled");
+
+  public static readonly FakeConVar<string> CV_WARDEN_SOUND_PASSED =
+    new("css_jb_warden_sound_killed", "Sound to play when the warden passes",
+      "wardenPassed");
+
+  public static readonly FakeConVar<string> CV_WARDEN_SOUND_NEW =
+    new("css_jb_warden_sound_killed",
+      "Sound to play when the warden is assigned", "wardenNew");
+
+  public static readonly FakeConVar<int> CV_WARDEN_TERRORIST_RATIO =
+    new("css_jb_warden_t_ratio", "Ratio of T:CT to use for HP adjustments", 3);
 
   private bool firstWarden;
   private string? oldTag;
@@ -133,7 +148,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     }
 
     foreach (var player in Utilities.GetPlayers())
-      player.ExecuteClientCommand($"play sounds/{config.WardenNewSoundName}");
+      player.ExecuteClientCommand($"play sounds/{CV_WARDEN_SOUND_NEW.Value}");
 
     logs.Append(logs.Player(Warden), "is now the warden.");
 
@@ -282,7 +297,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     foreach (var player in Utilities.GetPlayers()) {
       if (!player.IsReal()) continue;
       player.ExecuteClientCommand(
-        $"play sounds/{config.WardenKilledSoundName}");
+        $"play sounds/{CV_WARDEN_SOUND_KILLED.Value}");
     }
 
     locale.BecomeNextWarden.ToAllChat();
@@ -333,7 +348,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     var tCount = Utilities.GetPlayers().Count(p => p.Team == CsTeam.Terrorist);
 
     // Casting to a float ensures if we're diving by zero, we get infinity instead of an error.
-    var ratio = (float)tCount / config.TerroristRatio - ctCount;
+    var ratio = (float)tCount / CV_WARDEN_TERRORIST_RATIO.Value - ctCount;
 
     return ratio switch {
       > 0 => 1,
@@ -436,7 +451,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
     foreach (var player in Utilities.GetPlayers())
       player.ExecuteClientCommand(
-        $"play sounds/{config.WardenPassedSoundName}");
+        $"play sounds/{CV_WARDEN_SOUND_PASSED.Value}");
 
     locale.BecomeNextWarden.ToAllChat();
     return HookResult.Continue;
