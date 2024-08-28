@@ -23,6 +23,7 @@ public class RTDStatsCommand(IRewardGenerator generator) : IPluginBehavior {
       var percent = prob / total * 100;
       executor.PrintToChat(
         $"{ChatColors.Orange}{index++}. {ChatColors.LightBlue}{name}{ChatColors.Grey}: {ChatColors.Yellow}{percent:0.00}%");
+      executor.PrintToConsole($"{index++}. {name}: {percent:0.00}%");
     }
   }
 }
