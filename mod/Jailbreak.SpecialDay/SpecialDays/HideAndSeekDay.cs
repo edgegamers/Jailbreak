@@ -91,14 +91,14 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
 
     if (CV_SEEK_TIME.Value >= 10)
       Timers[10] += () => {
-        foreach (var ct in PlayerUtil.FromTeam(SeekerTeam.Value))
+        foreach (var ct in PlayerUtil.FromTeam(HiderTeam.Value))
           ct.SetSpeed(1.5f);
 
         Msg.DamageWarning(15).ToTeamChat(SeekerTeam.Value);
       };
     if (CV_SEEK_TIME.Value >= 25)
       Timers[25] += () => {
-        foreach (var player in PlayerUtil.FromTeam(SeekerTeam.Value)) {
+        foreach (var player in PlayerUtil.FromTeam(HiderTeam.Value)) {
           player.SetSpeed(1.25f);
           EnableDamage(player);
         }
@@ -106,14 +106,13 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
 
     if (CV_SEEK_TIME.Value >= 30)
       Timers[30] += () => {
-        foreach (var ct in PlayerUtil.FromTeam(SeekerTeam.Value))
+        foreach (var ct in PlayerUtil.FromTeam(HiderTeam.Value))
           ct.SetSpeed(1.1f);
       };
 
     for (var offset = 15; offset < CV_SEEK_TIME.Value; offset += 15) {
-      var beginsIn = CV_SEEK_TIME.Value - offset;
-      Timers[CV_SEEK_TIME.Value] += ()
-        => Locale.BeginsIn(CV_SEEK_TIME.Value - beginsIn).ToAllChat();
+      var timeRemaining = CV_SEEK_TIME.Value - offset;
+      Timers[offset] += () => Locale.BeginsIn(timeRemaining).ToAllChat();
     }
 
     Timers[CV_SEEK_TIME.Value] += Execute;
@@ -140,7 +139,7 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
       if (armor != -1) player.SetArmor(armor);
     }
 
-    foreach (var ct in PlayerUtil.FromTeam(SeekerTeam.Value)) ct.SetSpeed(1);
+    foreach (var ct in PlayerUtil.FromTeam(HiderTeam.Value)) ct.SetSpeed(1);
   }
 
   public class HnsSettings : SpecialDaySettings {
