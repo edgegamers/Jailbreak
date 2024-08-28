@@ -28,7 +28,7 @@ public class CannotPickupReward : IRTDReward {
   public string Name { get; }
 
   public string Description
-    => $"You will not be able to pickup {Name} the next round.";
+    => $"You will not be able to pickup {Name} next round.";
 
   private readonly HashSet<int> blockedPlayerIDs = [];
 

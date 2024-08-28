@@ -19,8 +19,7 @@ public class CannotScopeReward : IRTDReward {
 
   public string Name => "Cannot Scope";
 
-  public string Description
-    => $"You will not be able to pickup {Name} the next round.";
+  public string Description => $"You will not be able to scope next round.";
 
   private bool registered;
 
