@@ -147,6 +147,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     var ctVectors = ctSpawns.ToArray();
     ctVectors.Shuffle();
 
+    var                 mgr = Provider.GetService<IZoneManager>();
     IEnumerable<Vector> spawnPositions;
     switch (type) {
       case SpecialDaySettings.TeleportType.CELL:
@@ -162,10 +163,11 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
         spawnPositions = [ctVectors.First()];
         break;
       case SpecialDaySettings.TeleportType.RANDOM:
-        spawnPositions = getAtLeastRandom(PlayerUtil.GetAlive().Count());
+        spawnPositions =
+          MapUtil.GetRandomSpawns(PlayerUtil.GetAlive().Count(), mgr);
         break;
       case SpecialDaySettings.TeleportType.RANDOM_STACKED:
-        spawnPositions = [getAtLeastRandom(1).First()];
+        spawnPositions = [MapUtil.GetRandomSpawns(1, mgr).First()];
         break;
       default:
         return;
@@ -174,61 +176,6 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     var baggedSpawns = new ShuffleBag<Vector>(spawnPositions.ToList());
     foreach (var player in players)
       player.PlayerPawn.Value?.Teleport(baggedSpawns.GetNext());
-  }
-
-  protected List<Vector> getAtLeastRandom(int count) {
-    // Progressively get more lax with our "randomness quality"
-    var result                       = getRandomSpawns(false, false, false);
-    if (result.Count < count) result = getRandomSpawns(false, false);
-    if (result.Count < count) result = getRandomSpawns(false);
-    if (result.Count < count) result = getRandomSpawns();
-    return result;
-  }
-
-  protected List<Vector> getRandomSpawns(bool includeSpawns = true,
-    bool includeTps = true, bool includeAuto = true) {
-    var result = new List<Vector>();
-
-    if (includeTps) {
-      var worldTp = Utilities
-       .FindAllEntitiesByDesignerName<CInfoTeleportDestination>(
-          "info_teleport_destination")
-       .Where(s => s.AbsOrigin != null)
-       .Select(s => s.AbsOrigin!);
-      result.AddRange(worldTp);
-    }
-
-    if (includeSpawns) {
-      var tSpawns = Utilities
-       .FindAllEntitiesByDesignerName<SpawnPoint>("info_player_terrorist")
-       .Where(s => s.AbsOrigin != null)
-       .Select(s => s.AbsOrigin!);
-      var ctSpawns = Utilities
-       .FindAllEntitiesByDesignerName<
-          SpawnPoint>("info_player_counterterrorist")
-       .Where(s => s.AbsOrigin != null)
-       .Select(s => s.AbsOrigin!);
-      result.AddRange(tSpawns);
-      result.AddRange(ctSpawns);
-    }
-
-    var zoneManager = Provider.GetService<IZoneManager>();
-    if (zoneManager != null) {
-      if (includeAuto)
-        result.AddRange(zoneManager
-         .GetZones(Server.MapName, ZoneType.SPAWN_AUTO)
-         .GetAwaiter()
-         .GetResult()
-         .Select(z => z.GetCenterPoint()));
-
-      var zones = zoneManager.GetZones(Server.MapName, ZoneType.SPAWN)
-       .GetAwaiter()
-       .GetResult();
-      result.AddRange(zones.Select(z => z.GetCenterPoint()));
-    }
-
-    result.Shuffle();
-    return result;
   }
 
   protected object GetConvarValue(ConVar? cvar) {

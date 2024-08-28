@@ -23,7 +23,7 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
 
   public static readonly FakeConVar<string> CV_WEAPON = new("jb_sd_oitc_weapon",
     "Weapon to give to players for the day", "weapon_deagle",
-    ConVarFlags.FCVAR_NONE, new ItemValidator(ItemValidator.WeaponType.GUNS));
+    ConVarFlags.FCVAR_NONE, new ItemValidator(WeaponType.GUNS));
 
   public static readonly FakeConVar<string> CV_ADDITIONAL_WEAPON = new(
     "jb_sd_oitc_additionalweapon",

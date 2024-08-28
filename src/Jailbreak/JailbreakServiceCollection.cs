@@ -6,6 +6,7 @@ using Jailbreak.English.LastRequest;
 using Jailbreak.English.Logs;
 using Jailbreak.English.Mute;
 using Jailbreak.English.Rebel;
+using Jailbreak.English.RTD;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.English.Warden;
 using Jailbreak.Formatting.Views;
@@ -18,6 +19,7 @@ using Jailbreak.LastRequest;
 using Jailbreak.Logs;
 using Jailbreak.Mute;
 using Jailbreak.Rebel;
+using Jailbreak.RTD;
 using Jailbreak.SpecialDay;
 using Jailbreak.Warden;
 using Jailbreak.Zones;
@@ -47,6 +49,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
     serviceCollection.AddSingleton<IWardenLocale, WardenLocale>();
     serviceCollection.AddSingleton<IWardenPeaceLocale, WardenPeaceLocale>();
     serviceCollection.AddSingleton<IWardenSTLocale, WardenSTLocale>();
+    serviceCollection.AddSingleton<IRTDLocale, RTDLocale>();
 
     //	Do we want to make this scoped?
     //	Not sure how this will behave with multiple rounds and whatnot.
@@ -60,5 +63,6 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
     serviceCollection.AddJailbreakLastGuard();
     serviceCollection.AddJailbreakSpecialDay();
     serviceCollection.AddJailbreakZones();
+    serviceCollection.AddDiceRoll();
   }
 }

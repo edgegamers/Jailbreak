@@ -43,6 +43,8 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
     new("css_jb_c4_damage", "Base damage to apply", 340, ConVarFlags.FCVAR_NONE,
       new RangeValidator<float>(0, 10000));
 
+  private bool giveNextRound = true;
+
   public void ClearActiveC4s() { bombs.Clear(); }
 
   public void TryGiveC4ToPlayer(CCSPlayerController player) {
@@ -116,11 +118,19 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
     }
   }
 
+  public void DontGiveC4NextRound() { giveNextRound = false; }
+
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
     ClearActiveC4s();
 
-    if (CV_GIVE_BOMB.Value) TryGiveC4ToRandomTerrorist();
+    if (!CV_GIVE_BOMB.Value) return HookResult.Continue;
+    if (!giveNextRound) {
+      giveNextRound = true;
+      return HookResult.Continue;
+    }
+
+    TryGiveC4ToRandomTerrorist();
     return HookResult.Continue;
   }
 
