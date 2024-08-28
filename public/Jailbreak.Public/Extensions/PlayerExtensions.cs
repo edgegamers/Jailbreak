@@ -126,7 +126,8 @@ public static class PlayerExtensions {
     if (!player.IsValid || pawn == null || !pawn.IsValid) return;
 
     // TODO: Don't always override to allow other plugins to show legs.
-    if (color.A == 255) color = Color.FromArgb(254, color.R, color.G, color.B);
+    if (color.A == 255)
+      color = Color.FromArgb(pawn.Render.A, color.R, color.G, color.B);
     pawn.RenderMode = RenderMode_t.kRenderTransColor;
     pawn.Render     = color;
     Utilities.SetStateChanged(pawn, "CBaseModelEntity", "m_clrRender");
