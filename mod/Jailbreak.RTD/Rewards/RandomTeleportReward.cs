@@ -19,7 +19,9 @@ public class RandomTeleportReward(IZoneManager zones) : IRTDReward {
   public bool GrantReward(CCSPlayerController player) {
     var zone = MapUtil.GetRandomSpawns(1, zones).FirstOrDefault();
     if (zone == null) return false;
-    player.Teleport(zone);
+    var pawn = player.Pawn.Value;
+    if (pawn == null || !pawn.IsValid) return false;
+    pawn.Teleport(zone);
     return true;
   }
 }
