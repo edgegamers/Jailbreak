@@ -18,8 +18,8 @@ public class SDLocale : ISDLocale, ILanguage<Formatting.Languages.English> {
   public IView SpecialDayRunning(string name) {
     return new SimpleView {
       PREFIX,
-      ChatColors.DarkRed + name,
-      ChatColors.Red + "is currently running."
+      ChatColors.Grey + "The current special day is",
+      ChatColors.Gold + name
     };
   }
 
