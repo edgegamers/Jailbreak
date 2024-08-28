@@ -30,6 +30,8 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
     "Additional (non-ammo restricted) weapons to give for the day",
     "weapon_knife", ConVarFlags.FCVAR_NONE, new ItemValidator());
 
+  private bool started;
+
   public override void Setup() {
     base.Setup();
     Plugin.RegisterEventHandler<EventPlayerHurt>(OnPlayerDamage);
@@ -48,11 +50,27 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
         player.GetWeaponBase(CV_WEAPON.Value)?.SetAmmo(1, 0);
       }
     }
+
+    started = true;
+  }
+
+  override protected HookResult OnPickup(EventItemPickup @event,
+    GameEventInfo info) {
+    var result = base.OnPickup(@event, info);
+    if (!started) return result;
+
+    var player = @event.Userid;
+    if (player == null || !player.IsValid) return result;
+    player.RemoveWeapons();
+    player.SetHealth(1);
+    return result;
   }
 
   private HookResult
     OnPlayerDamage(EventPlayerHurt @event, GameEventInfo info) {
     if (@event.Userid == null || !@event.Userid.IsValid)
+      return HookResult.Continue;
+    if (@event.Attacker == null || !@event.Attacker.IsValid)
       return HookResult.Continue;
     @event.Userid?.SetHealth(0);
     return HookResult.Changed;
@@ -74,9 +92,8 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
 
   public class OitcSettings : SpecialDaySettings {
     public OitcSettings() {
-      CtTeleport      = TeleportType.RANDOM;
-      TTeleport       = TeleportType.RANDOM;
-      RestrictWeapons = true;
+      CtTeleport = TeleportType.RANDOM;
+      TTeleport  = TeleportType.RANDOM;
       WithFriendlyFire();
 
       ConVarValues["mp_death_drop_gun"] = 0;

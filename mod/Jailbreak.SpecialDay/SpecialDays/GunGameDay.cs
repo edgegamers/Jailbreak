@@ -115,14 +115,7 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     if (!progressions.TryGetValue(player.Slot, out playerIndex))
       playerIndex = 0;
     if (attacker == null || !attacker.IsValid) return HookResult.Continue;
-    if (attacker.Slot == player.Slot) {
-      if (playerIndex <= 0) return HookResult.Continue;
-      playerIndex--;
-      msg.DemotedDueToSuicide.ToChat(player);
-      progressions[player.Slot] = playerIndex;
-
-      return HookResult.Continue;
-    }
+    if (attacker.Slot == player.Slot) return HookResult.Continue;
 
     var attackerProgress =
       progressions.TryGetValue(attacker.Slot, out var attackerIndex) ?

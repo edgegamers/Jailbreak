@@ -152,7 +152,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
     logs.Append(logs.Player(Warden), "is now the warden.");
 
-    unblueTimer = parent!.AddTimer(3, unmarkPrisonersBlue);
+    unblueTimer = parent.AddTimer(3, unmarkPrisonersBlue);
     mute.PeaceMute(firstWarden ?
       MuteReason.INITIAL_WARDEN :
       MuteReason.WARDEN_TAKEN);

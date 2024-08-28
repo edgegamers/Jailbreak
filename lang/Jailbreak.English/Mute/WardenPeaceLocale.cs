@@ -4,7 +4,6 @@ using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Logistics;
 using Jailbreak.Formatting.Objects;
 using Jailbreak.Formatting.Views.Warden;
-using Microsoft.Extensions.Primitives;
 
 namespace Jailbreak.English.Mute;
 

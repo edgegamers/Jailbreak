@@ -53,6 +53,7 @@ public static class Tag {
    .Union(SHOTGUNS)
    .Union(SMGS)
    .Union(HEAVY)
+   .Union(SNIPERS)
    .ToHashSet();
 
   public static readonly IReadOnlySet<string> WEAPONS =

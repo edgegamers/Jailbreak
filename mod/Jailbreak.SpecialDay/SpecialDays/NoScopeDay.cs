@@ -60,10 +60,12 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
         player.GiveNamedItem(weapon);
     }
 
+    Plugin.RegisterListener<Listeners.OnTick>(onTick);
+
     base.Execute();
   }
 
-  override protected void OnTick() {
+  private void onTick() {
     foreach (var player in PlayerUtil.GetAlive()) disableScope(player);
   }
 
@@ -83,11 +85,17 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
     activeWeapon.NextPrimaryAttackTick = Server.TickCount + 500;
   }
 
+  override protected HookResult
+    OnEnd(EventRoundEnd @event, GameEventInfo info) {
+    var result = base.OnEnd(@event, info);
+    Plugin.RemoveListener<Listeners.OnTick>(onTick);
+    return result;
+  }
+
   private class NoScopeSettings : FFASettings {
     public NoScopeSettings() {
-      CtTeleport      = TeleportType.RANDOM;
-      TTeleport       = TeleportType.RANDOM;
-      RestrictWeapons = true;
+      CtTeleport = TeleportType.RANDOM;
+      TTeleport  = TeleportType.RANDOM;
 
       ConVarValues["sv_gravity"]       = CV_GRAVITY.Value;
       ConVarValues["sv_infinite_ammo"] = 2;
