@@ -7,7 +7,9 @@ using Jailbreak.Formatting.Views.SpecialDay;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
+using Jailbreak.Public.Mod.Zones;
 using Jailbreak.Public.Utils;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
@@ -57,8 +59,10 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     Timers[10] += Execute;
 
     base.Setup();
+    var mgr = Provider.GetService<IZoneManager>();
     spawns =
-      new ShuffleBag<Vector>(getAtLeastRandom(Utilities.GetPlayers().Count));
+      new ShuffleBag<Vector>(
+        MapUtil.GetRandomSpawns(Utilities.GetPlayers().Count, mgr));
 
     Plugin.RegisterEventHandler<EventPlayerDeath>(OnDeath, HookMode.Pre);
     Plugin.RegisterEventHandler<EventPlayerSpawn>(OnRespawn);

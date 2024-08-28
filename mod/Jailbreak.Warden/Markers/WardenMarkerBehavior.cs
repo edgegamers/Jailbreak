@@ -48,7 +48,8 @@ public class WardenMarkerBehavior(IWardenService warden) : IPluginBehavior {
         - placementTime;
       if (timeElapsed < CV_RESIZE_TIME.Value) {
         if (distance <= CV_MAX_RADIUS.Value * 1.3) {
-          distance = Math.Clamp(distance, CV_MIN_RADIUS.Value, CV_MAX_RADIUS.Value);
+          distance = Math.Clamp(distance, CV_MIN_RADIUS.Value,
+            CV_MAX_RADIUS.Value);
           marker?.SetRadius(distance);
           marker?.Update();
           radius = distance;

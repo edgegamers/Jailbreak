@@ -125,8 +125,10 @@ public static class WeaponExtensions {
       case "weapon_knife_t":
       case "weapon_knife":
         return "Knife";
-      default:
-        return designerName.Replace("weapon_", "").ToUpper();
+      default: {
+        var name = designerName.Replace("weapon_", "");
+        return char.ToUpper(name[0]) + name[1..];
+      }
     }
   }
 

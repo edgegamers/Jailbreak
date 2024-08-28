@@ -17,13 +17,6 @@ namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
   : AbstractArmoryRestrictedDay(plugin, provider), ISpecialDayMessageProvider {
-  public override SDType Type => SDType.HNS;
-
-  private HNSDayLocale Msg => (HNSDayLocale)Locale;
-  public override SpecialDaySettings Settings => new HnsSettings();
-  public override IView ArmoryReminder => Msg.StayInArmory;
-  public ISDInstanceLocale Locale => new HNSDayLocale();
-
   // Set to -1 to not modify values
   public static readonly FakeConVar<int> CV_PRISONER_PRE_HEALTH = new(
     "jb_sd_hns_hide_hp_t", "Health to give to prisoners during HNS hide time",
@@ -78,12 +71,20 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
       "Duration in seconds to give the hiders time to hide", 45,
       ConVarFlags.FCVAR_NONE, new RangeValidator<int>(5, 120));
 
+  public override SDType Type => SDType.HNS;
+
+  private HNSDayLocale Msg => (HNSDayLocale)Locale;
+  public override SpecialDaySettings Settings => new HnsSettings();
+  public override IView ArmoryReminder => Msg.StayInArmory;
+
   private CsTeam? SeekerTeam => TeamUtil.FromString(CV_SEEKER_TEAM.Value);
 
   private CsTeam? HiderTeam
     => (SeekerTeam ?? CsTeam.Terrorist) == CsTeam.Terrorist ?
       CsTeam.CounterTerrorist :
       CsTeam.Terrorist;
+
+  public ISDInstanceLocale Locale => new HNSDayLocale();
 
   public override void Setup() {
     if (SeekerTeam == null || HiderTeam == null) return;

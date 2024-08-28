@@ -25,5 +25,7 @@ public interface IC4Service {
   /// </summary>
   void TryGiveC4ToRandomTerrorist();
 
+  void DontGiveC4NextRound() { }
+
   void ClearActiveC4s();
 }

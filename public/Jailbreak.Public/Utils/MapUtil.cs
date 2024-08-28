@@ -121,6 +121,61 @@ public static class MapUtil {
 
     return false;
   }
+
+  public static List<Vector> GetRandomSpawns(int count, IZoneManager? zones) {
+    // Progressively get more lax with our "randomness quality"
+    var result = GetRandomSpawns(zones, false, false, false);
+    if (result.Count < count) result = GetRandomSpawns(zones, false, false);
+    if (result.Count < count) result = GetRandomSpawns(zones, false);
+    if (result.Count < count) result = GetRandomSpawns(zones);
+    return result;
+  }
+
+  public static List<Vector> GetRandomSpawns(IZoneManager? zoneManager = null,
+    bool includeSpawns = true, bool includeTps = true,
+    bool includeAuto = true) {
+    var result = new List<Vector>();
+
+    if (includeTps) {
+      var worldTp = Utilities
+       .FindAllEntitiesByDesignerName<CInfoTeleportDestination>(
+          "info_teleport_destination")
+       .Where(s => s.AbsOrigin != null)
+       .Select(s => s.AbsOrigin!);
+      result.AddRange(worldTp);
+    }
+
+    if (includeSpawns) {
+      var tSpawns = Utilities
+       .FindAllEntitiesByDesignerName<SpawnPoint>("info_player_terrorist")
+       .Where(s => s.AbsOrigin != null)
+       .Select(s => s.AbsOrigin!);
+      var ctSpawns = Utilities
+       .FindAllEntitiesByDesignerName<
+          SpawnPoint>("info_player_counterterrorist")
+       .Where(s => s.AbsOrigin != null)
+       .Select(s => s.AbsOrigin!);
+      result.AddRange(tSpawns);
+      result.AddRange(ctSpawns);
+    }
+
+    if (zoneManager != null) {
+      if (includeAuto)
+        result.AddRange(zoneManager
+         .GetZones(Server.MapName, ZoneType.SPAWN_AUTO)
+         .GetAwaiter()
+         .GetResult()
+         .Select(z => z.GetCenterPoint()));
+
+      var zones = zoneManager.GetZones(Server.MapName, ZoneType.SPAWN)
+       .GetAwaiter()
+       .GetResult();
+      result.AddRange(zones.Select(z => z.GetCenterPoint()));
+    }
+
+    result.Shuffle();
+    return result;
+  }
 }
 
 public enum Sensitivity {
