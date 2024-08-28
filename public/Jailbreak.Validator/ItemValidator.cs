@@ -8,16 +8,16 @@ public class ItemValidator(
   bool allowMultiple = false) : IValidator<string> {
   [Flags]
   public enum WeaponType {
-    GRENADE,
-    UTILITY,
-    WEAPON,
-    SNIPERS,
-    RIFLES,
-    PISTOLS,
-    SHOTGUNS,
-    SMGS,
-    HEAVY,
-    GUNS
+    GRENADE = 1,
+    UTILITY = 2,
+    WEAPON = 4,
+    SNIPERS = 8,
+    RIFLES = 16,
+    PISTOLS = 32,
+    SHOTGUNS = 64,
+    SMGS = 128,
+    HEAVY = 256,
+    GUNS = 512
   }
 
   public bool Validate(string value, out string? errorMessage) {
@@ -41,7 +41,7 @@ public class ItemValidator(
         continue;
       }
 
-      errorMessage = $"invalid {nameof(type).ToLower()}: {weapon}";
+      errorMessage = $"invalid {type.ToString()}: {weapon}";
       return Enum.GetValues<WeaponType>()
        .Where(t => (t & type) == type)
        .Any(t => validateType(t, weapon));
