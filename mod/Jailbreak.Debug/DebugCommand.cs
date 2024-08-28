@@ -28,6 +28,7 @@ public class DebugCommand(IServiceProvider serviceProvider) : IPluginBehavior {
     commands.Add("settime", new DebugSetTime(serviceProvider));
     commands.Add("centerhud", new DebugCenterHud(serviceProvider));
     commands.Add("csay", new DebugCSay(serviceProvider));
+    commands.Add("color", new DebugColor(serviceProvider));
   }
 
   [RequiresPermissions("@css/root")]
