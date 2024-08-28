@@ -6,7 +6,9 @@ namespace Jailbreak.RTD.Rewards;
 
 public class ArmorReward(int armor) : IRTDReward {
   public string Name => armor + " Armor";
-  public string Description => "You won " + armor + " Armor next round.";
+
+  public string Description
+    => "You will spawn with " + armor + " Armor next round.";
 
   public bool GrantReward(CCSPlayerController player) {
     player.SetArmor(armor);

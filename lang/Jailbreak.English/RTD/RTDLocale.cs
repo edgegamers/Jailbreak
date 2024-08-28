@@ -11,11 +11,19 @@ public class RTDLocale : IRTDLocale, ILanguage<Formatting.Languages.English> {
     $" {ChatColors.Purple}[{ChatColors.LightPurple}RTD{ChatColors.Purple}]";
 
   public IView RewardSelected(IRTDReward reward) {
-    return new SimpleView {
-      { PREFIX, "You rolled ", reward.Name + "." },
-      SimpleView.NEWLINE,
-      { PREFIX, reward.Description }
+    var view = new SimpleView {
+      PREFIX,
+      ChatColors.Grey + "You rolled " + ChatColors.White + reward.Name
+      + ChatColors.Grey + "."
     };
+
+    if (reward.Description == null) return view;
+
+    view.Add(SimpleView.NEWLINE);
+    view.Add(PREFIX);
+    view.Add(ChatColors.Grey + reward.Description);
+
+    return view;
   }
 
   public IView AlreadyRolled(IRTDReward reward) {
@@ -28,7 +36,8 @@ public class RTDLocale : IRTDLocale, ILanguage<Formatting.Languages.English> {
 
   public IView CannotRollYet() {
     return new SimpleView {
-      PREFIX, "You can only roll once the round ends or you die."
+      PREFIX,
+      ChatColors.Red + "You can only roll once the round ends or you die."
     };
   }
 }

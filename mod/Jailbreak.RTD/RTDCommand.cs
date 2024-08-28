@@ -6,6 +6,7 @@ using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.RTD;
+using Jailbreak.Public.Utils;
 
 namespace Jailbreak.RTD;
 
@@ -25,7 +26,8 @@ public class RTDCommand(IRTDRewarder rewarder, IRewardGenerator generator,
       return;
     }
 
-    if (!bypass && !inBetweenRounds && executor.PawnIsAlive) {
+    if (!bypass && !inBetweenRounds && !RoundUtil.IsWarmup()
+      && executor.PawnIsAlive) {
       locale.CannotRollYet().ToChat(executor);
       return;
     }

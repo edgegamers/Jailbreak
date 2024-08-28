@@ -10,7 +10,7 @@ public class GuaranteedWardenReward(IWardenSelectionService service)
   public string Name => "Guaranteed Warden";
 
   public string Description
-    => "You are guaranteed to be warden next round if you queue for it";
+    => "You are guaranteed to be the warden next round if you queue for it.";
 
   public bool CanGrantReward(CCSPlayerController player) {
     return player.Team == CsTeam.CounterTerrorist;

@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.RTD;
@@ -7,7 +8,7 @@ namespace Jailbreak.RTD.Rewards;
 
 public class BombReward(IC4Service bombService) : IRTDReward {
   public string Name => "Bomb";
-  public string Description => "You won the bomb next round.";
+  public string Description => "You will receive the bomb next round.";
 
   public bool PrepareReward(int userid) {
     bombService.DontGiveC4NextRound();
@@ -19,7 +20,8 @@ public class BombReward(IC4Service bombService) : IRTDReward {
   }
 
   public bool GrantReward(CCSPlayerController player) {
-    bombService.TryGiveC4ToPlayer(player);
+    Server.RunOnTick(Server.TickCount + 64,
+      () => { bombService.TryGiveC4ToPlayer(player); });
     return true;
   }
 }

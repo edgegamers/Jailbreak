@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.RTD.Rewards;
@@ -7,17 +9,16 @@ namespace Jailbreak.RTD.Rewards;
 public class AmmoWeaponReward : WeaponReward {
   private readonly int primary, secondary;
 
-  public AmmoWeaponReward(string weapon, int primary, int secondary) :
-    base(weapon) {
+  public AmmoWeaponReward(BasePlugin plugin, string weapon, int primary,
+    int secondary, CsTeam requiredTeam = CsTeam.Terrorist) : base(plugin,
+    weapon, requiredTeam) {
     Trace.Assert(Tag.GUNS.Contains(weapon));
     this.primary   = primary;
     this.secondary = secondary;
   }
 
   public override bool GrantReward(CCSPlayerController player) {
-    var success = base.GrantReward(player);
-    if (!success) return false;
-
+    player.GiveNamedItem(weapon);
     player.GetWeaponBase(weapon).SetAmmo(primary, secondary);
     return true;
   }

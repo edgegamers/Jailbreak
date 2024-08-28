@@ -5,7 +5,7 @@ namespace Jailbreak.Public.Mod.RTD;
 
 public interface IRTDReward {
   public string Name { get; }
-  public string Description { get; }
+  public string? Description { get; }
   bool Enabled => true;
 
   bool CanGrantReward(int userid) {

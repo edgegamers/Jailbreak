@@ -7,5 +7,5 @@ public class TransparentReward()
   public override string Name => "Spawn Transparent";
 
   public override string Description
-    => "You won spawning transparent next round.";
+    => "You will spawn transparent next round.";
 }

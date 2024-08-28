@@ -5,23 +5,19 @@ using Jailbreak.Public.Mod.RTD;
 
 namespace Jailbreak.RTD.Rewards;
 
-public class CannotScopeReward : IRTDReward {
+public abstract class AbstractOnTickReward : IRTDReward {
   private readonly HashSet<int> blockedPlayerIDs = [];
   private readonly BasePlugin plugin;
 
   private bool registered;
 
-  public CannotScopeReward(BasePlugin plugin, WeaponType blocked) : this(plugin,
-    blocked.GetItems().ToArray()) { }
-
-  public CannotScopeReward(BasePlugin plugin, params string[] weapons) {
+  public AbstractOnTickReward(BasePlugin plugin) {
     this.plugin = plugin;
     this.plugin.RegisterEventHandler<EventRoundEnd>(onRoundEnd);
   }
 
-  public string Name => "Cannot Scope";
-
-  public string Description => "You will not be able to scope next round.";
+  public abstract string Name { get; }
+  public abstract string? Description { get; }
 
   public bool GrantReward(CCSPlayerController player) {
     if (player.UserId == null) return false;
@@ -52,18 +48,9 @@ public class CannotScopeReward : IRTDReward {
     foreach (var player in blockedPlayerIDs.Select(
       Utilities.GetPlayerFromUserid)) {
       if (player == null || player.UserId == null || !player.IsValid) continue;
-      disableScope(player);
+      tick(player);
     }
   }
 
-  private void disableScope(CCSPlayerController player) {
-    if (!player.IsReal()) return;
-    var pawn = player.PlayerPawn.Value;
-    if (pawn == null || !pawn.IsValid) return;
-    var weaponServices = pawn.WeaponServices;
-    if (weaponServices == null) return;
-    var activeWeapon = weaponServices.ActiveWeapon.Value;
-    if (activeWeapon == null || !activeWeapon.IsValid) return;
-    activeWeapon.NextSecondaryAttackTick = Server.TickCount + 500;
-  }
+  abstract protected void tick(CCSPlayerController player);
 }

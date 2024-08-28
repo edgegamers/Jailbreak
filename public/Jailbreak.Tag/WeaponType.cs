@@ -16,10 +16,6 @@ public static class WeaponTypeExtensions {
   public static IReadOnlySet<string> GetItems(this WeaponType type) {
     var result = new HashSet<string>();
 
-    foreach (var t in Enum.GetValues<WeaponType>())
-      if (type.HasFlag(t))
-        result.UnionWith(t.GetItems());
-
     switch (type) {
       case WeaponType.GUNS:
         return Tag.GUNS;

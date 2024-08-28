@@ -15,15 +15,15 @@ public class RTDStatsCommand(IRewardGenerator generator) : IPluginBehavior {
     var total = generator.Sum(r => r.Item2);
 
     var rewards = generator.ToList();
-    rewards.Sort((a, b) => a.Item2.CompareTo(b.Item2));
 
     var index = 0;
     foreach (var (reward, prob) in rewards) {
       var name    = reward.Name;
       var percent = prob / total * 100;
       executor.PrintToChat(
-        $"{ChatColors.Orange}{index++}. {ChatColors.LightBlue}{name}{ChatColors.Grey}: {ChatColors.Yellow}{percent:0.00}%");
-      executor.PrintToConsole($"{index++}. {name}: {percent:0.00}%");
+        $"{ChatColors.Orange}{index}. {ChatColors.LightBlue}{name}{ChatColors.Grey}: {ChatColors.Yellow}{percent:0.00}%");
+      executor.PrintToConsole($"{index}. {name}: {percent:0.00}%");
+      index++;
     }
   }
 }
