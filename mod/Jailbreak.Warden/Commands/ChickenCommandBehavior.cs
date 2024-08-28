@@ -6,6 +6,7 @@ using CounterStrikeSharp.API.Modules.Cvars;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public.Behaviors;
+using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Warden;
 
 namespace Jailbreak.Warden.Commands;
@@ -44,8 +45,16 @@ public class ChickenCommandBehavior(IWardenService warden,
       locale.SpawnFailed.ToChat(player);
       return;
     }
-    chicken.Teleport(player.AbsOrigin);
+
+    var loc = player.Pawn.Value?.AbsOrigin;
+    if (loc == null) {
+      locale.SpawnFailed.ToChat(player);
+      return;
+    }
+
+    chicken.Teleport(loc);
     locale.ChickenSpawned.ToAllChat();
     chicken.DispatchSpawn();
+    chickens++;
   }
 }

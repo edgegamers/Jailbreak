@@ -47,10 +47,16 @@ public class SoccerCommandBehavior(IWardenService warden,
       return;
     }
 
+    var loc = player.Pawn.Value?.AbsOrigin;
+    if (loc == null) {
+      locale.SpawnFailed.ToChat(player);
+      return;
+    }
     chicken.SetModel(
       "models/props/de_dust/hr_dust/dust_soccerball/dust_soccer_ball001.vmdl");
-    chicken.Teleport(player.AbsOrigin);
+    chicken.Teleport(loc);
     locale.SoccerSpawned.ToAllChat();
     chicken.DispatchSpawn();
+    soccers++;
   }
 }
