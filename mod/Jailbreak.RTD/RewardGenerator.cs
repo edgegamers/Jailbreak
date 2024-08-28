@@ -32,8 +32,8 @@ public class RewardGenerator(IZoneManager mgr, IC4Service bomb)
     (new WeaponReward("weapon_taser"), PROB_MEDIUM),
     (new HPReward(150), PROB_MEDIUM), (new HPReward(50), PROB_MEDIUM),
     (new ArmorReward(150), PROB_MEDIUM), (new HPReward(1), PROB_LOW),
-    (new ColorReward(Color.FromArgb(0, 255, 0)), PROB_LOW),
-    (new ColorReward(Color.FromArgb(255, 0, 0)), PROB_LOW),
+    (new ColorReward(Color.FromArgb(0, 255, 0), true), PROB_LOW),
+    (new ColorReward(Color.FromArgb(255, 0, 0), true), PROB_LOW),
     (new TransparentReward(), PROB_LOW),
     (new AmmoWeaponReward("weapon_glock", 2, 0), PROB_LOW),
     (new AmmoWeaponReward("weapon_negev", 0, 5), PROB_LOW),
@@ -49,6 +49,7 @@ public class RewardGenerator(IZoneManager mgr, IC4Service bomb)
       PROB_LOW));
     rewards.Add((new CannotPickupReward(basePlugin, WeaponType.UTILITY),
       PROB_LOW));
+    rewards.Add((new CannotScopeReward(basePlugin), PROB_LOW));
     rewards.Add((
       new CannotPickupReward(basePlugin,
         WeaponType.GRENADE | WeaponType.UTILITY), PROB_LOW));
@@ -67,10 +68,11 @@ public class RewardGenerator(IZoneManager mgr, IC4Service bomb)
   private float totalWeight
     => rewards.Where(r => r.Item1.Enabled).Select(s => s.Item2).Sum();
 
-  public IRTDReward GenerateReward(int slot) {
+  public IRTDReward GenerateReward(int? id) {
     var roll = rng.NextDouble() * totalWeight;
 
     foreach (var reward in rewards.Where(reward => reward.Item1.Enabled)) {
+      if (id != null && reward.Item1.CanGrantReward(id.Value)) continue;
       roll -= reward.Item2;
       if (roll <= 0) return reward.Item1;
     }

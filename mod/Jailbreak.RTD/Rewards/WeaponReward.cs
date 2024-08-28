@@ -2,6 +2,7 @@
 using System.Reflection;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.RTD;
 
@@ -21,6 +22,11 @@ public class WeaponReward : IRTDReward {
     => "You won a"
       + (weapon.GetFriendlyWeaponName()[0].IsVowel() ? "n" : "" + " ")
       + weapon.GetFriendlyWeaponName() + " next round.";
+
+  public bool CanGrantReward(CCSPlayerController player) {
+    // No point in giving a weapon to someone on CT
+    return player.Team == CsTeam.Terrorist;
+  }
 
   public virtual bool GrantReward(CCSPlayerController player) {
     player.GiveNamedItem(weapon);

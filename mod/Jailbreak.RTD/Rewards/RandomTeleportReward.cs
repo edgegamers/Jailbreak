@@ -1,4 +1,5 @@
 ﻿using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Mod.RTD;
 using Jailbreak.Public.Mod.Zones;
 using Jailbreak.Public.Utils;
@@ -10,6 +11,10 @@ public class RandomTeleportReward(IZoneManager zones) : IRTDReward {
 
   public string Description
     => "You will be teleported to a random location next round.";
+
+  public bool CanGrantReward(CCSPlayerController player) {
+    return player.Team == CsTeam.Terrorist;
+  }
 
   public bool GrantReward(CCSPlayerController player) {
     var zone = MapUtil.GetRandomSpawns(1, zones).FirstOrDefault();

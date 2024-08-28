@@ -34,6 +34,8 @@ public class
 
   private readonly IWardenService warden;
 
+  private readonly HashSet<int> guaranteedWarden = [];
+
   /// <summary>
   ///   Whether or not to use the queue.
   ///   When true, the queue should be skipped and turn to first-come-first-serve.
@@ -57,8 +59,17 @@ public class
 
   public void Dispose() { }
 
+  public void SetGuaranteedWarden(CCSPlayerController player) {
+    guaranteedWarden.Add(player.UserId ?? -1);
+  }
+
   public bool TryEnter(CCSPlayerController player) {
     if (!canEnterQueue(player)) return false;
+
+    if (guaranteedWarden.Contains(player.UserId ?? -1)) {
+      warden.TrySetWarden(player);
+      return true;
+    }
 
     queue.Get(player).InQueue = true;
     return true;
@@ -100,6 +111,7 @@ public class
   ///   Timer callback that states it's time to choose the warden.
   /// </summary>
   protected void OnChooseWarden() {
+    if (warden.HasWarden) return;
     var eligible = Utilities.GetPlayers()
      .Where(player => player.PawnIsAlive)
      .Where(player => player.Team == CsTeam.CounterTerrorist)

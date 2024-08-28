@@ -3,9 +3,9 @@
 namespace Jailbreak.Public.Mod.RTD;
 
 public interface IRewardGenerator : IReadOnlyCollection<(IRTDReward, float)> {
-  IRTDReward GenerateReward(int slot);
+  IRTDReward GenerateReward(int? id);
 
   IRTDReward GenerateReward(CCSPlayerController player) {
-    return GenerateReward(player.UserId ?? -1);
+    return GenerateReward(player.UserId);
   }
 }

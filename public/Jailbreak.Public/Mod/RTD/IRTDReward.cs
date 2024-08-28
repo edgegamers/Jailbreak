@@ -8,9 +8,20 @@ public interface IRTDReward {
   public string Description { get; }
   bool Enabled => true;
 
-  bool CanGrantReward(int userid) { return true; }
+  bool CanGrantReward(int userid) {
+    var player = Utilities.GetPlayerFromUserid(userid);
+    return player != null && player.IsValid && CanGrantReward(player);
+  }
 
-  bool PrepareReward(int userid) { return true; }
+  bool CanGrantReward(CCSPlayerController player) { return true; }
+
+  bool PrepareReward(int userid) {
+    var player = Utilities.GetPlayerFromUserid(userid);
+    if (player == null || !player.IsValid) return false;
+    return PrepareReward(player);
+  }
+
+  bool PrepareReward(CCSPlayerController player) { return true; }
 
   bool GrantReward(int userid) {
     var player = Utilities.GetPlayerFromUserid(userid);
