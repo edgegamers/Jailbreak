@@ -48,6 +48,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   ///   know why you are not calling it.
   /// </summary>
   public virtual void Setup() {
+    Plugin.RegisterFakeConVars(this);
     Plugin.RegisterEventHandler<EventRoundEnd>(OnEnd);
 
     foreach (var entry in Settings.ConVarValues) {

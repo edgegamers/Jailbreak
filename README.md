@@ -9,17 +9,20 @@ The classic Jail gamemode, ported to Counter-Strike 2.
 
 [![Release](https://img.shields.io/badge/Release-mediumseagreen?style=for-the-badge&logo=onlyoffice
 )](https://github.com/edgegamers/Jailbreak/releases/)⠀⠀
-[![Stable](https://img.shields.io/badge/Stable-orangered?style=for-the-badge&logo=onlyoffice)](https://nightly.link/edgegamers/Jailbreak/workflows/nightly/main/jailbreak-nightly)⠀⠀
+[![Stable](https://img.shields.io/badge/Stable-orangered?style=for-the-badge&logo=onlyoffice)](https://nightly.link/edgegamers/Jailbreak/workflows/nightly/main/jailbreak-nightly)
+⠀⠀
 [![Dev](https://img.shields.io/badge/Nightly-slateblue?style=for-the-badge&logo=onlyoffice
 )](https://nightly.link/edgegamers/Jailbreak/workflows/nightly/dev/jailbreak-nightly)
 
 **Release** builds are our full releases. We try to keep these high-quality and bug-free, when we can.
-Our **Stable** builds run on EdgeGamers' own Jailbreak servers. 
+Our **Stable** builds run on EdgeGamers' own Jailbreak servers.
 Our **Nightly** builds are used exclusively for development and staging, and are likely to have problems.
 
 ## Versioning
+
 Our release tags starting from 'v2.0.0' follow the [Semantic Versioning 2.0.0](https://semver.org/) standard,
 where `MAJOR.MINOR.PATCH` are incremented based on the following:
+
 - `MAJOR` when we make incompatible API changes,
 - `MINOR` when we add functionality in a backwards-compatible manner.
 - `PATCH` when we make backwards-compatible bug fixes.
@@ -27,46 +30,29 @@ where `MAJOR.MINOR.PATCH` are incremented based on the following:
 ## Status
 
 - **⚙️ Server**
-  - [ ] Stats/Analytics Sinks
-  - [ ] Error reporting
-  - [x] Configuration system
-      - Note: Passable, but in a terrible state. Needs TLC.
+  - [x] Stats/Analytics Sinks
+  - [x] Error reporting
   - [x] Logging
+  - [x] Zones
 - **👮 Guards**
   - [x] Warden Selection
   - [x] Warden Laser and Paint
-  - [ ] Special Days
-  - [x] Ratio Enforcement
-  - [ ] Bans/Punishments
+  - [x] Special Days
 - **🎃 Prisoners**
   - [x] Last Request
   - [x] Rebel System
 - **🛕 Maps**
+  - [x] Automagic Cell Opening
   - [ ] Custom Entities
   - [ ] Custom I/O
   - [ ] Warden/Guard/Prisoner Filters
 
-## Contributing
+## Configuration
 
-The jail plugin is currently in heavy development and all contributions are welcome!
-Please make sure all contributions use the dependency injection system, or ask to have your contribution
-ported if you don't know how.
+Configuration is done through CS#'s [FakeConVars](https://docs.cssharp.dev/examples/WithFakeConvars.html?q=fakeconvar).
 
-Ports to DI containers that have more verbose scoping systems for round-based or game-based scoping are welcome.
-
-> [!TIP]
-> Microsoft has some good documentation on dependency injection here: 
-> [Overview](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection),
-> [Using Dependency Injection](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection-usage),
-> [Dependency Injection Guidelines](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection-guidelines).
-
-All event handlers should derive from `IPluginBehavior` and be registered using
-`IServiceCollection.AddPluginBehavior<T>`. If your behavior also acts as a service,
-make sure to use `IServiceCollection.AddPluginBehavior<TInterface, T>`. All `IPluginBehavior` objects
-have their event handlers automatically registered.
-
-Code style should follow .NET conventions
-(if you need help, make sure to check "enable edits from maintainers" and ask for a format)
+You can search for the list of configurable
+convars [like so](https://github.com/search?q=repo%3Aedgegamers%2FJailbreak%20fakeconvar&type=code).
 
 ## Modding
 
@@ -97,7 +83,8 @@ foreach (IPluginBehavior extension in _extensions)
 
 ## Building
 
-The jailbreak plugin automatically builds to `build/Jailbreak` when using `dotnet publish src/Jailbreak/Jailbreak.csproj`.
+The jailbreak plugin automatically builds to `build/Jailbreak` when
+using `dotnet publish src/Jailbreak/Jailbreak.csproj`.
 Please use [SDK 8.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) or higher.
 
 Note that only the `src/Jailbreak` project is intended to be built directly.

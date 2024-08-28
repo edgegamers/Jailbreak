@@ -1,6 +1,8 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Cvars;
+using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
@@ -25,11 +27,27 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
 
   private BasePlugin? plugin;
 
+  public static readonly FakeConVar<bool> CV_GIVE_BOMB = new("css_jb_c4_give",
+    "Whether to give a random prisoner a bomb at the beginning of the round.",
+    true);
+
+  public static readonly FakeConVar<float> CV_C4_DELAY = new("css_jb_c4_delay",
+    "Time in seconds that the bomb takes to explode", .75f,
+    ConVarFlags.FCVAR_NONE, new RangeValidator<float>(0, 2));
+
+  public static readonly FakeConVar<float> CV_C4_RADIUS =
+    new("css_jb_c4_radius", "Bomb explosion radius", 350,
+      ConVarFlags.FCVAR_NONE, new RangeValidator<float>(0, 10000));
+
+  public static readonly FakeConVar<float> CV_C4_BASE_DAMAGE =
+    new("css_jb_c4_damage", "Base damage to apply", 340, ConVarFlags.FCVAR_NONE,
+      new RangeValidator<float>(0, 10000));
+
   public void ClearActiveC4s() { bombs.Clear(); }
 
   public void TryGiveC4ToPlayer(CCSPlayerController player) {
     var bombEntity = new CC4(player.GiveNamedItem("weapon_c4"));
-    bombs.Add(bombEntity, new C4Metadata(0.75f, false));
+    bombs.Add(bombEntity, new C4Metadata(false));
 
     ic4Locale.JihadC4Received.ToChat(player);
     ic4Locale.JihadC4Usage1.ToChat(player);
@@ -45,7 +63,6 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
 
     tryEmitSound(player, "jb.jihad", 1, 1f, 0f);
 
-    bombs[bombEntity].Delay        = delay;
     bombs[bombEntity].IsDetonating = true;
 
     rebelService.MarkRebel(player);
@@ -95,14 +112,15 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
         || activeWeapon.Handle != bomb.Handle)
         continue;
 
-      StartDetonationAttempt(bombCarrier, meta.Delay, bomb);
+      StartDetonationAttempt(bombCarrier, CV_C4_DELAY.Value, bomb);
     }
   }
 
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
     ClearActiveC4s();
-    TryGiveC4ToRandomTerrorist();
+
+    if (CV_GIVE_BOMB.Value) TryGiveC4ToRandomTerrorist();
     return HookResult.Continue;
   }
 
@@ -154,11 +172,10 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
       var distanceFromBomb =
         ct.PlayerPawn.Value!.AbsOrigin!.Distance(player.PlayerPawn.Value
          .AbsOrigin!);
-      if (distanceFromBomb > 350f) continue;
+      if (distanceFromBomb > CV_C4_RADIUS.Value) continue;
 
-      // 350f = "bombRadius"
-      var damage = 340f;
-      damage *= (350f - distanceFromBomb) / 350f;
+      var damage = CV_C4_BASE_DAMAGE.Value;
+      damage *= (CV_C4_RADIUS.Value - distanceFromBomb) / CV_C4_RADIUS.Value;
       float healthRef = ct.PlayerPawn.Value.Health;
       if (healthRef <= damage) {
         ct.CommitSuicide(true, true);
@@ -183,8 +200,7 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
       volume, delay);
   }
 
-  private class C4Metadata(float delay, bool isDetonating) {
-    public float Delay { get; set; } = delay;
+  private class C4Metadata(bool isDetonating) {
     public bool IsDetonating { get; set; } = isDetonating;
   }
 }

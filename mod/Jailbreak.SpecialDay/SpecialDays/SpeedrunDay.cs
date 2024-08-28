@@ -26,56 +26,56 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
   private const int MAX_POINTS = 500;
 
-  public static readonly FakeConVar<int> CvInitialSpeedrunTime =
+  public static readonly FakeConVar<int> CV_INITIAL_SPEEDRUN_TIME =
     new("css_jb_speedrun_initial_time",
       "Duration in seconds to grant the speedrunner", 40);
 
-  public static readonly FakeConVar<int> CvFirstRoundFreeze =
+  public static readonly FakeConVar<int> CV_FIRST_ROUND_FREEZE =
     new("css_jb_speedrun_first_round_freeze",
       "Duration in seconds to give players time to read the rules of speedrun",
       6);
 
-  public static readonly FakeConVar<int> CvFreezeTime =
+  public static readonly FakeConVar<int> CV_FREEZE_TIME =
     new("css_jb_speedrun_freeze_time",
       "Duration in seconds to freeze players before the speedrun starts", 2);
 
-  public static readonly FakeConVar<int> CvWinTimeBase =
+  public static readonly FakeConVar<int> CV_WIN_TIME_BASE =
     new("css_jb_speedrun_win_time_base",
       "Base duration in seconds to give the winner to kill other competitors",
       25);
 
-  public static readonly FakeConVar<int> CvWinTimeBonus =
+  public static readonly FakeConVar<int> CV_WIN_TIME_BONUS =
     new("css_jb_speedrun_win_time_bonus",
       "Bonus duration in seconds to give the winner for every competitor", 5);
 
-  public static readonly FakeConVar<int> CvWinTimeMax =
+  public static readonly FakeConVar<int> CV_WIN_TIME_MAX =
     new("css_jb_speedrun_win_max",
       "Max time to give the winner regardless of bonus", 60);
 
-  public static readonly FakeConVar<string> CvWinWeapon = new(
+  public static readonly FakeConVar<string> CV_WIN_WEAPONS = new(
     "css_jb_speedrun_win_weapons",
     "Weapon(s) to give to the winner to kill other competitors",
     "weapon_knife,weapon_negev",
-    customValidators: new WeaponValidator(allowMultiple: true));
+    customValidators: new ItemValidator(allowMultiple: true));
 
-  public static readonly FakeConVar<string> CvLosersWeapon = new(
+  public static readonly FakeConVar<string> CV_LOSERS_WEAPONS = new(
     "css_jb_speedrun_loser_weapons",
     "Weapon(s) to give to the losers to use against the winner", "",
-    customValidators: new WeaponValidator(allowMultiple: true));
+    customValidators: new ItemValidator(allowMultiple: true));
 
-  public static readonly FakeConVar<bool> CvWinnerDamageable = new(
+  public static readonly FakeConVar<bool> CV_WINNER_DAMAGEABLE = new(
     "css_jb_speedrun_winner_damageable", "Whether the winner can be damaged");
 
-  public static readonly FakeConVar<bool> CvLoserDamageable = new(
+  public static readonly FakeConVar<bool> CV_LOSER_DAMAGEABLE = new(
     "css_jb_speedrun_loser_damageable", "Whether the losers can be damaged",
     true);
 
-  public static readonly FakeConVar<int> CvTeleportType =
+  public static readonly FakeConVar<int> CV_TELEPORT_TYPE =
     new("css_jb_speedrun_teleport_type",
       "0 = Dont teleport at end, 1 = Teleport losers to winner, 2 = Teleport winner to loser(s)",
       2);
 
-  public static readonly FakeConVar<int> CvMaxPlayersToFinish = new(
+  public static readonly FakeConVar<int> CV_MAX_PLAYERS_TO_FINISH = new(
     "css_jb_speedrun_finish_at",
     "Number of players required to declare a winner", 2,
     customValidators: new RangeValidator<int>(2, 10));
@@ -88,7 +88,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   ///   Positive values represent players who are still alive, and the value
   ///   being the distance they are from the target.
   /// </summary>
-  private readonly HashSet<int> finishedPlayers = new();
+  private readonly HashSet<int> finishedPlayers = [];
 
   private readonly Random rng = new();
   private float? bestTime;
@@ -96,7 +96,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
   private AbstractTrail<BeamTrailSegment>? bestTrail;
 
-  private LinkedList<(int, float)> finishTimestampList = new();
+  private LinkedList<(int, float)> finishTimestampList = [];
 
   private IGenericCmdLocale generics = null!;
   private int round, playersAliveAtStart;
@@ -107,9 +107,9 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   private Vector? start;
   private Vector? target;
   private BeamCircle? targetCircle;
-  private ISpeedDayLocale msg => (ISpeedDayLocale)Locale;
+  private ISpeedDayLocale Msg => (ISpeedDayLocale)Locale;
 
-  private bool isRoundActive
+  private bool IsRoundActive
     => Provider.GetRequiredService<ISpecialDayManager>().CurrentSD == this;
 
   public override SDType Type => SDType.SPEEDRUN;
@@ -144,7 +144,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         player.SetColor(Color.FromArgb(100, 255, 255, 255));
       }
     };
-    Timers[CvFirstRoundFreeze.Value - 4] += () => {
+    Timers[CV_FIRST_ROUND_FREEZE.Value - 4] += () => {
       if (!speedrunner.IsValid || speedrunner.Connected
         != PlayerConnectedState.PlayerConnected)
         speedrunner = getRunner();
@@ -153,11 +153,11 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         return;
       }
 
-      msg.RunnerAssigned(speedrunner).ToAllChat();
+      Msg.RunnerAssigned(speedrunner).ToAllChat();
       speedrunner.SetColor(Color.DodgerBlue);
-      msg.YouAreRunner(CvInitialSpeedrunTime.Value).ToChat(speedrunner);
+      Msg.YouAreRunner(CV_INITIAL_SPEEDRUN_TIME.Value).ToChat(speedrunner);
     };
-    Timers[CvFirstRoundFreeze.Value] += () => {
+    Timers[CV_FIRST_ROUND_FREEZE.Value] += () => {
       if (!speedrunner.IsValid || speedrunner.Connected
         != PlayerConnectedState.PlayerConnected) {
         speedrunner = getRunner();
@@ -168,8 +168,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         }
 
         speedrunner.SetColor(Color.DodgerBlue);
-        msg.RunnerLeftAndReassigned(speedrunner).ToAllChat();
-        msg.YouAreRunner(CvInitialSpeedrunTime.Value).ToChat(speedrunner);
+        Msg.RunnerLeftAndReassigned(speedrunner).ToAllChat();
+        Msg.YouAreRunner(CV_INITIAL_SPEEDRUN_TIME.Value).ToChat(speedrunner);
       }
 
       start = speedrunner.PlayerPawn.Value!.AbsOrigin!.Clone();
@@ -177,8 +177,9 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       bestTrail = createFirstTrail(speedrunner);
     };
 
-    if (CvInitialSpeedrunTime.Value > 30)
-      Timers[CvInitialSpeedrunTime.Value + CvFirstRoundFreeze.Value - 30] += ()
+    if (CV_INITIAL_SPEEDRUN_TIME.Value > 30)
+      Timers[
+        CV_INITIAL_SPEEDRUN_TIME.Value + CV_FIRST_ROUND_FREEZE.Value - 30] += ()
         => {
         if (target != null) return;
         if (!speedrunner.IsValid || speedrunner.Connected
@@ -190,15 +191,16 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
           return;
         }
 
-        msg.RuntimeLeft(RoundUtil.GetTimeRemaining()).ToChat(speedrunner);
+        Msg.RuntimeLeft(RoundUtil.GetTimeRemaining()).ToChat(speedrunner);
       };
 
-    Timers[CvInitialSpeedrunTime.Value + CvFirstRoundFreeze.Value - 10] += ()
-      => {
-      if (target != null) return;
-      msg.RuntimeLeft(RoundUtil.GetTimeRemaining()).ToChat(speedrunner);
-    };
-    Timers[CvInitialSpeedrunTime.Value + CvFirstRoundFreeze.Value] += Execute;
+    Timers[CV_INITIAL_SPEEDRUN_TIME.Value + CV_FIRST_ROUND_FREEZE.Value - 10] +=
+      () => {
+        if (target != null) return;
+        Msg.RuntimeLeft(RoundUtil.GetTimeRemaining()).ToChat(speedrunner);
+      };
+    Timers[CV_INITIAL_SPEEDRUN_TIME.Value + CV_FIRST_ROUND_FREEZE.Value] +=
+      Execute;
 
     base.Setup();
   }
@@ -234,7 +236,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
     bestTime = timeSpent;
 
-    var minTime = CvInitialSpeedrunTime.Value * 0.5;
+    var minTime = CV_INITIAL_SPEEDRUN_TIME.Value * 0.5;
 
     startRound((int)Math.Ceiling(Math.Max(timeSpent * 1.1, minTime)));
 
@@ -290,8 +292,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
         furthest.Pawn.Value?.Teleport(end);
         furthest.SetColor(Color.DodgerBlue);
-        msg.RunnerAFKAndReassigned(furthest).ToAllChat();
-        msg.YouAreRunner(RoundUtil.GetTimeRemaining()).ToChat(furthest);
+        Msg.RunnerAFKAndReassigned(furthest).ToAllChat();
+        Msg.YouAreRunner(RoundUtil.GetTimeRemaining()).ToChat(furthest);
         trail.StartTracking(furthest);
         trail.DidntMoveTicks = 0;
         return;
@@ -299,7 +301,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
       if (trail.DidntMoveTicks < thresholdTicks) return;
       if (trail.DidntMoveTicks == thresholdTicks)
-        msg.StayStillToSpeedup.ToChat(trail.Player);
+        Msg.StayStillToSpeedup.ToChat(trail.Player);
       if (didntMoveSeconds % 2 == 0) RoundUtil.AddTimeRemaining(-1);
       if (RoundUtil.GetTimeRemaining() <= 0) Execute();
     };
@@ -327,8 +329,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       speedrunner = nearest;
       nearest.Pawn.Value?.Teleport(end);
       nearest.SetColor(Color.DodgerBlue);
-      msg.RunnerLeftAndReassigned(nearest).ToAllChat();
-      msg.YouAreRunner(RoundUtil.GetTimeRemaining()).ToChat(nearest);
+      Msg.RunnerLeftAndReassigned(nearest).ToAllChat();
+      Msg.YouAreRunner(RoundUtil.GetTimeRemaining()).ToChat(nearest);
       trail.StartTracking(nearest);
     };
     return trail;
@@ -344,17 +346,17 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
   private void startRound(int seconds) {
     roundStartTime = null;
-    if (!isRoundActive) {
+    if (!IsRoundActive) {
       panic("Round is not active but we are in startRound");
       return;
     }
 
     var alive = PlayerUtil.GetAlive().ToArray();
     playersAliveAtStart = PlayerUtil.GetAlive().Count();
-    msg.BeginRound(++round, getEliminations(playersAliveAtStart), seconds)
+    Msg.BeginRound(++round, getEliminations(playersAliveAtStart), seconds)
      .ToAllChat();
 
-    RoundUtil.SetTimeRemaining(seconds + CvFreezeTime.Value);
+    RoundUtil.SetTimeRemaining(seconds + CV_FREEZE_TIME.Value);
 
     foreach (var player in alive) {
       var pawn = player.PlayerPawn.Value;
@@ -367,19 +369,19 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     finishedPlayers.Clear();
     finishTimestampList.Clear();
 
-    Plugin.AddTimer(CvFreezeTime.Value, () => {
-      if (!isRoundActive) return;
+    Plugin.AddTimer(CV_FREEZE_TIME.Value, () => {
+      if (!IsRoundActive) return;
       foreach (var player in PlayerUtil.GetAlive()) player.UnFreeze();
       roundStartTime = Server.CurrentTime;
     }, TimerFlags.STOP_ON_MAPCHANGE);
 
-    roundEndTimer = Plugin.AddTimer(seconds + CvFreezeTime.Value, endRound,
+    roundEndTimer = Plugin.AddTimer(seconds + CV_FREEZE_TIME.Value, endRound,
       TimerFlags.STOP_ON_MAPCHANGE);
   }
 
   private void checkFinishers() {
     if (target == null || roundStartTime == null) return;
-    if (!isRoundActive) {
+    if (!IsRoundActive) {
       panic("Round is not active but we are in checkFinishers");
       return;
     }
@@ -432,9 +434,9 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       foreach (var (slot, dist) in unfinished)
         finishTimestampList.AddLast((slot, dist));
 
-    const int TOTAL_LINES = 8;
-    var       pos         = 1;
-    var       current     = finishTimestampList.First;
+    const int totalLines = 8;
+    var       pos        = 1;
+    var       current    = finishTimestampList.First;
 
     string? top = null;
     while (current != null) {
@@ -451,14 +453,14 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       var playerLine = current;
 
       var d = 0;
-      while (playerLine != null && (display < TOTAL_LINES / 2
-        || pos - d > finishTimestampList.Count - TOTAL_LINES
-        && display < TOTAL_LINES)) {
+      while (playerLine != null && (display < totalLines / 2
+        || pos - d > finishTimestampList.Count - totalLines
+        && display < totalLines)) {
         var (slot, dist) = playerLine.Value;
         playerLine       = playerLine.Previous;
         var p = Utilities.GetPlayerFromSlot(slot);
         if (p == null) continue;
-        lines = generateHTMLLine(p, pos - d++, dist) + (d == 1 ? "" : "<br>")
+        lines = generateHtmlLine(p, pos - d++, dist) + (d == 1 ? "" : "<br>")
           + lines;
         display++;
       }
@@ -467,12 +469,12 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       playerLine = current;
 
       d = 0;
-      while (playerLine != null && display < TOTAL_LINES) {
+      while (playerLine != null && display < totalLines) {
         var (slot, dist) = playerLine.Value;
         playerLine       = playerLine.Next;
         var p = Utilities.GetPlayerFromSlot(slot);
         if (p == null) continue;
-        lines += "<br>" + generateHTMLLine(p, pos + ++d, dist);
+        lines += "<br>" + generateHtmlLine(p, pos + ++d, dist);
         display++;
       }
 
@@ -488,7 +490,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     finishTimestampList = originalCompletions;
   }
 
-  private string generateHTMLLine(CCSPlayerController player, int position,
+  private string generateHtmlLine(CCSPlayerController player, int position,
     float distance) {
     string color;
     var    eliminations = getEliminations(playersAliveAtStart);
@@ -541,10 +543,10 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     if (bestTime == null || time < bestTime) {
       bestTime           = time;
       bestTimePlayerSlot = player.Slot;
-      msg.BestTime(player, time).ToAllChat();
+      Msg.BestTime(player, time).ToAllChat();
       player.SetColor(Color.FromArgb(255, Color.Gold));
     } else {
-      msg.PlayerTime(player, finishedPlayers.Count + 1, -time).ToAllChat();
+      Msg.PlayerTime(player, finishedPlayers.Count + 1, -time).ToAllChat();
     }
 
     finishTimestampList.AddLast((player.Slot, -Server.CurrentTime));
@@ -605,7 +607,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       return;
     }
 
-    if (!isRoundActive) {
+    if (!IsRoundActive) {
       panic("Round is not active but we are in endRound");
       return;
     }
@@ -642,7 +644,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
         if (random != null && activeTrails.TryGetValue(random.Slot,
           out var randomTrail)) {
-          msg.ImpossibleLocation(
+          Msg.ImpossibleLocation(
             ctMade ? CsTeam.Terrorist : CsTeam.CounterTerrorist, random);
 
           bestTrail?.Kill();
@@ -657,7 +659,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
     announceTimes();
 
-    if (aliveCount <= CvMaxPlayersToFinish.Value) {
+    if (aliveCount <= CV_MAX_PLAYERS_TO_FINISH.Value) {
       if (finishTimestampList.Count == 0) {
         generics.Error("No slowest times found").ToAllChat();
         return;
@@ -678,29 +680,30 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
        .Where(p => p.Slot != winner.Slot)
        .ToList();
 
-      var timeToSet = CvWinTimeBase.Value + CvWinTimeBonus.Value * losers.Count;
+      var timeToSet = CV_WIN_TIME_BASE.Value
+        + CV_WIN_TIME_BONUS.Value * losers.Count;
 
-      msg.PlayerWon(winner).ToAllChat();
+      Msg.PlayerWon(winner).ToAllChat();
 
       foreach (var loser in losers) {
         loser.SetColor(Color.FromArgb(254, Color.White));
-        if (CvTeleportType.Value == 1)
+        if (CV_TELEPORT_TYPE.Value == 1)
           loser.Teleport(winner);
-        else if (CvTeleportType.Value == 2) winner.Teleport(loser);
-        if (CvLoserDamageable.Value) EnableDamage(loser);
+        else if (CV_TELEPORT_TYPE.Value == 2) winner.Teleport(loser);
+        if (CV_LOSER_DAMAGEABLE.Value) EnableDamage(loser);
       }
 
-      if (CvWinnerDamageable.Value) EnableDamage(winner);
+      if (CV_WINNER_DAMAGEABLE.Value) EnableDamage(winner);
 
-      foreach (var weapon in CvLosersWeapon.Value.Split(','))
+      foreach (var weapon in CV_LOSERS_WEAPONS.Value.Split(','))
         foreach (var loser in losers)
           loser.GiveNamedItem(weapon);
 
-      foreach (var weapon in CvWinWeapon.Value.Split(','))
+      foreach (var weapon in CV_WIN_WEAPONS.Value.Split(','))
         winner.GiveNamedItem(weapon);
 
       Plugin.RemoveListener<Listeners.OnTick>(checkFinishers);
-      RoundUtil.SetTimeRemaining(Math.Min(timeToSet, CvWinTimeMax.Value));
+      RoundUtil.SetTimeRemaining(Math.Min(timeToSet, CV_WIN_TIME_MAX.Value));
       Server.ExecuteCommand("mp_ignore_round_win_conditions 0");
       return;
     }
@@ -709,7 +712,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     var nextRoundTime = (int)Math.Ceiling((bestTime ?? 20) + 10 - round * 1.5);
 
     if (toEliminate <= 0) {
-      msg.NoneEliminated.ToAllChat();
+      Msg.NoneEliminated.ToAllChat();
       Plugin.AddTimer(3f, () => { startRound(nextRoundTime); },
         TimerFlags.STOP_ON_MAPCHANGE);
       return;
@@ -750,7 +753,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       if (player == null || !player.IsValid) continue;
       EnableDamage(player);
       player.CommitSuicide(false, true);
-      msg.PlayerEliminated(player).ToAllChat();
+      Msg.PlayerEliminated(player).ToAllChat();
     }
 
     Plugin.AddTimer(3f, () => { startRound(nextRoundTime); },
@@ -760,7 +763,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   private void eliminatePlayer(CCSPlayerController player) {
     EnableDamage(player);
     player.CommitSuicide(false, true);
-    msg.PlayerEliminated(player).ToAllChat();
+    Msg.PlayerEliminated(player).ToAllChat();
   }
 
   private void panic(string reason) {
@@ -794,7 +797,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       var player = Utilities.GetPlayerFromSlot(slot);
       slowest = slowest.Previous;
       if (player == null) continue;
-      msg.PlayerTime(player, position--, dist).ToChat(player);
+      Msg.PlayerTime(player, position--, dist).ToChat(player);
     }
   }
 
@@ -825,7 +828,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     public override Func<int> RoundTime
-      => () => CvInitialSpeedrunTime.Value + CvFirstRoundFreeze.Value;
+      => () => CV_INITIAL_SPEEDRUN_TIME.Value + CV_FIRST_ROUND_FREEZE.Value;
 
     public override ISet<string> AllowedWeapons(CCSPlayerController player) {
       // Return empty set to allow no weapons
@@ -833,7 +836,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     public override float FreezeTime(CCSPlayerController player) {
-      return CvFirstRoundFreeze.Value;
+      return CV_FIRST_ROUND_FREEZE.Value;
     }
   }
 }

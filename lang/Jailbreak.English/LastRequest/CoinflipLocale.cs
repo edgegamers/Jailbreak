@@ -26,7 +26,9 @@ public class CoinflipLocale : LastRequestLocale, ILRCFLocale {
 
   public IView CoinLandsOn(bool heads) {
     return new SimpleView {
-      PREFIX, "The coin lands on" + ChatColors.Green, heads ? "Heads" : "Tails"
+      PREFIX,
+      "The coin landed on" + ChatColors.Green,
+      heads ? "Heads" : "Tails" + ChatColors.White + "."
     };
   }
 }

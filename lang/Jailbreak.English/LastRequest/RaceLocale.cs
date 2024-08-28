@@ -20,15 +20,14 @@ public class RaceLocale : LastRequestLocale, ILRRaceLocale {
       SimpleView.NEWLINE, {
         PREFIX,
         $"Type {ChatColors.Blue}!endrace{ChatColors.White} to set the end point!"
-      },
-      SimpleView.NEWLINE
+      }
     };
 
   public IView RaceStartingMessage(CCSPlayerController prisoner) {
     return new SimpleView {
       {
         PREFIX, prisoner,
-        " is starting a race. Pay attention to where they set the end point!"
+        "is racing you. Pay attention to where they set the end point!"
       }
     };
   }
@@ -37,14 +36,17 @@ public class RaceLocale : LastRequestLocale, ILRRaceLocale {
     return new SimpleView {
       {
         PREFIX,
-        $"You must be in a race {ChatColors.Blue + "!lr" + ChatColors.White} to use this command"
+        $"{ChatColors.Red}You must be in a race {ChatColors.Blue + "!lr" + ChatColors.Red} to use this."
       }
     };
   }
 
   public IView NotInPendingState() {
     return new SimpleView {
-      { PREFIX, "You must be in the pending state to use this command." }
+      {
+        PREFIX,
+        ChatColors.Red + "You must be in the pending state to use this command."
+      }
     };
   }
 }

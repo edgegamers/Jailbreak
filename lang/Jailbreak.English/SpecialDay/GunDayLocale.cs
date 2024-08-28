@@ -19,15 +19,12 @@ public class GunDayLocale() : SoloDayLocale("Gun Game",
   public IView PromotedTo(string weapon, int weaponsLeft) {
     if (weaponsLeft == 1)
       return new SimpleView {
-        PREFIX,
-        "You were promoted to",
-        weapon + ".",
-        ChatColors.Green + "LAST WEAPON!"
+        PREFIX, "Promoted to", weapon + ".", ChatColors.Green + "LAST WEAPON!"
       };
 
     return new SimpleView {
       PREFIX,
-      "You were promoted to",
+      "Promoted to",
       weapon + ".",
       weaponsLeft,
       "weapons left."
@@ -38,7 +35,7 @@ public class GunDayLocale() : SoloDayLocale("Gun Game",
     return new SimpleView {
       PREFIX,
       player,
-      "is on their last weapon!",
+      "is on the last weapon!",
       ChatColors.LightRed + "Watch out!"
     };
   }

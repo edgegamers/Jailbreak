@@ -17,7 +17,7 @@ namespace Jailbreak.Warden.Commands;
 public class WardenOpenCommandsBehavior(IWardenService warden,
   IWardenLocale msg, IWardenCmdOpenLocale wardenCmdOpenMsg,
   IZoneManager zoneManager) : IPluginBehavior, IWardenOpenCommand {
-  public static readonly FakeConVar<int> CvOpenCommandCooldown = new(
+  public static readonly FakeConVar<int> CV_OPEN_COMMAND_COOLDOWN = new(
     "css_jb_warden_open_cooldown",
     "Minimum seconds warden must wait before being able to open the cells.", 30,
     customValidators: new RangeValidator<int>(0, 300));
@@ -40,8 +40,8 @@ public class WardenOpenCommandsBehavior(IWardenService warden,
         return;
       }
 
-      if (RoundUtil.GetTimeElapsed() < CvOpenCommandCooldown.Value) {
-        wardenCmdOpenMsg.CannotOpenYet(CvOpenCommandCooldown.Value)
+      if (RoundUtil.GetTimeElapsed() < CV_OPEN_COMMAND_COOLDOWN.Value) {
+        wardenCmdOpenMsg.CannotOpenYet(CV_OPEN_COMMAND_COOLDOWN.Value)
          .ToChat(executor);
         return;
       }
@@ -56,9 +56,10 @@ public class WardenOpenCommandsBehavior(IWardenService warden,
     var   result = MapUtil.OpenCells(zoneManager);
     IView message;
     if (result) {
-      if (executor != null && !warden.IsWarden(executor)) {
+      if (executor != null && !warden.IsWarden(executor))
         message = wardenCmdOpenMsg.CellsOpenedBy(executor);
-      } else { message = wardenCmdOpenMsg.CellsOpenedBy(null); }
+      else
+        message = wardenCmdOpenMsg.CellsOpenedBy(null);
     } else { message = wardenCmdOpenMsg.OpeningFailed; }
 
     message.ToAllChat();

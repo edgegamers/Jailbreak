@@ -15,7 +15,7 @@ public class LastRequestLocale : ILRLocale,
   ILanguage<Formatting.Languages.English> {
   public static readonly FormatObject PREFIX =
     new HiddenFormatObject(
-      $" {ChatColors.DarkRed}[{ChatColors.LightRed}LR{ChatColors.DarkRed}]") {
+      $" {ChatColors.Green}[{ChatColors.Lime}LR{ChatColors.Green}]") {
       //	Hide in panorama and center text
       Plain = false, Panorama = false, Chat = true
     };
@@ -24,7 +24,7 @@ public class LastRequestLocale : ILRLocale,
     return new SimpleView {
       {
         PREFIX,
-        $"Last Request has been enabled. {ChatColors.Grey}Type {ChatColors.LightBlue}!lr{ChatColors.Grey} to start a last request."
+        $"Last Request activated. {ChatColors.Grey}Type {ChatColors.LightBlue}!lr{ChatColors.Grey} to start a last request."
       }
     };
   }
@@ -33,7 +33,7 @@ public class LastRequestLocale : ILRLocale,
     return new SimpleView {
       {
         PREFIX,
-        $"{ChatColors.Grey}Last Request has been {ChatColors.Red}disabled{ChatColors.Grey}."
+        $"{ChatColors.Grey}Last Request {ChatColors.Red}disabled{ChatColors.Grey}."
       }
     };
   }
@@ -52,9 +52,9 @@ public class LastRequestLocale : ILRLocale,
     return new SimpleView {
       PREFIX,
       lr.Prisoner,
-      ChatColors.Grey + "is preparing a",
+      ChatColors.Grey + "is starting a",
       ChatColors.White + lr.Type.ToFriendlyString(),
-      ChatColors.Grey + "Last Request against",
+      ChatColors.Grey + "LR against",
       lr.Guard
     };
   }
@@ -74,36 +74,29 @@ public class LastRequestLocale : ILRLocale,
     var tNull = !lr.Prisoner.IsReal();
     var gNull = !lr.Guard.IsReal();
     if (tNull && gNull)
-      return new SimpleView { PREFIX, "Last Request has been decided." };
+      return new SimpleView { PREFIX, "Last Request decided." };
 
     if (tNull && result == LRResult.PRISONER_WIN)
       return new SimpleView {
-        PREFIX, lr.Guard, "lost the LR, but the prisoner left the game."
+        PREFIX, lr.Guard, "lost the LR, but the prisoner left the game?"
       };
 
     if (gNull && result == LRResult.GUARD_WIN)
       return new SimpleView {
-        PREFIX, lr.Prisoner, "lost the LR, but the guard left the game."
+        PREFIX, lr.Prisoner, "lost the LR, but the guard left the game?"
       };
 
-    switch (result) {
-      case LRResult.TIMED_OUT:
-        return new SimpleView {
-          PREFIX, ChatColors.Grey.ToString(), "Last Request has timed out."
-        };
-      case LRResult.INTERRUPTED:
-        return new SimpleView {
-          PREFIX,
-          ChatColors.Grey.ToString(),
-          "Last Request has been interrupted."
-        };
-      default:
-        return new SimpleView {
-          PREFIX,
-          result == LRResult.PRISONER_WIN ? lr.Prisoner : lr.Guard,
-          "won the LR."
-        };
-    }
+    return result switch {
+      LRResult.TIMED_OUT => new SimpleView {
+        PREFIX, ChatColors.Grey.ToString(), "Last Request timed out."
+      },
+      LRResult.INTERRUPTED => new SimpleView {
+        PREFIX, ChatColors.Grey.ToString(), "Last Request interrupted."
+      },
+      _ => new SimpleView {
+        PREFIX, result == LRResult.PRISONER_WIN ? lr.Prisoner : lr.Guard, "won."
+      }
+    };
   }
 
   public IView CannotLR(string reason) {
@@ -149,14 +142,4 @@ public class LastRequestLocale : ILRLocale,
     => new SimpleView {
       PREFIX, "You are not in the same LR as them, damage blocked."
     };
-
-  public IView InvalidPlayerChoice(CCSPlayerController player, string reason) {
-    return new SimpleView {
-      PREFIX,
-      "Invalid player choice: ",
-      player,
-      " Reason: ",
-      reason
-    };
-  }
 }
