@@ -31,7 +31,6 @@ public class RebelManager(IRebelLocale notifs, IRichLogService logs)
     basePlugin.RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
     basePlugin.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
     basePlugin.RegisterEventHandler<EventRoundStart>(OnRoundStart);
-    basePlugin.RegisterListener<Listeners.OnTick>(OnTick);
 
     basePlugin.AddTimer(1f, () => {
       foreach (var player in GetActiveRebels()) {
@@ -45,7 +44,6 @@ public class RebelManager(IRebelLocale notifs, IRichLogService logs)
         }
 
         applyRebelColor(player);
-        sendTimeLeft(player);
       }
     }, TimerFlags.REPEAT);
   }
@@ -89,16 +87,6 @@ public class RebelManager(IRebelLocale notifs, IRichLogService logs)
   }
 
   public void DisableRebelForRound() { enabled = false; }
-
-  private void OnTick() {
-    foreach (var player in GetActiveRebels()) {
-      if (!player.IsReal()) continue;
-
-      if (GetRebelTimeLeft(player) <= 0) continue;
-
-      sendTimeLeft(player);
-    }
-  }
 
   private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
     enabled = true;
@@ -151,16 +139,9 @@ public class RebelManager(IRebelLocale notifs, IRichLogService logs)
     player.Pawn.Value.Render     = color;
     Utilities.SetStateChanged(player.Pawn.Value, "CBaseModelEntity",
       "m_clrRender");
-  }
 
-  private void sendTimeLeft(CCSPlayerController player) {
-    // var timeLeft = GetRebelTimeLeft(player);
-    // var formattedTime = TimeSpan.FromSeconds(timeLeft).ToString(@"mm\:ss");
-    var color = getRebelColor(player);
-    var formattedColor =
-      $"<font color=\"#{color.R:X2}{color.G:X2}{color.B:X2}\">";
-
-    player.PrintToCenterHtml(
-      $"You are {formattedColor}<b>rebelling</b></font>");
+    player.ColorScreen(
+      Color.FromArgb(8 + (int)Math.Round(getRebelTimePercentage(player) * 32),
+        Color.Red), 1f, 1.5f, PlayerExtensions.FadeFlags.FADE_OUT);
   }
 }
