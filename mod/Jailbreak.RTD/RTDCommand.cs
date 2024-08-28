@@ -2,6 +2,7 @@
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Cvars;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public.Behaviors;
@@ -12,6 +13,9 @@ namespace Jailbreak.RTD;
 
 public class RTDCommand(IRTDRewarder rewarder, IRewardGenerator generator,
   IRTDLocale locale, IGenericCmdLocale generic) : IPluginBehavior {
+  public static readonly FakeConVar<bool> CV_RTD_ENABLED =
+    new("css_jb_rtd_enabled", "Whether to allow dice rolling", true);
+
   private bool inBetweenRounds;
 
   [ConsoleCommand("css_rtd", "Roll the dice!")]
@@ -23,6 +27,11 @@ public class RTDCommand(IRTDRewarder rewarder, IRewardGenerator generator,
     var old = rewarder.GetReward(executor);
     if (!bypass && old != null) {
       locale.AlreadyRolled(old).ToChat(executor);
+      return;
+    }
+
+    if (!bypass && !CV_RTD_ENABLED.Value) {
+      locale.RollingDisabled().ToChat(executor);
       return;
     }
 

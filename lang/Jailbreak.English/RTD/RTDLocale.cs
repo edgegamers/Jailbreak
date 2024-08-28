@@ -37,7 +37,11 @@ public class RTDLocale : IRTDLocale, ILanguage<Formatting.Languages.English> {
   public IView CannotRollYet() {
     return new SimpleView {
       PREFIX,
-      ChatColors.Red + "You can only roll once the round ends or you die."
+      ChatColors.Red + "You can only roll when round ends or while dead."
     };
+  }
+
+  public IView RollingDisabled() {
+    return new SimpleView { PREFIX, ChatColors.Red + "Rolling is disabled." };
   }
 }
