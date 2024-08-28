@@ -120,7 +120,7 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
 
     base.Setup();
 
-    foreach (var player in PlayerUtil.FromTeam(SeekerTeam.Value))
+    foreach (var player in PlayerUtil.FromTeam(HiderTeam.Value))
       player.SetSpeed(2f);
   }
 

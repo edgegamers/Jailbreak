@@ -43,7 +43,7 @@ public class ItemValidator(
 
       errorMessage = $"invalid {type.ToString()}: {weapon}";
       return Enum.GetValues<WeaponType>()
-       .Where(t => (t & type) == type)
+       .Where(t => type.HasFlag(t))
        .Any(t => validateType(t, weapon));
     }
 
