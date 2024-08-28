@@ -11,10 +11,10 @@ using Jailbreak.Zones;
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public abstract class AbstractZoneRestrictedDay : AbstractSpecialDay {
-  protected readonly CsTeam RestrictedTeam;
-
   protected readonly IList<MovementRestrictor> Restrictors =
     new List<MovementRestrictor>();
+
+  protected CsTeam RestrictedTeam;
 
   protected AbstractZoneRestrictedDay(BasePlugin plugin,
     IServiceProvider provider,

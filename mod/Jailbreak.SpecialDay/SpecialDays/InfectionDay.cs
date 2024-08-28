@@ -12,12 +12,10 @@ using Jailbreak.Public.Utils;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
-public class InfectionDay : AbstractArmoryRestrictedDay,
-  ISpecialDayMessageProvider {
+public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
+  : AbstractArmoryRestrictedDay(plugin, provider, CsTeam.CounterTerrorist),
+    ISpecialDayMessageProvider {
   private readonly ICollection<int> swappedPrisoners = new HashSet<int>();
-
-  public InfectionDay(BasePlugin Plugin, IServiceProvider provider) : base(
-    Plugin, provider, CsTeam.CounterTerrorist) { }
 
   public override SDType Type => SDType.INFECTION;
 
@@ -40,12 +38,12 @@ public class InfectionDay : AbstractArmoryRestrictedDay,
     foreach (var ct in PlayerUtil.FromTeam(CsTeam.CounterTerrorist))
       ct.SetColor(Color.LimeGreen);
 
-    Plugin.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
-    Plugin.RegisterEventHandler<EventPlayerSpawn>(OnRespawn);
+    Plugin.RegisterEventHandler<EventPlayerDeath>(onPlayerDeath);
+    Plugin.RegisterEventHandler<EventPlayerSpawn>(onRespawn);
   }
 
   private HookResult
-    OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info) {
+    onPlayerDeath(EventPlayerDeath @event, GameEventInfo info) {
     var player = @event.Userid;
     if (player == null || !player.IsValid) return HookResult.Continue;
     if (player.Team != CsTeam.Terrorist) return HookResult.Continue;
@@ -101,7 +99,7 @@ public class InfectionDay : AbstractArmoryRestrictedDay,
     return HookResult.Continue;
   }
 
-  public HookResult OnRespawn(EventPlayerSpawn @event, GameEventInfo info) {
+  private HookResult onRespawn(EventPlayerSpawn @event, GameEventInfo info) {
     var player = @event.Userid;
     if (player == null || !player.IsValid) return HookResult.Continue;
     if (player.Team != CsTeam.CounterTerrorist) return HookResult.Continue;
@@ -119,13 +117,13 @@ public class InfectionDay : AbstractArmoryRestrictedDay,
   override protected HookResult
     OnEnd(EventRoundEnd @event, GameEventInfo info) {
     var result = base.OnEnd(@event, info);
-    Plugin.DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
-    Plugin.DeregisterEventHandler<EventPlayerSpawn>(OnRespawn);
+    Plugin.DeregisterEventHandler<EventPlayerDeath>(onPlayerDeath);
+    Plugin.DeregisterEventHandler<EventPlayerSpawn>(onRespawn);
 
     Plugin.AddTimer(0.1f, () => {
       foreach (var index in swappedPrisoners) {
         var player = Utilities.GetPlayerFromSlot(index);
-        if (player == null) continue;
+        if (player == null || !player.IsValid) continue;
         player.SwitchTeam(CsTeam.Terrorist);
       }
     });
@@ -135,9 +133,8 @@ public class InfectionDay : AbstractArmoryRestrictedDay,
 
   public class InfectionSettings : SpecialDaySettings {
     public InfectionSettings() {
-      CtTeleport      = TeleportType.ARMORY;
-      TTeleport       = TeleportType.RANDOM;
-      RestrictWeapons = true;
+      CtTeleport = TeleportType.ARMORY;
+      TTeleport  = TeleportType.RANDOM;
 
       WithRespawns(CsTeam.CounterTerrorist);
     }

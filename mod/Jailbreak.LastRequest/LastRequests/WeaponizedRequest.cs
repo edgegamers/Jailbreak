@@ -21,13 +21,13 @@ public abstract class WeaponizedRequest(BasePlugin plugin,
     Prisoner.RemoveWeapons();
     Guard.RemoveWeapons();
     var msgs = provider.GetRequiredService<ILRLocale>();
-    for (var i = 3; i >= 1; i--) {
+    for (var i = 5; i >= 1; i--) {
       var copy = i;
-      Plugin.AddTimer(3 - i,
+      Plugin.AddTimer(5 - i,
         () => { msgs.LastRequestCountdown(copy).ToChat(Prisoner, Guard); });
     }
 
-    Plugin.AddTimer(3, () => {
+    Plugin.AddTimer(5, () => {
       if (State != LRState.PENDING) return;
       Execute();
     });

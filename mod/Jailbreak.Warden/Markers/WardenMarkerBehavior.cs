@@ -13,13 +13,13 @@ using MStatsShared;
 namespace Jailbreak.Warden.Markers;
 
 public class WardenMarkerBehavior(IWardenService warden) : IPluginBehavior {
-  public readonly FakeConVar<float> CvMaxRadius = new(
+  public static readonly FakeConVar<float> CV_MAX_RADIUS = new(
     "css_jb_warden_marker_max_radius", "Maximum radius for warden marker", 360);
 
-  public readonly FakeConVar<float> CvMinRadius = new(
+  public static readonly FakeConVar<float> CV_MIN_RADIUS = new(
     "css_jb_warden_marker_min_radius", "Minimum radius for warden marker", 60);
 
-  public readonly FakeConVar<long> CvResizeTime = new(
+  public static readonly FakeConVar<long> CV_RESIZE_TIME = new(
     "css_jb_warden_resize_time", "Milliseconds to wait for resizing marker",
     800);
 
@@ -30,7 +30,7 @@ public class WardenMarkerBehavior(IWardenService warden) : IPluginBehavior {
   private float radius;
 
   public void Start(BasePlugin basePlugin) {
-    marker = new BeamCircle(basePlugin, new Vector(), CvMinRadius.Value,
+    marker = new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value,
       (int)Math.PI * 15);
     basePlugin.AddCommandListener("player_ping", CommandListener_PlayerPing);
   }
@@ -46,9 +46,10 @@ public class WardenMarkerBehavior(IWardenService warden) : IPluginBehavior {
       var distance = currentPos.Distance(vec);
       var timeElapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
         - placementTime;
-      if (timeElapsed < CvResizeTime.Value) {
-        if (distance <= CvMaxRadius.Value * 1.3) {
-          distance = Math.Clamp(distance, CvMinRadius.Value, CvMaxRadius.Value);
+      if (timeElapsed < CV_RESIZE_TIME.Value) {
+        if (distance <= CV_MAX_RADIUS.Value * 1.3) {
+          distance = Math.Clamp(distance, CV_MIN_RADIUS.Value,
+            CV_MAX_RADIUS.Value);
           marker?.SetRadius(distance);
           marker?.Update();
           radius = distance;
@@ -60,7 +61,7 @@ public class WardenMarkerBehavior(IWardenService warden) : IPluginBehavior {
       }
     }
 
-    radius        = CvMinRadius.Value;
+    radius        = CV_MIN_RADIUS.Value;
     currentPos    = vec;
     placementTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 

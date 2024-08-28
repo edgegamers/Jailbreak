@@ -30,7 +30,9 @@ public class WardenCmdOpenLocale : IWardenCmdOpenLocale,
   }
 
   public IView CellsOpened
-    => new SimpleView { WardenLocale.PREFIX, "Cells were auto-opened." };
+    => new SimpleView {
+      WardenLocale.PREFIX, ChatColors.Grey + "Cells were auto-opened."
+    };
 
   public IView OpeningFailed
     => new SimpleView { WardenLocale.PREFIX, "Failed to open the cells." };

@@ -24,9 +24,10 @@ public abstract class AbstractCellRestrictedDay : AbstractZoneRestrictedDay {
   public virtual IView CellReminder
     => this is ISpecialDayMessageProvider messaged ?
       new SimpleView {
-        SDLocale.PREFIX, $"Today is {messaged.Locale.Name}, so stay in cells!"
+        SDLocale.PREFIX,
+        $"{ChatColors.Grey}Today is {ChatColors.White}{messaged.Locale.Name}{ChatColors.Grey}, so stay in cells!"
       } :
-      new SimpleView { SDLocale.PREFIX, "Stay in cells!" };
+      new SimpleView { SDLocale.PREFIX, ChatColors.Grey + "Stay in cells!" };
 
   override protected IZone GetZone() {
     var manager = provider.GetRequiredService<IZoneManager>();

@@ -2,6 +2,7 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Memory;
+using CounterStrikeSharp.API.Modules.UserMessages;
 using CounterStrikeSharp.API.Modules.Utils;
 
 namespace Jailbreak.Public.Extensions;
@@ -124,6 +125,7 @@ public static class PlayerExtensions {
     var pawn = player.PlayerPawn.Value;
     if (!player.IsValid || pawn == null || !pawn.IsValid) return;
 
+    // TODO: Don't always override to allow other plugins to show legs.
     if (color.A == 255) color = Color.FromArgb(254, color.R, color.G, color.B);
     pawn.RenderMode = RenderMode_t.kRenderTransColor;
     pawn.Render     = color;
@@ -147,5 +149,32 @@ public static class PlayerExtensions {
     return pawn.WeaponServices?.MyWeapons
      .FirstOrDefault(w => w.Value?.DesignerName == designerName)
     ?.Value;
+  }
+
+  public enum FadeFlags {
+    FADE_IN, FADE_OUT, FADE_STAYOUT
+  }
+
+  public static void ColorScreen(this CCSPlayerController player, Color color,
+    float hold = 0.1f, float fade = 0.2f, FadeFlags flags = FadeFlags.FADE_IN,
+    bool withPurge = true) {
+    var fadeMsg = UserMessage.FromId(106);
+
+    fadeMsg.SetInt("duration", Convert.ToInt32(fade * 512));
+    fadeMsg.SetInt("hold_time", Convert.ToInt32(hold * 512));
+
+    var flag = flags switch {
+      FadeFlags.FADE_IN      => 0x0001,
+      FadeFlags.FADE_OUT     => 0x0002,
+      FadeFlags.FADE_STAYOUT => 0x0008,
+      _                      => 0x0001
+    };
+
+    if (withPurge) flag |= 0x0010;
+
+    fadeMsg.SetInt("flags", flag);
+    fadeMsg.SetInt("color",
+      color.R | color.G << 8 | color.B << 16 | color.A << 24);
+    fadeMsg.Send(player);
   }
 }

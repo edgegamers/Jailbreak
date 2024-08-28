@@ -25,13 +25,13 @@ public class InfectionDayLocale() : TeamDayLocale("Infection",
     return player == null || !player.IsValid ?
       new SimpleView {
         PREFIX,
-        $"{ChatColors.Red}You were {ChatColors.DarkRed}infected{ChatColors.Red}! You are now a zombie!"
+        $"{ChatColors.Red}You were {ChatColors.DarkRed}infected{ChatColors.Red}!"
       } :
       new SimpleView {
         PREFIX,
         $"{ChatColors.Red}You were {ChatColors.DarkRed}infected{ChatColors.Red} by",
         player,
-        "! You are now a zombie!"
+        "!"
       };
   }
 

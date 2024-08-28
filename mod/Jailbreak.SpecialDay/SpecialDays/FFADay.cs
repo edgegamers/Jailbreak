@@ -23,7 +23,6 @@ public class FFADay(BasePlugin plugin, IServiceProvider provider)
     base.Setup();
   }
 
-
   public override void Execute() {
     base.Execute();
     Locale.BeginsIn(0).ToAllChat();

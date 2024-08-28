@@ -1,5 +1,4 @@
 ﻿using CounterStrikeSharp.API.Core;
-using Jailbreak.Config;
 using Jailbreak.Debug;
 using Jailbreak.English.Generic;
 using Jailbreak.English.LastGuard;
@@ -7,6 +6,7 @@ using Jailbreak.English.LastRequest;
 using Jailbreak.English.Logs;
 using Jailbreak.English.Mute;
 using Jailbreak.English.Rebel;
+using Jailbreak.English.RTD;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.English.Warden;
 using Jailbreak.Formatting.Views;
@@ -18,8 +18,9 @@ using Jailbreak.LastGuard;
 using Jailbreak.LastRequest;
 using Jailbreak.Logs;
 using Jailbreak.Mute;
-using Jailbreak.Public.Configuration;
+using Jailbreak.Public.Mod.Warden;
 using Jailbreak.Rebel;
+using Jailbreak.RTD;
 using Jailbreak.SpecialDay;
 using Jailbreak.Warden;
 using Jailbreak.Zones;
@@ -49,10 +50,14 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
     serviceCollection.AddSingleton<IWardenLocale, WardenLocale>();
     serviceCollection.AddSingleton<IWardenPeaceLocale, WardenPeaceLocale>();
     serviceCollection.AddSingleton<IWardenSTLocale, WardenSTLocale>();
+    serviceCollection.AddSingleton<IRTDLocale, RTDLocale>();
+    serviceCollection
+     .AddSingleton<IWardenCmdChickenLocale, WardenCmdChickenLocale>();
+    serviceCollection
+     .AddSingleton<IWardenCmdSoccerLocale, WardenCmdSoccerLocale>();
 
     //	Do we want to make this scoped?
     //	Not sure how this will behave with multiple rounds and whatnot.
-    serviceCollection.AddTransient<IConfigService, ConfigService>();
     serviceCollection.AddJailbreakGeneric();
     serviceCollection.AddJailbreakLogs();
     serviceCollection.AddJailbreakRebel();
@@ -63,5 +68,6 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
     serviceCollection.AddJailbreakLastGuard();
     serviceCollection.AddJailbreakSpecialDay();
     serviceCollection.AddJailbreakZones();
+    serviceCollection.AddDiceRoll();
   }
 }

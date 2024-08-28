@@ -48,7 +48,9 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   ///   know why you are not calling it.
   /// </summary>
   public virtual void Setup() {
+    Plugin.RegisterFakeConVars(this);
     Plugin.RegisterEventHandler<EventRoundEnd>(OnEnd);
+    Plugin.RegisterEventHandler<EventItemPickup>(OnPickup);
 
     foreach (var entry in Settings.ConVarValues) {
       var cv = ConVar.Find(entry.Key);
@@ -145,6 +147,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     var ctVectors = ctSpawns.ToArray();
     ctVectors.Shuffle();
 
+    var                 mgr = Provider.GetService<IZoneManager>();
     IEnumerable<Vector> spawnPositions;
     switch (type) {
       case SpecialDaySettings.TeleportType.CELL:
@@ -160,10 +163,11 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
         spawnPositions = [ctVectors.First()];
         break;
       case SpecialDaySettings.TeleportType.RANDOM:
-        spawnPositions = getAtLeastRandom(PlayerUtil.GetAlive().Count());
+        spawnPositions =
+          MapUtil.GetRandomSpawns(PlayerUtil.GetAlive().Count(), mgr);
         break;
       case SpecialDaySettings.TeleportType.RANDOM_STACKED:
-        spawnPositions = [getAtLeastRandom(1).First()];
+        spawnPositions = [MapUtil.GetRandomSpawns(1, mgr).First()];
         break;
       default:
         return;
@@ -172,61 +176,6 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     var baggedSpawns = new ShuffleBag<Vector>(spawnPositions.ToList());
     foreach (var player in players)
       player.PlayerPawn.Value?.Teleport(baggedSpawns.GetNext());
-  }
-
-  protected List<Vector> getAtLeastRandom(int count) {
-    // Progressively get more lax with our "randomness quality"
-    var result                       = getRandomSpawns(false, false, false);
-    if (result.Count < count) result = getRandomSpawns(false, false);
-    if (result.Count < count) result = getRandomSpawns(false);
-    if (result.Count < count) result = getRandomSpawns();
-    return result;
-  }
-
-  protected List<Vector> getRandomSpawns(bool includeSpawns = true,
-    bool includeTps = true, bool includeAuto = true) {
-    var result = new List<Vector>();
-
-    if (includeTps) {
-      var worldTp = Utilities
-       .FindAllEntitiesByDesignerName<CInfoTeleportDestination>(
-          "info_teleport_destination")
-       .Where(s => s.AbsOrigin != null)
-       .Select(s => s.AbsOrigin!);
-      result.AddRange(worldTp);
-    }
-
-    if (includeSpawns) {
-      var tSpawns = Utilities
-       .FindAllEntitiesByDesignerName<SpawnPoint>("info_player_terrorist")
-       .Where(s => s.AbsOrigin != null)
-       .Select(s => s.AbsOrigin!);
-      var ctSpawns = Utilities
-       .FindAllEntitiesByDesignerName<
-          SpawnPoint>("info_player_counterterrorist")
-       .Where(s => s.AbsOrigin != null)
-       .Select(s => s.AbsOrigin!);
-      result.AddRange(tSpawns);
-      result.AddRange(ctSpawns);
-    }
-
-    var zoneManager = Provider.GetService<IZoneManager>();
-    if (zoneManager != null) {
-      if (includeAuto)
-        result.AddRange(zoneManager
-         .GetZones(Server.MapName, ZoneType.SPAWN_AUTO)
-         .GetAwaiter()
-         .GetResult()
-         .Select(z => z.GetCenterPoint()));
-
-      var zones = zoneManager.GetZones(Server.MapName, ZoneType.SPAWN)
-       .GetAwaiter()
-       .GetResult();
-      result.AddRange(zones.Select(z => z.GetCenterPoint()));
-    }
-
-    result.Shuffle();
-    return result;
   }
 
   protected object GetConvarValue(ConVar? cvar) {
@@ -306,33 +255,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   /// <summary>
   ///   Called when the actual action begins for the special day.
   /// </summary>
-  public virtual void Execute() {
-    EnableDamage();
-    if (Settings.RestrictWeapons)
-      Plugin.RegisterListener<Listeners.OnTick>(OnTick);
-  }
-
-  virtual protected void OnTick() {
-    foreach (var player in PlayerUtil.GetAlive()) {
-      var weapons = Settings.AllowedWeapons(player);
-      if (weapons == null) continue;
-      disableWeapon(player, weapons);
-    }
-  }
-
-  private void disableWeapon(CCSPlayerController player,
-    ICollection<string> allowed) {
-    if (!player.IsReal()) return;
-    var pawn = player.PlayerPawn.Value;
-    if (pawn == null || !pawn.IsValid) return;
-    var weaponServices = pawn.WeaponServices;
-    if (weaponServices == null) return;
-    var activeWeapon = weaponServices.ActiveWeapon.Value;
-    if (activeWeapon == null || !activeWeapon.IsValid) return;
-    if (allowed.Contains(activeWeapon.DesignerName)) return;
-    activeWeapon.NextSecondaryAttackTick = Server.TickCount + 500;
-    activeWeapon.NextPrimaryAttackTick   = Server.TickCount + 500;
-  }
+  public virtual void Execute() { EnableDamage(); }
 
   virtual protected HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
     foreach (var entry in previousConvarValues) {
@@ -343,12 +266,24 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
 
     previousConvarValues.Clear();
 
-    if (Settings.RestrictWeapons)
-      Plugin.RemoveListener<Listeners.OnTick>(OnTick);
-
     Plugin.DeregisterEventHandler<EventRoundEnd>(OnEnd);
+    Plugin.DeregisterEventHandler<EventItemPickup>(OnPickup);
     return HookResult.Continue;
   }
+
+  virtual protected HookResult OnPickup(EventItemPickup @event,
+    GameEventInfo info) {
+    var player = @event.Userid;
+    if (player == null || !player.IsValid) return HookResult.Continue;
+    var allowed = Settings.AllowedWeapons(player);
+    var weapon  = "weapon_" + @event.Item;
+    if (allowed == null || allowed.Contains(weapon)) return HookResult.Continue;
+    Server.NextFrame(() => { player.RemoveItemByDesignerName(weapon); });
+    return HookResult.Continue;
+  }
+
+  [Obsolete("No longer used, you must manually register/unregister this")]
+  virtual protected void OnTick() { }
 
   protected void DisableDamage() {
     foreach (var player in PlayerUtil.GetAlive()) DisableDamage(player);

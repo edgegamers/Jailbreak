@@ -17,5 +17,5 @@ public class RebelLocale : IRebelLocale,
     };
 
   public IView NoLongerRebel
-    => new SimpleView { PREFIX, "You are no longer a rebel." };
+    => new SimpleView { PREFIX, "You are no longer red." };
 }

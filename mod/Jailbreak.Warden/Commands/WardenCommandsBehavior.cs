@@ -10,12 +10,13 @@ using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.Warden;
 using Jailbreak.Public.Utils;
+using Jailbreak.Warden.Global;
 
 namespace Jailbreak.Warden.Commands;
 
 public class WardenCommandsBehavior(IWardenLocale locale,
   IWardenSelectionService queue, IWardenService warden,
-  IGenericCmdLocale generics, WardenConfig config) : IPluginBehavior {
+  IGenericCmdLocale generics) : IPluginBehavior {
   private readonly Dictionary<CCSPlayerController, DateTime> lastPassCommand =
     new();
 
@@ -39,7 +40,7 @@ public class WardenCommandsBehavior(IWardenLocale locale,
     // GetPlayers() returns valid players, no need to error check here.
     foreach (var clients in Utilities.GetPlayers())
       clients.ExecuteClientCommand(
-        $"play sounds/{config.WardenPassedSoundName}");
+        $"play sounds/{WardenBehavior.CV_WARDEN_SOUND_PASSED.Value}");
 
     locale.BecomeNextWarden.ToAllChat();
 
@@ -71,7 +72,7 @@ public class WardenCommandsBehavior(IWardenLocale locale,
         locale.FireWarden(warden.Warden).ToChat(client);
 
       client.ExecuteClientCommand(
-        $"play sounds/{config.WardenPassedSoundName}");
+        $"play sounds/{WardenBehavior.CV_WARDEN_SOUND_PASSED.Value}");
     }
 
     locale.BecomeNextWarden.ToAllChat();

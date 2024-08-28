@@ -4,6 +4,7 @@ using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Logistics;
 using Jailbreak.Formatting.Objects;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.English.Generic;
 
@@ -36,21 +37,23 @@ public class GenericCmdLocale : IGenericCmdLocale,
       PREFIX,
       $"{ChatColors.Grey}Command is on cooldown for",
       seconds,
-      $"{ChatColors.Grey}seconds!"
+      $"{ChatColors.Grey}second" + (seconds == 1 ? "" : "s") + "."
     };
   }
 
   public IView InvalidParameter(string parameter, string expected) {
     return new SimpleView {
       PREFIX,
-      $"{ChatColors.Red}Invalid parameter '{ChatColors.LightBlue}{parameter}{ChatColors.Red}', expected a(n) {ChatColors.White}{expected}{ChatColors.Red}."
+      $"{ChatColors.Red}Invalid parameter '{ChatColors.LightBlue}{parameter}{ChatColors.Red}',",
+      "expected a" + (expected[0].IsVowel() ? "n" : ""),
+      $"{ChatColors.White}{expected}{ChatColors.Red}."
     };
   }
 
   public IView NoPermissionMessage(string permission) {
     return new SimpleView {
       PREFIX,
-      $"{ChatColors.Red}This command requires the {ChatColors.White}{permission}{ChatColors.Red} permission."
+      $"{ChatColors.DarkRed}This requires the {ChatColors.White}{permission}{ChatColors.Red} permission."
     };
   }
 

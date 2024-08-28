@@ -8,10 +8,10 @@ using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 namespace Jailbreak.Zones;
 
 public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
-  public static readonly FakeConVar<string> CvSqlTable = new("css_jb_zonetable",
-    "The table name for the zones", "cs2_jb_zones");
+  public static readonly FakeConVar<string> CV_SQL_TABLE =
+    new("css_jb_zonetable", "The table name for the zones", "cs2_jb_zones");
 
-  public static readonly FakeConVar<string> CvSqlConnectionString =
+  public static readonly FakeConVar<string> CV_SQL_CONNECTION_STRING =
     new("css_jb_sqlconnection", "The connection string for the database", "",
       ConVarFlags.FCVAR_PROTECTED);
 
@@ -22,7 +22,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
   public void Start(BasePlugin basePlugin) {
     plugin = basePlugin;
 
-    CvSqlConnectionString.ValueChanged += async (_, _) => {
+    CV_SQL_CONNECTION_STRING.ValueChanged += async (_, _) => {
       await LoadZones(Server.MapName);
     };
 
@@ -56,7 +56,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
       await conn.OpenAsync();
       await using var cmd = conn.CreateCommand();
       cmd.CommandText = $"""
-          DELETE FROM {CvSqlTable.Value.Trim('"')}
+          DELETE FROM {CV_SQL_TABLE.Value.Trim('"')}
           WHERE zoneid = @zoneid
           AND map = @map
         """;
@@ -91,7 +91,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
       await conn.OpenAsync();
 
       var insertPointCommand = $"""
-          INSERT INTO {CvSqlTable.Value.Trim('"')} (map, type, zoneid, pointid, X, Y, Z)
+          INSERT INTO {CV_SQL_TABLE.Value.Trim('"')} (map, type, zoneid, pointid, X, Y, Z)
           VALUES (@map, @type, @zoneid, @pointid, @X, @Y, @Z)
         """;
       var pointId = 0;
@@ -160,7 +160,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
       await conn.OpenAsync();
 
       var cmdText = $"""
-        CREATE TABLE IF NOT EXISTS {CvSqlTable.Value.Trim('"')}(
+        CREATE TABLE IF NOT EXISTS {CV_SQL_TABLE.Value.Trim('"')}(
           zoneid INT NOT NULL,
           pointid INT NOT NULL,
           map VARCHAR(64) NOT NULL,
@@ -188,7 +188,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
   private MySqlCommand queryAllZones(MySqlConnection conn, string map,
     ZoneType type) {
     var cmdText = $"""
-          SELECT * FROM {CvSqlTable.Value.Trim('"')}
+          SELECT * FROM {CV_SQL_TABLE.Value.Trim('"')}
           WHERE map = '{map}' AND type = '{type}'
           ORDER BY zoneid, pointid DESC
       """;
@@ -260,7 +260,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
   }
 
   private MySqlConnection? createConnection() {
-    var str = CvSqlConnectionString.Value.Trim('"');
+    var str = CV_SQL_CONNECTION_STRING.Value.Trim('"');
     return string.IsNullOrWhiteSpace(str) ? null : new MySqlConnection(str);
   }
 }

@@ -16,11 +16,19 @@ public class SDLocale : ISDLocale, ILanguage<Formatting.Languages.English> {
     };
 
   public IView SpecialDayRunning(string name) {
-    return new SimpleView { PREFIX, name, "is currently running!" };
+    return new SimpleView {
+      PREFIX,
+      ChatColors.Grey + "The current special day is",
+      ChatColors.Gold + name
+    };
   }
 
   public IView InvalidSpecialDay(string name) {
-    return new SimpleView { PREFIX, name, "is not a valid special day!" };
+    return new SimpleView {
+      PREFIX,
+      ChatColors.DarkRed + name,
+      ChatColors.Red + "is not a valid special day."
+    };
   }
 
   public IView SpecialDayCooldown(int rounds) {
@@ -28,7 +36,8 @@ public class SDLocale : ISDLocale, ILanguage<Formatting.Languages.English> {
       PREFIX,
       "You must wait",
       rounds,
-      "more rounds before starting a special day."
+      "more round" + (rounds == 1 ? "" : "s")
+      + " before starting a special day."
     };
   }
 
@@ -37,7 +46,7 @@ public class SDLocale : ISDLocale, ILanguage<Formatting.Languages.English> {
       PREFIX,
       "You must start a special day within",
       maxTime,
-      "seconds of the round start."
+      "second" + (maxTime == 1 ? "" : "s") + " of the round start."
     };
   }
 }

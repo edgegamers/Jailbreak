@@ -22,6 +22,8 @@ public class
 
   private readonly IPlayerState<QueueFavorState> favor;
 
+  private readonly HashSet<int> guaranteedWarden = [];
+
   private readonly IWardenLocale locale;
 
   private readonly ILogger<WardenSelectionBehavior> logger;
@@ -57,8 +59,17 @@ public class
 
   public void Dispose() { }
 
+  public void SetGuaranteedWarden(CCSPlayerController player) {
+    guaranteedWarden.Add(player.UserId ?? -1);
+  }
+
   public bool TryEnter(CCSPlayerController player) {
     if (!canEnterQueue(player)) return false;
+
+    if (guaranteedWarden.Contains(player.UserId ?? -1)) {
+      warden.TrySetWarden(player);
+      return true;
+    }
 
     queue.Get(player).InQueue = true;
     return true;
@@ -100,6 +111,7 @@ public class
   ///   Timer callback that states it's time to choose the warden.
   /// </summary>
   protected void OnChooseWarden() {
+    if (warden.HasWarden) return;
     var eligible = Utilities.GetPlayers()
      .Where(player => player.PawnIsAlive)
      .Where(player => player.Team == CsTeam.CounterTerrorist)

@@ -25,11 +25,6 @@ public static class Tag {
     "weapon_awp", "weapon_ssg08", "weapon_scar20", "weapon_g3sg1"
   ]);
 
-  public static readonly IReadOnlySet<string> RIFLES = new HashSet<string>([
-    "weapon_ak47", "weapon_aug", "weapon_famas", "weapon_galilar",
-    "weapon_m4a1", "weapon_m4a1_silencer", "weapon_sg556"
-  ]);
-
   public static readonly IReadOnlySet<string> PISTOLS = new HashSet<string>([
     "weapon_deagle", "weapon_elite", "weapon_fiveseven", "weapon_glock",
     "weapon_hkp2000", "weapon_p250", "weapon_usp_silencer", "weapon_tec9",
@@ -49,10 +44,17 @@ public static class Tag {
     "weapon_negev", "weapon_m249"
   ]);
 
-  public static readonly IReadOnlySet<string> GUNS = RIFLES.Union(PISTOLS)
+  public static readonly IReadOnlySet<string> RIFLES = new HashSet<string>([
+      "weapon_ak47", "weapon_aug", "weapon_famas", "weapon_galilar",
+      "weapon_m4a1", "weapon_m4a1_silencer", "weapon_sg556"
+    ]).Union(SNIPERS)
    .Union(SHOTGUNS)
    .Union(SMGS)
    .Union(HEAVY)
+   .ToHashSet();
+
+  public static readonly IReadOnlySet<string> GUNS = RIFLES.Union(PISTOLS)
+   .Union(RIFLES)
    .ToHashSet();
 
   public static readonly IReadOnlySet<string> WEAPONS =

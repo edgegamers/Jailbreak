@@ -1,15 +1,28 @@
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Cvars;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Views.SpecialDay;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Utils;
+using Jailbreak.Validator;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
   : FFADay(plugin, provider) {
+  public static readonly FakeConVar<string> CV_WEAPON = new("jb_sd_oitc_weapon",
+    "Weapon to give to players for the day", "weapon_deagle",
+    ConVarFlags.FCVAR_NONE, new ItemValidator(WeaponType.GUNS));
+
+  public static readonly FakeConVar<string> CV_ADDITIONAL_WEAPON = new(
+    "jb_sd_oitc_additionalweapon",
+    "Additional (non-ammo restricted) weapons to give for the day",
+    "weapon_knife", ConVarFlags.FCVAR_NONE, new ItemValidator());
+
+  private bool started;
   public override SDType Type => SDType.OITC;
 
   public override ISDInstanceLocale Locale
@@ -29,15 +42,33 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
 
     foreach (var player in PlayerUtil.GetAlive()) {
       player.RemoveWeapons();
-      player.GiveNamedItem("weapon_knife");
-      player.GiveNamedItem("weapon_deagle");
-      player.GetWeaponBase("weapon_deagle")?.SetAmmo(1, 0);
+      if (CV_ADDITIONAL_WEAPON.Value.Length > 0)
+        player.GiveNamedItem(CV_ADDITIONAL_WEAPON.Value);
+      if (CV_WEAPON.Value.Length > 0) {
+        player.GiveNamedItem(CV_WEAPON.Value);
+        player.GetWeaponBase(CV_WEAPON.Value)?.SetAmmo(1, 0);
+      }
     }
+
+    started = true;
+  }
+
+  override protected HookResult OnPickup(EventItemPickup @event,
+    GameEventInfo info) {
+    if (!started) return base.OnPickup(@event, info);
+
+    var player = @event.Userid;
+    if (player == null || !player.IsValid) return HookResult.Continue;
+    player.RemoveWeapons();
+    player.SetHealth(1);
+    return HookResult.Continue;
   }
 
   private HookResult
     OnPlayerDamage(EventPlayerHurt @event, GameEventInfo info) {
     if (@event.Userid == null || !@event.Userid.IsValid)
+      return HookResult.Continue;
+    if (@event.Attacker == null || !@event.Attacker.IsValid)
       return HookResult.Continue;
     @event.Userid?.SetHealth(0);
     return HookResult.Changed;
@@ -46,7 +77,7 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
   private HookResult
     OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info) {
     if (@event.Attacker == null) return HookResult.Continue;
-    @event.Attacker.GetWeaponBase("weapon_deagle")?.AddBulletsToMagazine(1);
+    @event.Attacker.GetWeaponBase(CV_WEAPON.Value)?.AddBulletsToMagazine(1);
     return HookResult.Continue;
   }
 
@@ -56,19 +87,20 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
     Plugin.DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
     return base.OnEnd(@event, info);
   }
-}
 
-public class OitcSettings : SpecialDaySettings {
-  public OitcSettings() {
-    CtTeleport      = TeleportType.RANDOM;
-    TTeleport       = TeleportType.RANDOM;
-    RestrictWeapons = true;
-    WithFriendlyFire();
+  public class OitcSettings : SpecialDaySettings {
+    public OitcSettings() {
+      CtTeleport = TeleportType.RANDOM;
+      TTeleport  = TeleportType.RANDOM;
+      WithFriendlyFire();
 
-    ConVarValues["mp_death_drop_gun"] = 0;
-  }
+      ConVarValues["mp_death_drop_gun"] = 0;
+    }
 
-  public override ISet<string> AllowedWeapons(CCSPlayerController player) {
-    return new HashSet<string> { "weapon_deagle", "weapon_knife" };
+    public override ISet<string> AllowedWeapons(CCSPlayerController player) {
+      return new HashSet<string> {
+        CV_WEAPON.Value, CV_ADDITIONAL_WEAPON.Value
+      };
+    }
   }
 }

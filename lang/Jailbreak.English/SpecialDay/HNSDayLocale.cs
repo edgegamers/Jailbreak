@@ -3,7 +3,7 @@
 namespace Jailbreak.English.SpecialDay;
 
 public class HNSDayLocale() : TeamDayLocale("Hide and Seek",
-  "CTs must hide while the Ts seek!", "Ts have 250 HP!") {
+  "CTs must hide while the Ts seek!", "Ts have increased HP!") {
   public IView StayInArmory
     => new SimpleView { PREFIX, "Today is", Name, ", stay in the armory!" };
 
@@ -15,13 +15,16 @@ public class HNSDayLocale() : TeamDayLocale("Hide and Seek",
       Name,
       "begins in",
       seconds,
-      "seconds."
+      "second" + (seconds == 1 ? "" : "s") + "."
     };
   }
 
   public IView DamageWarning(int seconds) {
     return new SimpleView {
-      PREFIX, "You will be vulnerable to damage in", seconds, "seconds."
+      PREFIX,
+      "You will be vulnerable to damage in",
+      seconds,
+      "second" + (seconds == 1 ? "" : "s") + "."
     };
   }
 }

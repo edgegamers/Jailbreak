@@ -13,18 +13,20 @@ namespace Jailbreak.Warden;
 public static class WardenServiceExtension {
   public static void AddJailbreakWarden(
     this IServiceCollection serviceCollection) {
-    serviceCollection.AddConfig<WardenConfig>("warden");
     serviceCollection.AddPluginBehavior<IWardenService, WardenBehavior>();
     serviceCollection
      .AddPluginBehavior<IWardenSelectionService, WardenSelectionBehavior>();
     serviceCollection
      .AddPluginBehavior<ISpecialTreatmentService, SpecialTreatmentBehavior>();
-    serviceCollection.AddPluginBehavior<IWardenOpenCommand, WardenOpenCommandsBehavior>();
+    serviceCollection
+     .AddPluginBehavior<IWardenOpenCommand, WardenOpenCommandsBehavior>();
 
     serviceCollection.AddPluginBehavior<SpecialTreatmentCommandsBehavior>();
     serviceCollection.AddPluginBehavior<PeaceCommandsBehavior>();
     serviceCollection.AddPluginBehavior<WardenCommandsBehavior>();
     serviceCollection.AddPluginBehavior<RollCommandBehavior>();
+    serviceCollection.AddPluginBehavior<ChickenCommandBehavior>();
+    serviceCollection.AddPluginBehavior<SoccerCommandBehavior>();
 
     serviceCollection.AddPluginBehavior<WardenMarkerBehavior>();
     serviceCollection.AddPluginBehavior<WardenPaintBehavior>();

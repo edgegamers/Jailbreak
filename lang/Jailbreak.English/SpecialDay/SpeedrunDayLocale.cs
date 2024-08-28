@@ -39,7 +39,7 @@ public class SpeedrunDayLocale() : SoloDayLocale("Speedrunners",
       return new SimpleView {
         {
           PREFIX,
-          $"Round #{ChatColors.Yellow}{round}{ChatColors.Default} begins! The slowest",
+          $"Round {ChatColors.Yellow}#{round}{ChatColors.Default} begins! The slowest",
           "player to reach the goal will be eliminated!"
         },
         SimpleView.NEWLINE,
@@ -74,7 +74,7 @@ public class SpeedrunDayLocale() : SoloDayLocale("Speedrunners",
       PREFIX,
       "The original speedrunner left, so",
       player,
-      "is now the speedrunner!"
+      "is now the speedrunner."
     };
   }
 
@@ -83,7 +83,7 @@ public class SpeedrunDayLocale() : SoloDayLocale("Speedrunners",
       PREFIX,
       "The original speedrunner isn't moving, so",
       player,
-      "is now the speedrunner!"
+      "is now the speedrunner."
     };
   }
 
@@ -145,7 +145,7 @@ public class SpeedrunDayLocale() : SoloDayLocale("Speedrunners",
         "reached the goal. Eliminating one player on each time."
       },
       SimpleView.NEWLINE,
-      { PREFIX, "Randomly selected the path from ", player, "." }
+      { PREFIX, "Randomly selected the path from", player, "." }
     };
   }
 }

@@ -48,7 +48,7 @@ public class PlayerZoneCreator : BasicZoneCreator, ITypedZoneCreator {
     }
 
     var pawn = player.PlayerPawn.Value;
-    if (pawn == null) {
+    if (pawn == null || !pawn.IsValid) {
       timer?.Kill();
       return;
     }

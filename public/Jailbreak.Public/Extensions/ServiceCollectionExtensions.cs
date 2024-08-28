@@ -1,5 +1,4 @@
 ﻿using Jailbreak.Public.Behaviors;
-using Jailbreak.Public.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Public.Extensions;
@@ -43,25 +42,5 @@ public static class ServiceCollectionExtensions {
       => provider.GetRequiredService<TExtension>());
     collection.AddTransient<IPluginBehavior, TExtension>(provider
       => provider.GetRequiredService<TExtension>());
-  }
-
-  /// <summary>
-  ///   Add an object to be loaded from the configuration file
-  /// </summary>
-  /// <param name="collection"></param>
-  /// <param name="sectionName">The section where the configuration object will be loaded from</param>
-  /// <typeparam name="TConfig">The configuration object. Must auto-fill all default values!</typeparam>
-  [Obsolete(
-    "Conguration is up to each module, and should ideally be done through CVars")]
-  public static void AddConfig<TConfig>(this IServiceCollection collection,
-    string sectionName) where TConfig : class, new() {
-    //	Get the object by resolving IConfigService
-    //	and use the Get<T>() method.
-
-    //	Not *really* important... but do we want to fail here or return default if section
-    //	isn't available?
-    collection.AddTransient<TConfig>(provider => provider
-     .GetRequiredService<IConfigService>()
-     .Get<TConfig>(sectionName));
   }
 }
