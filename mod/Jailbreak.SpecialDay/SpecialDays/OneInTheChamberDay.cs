@@ -55,14 +55,13 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
 
   override protected HookResult OnPickup(EventItemPickup @event,
     GameEventInfo info) {
-    var result = base.OnPickup(@event, info);
-    if (!started) return result;
+    if (!started) return base.OnPickup(@event, info);
 
     var player = @event.Userid;
-    if (player == null || !player.IsValid) return result;
+    if (player == null || !player.IsValid) return HookResult.Continue;
     player.RemoveWeapons();
     player.SetHealth(1);
-    return result;
+    return HookResult.Continue;
   }
 
   private HookResult

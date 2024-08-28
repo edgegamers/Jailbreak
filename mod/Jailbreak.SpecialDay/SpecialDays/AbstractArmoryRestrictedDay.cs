@@ -24,9 +24,10 @@ public abstract class AbstractArmoryRestrictedDay : AbstractZoneRestrictedDay {
   public virtual IView ArmoryReminder
     => this is ISpecialDayMessageProvider messaged ?
       new SimpleView {
-        SDLocale.PREFIX, $"Today is {messaged.Locale.Name}, so stay in armory!"
+        SDLocale.PREFIX,
+        $"{ChatColors.Grey}Today is {ChatColors.White}{messaged.Locale.Name}{ChatColors.Grey}, so stay in armory!"
       } :
-      new SimpleView { SDLocale.PREFIX, "Stay in armory!" };
+      new SimpleView { SDLocale.PREFIX, ChatColors.Grey + "Stay in armory!" };
 
 
   override protected IZone GetZone() {
