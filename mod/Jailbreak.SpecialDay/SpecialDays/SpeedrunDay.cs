@@ -28,7 +28,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
   public static readonly FakeConVar<int> CV_INITIAL_SPEEDRUN_TIME =
     new("css_jb_speedrun_initial_time",
-      "Duration in seconds to grant the speedrunner", 40);
+      "Duration in seconds to grant the speedrunner", 30);
 
   public static readonly FakeConVar<int> CV_FIRST_ROUND_FREEZE =
     new("css_jb_speedrun_first_round_freeze",
