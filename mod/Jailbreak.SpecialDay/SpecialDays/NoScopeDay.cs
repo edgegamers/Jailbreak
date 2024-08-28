@@ -60,12 +60,12 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
         player.GiveNamedItem(weapon);
     }
 
-    Plugin.RegisterListener<Listeners.OnTick>(OnTick);
+    Plugin.RegisterListener<Listeners.OnTick>(onTick);
 
     base.Execute();
   }
 
-  protected void OnTick() {
+  private void onTick() {
     foreach (var player in PlayerUtil.GetAlive()) disableScope(player);
   }
 
@@ -88,7 +88,7 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
   override protected HookResult
     OnEnd(EventRoundEnd @event, GameEventInfo info) {
     var result = base.OnEnd(@event, info);
-    Plugin.RemoveListener<Listeners.OnTick>(OnTick);
+    Plugin.RemoveListener<Listeners.OnTick>(onTick);
     return result;
   }
 
