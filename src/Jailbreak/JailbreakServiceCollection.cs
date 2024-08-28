@@ -18,6 +18,7 @@ using Jailbreak.LastGuard;
 using Jailbreak.LastRequest;
 using Jailbreak.Logs;
 using Jailbreak.Mute;
+using Jailbreak.Public.Mod.Warden;
 using Jailbreak.Rebel;
 using Jailbreak.RTD;
 using Jailbreak.SpecialDay;
@@ -50,6 +51,10 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
     serviceCollection.AddSingleton<IWardenPeaceLocale, WardenPeaceLocale>();
     serviceCollection.AddSingleton<IWardenSTLocale, WardenSTLocale>();
     serviceCollection.AddSingleton<IRTDLocale, RTDLocale>();
+    serviceCollection
+     .AddSingleton<IWardenCmdChickenLocale, WardenCmdChickenLocale>();
+    serviceCollection
+     .AddSingleton<IWardenCmdSoccerLocale, WardenCmdSoccerLocale>();
 
     //	Do we want to make this scoped?
     //	Not sure how this will behave with multiple rounds and whatnot.
