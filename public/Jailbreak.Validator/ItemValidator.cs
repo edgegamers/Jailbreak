@@ -8,16 +8,16 @@ public class ItemValidator(
   bool allowMultiple = false) : IValidator<string> {
   [Flags]
   public enum WeaponType {
-    GRENADE = 1,
-    UTILITY = 2,
-    WEAPON = 4,
-    SNIPERS = 8,
-    RIFLES = 16,
-    PISTOLS = 32,
-    SHOTGUNS = 64,
-    SMGS = 128,
-    HEAVY = 256,
-    GUNS = 512
+    GRENADE = 1 << 0,  // 1
+    UTILITY = 1 << 1,  // 2
+    WEAPON = 1 << 2,   // 4
+    SNIPERS = 1 << 3,  // 8
+    RIFLES = 1 << 4,   // 16
+    PISTOLS = 1 << 5,  // 32
+    SHOTGUNS = 1 << 6, // 64
+    SMGS = 1 << 7,     // 128
+    HEAVY = 1 << 8,    // 256
+    GUNS = 1 << 9      // 512
   }
 
   public bool Validate(string value, out string? errorMessage) {
