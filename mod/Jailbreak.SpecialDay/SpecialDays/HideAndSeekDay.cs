@@ -112,8 +112,8 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
 
     for (var offset = 15; offset < CV_SEEK_TIME.Value; offset += 15) {
       var beginsIn = CV_SEEK_TIME.Value - offset;
-      Timers[CV_SEEK_TIME.Value - offset] +=
-        () => Locale.BeginsIn(beginsIn).ToAllChat();
+      Timers[CV_SEEK_TIME.Value] += ()
+        => Locale.BeginsIn(CV_SEEK_TIME.Value - beginsIn).ToAllChat();
     }
 
     Timers[CV_SEEK_TIME.Value] += Execute;
