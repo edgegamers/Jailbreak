@@ -1,5 +1,4 @@
-﻿using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API.Core;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.RTD;
 

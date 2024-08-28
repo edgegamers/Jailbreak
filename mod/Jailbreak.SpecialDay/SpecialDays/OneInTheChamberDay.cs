@@ -13,14 +13,6 @@ namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
   : FFADay(plugin, provider) {
-  public override SDType Type => SDType.OITC;
-
-  public override ISDInstanceLocale Locale
-    => new SoloDayLocale("One in the Chamber", "You only have one bullet.",
-      "Kill someone to get another bullet.", "One-Hit-Kills! No camping!");
-
-  public override SpecialDaySettings Settings => new OitcSettings();
-
   public static readonly FakeConVar<string> CV_WEAPON = new("jb_sd_oitc_weapon",
     "Weapon to give to players for the day", "weapon_deagle",
     ConVarFlags.FCVAR_NONE, new ItemValidator(WeaponType.GUNS));
@@ -31,6 +23,13 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
     "weapon_knife", ConVarFlags.FCVAR_NONE, new ItemValidator());
 
   private bool started;
+  public override SDType Type => SDType.OITC;
+
+  public override ISDInstanceLocale Locale
+    => new SoloDayLocale("One in the Chamber", "You only have one bullet.",
+      "Kill someone to get another bullet.", "One-Hit-Kills! No camping!");
+
+  public override SpecialDaySettings Settings => new OitcSettings();
 
   public override void Setup() {
     base.Setup();

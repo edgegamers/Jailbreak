@@ -22,6 +22,8 @@ public class
 
   private readonly IPlayerState<QueueFavorState> favor;
 
+  private readonly HashSet<int> guaranteedWarden = [];
+
   private readonly IWardenLocale locale;
 
   private readonly ILogger<WardenSelectionBehavior> logger;
@@ -33,8 +35,6 @@ public class
   private readonly IPlayerState<QueueState> queue;
 
   private readonly IWardenService warden;
-
-  private readonly HashSet<int> guaranteedWarden = [];
 
   /// <summary>
   ///   Whether or not to use the queue.

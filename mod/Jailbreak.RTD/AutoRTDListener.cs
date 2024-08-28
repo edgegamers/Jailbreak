@@ -13,9 +13,8 @@ public class AutoRTDListener(IRTDRewarder rewarder) : IPluginBehavior {
     foreach (var player in Utilities.GetPlayers()
      .Where(player
         => AdminManager.PlayerHasPermissions(player, "@ego/dssilver"))
-     .Where(player => !rewarder.HasReward(player))) {
+     .Where(player => !rewarder.HasReward(player)))
       player.ExecuteClientCommandFromServer("css_rtd");
-    }
 
     return HookResult.Continue;
   }

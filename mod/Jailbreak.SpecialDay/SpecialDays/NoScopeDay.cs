@@ -14,14 +14,6 @@ namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
   : FFADay(plugin, provider) {
-  public override SDType Type => SDType.NOSCOPE;
-
-  public override ISDInstanceLocale Locale
-    => new SoloDayLocale("No Scope",
-      "Your scope broke! Fight against everyone else. No camping!");
-
-  public override SpecialDaySettings Settings => new NoScopeSettings();
-
   public static readonly FakeConVar<string> CV_WEAPON = new(
     "jb_sd_noscope_weapon",
     "Weapon to give to all players, recommended it be a weapon with a scope (duh)",
@@ -43,6 +35,14 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
   public static readonly FakeConVar<float> CV_GRAVITY =
     new("jb_sd_noscope_gravity",
       "Gravity to set during the special day, default is 800", 200f);
+
+  public override SDType Type => SDType.NOSCOPE;
+
+  public override ISDInstanceLocale Locale
+    => new SoloDayLocale("No Scope",
+      "Your scope broke! Fight against everyone else. No camping!");
+
+  public override SpecialDaySettings Settings => new NoScopeSettings();
 
   public override void Setup() {
     if (CV_KNIFE_DELAY.Value > 0)

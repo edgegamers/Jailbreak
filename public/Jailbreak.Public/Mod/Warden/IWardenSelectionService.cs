@@ -9,9 +9,9 @@ public interface IWardenSelectionService {
   bool Active { get; }
 
   /// <summary>
-  /// Whether the player should be guaranteed warden if they enter the queue
-  /// this will act as a bypass to the queue. Thus, if multiple players are
-  /// applied with this, the first player to be apply for warden will receive it.
+  ///   Whether the player should be guaranteed warden if they enter the queue
+  ///   this will act as a bypass to the queue. Thus, if multiple players are
+  ///   applied with this, the first player to be apply for warden will receive it.
   /// </summary>
   /// <param name="player"></param>
   void SetGuaranteedWarden(CCSPlayerController player);

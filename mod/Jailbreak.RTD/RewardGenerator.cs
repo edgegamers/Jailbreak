@@ -44,6 +44,11 @@ public class RewardGenerator(IZoneManager mgr, IC4Service bomb)
     (new AmmoWeaponReward("weapon_awp", 1, 0), PROB_EXTREMELY_LOW)
   ];
 
+  private readonly Random rng = new();
+
+  private float totalWeight
+    => rewards.Where(r => r.Item1.Enabled).Select(s => s.Item2).Sum();
+
   public void Start(BasePlugin basePlugin) {
     rewards.Add((new CannotPickupReward(basePlugin, WeaponType.GRENADE),
       PROB_LOW));
@@ -62,11 +67,6 @@ public class RewardGenerator(IZoneManager mgr, IC4Service bomb)
     rewards.Add((new CannotPickupReward(basePlugin, WeaponType.RIFLES),
       PROB_EXTREMELY_LOW));
   }
-
-  private readonly Random rng = new();
-
-  private float totalWeight
-    => rewards.Where(r => r.Item1.Enabled).Select(s => s.Item2).Sum();
 
   public IRTDReward GenerateReward(int? id) {
     var roll = rng.NextDouble() * totalWeight;

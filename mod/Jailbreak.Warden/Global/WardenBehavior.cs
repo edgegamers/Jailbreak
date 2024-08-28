@@ -38,9 +38,6 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   ISpecialTreatmentService specialTreatment, IRebelService rebels,
   IMuteService mute, IServiceProvider provider)
   : IPluginBehavior, IWardenService {
-  private readonly ISet<CCSPlayerController> bluePrisoners =
-    new HashSet<CCSPlayerController>();
-
   public static readonly FakeConVar<int> CV_ARMOR_EQUAL =
     new("css_jb_hp_outnumbered", "Health points for CTs have equal balance", 50,
       ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 200));
@@ -83,6 +80,9 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
   public static readonly FakeConVar<int> CV_WARDEN_TERRORIST_RATIO =
     new("css_jb_warden_t_ratio", "Ratio of T:CT to use for HP adjustments", 3);
+
+  private readonly ISet<CCSPlayerController> bluePrisoners =
+    new HashSet<CCSPlayerController>();
 
   private bool firstWarden;
   private string? oldTag;

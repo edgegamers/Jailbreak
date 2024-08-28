@@ -7,11 +7,6 @@ using Jailbreak.Public.Mod.RTD;
 namespace Jailbreak.RTD.Rewards;
 
 public class ColorReward(Color color, bool prisonerOnly) : IRTDReward {
-  public virtual string Name => "Spawn " + ColorName;
-
-  public virtual string Description
-    => $"You won spawning {ChatColor}{ColorName}{ChatColors.Grey} next round.";
-
   public string ColorName
     => color.IsNamedColor ?
       color.Name :
@@ -35,6 +30,11 @@ public class ColorReward(Color color, bool prisonerOnly) : IRTDReward {
       300 => ChatColors.Magenta,
       _   => ChatColors.White
     };
+
+  public virtual string Name => "Spawn " + ColorName;
+
+  public virtual string Description
+    => $"You won spawning {ChatColor}{ColorName}{ChatColors.Grey} next round.";
 
   public bool CanGrantReward(CCSPlayerController player) {
     return player.Team == CsTeam.Terrorist || !prisonerOnly;

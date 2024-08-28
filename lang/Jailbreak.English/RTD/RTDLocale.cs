@@ -22,7 +22,7 @@ public class RTDLocale : IRTDLocale, ILanguage<Formatting.Languages.English> {
     return new SimpleView {
       PREFIX,
       ChatColors.Red + "You already rolled " + ChatColors.DarkRed + reward.Name
-      + ChatColors.Red + ".",
+      + ChatColors.Red + "."
     };
   }
 

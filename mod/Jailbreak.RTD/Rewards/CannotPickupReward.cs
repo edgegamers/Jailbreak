@@ -7,8 +7,9 @@ using Jailbreak.Public.Mod.RTD;
 namespace Jailbreak.RTD.Rewards;
 
 public class CannotPickupReward : IRTDReward {
-  private readonly BasePlugin plugin;
+  private readonly HashSet<int> blockedPlayerIDs = [];
   private readonly ImmutableHashSet<string> blockedWeapons;
+  private readonly BasePlugin plugin;
 
   public CannotPickupReward(BasePlugin plugin, WeaponType blocked) : this(
     plugin, blocked.GetItems().ToArray()) {
@@ -29,8 +30,6 @@ public class CannotPickupReward : IRTDReward {
 
   public string Description
     => $"You will not be able to pickup {Name} next round.";
-
-  private readonly HashSet<int> blockedPlayerIDs = [];
 
   public bool GrantReward(CCSPlayerController player) {
     if (player.UserId == null) return false;

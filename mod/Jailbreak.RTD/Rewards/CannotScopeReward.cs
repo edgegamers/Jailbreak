@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using CounterStrikeSharp.API;
+﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.RTD;
@@ -7,7 +6,10 @@ using Jailbreak.Public.Mod.RTD;
 namespace Jailbreak.RTD.Rewards;
 
 public class CannotScopeReward : IRTDReward {
+  private readonly HashSet<int> blockedPlayerIDs = [];
   private readonly BasePlugin plugin;
+
+  private bool registered;
 
   public CannotScopeReward(BasePlugin plugin, WeaponType blocked) : this(plugin,
     blocked.GetItems().ToArray()) { }
@@ -19,11 +21,7 @@ public class CannotScopeReward : IRTDReward {
 
   public string Name => "Cannot Scope";
 
-  public string Description => $"You will not be able to scope next round.";
-
-  private bool registered;
-
-  private readonly HashSet<int> blockedPlayerIDs = [];
+  public string Description => "You will not be able to scope next round.";
 
   public bool GrantReward(CCSPlayerController player) {
     if (player.UserId == null) return false;

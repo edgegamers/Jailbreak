@@ -17,16 +17,6 @@ namespace Jailbreak.Rebel.C4Bomb;
 
 public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
   : IPluginBehavior, IC4Service {
-  private readonly Dictionary<CC4, C4Metadata> bombs = new();
-
-  // EmitSound(CBaseEntity* pEnt, const char* sSoundName, int nPitch, float flVolume, float flDelay)
-  private readonly MemoryFunctionVoid<CBaseEntity, string, int, float, float>
-    // ReSharper disable once InconsistentNaming
-    CBaseEntity_EmitSoundParamsLinux = new(
-      "48 B8 ? ? ? ? ? ? ? ? 55 48 89 E5 41 55 41 54 49 89 FC 53 48 89 F3"); // LINUX ONLY.
-
-  private BasePlugin? plugin;
-
   public static readonly FakeConVar<bool> CV_GIVE_BOMB = new("css_jb_c4_give",
     "Whether to give a random prisoner a bomb at the beginning of the round.",
     true);
@@ -43,7 +33,17 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
     new("css_jb_c4_damage", "Base damage to apply", 340, ConVarFlags.FCVAR_NONE,
       new RangeValidator<float>(0, 10000));
 
+  private readonly Dictionary<CC4, C4Metadata> bombs = new();
+
+  // EmitSound(CBaseEntity* pEnt, const char* sSoundName, int nPitch, float flVolume, float flDelay)
+  private readonly MemoryFunctionVoid<CBaseEntity, string, int, float, float>
+    // ReSharper disable once InconsistentNaming
+    CBaseEntity_EmitSoundParamsLinux = new(
+      "48 B8 ? ? ? ? ? ? ? ? 55 48 89 E5 41 55 41 54 49 89 FC 53 48 89 F3"); // LINUX ONLY.
+
   private bool giveNextRound = true;
+
+  private BasePlugin? plugin;
 
   public void ClearActiveC4s() { bombs.Clear(); }
 
@@ -92,6 +92,8 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
     });
   }
 
+  public void DontGiveC4NextRound() { giveNextRound = false; }
+
   public void Start(BasePlugin basePlugin) {
     plugin = basePlugin;
     plugin.RegisterListener<Listeners.OnTick>(playerUseC4ListenerCallback);
@@ -117,8 +119,6 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
       StartDetonationAttempt(bombCarrier, CV_C4_DELAY.Value, bomb);
     }
   }
-
-  public void DontGiveC4NextRound() { giveNextRound = false; }
 
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {

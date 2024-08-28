@@ -42,9 +42,9 @@ public static class WeaponTypeExtensions {
       case WeaponType.WEAPON:
         return Tag.WEAPONS;
       default:
-        foreach (var t in Enum.GetValues<WeaponType>()) {
-          if (type.HasFlag(t)) result.UnionWith(t.GetItems());
-        }
+        foreach (var t in Enum.GetValues<WeaponType>())
+          if (type.HasFlag(t))
+            result.UnionWith(t.GetItems());
 
         return result;
     }

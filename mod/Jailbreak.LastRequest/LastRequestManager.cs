@@ -20,11 +20,13 @@ namespace Jailbreak.LastRequest;
 
 public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   : ILastRequestManager, IDamageBlocker {
-  public static readonly FakeConVar<int> CV_LR_BASE_TIME = new("css_jb_lr_time_base",
-    "Round time to set when LR is activated, 0 to disable", 60);
+  public static readonly FakeConVar<int> CV_LR_BASE_TIME =
+    new("css_jb_lr_time_base",
+      "Round time to set when LR is activated, 0 to disable", 60);
 
-  public static readonly FakeConVar<int> CV_LR_BONUS_TIME = new("css_jb_lr_time_per_lr",
-    "Additional round time to add per LR completion", 30);
+  public static readonly FakeConVar<int> CV_LR_BONUS_TIME =
+    new("css_jb_lr_time_per_lr",
+      "Additional round time to add per LR completion", 30);
 
   public static readonly FakeConVar<int> CV_LR_GUARD_TIME =
     new("css_jb_lr_time_per_guard", "Additional round time to add per guard");
@@ -92,7 +94,8 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     var cts = Utilities.GetPlayers()
      .Count(p => p is { Team: CsTeam.CounterTerrorist, PawnIsAlive: true });
 
-    if (CV_LR_BASE_TIME.Value != 0) RoundUtil.SetTimeRemaining(CV_LR_BASE_TIME.Value);
+    if (CV_LR_BASE_TIME.Value != 0)
+      RoundUtil.SetTimeRemaining(CV_LR_BASE_TIME.Value);
 
     RoundUtil.AddTimeRemaining(CV_LR_GUARD_TIME.Value * cts);
 

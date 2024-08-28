@@ -1,8 +1,4 @@
 ﻿using System.Drawing;
-using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Utils;
-using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.RTD;
 
 namespace Jailbreak.RTD.Rewards;
 
