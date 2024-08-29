@@ -695,6 +695,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
       if (CV_WINNER_DAMAGEABLE.Value) EnableDamage(winner);
 
+      Plugin.DeregisterEventHandler<EventItemPickup>(OnPickup);
+      
       foreach (var weapon in CV_LOSERS_WEAPONS.Value.Split(','))
         foreach (var loser in losers)
           loser.GiveNamedItem(weapon);
@@ -703,7 +705,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         winner.GiveNamedItem(weapon);
 
       Plugin.RemoveListener<Listeners.OnTick>(checkFinishers);
-      Plugin.DeregisterEventHandler<EventItemPickup>(OnPickup);
       RoundUtil.SetTimeRemaining(Math.Min(timeToSet, CV_WIN_TIME_MAX.Value));
       Server.ExecuteCommand("mp_ignore_round_win_conditions 0");
       return;

@@ -166,8 +166,8 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
       cachedGuardWeapons    = CV_GUARD_WEAPONS.Value.Split(",").ToHashSet();
       cachedPrisonerWeapons = CV_PRISONER_WEAPONS.Value.Split(",").ToHashSet();
 
-      if (cachedGuardWeapons.Count == 0) cachedGuardWeapons       = null;
-      if (cachedPrisonerWeapons.Count == 0) cachedPrisonerWeapons = null;
+      if (CV_GUARD_WEAPONS.Value.Length == 0) cachedGuardWeapons       = null;
+      if (CV_PRISONER_WEAPONS.Value.Length == 0) cachedPrisonerWeapons = null;
     }
 
     public override int InitialHealth(CCSPlayerController player) {
