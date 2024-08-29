@@ -126,7 +126,7 @@ public class RebelManager(IRebelLocale notifs, IRichLogService logs)
     var percent             = getRebelTimePercentage(player);
     var percentRgb          = 255 - (int)Math.Round(percent * 255.0);
     var color               = Color.FromArgb(255, 255, percentRgb, percentRgb);
-    if (percent <= 0) color = Color.FromArgb(255, 255, 255, 255);
+    if (percent <= 0) color = Color.White;
 
     return color;
   }
