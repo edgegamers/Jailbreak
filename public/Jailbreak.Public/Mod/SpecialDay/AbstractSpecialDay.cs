@@ -278,7 +278,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     var allowed = Settings.AllowedWeapons(player);
     var weapon  = "weapon_" + @event.Item;
     if (allowed == null || allowed.Contains(weapon)) return HookResult.Continue;
-    Server.NextFrame(() => { player.RemoveItemByDesignerName(weapon); });
+    Server.NextFrame(() => { player.RemoveWeapons(); });
     return HookResult.Continue;
   }
 
