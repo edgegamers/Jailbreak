@@ -12,4 +12,10 @@
         <ProjectReference Include="..\..\public\Jailbreak.Validator\Jailbreak.Validator.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="MAULActainShared">
+        <HintPath>..\..\public\Jailbreak.Public\Mixin\MAULActainShared.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

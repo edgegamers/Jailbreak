@@ -52,7 +52,7 @@ public class RewardGenerator(IZoneManager mgr, IC4Service bomb,
         PROB_MEDIUM),
 
       // Low
-      (new HPReward(1), PROB_LOW),
+      (new ChatSpyReward(basePlugin), PROB_LOW), (new HPReward(1), PROB_LOW),
       (new ColorReward(Color.FromArgb(0, 255, 0), true), PROB_LOW),
       (new ColorReward(Color.FromArgb(255, 0, 0), true), PROB_LOW),
       (new CannotPickupReward(basePlugin, WeaponType.GRENADE), PROB_LOW),
