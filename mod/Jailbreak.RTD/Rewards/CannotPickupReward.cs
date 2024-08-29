@@ -49,7 +49,7 @@ public class CannotPickupReward : IRTDReward {
       return HookResult.Continue;
     var weapon = "weapon_" + @event.Item;
     if (!blockedWeapons.Contains(weapon)) return HookResult.Continue;
-    player.RemoveItemByDesignerName(weapon, true);
+    player.RemoveWeapons();
     return HookResult.Continue;
   }
 }

@@ -8,10 +8,12 @@ using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.SpecialDay;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Utils;
 using Jailbreak.Validator;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
@@ -143,6 +145,16 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
     foreach (var ct in PlayerUtil.FromTeam(HiderTeam.Value)) ct.SetSpeed(1);
   }
 
+  override protected HookResult OnPickup(EventItemPickup @event,
+    GameEventInfo info) {
+    var lrProvider = provider.GetService<ILastRequestManager>();
+    if (lrProvider == null) return base.OnPickup(@event, info);
+
+    return lrProvider.IsLREnabled ?
+      HookResult.Continue :
+      base.OnPickup(@event, info);
+  }
+
   public class HnsSettings : SpecialDaySettings {
     private readonly ISet<string>? cachedGuardWeapons, cachedPrisonerWeapons;
 
@@ -154,8 +166,8 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
       cachedGuardWeapons    = CV_GUARD_WEAPONS.Value.Split(",").ToHashSet();
       cachedPrisonerWeapons = CV_PRISONER_WEAPONS.Value.Split(",").ToHashSet();
 
-      if (cachedGuardWeapons.Count == 0) cachedGuardWeapons       = null;
-      if (cachedPrisonerWeapons.Count == 0) cachedPrisonerWeapons = null;
+      if (CV_GUARD_WEAPONS.Value.Length == 0) cachedGuardWeapons       = null;
+      if (CV_PRISONER_WEAPONS.Value.Length == 0) cachedPrisonerWeapons = null;
     }
 
     public override int InitialHealth(CCSPlayerController player) {

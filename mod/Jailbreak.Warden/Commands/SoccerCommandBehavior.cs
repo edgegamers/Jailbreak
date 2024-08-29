@@ -12,6 +12,14 @@ namespace Jailbreak.Warden.Commands;
 
 public class SoccerCommandBehavior(IWardenService warden,
   IWardenLocale wardenLocale, IWardenCmdSoccerLocale locale) : IPluginBehavior {
+  public void Start(BasePlugin basePlugin) {
+    basePlugin.RegisterListener<Listeners.OnServerPrecacheResources>((manifest)
+      => {
+      manifest.AddResource(
+        "models/props/de_dust/hr_dust/dust_soccerball/dust_soccer_ball001.vmdl");
+    });
+  }
+
   public static readonly FakeConVar<int> CV_MAX_SOCCERS =
     new("css_jb_max_soccers",
       "The maximum number of soccer balls that the warden can spawn", 3);
@@ -39,10 +47,10 @@ public class SoccerCommandBehavior(IWardenService warden,
       return;
     }
 
-    var chicken =
+    var ball =
       Utilities.CreateEntityByName<CPhysicsPropMultiplayer>(
         "prop_physics_multiplayer");
-    if (chicken == null || !chicken.IsValid) {
+    if (ball == null || !ball.IsValid) {
       locale.SpawnFailed.ToChat(player);
       return;
     }
@@ -52,11 +60,12 @@ public class SoccerCommandBehavior(IWardenService warden,
       locale.SpawnFailed.ToChat(player);
       return;
     }
-    chicken.SetModel(
+
+    ball.SetModel(
       "models/props/de_dust/hr_dust/dust_soccerball/dust_soccer_ball001.vmdl");
-    chicken.Teleport(loc);
+    ball.Teleport(loc);
     locale.SoccerSpawned.ToAllChat();
-    chicken.DispatchSpawn();
+    ball.DispatchSpawn();
     soccers++;
   }
 }
