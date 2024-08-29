@@ -686,7 +686,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       Msg.PlayerWon(winner).ToAllChat();
 
       foreach (var loser in losers) {
-        loser.SetColor(Color.FromArgb(254, Color.White));
+        loser.SetColor(Color.White);
         if (CV_TELEPORT_TYPE.Value == 1)
           loser.Teleport(winner);
         else if (CV_TELEPORT_TYPE.Value == 2) winner.Teleport(loser);
@@ -696,7 +696,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       if (CV_WINNER_DAMAGEABLE.Value) EnableDamage(winner);
 
       Plugin.DeregisterEventHandler<EventItemPickup>(OnPickup);
-      
+
       foreach (var weapon in CV_LOSERS_WEAPONS.Value.Split(','))
         foreach (var loser in losers)
           loser.GiveNamedItem(weapon);

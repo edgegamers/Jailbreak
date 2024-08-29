@@ -115,13 +115,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
     HasWarden = true;
     Warden    = controller;
-
-    if (Warden.Pawn.Value != null) {
-      Warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
-      Warden.Pawn.Value.Render     = Color.FromArgb(254, 0, 0, 255);
-      Utilities.SetStateChanged(Warden.Pawn.Value, "CBaseModelEntity",
-        "m_clrRender");
-    }
+    Warden.SetColor(Color.Blue);
 
     locale.NewWarden(Warden).ToAllChat().ToAllCenter();
 
@@ -204,11 +198,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     HasWarden = false;
 
     if (Warden != null && Warden.Pawn.Value != null) {
-      Warden.Clan                  = "";
-      Warden.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
-      Warden.Pawn.Value.Render     = Color.FromArgb(254, 255, 255, 255);
-      Utilities.SetStateChanged(Warden.Pawn.Value, "CBaseModelEntity",
-        "m_clrRender");
+      Warden.Clan = "";
+      Warden.SetColor(Color.White);
       Utilities.SetStateChanged(Warden, "CCSPlayerController", "m_szClan");
       var ev = new EventNextlevelChanged(true);
       ev.FireEvent(false);
@@ -310,12 +301,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   private void unmarkPrisonersBlue() {
     foreach (var player in bluePrisoners) {
       if (!player.IsReal()) continue;
-      var pawn = player.Pawn.Value;
-      if (pawn == null) continue;
       if (ignoreColor(player)) continue;
-      pawn.RenderMode = RenderMode_t.kRenderNormal;
-      pawn.Render     = Color.FromArgb(254, 255, 255, 255);
-      Utilities.SetStateChanged(pawn, "CBaseModelEntity", "m_clrRender");
+      player.SetColor(Color.White);
     }
 
     bluePrisoners.Clear();
@@ -326,11 +313,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       if (!player.IsReal() || player.Team != CsTeam.Terrorist) continue;
       if (ignoreColor(player)) continue;
 
-      var pawn = player.Pawn.Value;
-      if (pawn == null) continue;
-      pawn.RenderMode = RenderMode_t.kRenderTransColor;
-      pawn.Render     = Color.FromArgb(254, 0, 0, 255);
-      Utilities.SetStateChanged(pawn, "CBaseModelEntity", "m_clrRender");
+      player.SetColor(Color.Blue);
 
       bluePrisoners.Add(player);
     }
