@@ -55,8 +55,8 @@ public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
     if (!player.IsValid || player.Pawn.Value == null) return;
 
     var color = hasSt ?
-      Color.FromArgb(254, 0, 255, 0) :
-      Color.FromArgb(254, 255, 255, 255);
+      Color.FromArgb(255, 0, 255, 0) :
+      Color.FromArgb(255, 255, 255, 255);
 
     player.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
     player.Pawn.Value.Render     = color;
