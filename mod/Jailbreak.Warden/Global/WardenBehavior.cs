@@ -16,6 +16,7 @@ using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.Warden;
 using Jailbreak.Public.Mod.Zones;
 using Jailbreak.Public.Utils;
+using Jailbreak.Zones;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MStatsShared;
@@ -57,6 +58,11 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   public static readonly FakeConVar<int> CV_WARDEN_AUTO_OPEN_CELLS =
     new("css_jb_warden_opencells_delay",
       "Delay in seconds to auto-open cells at, -1 to disable", 60);
+
+  public static readonly FakeConVar<bool> CV_WARDEN_AUTO_SNITCH =
+    new("css_jb_warden_auto_snitch",
+      "True to broadcast how many prisoners were in cells when they auto-open",
+      true);
 
   public static readonly FakeConVar<int> CV_WARDEN_HEALTH =
     new("css_jb_warden_hp", "HP for the warden", 125, ConVarFlags.FCVAR_NONE,
@@ -409,16 +415,55 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
     openCellsTimer?.Kill();
     openCellsTimer = parent.AddTimer(CV_WARDEN_AUTO_OPEN_CELLS.Value, () => {
-      if (openCmd.OpenedCells) return;
-      var zone = provider.GetService<IZoneManager>();
-      if (zone != null)
-        MapUtil.OpenCells(zone);
+      var cellZone = getCellZone();
+
+      var prisoners = PlayerUtil.FromTeam(CsTeam.Terrorist)
+       .Count(p => p.Pawn.Value != null && p.Pawn.Value.AbsOrigin != null
+          && cellZone.IsInsideZone(p.Pawn.Value?.AbsOrigin!));
+
+      if (openCmd.OpenedCells) {
+        if (CV_WARDEN_AUTO_SNITCH.Value && prisoners > 0)
+          cmdLocale.CellsOpenedSnitchPrisoners(prisoners);
+        return;
+      }
+
+      var zoneMgr = provider.GetService<IZoneManager>();
+      // Regardless of if we actually _detect_ prisoners in cells,
+      // we should still open them (for convenience)
+      if (zoneMgr != null)
+        MapUtil.OpenCells(zoneMgr);
       else
         MapUtil.OpenCells();
-      cmdLocale.CellsOpened.ToAllChat();
+
+      // Only if we detect prisoners in cells (i.e. presumably
+      // cells haven't been opened yet) should we send the message
+
+      if (prisoners == 0) return;
+
+      if (CV_WARDEN_AUTO_SNITCH.Value) {
+        cmdLocale.CellsOpenedWithPrisoners(prisoners);
+      } else { cmdLocale.CellsOpened.ToAllChat(); }
     });
 
     return HookResult.Continue;
+  }
+
+  private IZone getCellZone() {
+    var manager = provider.GetService<IZoneManager>();
+    if (manager != null) {
+      var zones = manager.GetZones(Server.MapName, ZoneType.CELL)
+       .GetAwaiter()
+       .GetResult();
+      if (zones.Count > 0) return new MultiZoneWrapper(zones);
+    }
+
+    var bounds = new DistanceZone(
+      Utilities
+       .FindAllEntitiesByDesignerName<SpawnPoint>("info_player_terrorist")
+       .Where(s => s.AbsOrigin != null)
+       .Select(s => s.AbsOrigin!)
+       .ToList(), DistanceZone.WIDTH_CELL);
+    return bounds;
   }
 
   [GameEventHandler]
