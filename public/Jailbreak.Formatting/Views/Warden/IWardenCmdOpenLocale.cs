@@ -20,5 +20,19 @@ public interface IWardenCmdOpenLocale {
   /// <returns></returns>
   public IView CellsOpenedBy(CCSPlayerController? player);
 
+  /// <summary>
+  /// Cells were opened with prisoners still inside.
+  /// </summary>
+  /// <param name="prisoners"></param>
+  /// <returns></returns>
+  public IView CellsOpenedWithPrisoners(int prisoners);
+
+  /// <summary>
+  /// Cells were already opened, but there are still prisoners inside.
+  /// </summary>
+  /// <param name="prisoners"></param>
+  /// <returns></returns>
+  public IView CellsOpenedSnitchPrisoners(int prisoners);
+
   public IView CannotOpenYet(int seconds);
 }
