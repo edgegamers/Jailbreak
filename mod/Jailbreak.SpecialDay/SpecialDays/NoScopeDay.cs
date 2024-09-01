@@ -97,8 +97,9 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
       CtTeleport = TeleportType.RANDOM;
       TTeleport  = TeleportType.RANDOM;
 
-      ConVarValues["sv_gravity"]       = CV_GRAVITY.Value;
-      ConVarValues["sv_infinite_ammo"] = 2;
+      ConVarValues["sv_gravity"]        = CV_GRAVITY.Value;
+      ConVarValues["sv_infinite_ammo"]  = 2;
+      ConVarValues["mp_death_drop_gun"] = 0;
     }
 
     public override float FreezeTime(CCSPlayerController player) { return 1; }
