@@ -135,10 +135,7 @@ public class RebelManager(IRebelLocale notifs, IRichLogService logs)
     if (!player.IsReal() || player.Pawn.Value == null) return;
     var color = getRebelColor(player);
 
-    player.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
-    player.Pawn.Value.Render     = color;
-    Utilities.SetStateChanged(player.Pawn.Value, "CBaseModelEntity",
-      "m_clrRender");
+    player.SetColor(color);
 
     player.ColorScreen(
       Color.FromArgb(8 + (int)Math.Round(getRebelTimePercentage(player) * 32),

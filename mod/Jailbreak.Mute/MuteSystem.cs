@@ -61,7 +61,6 @@ public class MuteSystem(IServiceProvider provider)
 
   public void UnPeaceMute() {
     if (guardTimer != null) unmuteGuards();
-
     if (prisonerTimer != null) unmutePrisoners();
   }
 
@@ -85,6 +84,7 @@ public class MuteSystem(IServiceProvider provider)
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
     UnPeaceMute();
+    foreach (var player in Utilities.GetPlayers()) unmute(player);
     return HookResult.Continue;
   }
 

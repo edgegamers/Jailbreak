@@ -33,6 +33,7 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
 
   public override void Setup() {
     base.Setup();
+    Plugin.RegisterEventHandler<EventItemPickup>(OnPickup);
     Plugin.RegisterEventHandler<EventPlayerHurt>(OnPlayerDamage);
     Plugin.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
   }
@@ -53,9 +54,8 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
     started = true;
   }
 
-  override protected HookResult OnPickup(EventItemPickup @event,
-    GameEventInfo info) {
-    if (!started) return base.OnPickup(@event, info);
+  protected HookResult OnPickup(EventItemPickup @event, GameEventInfo info) {
+    if (!started) return HookResult.Continue;
 
     var player = @event.Userid;
     if (player == null || !player.IsValid) return HookResult.Continue;

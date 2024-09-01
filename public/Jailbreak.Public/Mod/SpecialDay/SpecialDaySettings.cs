@@ -56,8 +56,6 @@ public class SpecialDaySettings {
   /// <summary>
   ///   Used to avoid registring a costly OnTick listener if false
   /// </summary>
-  [Obsolete(
-    "With the new optimization, we now remove weapons if disallowed, making this obsolete.")]
   public bool RestrictWeapons = false;
 
   /// <summary>

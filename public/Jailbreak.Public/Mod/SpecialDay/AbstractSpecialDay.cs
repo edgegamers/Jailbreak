@@ -50,7 +50,6 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   public virtual void Setup() {
     Plugin.RegisterFakeConVars(this);
     Plugin.RegisterEventHandler<EventRoundEnd>(OnEnd);
-    Plugin.RegisterEventHandler<EventItemPickup>(OnPickup);
 
     foreach (var entry in Settings.ConVarValues) {
       var cv = ConVar.Find(entry.Key);
@@ -255,7 +254,11 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   /// <summary>
   ///   Called when the actual action begins for the special day.
   /// </summary>
-  public virtual void Execute() { EnableDamage(); }
+  public virtual void Execute() {
+    EnableDamage();
+    if (Settings.RestrictWeapons)
+      Plugin.RegisterListener<Listeners.OnTick>(OnTick);
+  }
 
   virtual protected HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
     foreach (var entry in previousConvarValues) {
@@ -264,26 +267,36 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       SetConvarValue(cv, entry.Value);
     }
 
+    if (Settings.RestrictWeapons)
+      Plugin.RemoveListener<Listeners.OnTick>(OnTick);
+
     previousConvarValues.Clear();
 
     Plugin.DeregisterEventHandler<EventRoundEnd>(OnEnd);
-    Plugin.DeregisterEventHandler<EventItemPickup>(OnPickup);
     return HookResult.Continue;
   }
 
-  virtual protected HookResult OnPickup(EventItemPickup @event,
-    GameEventInfo info) {
-    var player = @event.Userid;
-    if (player == null || !player.IsValid) return HookResult.Continue;
-    var allowed = Settings.AllowedWeapons(player);
-    var weapon  = "weapon_" + @event.Item;
-    if (allowed == null || allowed.Contains(weapon)) return HookResult.Continue;
-    Server.NextFrame(() => { player.RemoveWeapons(); });
-    return HookResult.Continue;
+  virtual protected void OnTick() {
+    foreach (var player in PlayerUtil.GetAlive()) {
+      var weapons = Settings.AllowedWeapons(player);
+      if (weapons == null) continue;
+      disableWeapon(player, weapons);
+    }
   }
 
-  [Obsolete("No longer used, you must manually register/unregister this")]
-  virtual protected void OnTick() { }
+  private void disableWeapon(CCSPlayerController player,
+    ICollection<string> allowed) {
+    if (!player.IsReal()) return;
+    var pawn = player.PlayerPawn.Value;
+    if (pawn == null || !pawn.IsValid) return;
+    var weaponServices = pawn.WeaponServices;
+    if (weaponServices == null) return;
+    var activeWeapon = weaponServices.ActiveWeapon.Value;
+    if (activeWeapon == null || !activeWeapon.IsValid) return;
+    if (allowed.Contains(activeWeapon.DesignerName)) return;
+    activeWeapon.NextSecondaryAttackTick = Server.TickCount + 500;
+    activeWeapon.NextPrimaryAttackTick   = Server.TickCount + 500;
+  }
 
   protected void DisableDamage() {
     foreach (var player in PlayerUtil.GetAlive()) DisableDamage(player);

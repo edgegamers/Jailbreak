@@ -58,10 +58,7 @@ public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
       Color.FromArgb(255, 0, 255, 0) :
       Color.FromArgb(255, 255, 255, 255);
 
-    player.Pawn.Value.RenderMode = RenderMode_t.kRenderTransColor;
-    player.Pawn.Value.Render     = color;
-    Utilities.SetStateChanged(player.Pawn.Value, "CBaseModelEntity",
-      "m_clrRender");
+    player.SetColor(color);
   }
 
   private class SpecialTreatmentState {
