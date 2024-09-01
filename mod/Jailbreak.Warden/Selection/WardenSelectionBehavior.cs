@@ -111,6 +111,7 @@ public class
   ///   Timer callback that states it's time to choose the warden.
   /// </summary>
   protected void OnChooseWarden() {
+    guaranteedWarden.Clear();
     if (warden.HasWarden) return;
     var eligible = Utilities.GetPlayers()
      .Where(player => player.PawnIsAlive)
