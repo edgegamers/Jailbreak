@@ -418,8 +418,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       var cellZone = getCellZone();
 
       var prisoners = PlayerUtil.FromTeam(CsTeam.Terrorist)
-       .Count(p => p.Pawn.Value != null && p.Pawn.Value.AbsOrigin != null
-          && cellZone.IsInsideZone(p.Pawn.Value?.AbsOrigin!));
+       .Count(p => p.Pawn.Value != null && p.PlayerPawn.Value?.AbsOrigin != null
+          && cellZone.IsInsideZone(p.PlayerPawn.Value?.AbsOrigin!));
 
       if (openCmd.OpenedCells) {
         if (CV_WARDEN_AUTO_SNITCH.Value && prisoners > 0)
@@ -441,7 +441,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       if (prisoners == 0) return;
 
       if (CV_WARDEN_AUTO_SNITCH.Value) {
-        cmdLocale.CellsOpenedWithPrisoners(prisoners);
+        cmdLocale.CellsOpenedWithPrisoners(prisoners).ToAllChat();
       } else { cmdLocale.CellsOpened.ToAllChat(); }
     });
 

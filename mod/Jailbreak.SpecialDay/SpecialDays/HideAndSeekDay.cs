@@ -145,14 +145,15 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
     foreach (var ct in PlayerUtil.FromTeam(HiderTeam.Value)) ct.SetSpeed(1);
   }
 
-  override protected HookResult OnPickup(EventItemPickup @event,
-    GameEventInfo info) {
-    var lrProvider = provider.GetService<ILastRequestManager>();
-    if (lrProvider == null) return base.OnPickup(@event, info);
+  override protected void OnTick() {
+    var lr = Provider.GetService<ILastRequestManager>();
+    if (lr == null) {
+      base.OnTick();
+      return;
+    }
 
-    return lrProvider.IsLREnabled ?
-      HookResult.Continue :
-      base.OnPickup(@event, info);
+    if (lr.IsLREnabled) return;
+    base.OnTick();
   }
 
   public class HnsSettings : SpecialDaySettings {
