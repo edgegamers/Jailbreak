@@ -85,6 +85,7 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
     OnEnd(EventRoundEnd @event, GameEventInfo info) {
     Plugin.DeregisterEventHandler<EventPlayerHurt>(OnPlayerDamage);
     Plugin.DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
+    Plugin.DeregisterEventHandler<EventItemPickup>(OnPickup);
     return base.OnEnd(@event, info);
   }
 
