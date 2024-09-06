@@ -6,15 +6,15 @@ using Jailbreak.Public.Mod.RTD;
 
 namespace Jailbreak.RTD.Rewards;
 
-public class CannotPickupReward : AbstractOnTickReward {
+public class CannotUseReward : AbstractOnTickReward {
   private readonly ImmutableHashSet<string> blockedWeapons;
 
-  public CannotPickupReward(BasePlugin plugin, WeaponType blocked) : this(
+  public CannotUseReward(BasePlugin plugin, WeaponType blocked) : this(
     plugin, blocked.GetItems().ToArray()) {
     NameShort = blocked.ToString().ToTitleCase();
   }
 
-  public CannotPickupReward(BasePlugin plugin, params string[] weapons) : base(
+  public CannotUseReward(BasePlugin plugin, params string[] weapons) : base(
     plugin) {
     blockedWeapons = weapons.ToImmutableHashSet();
     NameShort = string.Join(", ",

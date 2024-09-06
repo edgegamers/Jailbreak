@@ -96,8 +96,8 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
       await cookie.Set(steam, enable ? "Y" : "N");
       Server.NextFrame(() => {
         if (!executor.IsValid) return;
-        locale.AutoRTDToggled(!enable).ToChat(executor);
-        cachedCookies[steam] = !enable;
+        locale.AutoRTDToggled(enable).ToChat(executor);
+        cachedCookies[steam] = enable;
       });
     });
   }
