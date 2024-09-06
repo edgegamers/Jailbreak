@@ -9,7 +9,7 @@ public static class RTDServiceExtensions {
     collection.AddPluginBehavior<IRewardGenerator, RewardGenerator>();
     collection.AddPluginBehavior<IRTDRewarder, RTDRewarder>();
     collection.AddPluginBehavior<RTDCommand>();
-    collection.AddPluginBehavior<AutoRTDListener>();
+    collection.AddPluginBehavior<AutoRTD>();
     collection.AddPluginBehavior<RTDStatsCommand>();
   }
 }

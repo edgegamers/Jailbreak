@@ -141,6 +141,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       // Needed since players who respawned are given knife later
       foreach (var player in PlayerUtil.GetAlive()) {
         player.RemoveWeapons();
+        if (player.Slot == speedrunner.Slot) continue;
         player.SetColor(Color.FromArgb(100, 255, 255, 255));
       }
     };

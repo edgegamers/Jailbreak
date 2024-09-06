@@ -9,9 +9,8 @@ namespace Jailbreak.RTD.Rewards;
 public class AmmoWeaponReward : WeaponReward {
   private readonly int primary, secondary;
 
-  public AmmoWeaponReward(BasePlugin plugin, string weapon, int primary,
-    int secondary, CsTeam requiredTeam = CsTeam.Terrorist) : base(plugin,
-    weapon, requiredTeam) {
+  public AmmoWeaponReward(string weapon, int primary, int secondary,
+    CsTeam requiredTeam = CsTeam.Terrorist) : base(weapon, requiredTeam) {
     Trace.Assert(Tag.GUNS.Contains(weapon));
     this.primary   = primary;
     this.secondary = secondary;
