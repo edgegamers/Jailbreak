@@ -11,6 +11,7 @@ using Jailbreak.English.SpecialDay;
 using Jailbreak.English.Warden;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.LastRequest;
+using Jailbreak.Formatting.Views.RTD;
 using Jailbreak.Formatting.Views.SpecialDay;
 using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Generic;
@@ -51,6 +52,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
     serviceCollection.AddSingleton<IWardenPeaceLocale, WardenPeaceLocale>();
     serviceCollection.AddSingleton<IWardenSTLocale, WardenSTLocale>();
     serviceCollection.AddSingleton<IRTDLocale, RTDLocale>();
+    serviceCollection.AddSingleton<IAutoRTDLocale, AutoRTDLocale>();
     serviceCollection
      .AddSingleton<IWardenCmdChickenLocale, WardenCmdChickenLocale>();
     serviceCollection
