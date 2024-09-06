@@ -85,7 +85,7 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
     }
 
     if (cookie == null) {
-      locale.TogglingNotEnabled().ToChat(executor);
+      locale.TogglingNotEnabled.ToChat(executor);
       return;
     }
 
