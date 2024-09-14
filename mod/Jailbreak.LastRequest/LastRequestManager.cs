@@ -165,6 +165,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
     IsLREnabledForRound = true;
+    IsLREnabled         = false;
     foreach (var player in Utilities.GetPlayers())
       MenuManager.CloseActiveMenu(player);
     return HookResult.Continue;
