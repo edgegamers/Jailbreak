@@ -165,7 +165,7 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager)
     if (weapons == null) return false;
     foreach (var weapon in weapons.MyWeapons) {
       if (weapon.Value == null) continue;
-      if (!global::Tag.GUNS.Contains(weapon.Value.DesignerName)) continue;
+      if (!Tag.GUNS.Contains(weapon.Value.DesignerName)) continue;
       return true;
     }
 

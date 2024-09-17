@@ -24,7 +24,7 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
     "jb_sd_noscope_allowedweapons",
     "Weapons to allow players to use, empty for no restrictions",
     string.Join(",",
-      global::Tag.UTILITY.Union(new[] { "weapon_ssg08", "weapon_knife" }
+      Tag.UTILITY.Union(new[] { "weapon_ssg08", "weapon_knife" }
        .ToHashSet())), ConVarFlags.FCVAR_NONE,
     new ItemValidator(allowMultiple: true));
 

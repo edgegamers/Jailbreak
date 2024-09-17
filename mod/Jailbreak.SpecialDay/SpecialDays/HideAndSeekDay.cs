@@ -56,7 +56,7 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
   public static readonly FakeConVar<string> CV_GUARD_WEAPONS = new(
     "jb_sd_hns_weapons_ct",
     "List of weapons/items CTs may use, empty for no restrictions",
-    string.Join(",", global::Tag.PISTOLS.Union(global::Tag.UTILITY)),
+    string.Join(",", Tag.PISTOLS.Union(Tag.UTILITY)),
     ConVarFlags.FCVAR_NONE, new ItemValidator(allowMultiple: true));
 
   public static readonly FakeConVar<string> CV_PRISONER_WEAPONS = new(

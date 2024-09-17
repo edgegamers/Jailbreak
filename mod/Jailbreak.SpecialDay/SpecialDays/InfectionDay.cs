@@ -142,7 +142,7 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
 
     public override ISet<string>? AllowedWeapons(CCSPlayerController player) {
       return player.Team == CsTeam.CounterTerrorist ?
-        global::Tag.UTILITY.Union(global::Tag.PISTOLS).ToHashSet() :
+        Tag.UTILITY.Union(Tag.PISTOLS).ToHashSet() :
         null;
     }
 

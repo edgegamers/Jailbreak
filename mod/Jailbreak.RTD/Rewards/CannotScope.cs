@@ -19,7 +19,7 @@ public class CannotScope(BasePlugin plugin) : AbstractOnTickReward(plugin) {
     if (weaponServices == null) return;
     var activeWeapon = weaponServices.ActiveWeapon.Value;
     if (activeWeapon == null || !activeWeapon.IsValid) return;
-    if (!global::Tag.SNIPERS.Contains(activeWeapon.DesignerName)) return;
+    if (!Tag.SNIPERS.Contains(activeWeapon.DesignerName)) return;
     activeWeapon.NextSecondaryAttackTick = Server.TickCount + 500;
   }
 }
