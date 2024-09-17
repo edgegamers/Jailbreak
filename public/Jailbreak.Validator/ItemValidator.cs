@@ -1,5 +1,4 @@
 ﻿using CounterStrikeSharp.API.Modules.Cvars.Validators;
-using Jailbreak.Tag;
 
 namespace Jailbreak.Validator;
 
