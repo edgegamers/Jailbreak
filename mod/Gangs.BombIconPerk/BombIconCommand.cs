@@ -39,7 +39,7 @@ public class BombIconCommand(IServiceProvider provider) : ICommand {
   private readonly IRankManager ranks =
     provider.GetRequiredService<IRankManager>();
 
-  public string Name => "bombicon";
+  public string Name => "css_bombicon";
   public string[] Usage => ["<icon>"];
 
   public void Start() {
