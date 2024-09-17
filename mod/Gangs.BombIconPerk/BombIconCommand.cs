@@ -45,7 +45,9 @@ public class BombIconCommand(IServiceProvider provider) : ICommand {
 
   public void Start() {
     Server.PrintToConsole("Registering Bomb Icon Command");
-    provider.GetRequiredService<ICommandManager>().RegisterCommand(this);
+    Server.PrintToConsole("Registered: " + provider
+     .GetRequiredService<ICommandManager>()
+     .RegisterCommand(this));
   }
 
   public async Task<CommandResult> Execute(PlayerWrapper? executor,
