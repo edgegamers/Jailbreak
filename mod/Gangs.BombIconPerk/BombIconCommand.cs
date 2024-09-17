@@ -1,4 +1,5 @@
-﻿using GangsAPI;
+﻿using CounterStrikeSharp.API;
+using GangsAPI;
 using GangsAPI.Data;
 using GangsAPI.Data.Command;
 using GangsAPI.Exceptions;
@@ -43,11 +44,13 @@ public class BombIconCommand(IServiceProvider provider) : ICommand {
   public string[] Usage => ["<icon>"];
 
   public void Start() {
+    Server.PrintToConsole("Registering Bomb Icon Command");
     provider.GetRequiredService<ICommandManager>().RegisterCommand(this);
   }
 
   public async Task<CommandResult> Execute(PlayerWrapper? executor,
     CommandInfoWrapper info) {
+    info.ReplySync("Test");
     if (executor == null) return CommandResult.PLAYER_ONLY;
     var player = await players.GetPlayer(executor.Steam)
       ?? throw new PlayerNotFoundException(executor.Steam);
