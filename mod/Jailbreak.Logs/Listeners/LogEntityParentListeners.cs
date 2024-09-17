@@ -20,8 +20,8 @@ public class LogEntityParentListeners(IRichLogService logs) : IPluginBehavior {
   public void OnEntityParentChanged(CEntityInstance affectedEntity,
     CEntityInstance newParent) {
     if (!affectedEntity.IsValid) return;
-    if (!Tag.WEAPONS.Contains(affectedEntity.DesignerName)
-      && !Tag.UTILITY.Contains(affectedEntity.DesignerName))
+    if (!global::Tag.WEAPONS.Contains(affectedEntity.DesignerName)
+      && !global::Tag.UTILITY.Contains(affectedEntity.DesignerName))
       return;
 
     var weaponEntity =

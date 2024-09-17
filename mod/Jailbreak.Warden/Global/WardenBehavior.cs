@@ -440,9 +440,10 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
       if (prisoners == 0) return;
 
-      if (CV_WARDEN_AUTO_SNITCH.Value) {
+      if (CV_WARDEN_AUTO_SNITCH.Value)
         cmdLocale.CellsOpenedWithPrisoners(prisoners).ToAllChat();
-      } else { cmdLocale.CellsOpened.ToAllChat(); }
+      else
+        cmdLocale.CellsOpened.ToAllChat();
     });
 
     return HookResult.Continue;

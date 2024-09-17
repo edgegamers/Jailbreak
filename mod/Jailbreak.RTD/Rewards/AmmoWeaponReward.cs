@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
@@ -11,7 +10,7 @@ public class AmmoWeaponReward : WeaponReward {
 
   public AmmoWeaponReward(string weapon, int primary, int secondary,
     CsTeam requiredTeam = CsTeam.Terrorist) : base(weapon, requiredTeam) {
-    Trace.Assert(Tag.GUNS.Contains(weapon));
+    Trace.Assert(global::Tag.GUNS.Contains(weapon));
     this.primary   = primary;
     this.secondary = secondary;
   }

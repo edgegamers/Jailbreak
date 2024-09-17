@@ -7,6 +7,7 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Utils;
+using Jailbreak.Tag;
 using Jailbreak.Validator;
 
 namespace Jailbreak.SpecialDay.SpecialDays;

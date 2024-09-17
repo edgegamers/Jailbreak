@@ -1,12 +1,10 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.RTD;
 
 namespace Jailbreak.RTD.Rewards;
 
-public class CannotLeftKnife(BasePlugin plugin)
-  : AbstractOnTickReward(plugin) {
+public class CannotLeftKnife(BasePlugin plugin) : AbstractOnTickReward(plugin) {
   private readonly HashSet<int> blockedPlayerIDs = [];
 
   public override string Name => "Cannot Left-Knife";

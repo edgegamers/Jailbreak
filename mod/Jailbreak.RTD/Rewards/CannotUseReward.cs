@@ -2,15 +2,15 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.RTD;
+using Jailbreak.Tag;
 
 namespace Jailbreak.RTD.Rewards;
 
 public class CannotUseReward : AbstractOnTickReward {
   private readonly ImmutableHashSet<string> blockedWeapons;
 
-  public CannotUseReward(BasePlugin plugin, WeaponType blocked) : this(
-    plugin, blocked.GetItems().ToArray()) {
+  public CannotUseReward(BasePlugin plugin, WeaponType blocked) : this(plugin,
+    blocked.GetItems().ToArray()) {
     NameShort = blocked.ToString().ToTitleCase();
   }
 

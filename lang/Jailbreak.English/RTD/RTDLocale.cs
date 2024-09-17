@@ -2,6 +2,7 @@
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Logistics;
 using Jailbreak.Formatting.Views;
+using Jailbreak.Formatting.Views.RTD;
 using Jailbreak.Public.Mod.RTD;
 
 namespace Jailbreak.English.RTD;

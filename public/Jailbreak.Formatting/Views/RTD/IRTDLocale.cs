@@ -1,7 +1,7 @@
 ﻿using Jailbreak.Formatting.Base;
 using Jailbreak.Public.Mod.RTD;
 
-namespace Jailbreak.Formatting.Views;
+namespace Jailbreak.Formatting.Views.RTD;
 
 public interface IRTDLocale {
   public IView RewardSelected(IRTDReward reward);

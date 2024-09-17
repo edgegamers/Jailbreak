@@ -12,19 +12,19 @@ namespace Jailbreak.Warden.Commands;
 
 public class SoccerCommandBehavior(IWardenService warden,
   IWardenLocale wardenLocale, IWardenCmdSoccerLocale locale) : IPluginBehavior {
+  public static readonly FakeConVar<int> CV_MAX_SOCCERS =
+    new("css_jb_max_soccers",
+      "The maximum number of soccer balls that the warden can spawn", 3);
+
+  private int soccers;
+
   public void Start(BasePlugin basePlugin) {
-    basePlugin.RegisterListener<Listeners.OnServerPrecacheResources>((manifest)
+    basePlugin.RegisterListener<Listeners.OnServerPrecacheResources>(manifest
       => {
       manifest.AddResource(
         "models/props/de_dust/hr_dust/dust_soccerball/dust_soccer_ball001.vmdl");
     });
   }
-
-  public static readonly FakeConVar<int> CV_MAX_SOCCERS =
-    new("css_jb_max_soccers",
-      "The maximum number of soccer balls that the warden can spawn", 3);
-
-  private int soccers = 0;
 
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {

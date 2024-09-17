@@ -1,4 +1,6 @@
-﻿[Flags]
+﻿namespace Jailbreak.Tag;
+
+[Flags]
 public enum WeaponType {
   GRENADE = 1 << 0,  // 1
   UTILITY = 1 << 1,  // 2
@@ -18,25 +20,25 @@ public static class WeaponTypeExtensions {
 
     switch (type) {
       case WeaponType.GUNS:
-        return Tag.GUNS;
+        return global::Tag.GUNS;
       case WeaponType.HEAVY:
-        return Tag.HEAVY;
+        return global::Tag.HEAVY;
       case WeaponType.SMGS:
-        return Tag.SMGS;
+        return global::Tag.SMGS;
       case WeaponType.SHOTGUNS:
-        return Tag.SHOTGUNS;
+        return global::Tag.SHOTGUNS;
       case WeaponType.PISTOLS:
-        return Tag.PISTOLS;
+        return global::Tag.PISTOLS;
       case WeaponType.RIFLES:
-        return Tag.RIFLES;
+        return global::Tag.RIFLES;
       case WeaponType.SNIPERS:
-        return Tag.SNIPERS;
+        return global::Tag.SNIPERS;
       case WeaponType.UTILITY:
-        return Tag.UTILITY;
+        return global::Tag.UTILITY;
       case WeaponType.GRENADE:
-        return Tag.GRENADES;
+        return global::Tag.GRENADES;
       case WeaponType.WEAPON:
-        return Tag.WEAPONS;
+        return global::Tag.WEAPONS;
       default:
         foreach (var t in Enum.GetValues<WeaponType>())
           if (type.HasFlag(t))

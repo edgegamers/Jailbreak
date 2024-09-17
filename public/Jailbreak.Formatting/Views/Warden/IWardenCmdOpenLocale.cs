@@ -21,14 +21,14 @@ public interface IWardenCmdOpenLocale {
   public IView CellsOpenedBy(CCSPlayerController? player);
 
   /// <summary>
-  /// Cells were opened with prisoners still inside.
+  ///   Cells were opened with prisoners still inside.
   /// </summary>
   /// <param name="prisoners"></param>
   /// <returns></returns>
   public IView CellsOpenedWithPrisoners(int prisoners);
 
   /// <summary>
-  /// Cells were already opened, but there are still prisoners inside.
+  ///   Cells were already opened, but there are still prisoners inside.
   /// </summary>
   /// <param name="prisoners"></param>
   /// <returns></returns>

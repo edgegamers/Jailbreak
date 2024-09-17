@@ -1,9 +1,7 @@
-﻿using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Utils;
+﻿using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Logistics;
 using Jailbreak.Formatting.Views.Warden;
-using Jailbreak.Public.Mod.Warden;
 
 namespace Jailbreak.English.Warden;
 
