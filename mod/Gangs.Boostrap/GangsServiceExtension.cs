@@ -24,6 +24,6 @@ public class GangsInit : IPluginBehavior {
       services, services == null, API.Gangs, API.Gangs == null);
     if (services == null) return;
 
-    _ = new BombIconBootstrap(services);
+    _ = new BombIconBootstrap(services, basePlugin);
   }
 }

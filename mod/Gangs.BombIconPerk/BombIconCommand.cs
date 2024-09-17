@@ -1,5 +1,6 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Commands;
 using GangsAPI;
 using GangsAPI.Data;
 using GangsAPI.Data.Command;
@@ -14,10 +15,12 @@ using GangsAPI.Services.Menu;
 using GangsAPI.Services.Player;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 
 namespace Gangs.BombIconPerk;
 
-public class BombIconCommand(IServiceProvider provider) : ICommand {
+public class BombIconCommand(IServiceProvider provider, BasePlugin plugin)
+  : ICommand {
   private readonly IEcoManager eco = provider.GetRequiredService<IEcoManager>();
 
   private readonly IGangChatPerk? gangChat =
@@ -40,16 +43,19 @@ public class BombIconCommand(IServiceProvider provider) : ICommand {
 
   private readonly IRankManager ranks =
     provider.GetRequiredService<IRankManager>();
-  
+
   private readonly ICommandManager commands =
     provider.GetRequiredService<ICommandManager>();
 
   public string Name => "css_bombicon";
   public string[] Usage => ["<icon>"];
 
-  public void Start(BasePlugin? plugin, bool hotReload) {
-    Server.PrintToConsole("Registering Bomb Icon Command");
-    Server.PrintToConsole("Registered: " + commands.RegisterCommand(this));
+  public void Start() {
+    plugin.AddCommand("css_bombicon", "", (player, info) => {
+      var playerWrapper = player == null ? null : new PlayerWrapper(player);
+      var infoWrapper   = new CommandInfoWrapper(info);
+      Task.Run(async () => await Execute(playerWrapper, infoWrapper));
+    });
   }
 
   public async Task<CommandResult> Execute(PlayerWrapper? executor,
