@@ -1,5 +1,4 @@
 ﻿using System.Drawing;
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.Warden;

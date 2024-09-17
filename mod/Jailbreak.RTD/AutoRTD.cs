@@ -4,7 +4,6 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
-using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.RTD;
@@ -18,8 +17,13 @@ namespace Jailbreak.RTD;
 
 public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
   IRTDLocale rtdLocale, IGenericCmdLocale generic) : IPluginBehavior {
-  private ICookie? cookie;
   private static readonly Dictionary<ulong, bool> cachedCookies = new();
+
+  public static readonly FakeConVar<string> CV_AUTORTD_FLAG =
+    new("css_autortd_flag", "Permission flag required to enable auto-RTD",
+      "@ego/dssilver");
+
+  private ICookie? cookie;
 
   public void Start(BasePlugin basePlugin) {
     Server.NextFrameAsync(async () => {
@@ -28,10 +32,6 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
          .RegClientCookie("jb_rtd_auto");
     });
   }
-
-  public static readonly FakeConVar<string> CV_AUTORTD_FLAG =
-    new("css_autortd_flag", "Permission flag required to enable auto-RTD",
-      "@ego/dssilver");
 
   [GameEventHandler]
   public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
@@ -48,12 +48,11 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
             Server.NextFrameAsync(async () => {
               var val = await cookie.Get(steam);
               cachedCookies[steam] = val is null or "Y";
-              if (cachedCookies[steam]) {
+              if (cachedCookies[steam])
                 Server.NextFrame(() => {
                   if (!player.IsValid) return;
                   player.ExecuteClientCommandFromServer("css_rtd");
                 });
-              }
             });
             continue;
           }
@@ -61,9 +60,8 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
           cachedCookies[steam] = true;
         }
 
-        if (cachedCookies.TryGetValue(player.SteamID, out var value) && value) {
+        if (cachedCookies.TryGetValue(player.SteamID, out var value) && value)
           player.ExecuteClientCommandFromServer("css_rtd");
-        }
       }
     });
 

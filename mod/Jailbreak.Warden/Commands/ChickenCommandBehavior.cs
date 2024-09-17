@@ -6,7 +6,6 @@ using CounterStrikeSharp.API.Modules.Cvars;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public.Behaviors;
-using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Warden;
 
 namespace Jailbreak.Warden.Commands;
@@ -18,7 +17,7 @@ public class ChickenCommandBehavior(IWardenService warden,
     new("css_jb_max_chickens",
       "The maximum number of chickens that the warden can spawn", 5);
 
-  private int chickens = 0;
+  private int chickens;
 
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {

@@ -1,4 +1,5 @@
 ﻿using CounterStrikeSharp.API.Core;
+using Gangs.Boostrap;
 using Jailbreak.Debug;
 using Jailbreak.English.Generic;
 using Jailbreak.English.LastGuard;
@@ -19,7 +20,6 @@ using Jailbreak.LastGuard;
 using Jailbreak.LastRequest;
 using Jailbreak.Logs;
 using Jailbreak.Mute;
-using Jailbreak.Public.Mod.Warden;
 using Jailbreak.Rebel;
 using Jailbreak.RTD;
 using Jailbreak.SpecialDay;
@@ -71,5 +71,6 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
     serviceCollection.AddJailbreakSpecialDay();
     serviceCollection.AddJailbreakZones();
     serviceCollection.AddDiceRoll();
+    serviceCollection.AddGangs();
   }
 }

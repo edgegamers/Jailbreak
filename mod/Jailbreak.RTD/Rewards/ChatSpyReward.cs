@@ -10,15 +10,6 @@ public class ChatSpyReward : IRTDReward {
     plugin.RegisterEventHandler<EventRoundEnd>(onRoundEnd);
   }
 
-  private HookResult onRoundEnd(EventRoundEnd @event, GameEventInfo info) {
-    foreach (var player in Utilities.GetPlayers()) {
-      if (API.Actain == null) return HookResult.Continue;
-      API.Actain.getSpyService().SetSpy(player.SteamID, false);
-    }
-
-    return HookResult.Continue;
-  }
-
   public string Name => "Chat Spy";
 
   public string? Description
@@ -30,5 +21,14 @@ public class ChatSpyReward : IRTDReward {
     if (API.Actain == null) return false;
     API.Actain.getSpyService().SetSpy(player.SteamID, true);
     return true;
+  }
+
+  private HookResult onRoundEnd(EventRoundEnd @event, GameEventInfo info) {
+    foreach (var player in Utilities.GetPlayers()) {
+      if (API.Actain == null) return HookResult.Continue;
+      API.Actain.getSpyService().SetSpy(player.SteamID, false);
+    }
+
+    return HookResult.Continue;
   }
 }
