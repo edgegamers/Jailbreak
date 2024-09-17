@@ -1,4 +1,5 @@
 ﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
 using GangsAPI;
 using GangsAPI.Data;
 using GangsAPI.Data.Command;
@@ -39,15 +40,16 @@ public class BombIconCommand(IServiceProvider provider) : ICommand {
 
   private readonly IRankManager ranks =
     provider.GetRequiredService<IRankManager>();
+  
+  private readonly ICommandManager commands =
+    provider.GetRequiredService<ICommandManager>();
 
   public string Name => "css_bombicon";
   public string[] Usage => ["<icon>"];
 
-  public void Start() {
+  public void Start(BasePlugin? plugin, bool hotReload) {
     Server.PrintToConsole("Registering Bomb Icon Command");
-    Server.PrintToConsole("Registered: " + provider
-     .GetRequiredService<ICommandManager>()
-     .RegisterCommand(this));
+    Server.PrintToConsole("Registered: " + commands.RegisterCommand(this));
   }
 
   public async Task<CommandResult> Execute(PlayerWrapper? executor,
