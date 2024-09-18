@@ -77,8 +77,9 @@ public class BombIconCommand(IServiceProvider provider, BasePlugin plugin)
     }
 
     BombIcon icon;
+    var      query = string.Join('_', info.Args.Skip(1)).ToUpper();
     if (!int.TryParse(info[1], out var iconInt) || iconInt < 0) {
-      if (!Enum.TryParse(info[1], out icon)) {
+      if (!Enum.TryParse(query, out icon)) {
         info.ReplySync(localizer.Get(MSG.COMMAND_INVALID_PARAM, info[1],
           "an icon"));
         return CommandResult.SUCCESS;

@@ -36,6 +36,7 @@ public class BombIconMenu(IServiceProvider provider, BombPerkData data)
   override protected Task<List<BombIcon>> GetItems(PlayerWrapper player) {
     var list = Enum.GetValues<BombIcon>().ToList();
     list.Sort(CompareBombIcons);
+    list.Insert(0, 0);
     return Task.FromResult(list);
   }
 
@@ -48,13 +49,17 @@ public class BombIconMenu(IServiceProvider provider, BombPerkData data)
 
   override protected Task<string> FormatItem(PlayerWrapper player, int index,
     BombIcon item) {
+    var name = item.ToString().ToTitleCase();
+    if (item == 0)
+      return Task.FromResult(
+        $"{ChatColors.DarkBlue}Gang Perks: {ChatColors.LightBlue}Bomb Icons");
     if (item == data.Equipped)
       return Task.FromResult(
-        $"{index}. {ChatColors.DarkRed}{item} {ChatColors.Green}({ChatColors.Lime}Equipped{ChatColors.Green})");
+        $"{index}. {ChatColors.DarkRed}{name} {ChatColors.Green}({ChatColors.Lime}Equipped{ChatColors.Green})");
     if (item == data.Unlocked)
       return Task.FromResult(
-        $"{index}. {ChatColors.LightRed}{item} {ChatColors.Green}({ChatColors.BlueGrey}Unlocked{ChatColors.Green})");
+        $"{index}. {ChatColors.LightRed}{name} {ChatColors.Green}({ChatColors.Grey}Unlocked{ChatColors.Green})");
     return Task.FromResult(
-      $"{index}. {ChatColors.Grey}{item} {ChatColors.DarkRed}({ChatColors.LightRed}{item.GetCost()}{ChatColors.DarkRed})");
+      $"{index}. {ChatColors.Grey}{name} {ChatColors.DarkRed}({ChatColors.LightRed}{item.GetCost()}{ChatColors.DarkRed})");
   }
 }
