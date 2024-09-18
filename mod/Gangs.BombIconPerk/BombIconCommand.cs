@@ -71,7 +71,7 @@ public class BombIconCommand(IServiceProvider provider, BasePlugin plugin)
     if (!success || data == null) data = new BombPerkData();
 
     if (info.ArgCount == 1) {
-      var menu = new BombIconMenu(provider, gang.GangId);
+      var menu = new BombIconMenu(provider, data);
       await menus.OpenMenu(executor, menu);
       return CommandResult.SUCCESS;
     }

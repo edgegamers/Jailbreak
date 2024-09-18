@@ -5,14 +5,14 @@ using GangsAPI.Services.Menu;
 
 namespace Gangs.BaseImpl;
 
-public abstract class BasePerk(IServiceProvider provider) : BaseStat, IPerk {
+public abstract class BasePerk : BaseStat, IPerk {
   public abstract Task<int?> GetCost(IGangPlayer player);
   public abstract Task OnPurchase(IGangPlayer player);
   public abstract Task<IMenu?> GetMenu(IGangPlayer player);
 }
 
 public abstract class BasePerk<TV>(IServiceProvider provider)
-  : BasePerk(provider), IPerk, IStat<TV> {
+  : BasePerk(), IPerk, IStat<TV> {
   protected IServiceProvider Provider { get; } = provider;
   public override Type ValueType => typeof(TV);
   public abstract TV Value { get; set; }

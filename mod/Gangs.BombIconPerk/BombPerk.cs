@@ -1,7 +1,9 @@
 ﻿using System.Diagnostics;
 using Gangs.BaseImpl;
 using GangsAPI.Data.Gang;
+using GangsAPI.Services.Gang;
 using GangsAPI.Services.Menu;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Gangs.BombIconPerk;
 
@@ -10,6 +12,9 @@ public class BombPerk(IServiceProvider provider)
   public const string STAT_ID = "jb_bomb_icon";
   public override string StatId => STAT_ID;
   public override string Name => "Bomb Icon";
+
+  private readonly IGangStatManager gangStats =
+    provider.GetRequiredService<IGangStatManager>();
 
   public override string? Description
     => "Customize the icon that is shown when you bomb a CT";
@@ -24,10 +29,15 @@ public class BombPerk(IServiceProvider provider)
     throw new NotImplementedException();
   }
 
-  public override Task<IMenu?> GetMenu(IGangPlayer player) {
+  public override async Task<IMenu?> GetMenu(IGangPlayer player) {
     Debug.Assert(player.GangId != null, "player.GangId != null");
-    return Task.FromResult<IMenu?>(new BombIconMenu(Provider,
-      player.GangId.Value));
+
+    var (success, data) =
+      await gangStats.GetForGang<BombPerkData>(player.GangId.Value, STAT_ID);
+
+    if (!success || data == null) data = new BombPerkData();
+
+    return new BombIconMenu(Provider, data);
   }
 }
 

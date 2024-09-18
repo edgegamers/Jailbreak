@@ -4,51 +4,46 @@ using GangsAPI.Exceptions;
 using GangsAPI.Extensions;
 using GangsAPI.Services.Gang;
 using GangsAPI.Services.Menu;
+using Menu;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Gangs.BombIconPerk;
 
-public class BombIconMenu(IServiceProvider provider, int gangId) : IMenu {
-  private readonly IGangStatManager gangStats =
-    provider.GetRequiredService<IGangStatManager>();
+public class BombIconMenu(IServiceProvider provider, BombPerkData data)
+  : AbstractPagedMenu<BombIcon>(provider, NativeSenders.Chat, 7) {
+  // Method to sort bomb icons
+  private int CompareBombIcons(BombIcon a, BombIcon b) {
+    // If the icon is equipped, it should be first
+    if (a == data.Equipped) return -1;
 
-  private readonly IGangManager gangs =
-    provider.GetRequiredService<IGangManager>();
-
-  public async Task Open(PlayerWrapper player) {
-    player.PrintToChat(ChatColors.DarkBlue + "Gang Perk: "
-      + ChatColors.LightBlue + "Bomb Icon");
-
-    var (success, data) =
-      await gangStats.GetForGang<BombPerkData>(gangId, BombPerk.STAT_ID);
-    if (!success || data == null) data = new BombPerkData();
-
-    var unlocked = data.Unlocked;
-    var equipped = data.Equipped;
-
-    var index = 0;
-    foreach (var icon in Enum.GetValues<BombIcon>()) {
-      index++;
-      if (unlocked.HasFlag(icon)) {
-        player.PrintToChat(
-          $"{index}. {ChatColors.LightBlue}{icon.ToString().ToTitleCase()} {ChatColors.LightRed}{icon.GetCost()}");
-        continue;
-      }
-
-      if (equipped == icon) {
-        player.PrintToChat(
-          $"{index}. {ChatColors.LightBlue}{icon.ToString().ToTitleCase()} {ChatColors.Green}(Equipped)");
-        continue;
-      }
-
-      player.PrintToChat(
-        $"{index}. {ChatColors.LightBlue}{icon.ToString().ToTitleCase()} {ChatColors.LightYellow}(Select)");
+    // If icon is unlocked, it should be next
+    // If both are unlocked, sort by cost (highest first)
+    if (a == data.Unlocked) {
+      if (b == data.Equipped) return 1;
+      return b == data.Unlocked ? a.GetCost().CompareTo(b.GetCost()) : -1;
     }
+
+    // If both are locked, sort by cost (lowest first)
+    if (b == data.Equipped) return 1;
+    return b == data.Unlocked ? 1 : a.GetCost().CompareTo(b.GetCost());
   }
 
-  public Task Close(PlayerWrapper player) { return Task.CompletedTask; }
+  override protected Task<List<BombIcon>> GetItems(PlayerWrapper player) {
+    var list = Enum.GetValues<BombIcon>().ToList();
+    list.Sort(CompareBombIcons);
+    return Task.FromResult(list);
+  }
 
-  public Task AcceptInput(PlayerWrapper player, int input) {
+  override protected Task HandleItemSelection(PlayerWrapper player,
+    List<BombIcon> items, int selectedIndex) {
+    player.PrintToChat("Selected " + items[selectedIndex]);
     return Task.CompletedTask;
+  }
+
+  override protected Task<string> FormatItem(PlayerWrapper player, int index,
+    BombIcon item) {
+    if (item == data.Equipped) return Task.FromResult($"{item} (Equipped)");
+    if (item == data.Unlocked) return Task.FromResult($"{item} (Unlocked)");
+    return Task.FromResult($"{item} ({item.GetCost()})");
   }
 }
