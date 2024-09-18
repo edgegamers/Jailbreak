@@ -1,4 +1,5 @@
-﻿using GangsAPI;
+﻿using Gangs.BombIconPerk;
+using GangsAPI;
 using GangsAPI.Data;
 using GangsAPI.Data.Command;
 using GangsAPI.Exceptions;
@@ -12,10 +13,11 @@ using GangsAPI.Services.Menu;
 using GangsAPI.Services.Player;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
+using Stats.Perk.Smoke;
 
-namespace Gangs.BombIconPerk;
+namespace Gangs.SpecialDayColorPerk;
 
-public class BombIconCommand(IServiceProvider provider) : ICommand {
+public class SDColorCommand(IServiceProvider provider) : ICommand {
   private readonly ICommandManager commands =
     provider.GetRequiredService<ICommandManager>();
 
@@ -42,8 +44,8 @@ public class BombIconCommand(IServiceProvider provider) : ICommand {
   private readonly IRankManager ranks =
     provider.GetRequiredService<IRankManager>();
 
-  public string Name => "css_bombicon";
-  public string[] Usage => ["<icon>"];
+  public string Name => "css_sdcolor";
+  public string[] Usage => ["<color>"];
 
   public void Start() { commands.RegisterCommand(this); }
 
@@ -61,27 +63,27 @@ public class BombIconCommand(IServiceProvider provider) : ICommand {
       ?? throw new GangNotFoundException(player.GangId.Value);
 
     var (success, data) =
-      await gangStats.GetForGang<BombPerkData>(gang, BombPerk.STAT_ID);
+      await gangStats.GetForGang<SDColorData>(gang, SDColorPerk.STAT_ID);
 
-    if (!success || data == null) data = new BombPerkData();
+    if (!success || data == null) data = new SDColorData();
 
     if (info.ArgCount == 1) {
-      var menu = new BombIconMenu(provider, data);
+      var menu = new SDColorMenu(provider, data);
       await menus.OpenMenu(executor, menu);
       return CommandResult.SUCCESS;
     }
 
-    BombIcon icon;
-    var      query = string.Join('_', info.Args.Skip(1)).ToUpper();
+    SDColor color;
+    var     query = string.Join('_', info.Args.Skip(1)).ToUpper();
     if (!int.TryParse(info[1], out var iconInt) || iconInt < 0) {
-      if (!Enum.TryParse(query, out icon)) {
+      if (!Enum.TryParse(query, out color)) {
         info.ReplySync(localizer.Get(MSG.COMMAND_INVALID_PARAM, info[1],
-          "an icon"));
+          "a positive integer"));
         return CommandResult.SUCCESS;
       }
-    } else { icon = (BombIcon)iconInt; }
+    } else { color = (SDColor)iconInt; }
 
-    if (!data.Unlocked.HasFlag(icon)) {
+    if (!data.Unlocked.HasFlag(color)) {
       var (canPurchase, minRank) = await ranks.CheckRank(player,
         Perm.PURCHASE_PERKS);
 
@@ -90,24 +92,24 @@ public class BombIconCommand(IServiceProvider provider) : ICommand {
         return CommandResult.SUCCESS;
       }
 
-      var cost = icon.GetCost();
+      var cost = color.GetCost();
       if (await eco.TryPurchase(executor, cost,
-        item: "Bomb Icon: " + icon.ToString().ToTitleCase()) < 0)
+        item: "Bomb Icon: " + color.ToString().ToTitleCase()) < 0)
         return CommandResult.SUCCESS;
 
-      data.Unlocked |= icon;
-      data.Equipped =  icon;
+      data.Unlocked |= color;
+      data.Equipped =  color;
 
-      await gangStats.SetForGang(gang, BombPerk.STAT_ID, data);
+      await gangStats.SetForGang(gang, SDColorPerk.STAT_ID, data);
 
       if (gangChat == null) return CommandResult.SUCCESS;
 
       await gangChat.SendGangChat(player, gang,
-        localizer.Get(MSG.PERK_PURCHASED, icon.ToString()));
+        localizer.Get(MSG.PERK_PURCHASED, color.ToString()));
       return CommandResult.SUCCESS;
     }
 
-    if (data.Equipped == icon) return CommandResult.SUCCESS;
+    if (data.Equipped == color) return CommandResult.SUCCESS;
 
     var (canManage, required) =
       await ranks.CheckRank(player, Perm.MANAGE_PERKS);
@@ -116,14 +118,14 @@ public class BombIconCommand(IServiceProvider provider) : ICommand {
       return CommandResult.SUCCESS;
     }
 
-    data.Equipped = icon;
+    data.Equipped = color;
     await gangStats.SetForGang(gang, BombPerk.STAT_ID, data);
 
     if (gangChat == null) return CommandResult.SUCCESS;
 
     await gangChat.SendGangChat(player, gang,
-      localizer.Get(MSG.GANG_THING_SET, "Bomb Icon",
-        icon.ToString().ToTitleCase()));
+      localizer.Get(MSG.GANG_THING_SET, "SD Color",
+        color.ToString().ToTitleCase()));
     return CommandResult.SUCCESS;
   }
 }

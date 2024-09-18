@@ -1,11 +1,22 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using System.Drawing;
+using System.Net;
+using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Utils;
+using Gangs.SpecialDayColorPerk;
+using GangsAPI.Data;
+using GangsAPI.Perks;
+using GangsAPI.Services.Gang;
+using GangsAPI.Services.Player;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Public;
+using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Utils;
 using Jailbreak.SpecialDay.SpecialDays;
+using Microsoft.Extensions.DependencyInjection;
 using MStatsShared;
 
 namespace Jailbreak.SpecialDay;
@@ -24,8 +35,47 @@ public class SpecialDayManager(ISpecialDayFactory factory)
     if (CurrentSD is ISpecialDayMessageProvider messaged)
       messaged.Locale.SpecialDayStart.ToAllChat();
 
+    assignGangColors();
     CurrentSD.Setup();
     return true;
+  }
+
+  private void assignGangColors() {
+    if (API.Gangs == null) return;
+    var players   = API.Gangs.Services.GetService<IPlayerManager>();
+    var gangStats = API.Gangs.Services.GetService<IGangStatManager>();
+    if (players == null || gangStats == null) return;
+    var gangCache = new Dictionary<int, SDColor?>();
+    foreach (var player in Utilities.GetPlayers().Where(p => !p.IsBot)) {
+      var wrapper = new PlayerWrapper(player);
+      Task.Run(async () => {
+        var gangPlayer = await players.GetPlayer(wrapper.Steam);
+        if (gangPlayer?.GangId == null) return;
+        var gangId = gangPlayer.GangId.Value;
+        if (!gangCache.TryGetValue(gangId, out var color)) {
+          var (success, data) =
+            await gangStats.GetForGang<SDColorData>(gangId,
+              SDColorPerk.STAT_ID);
+          if (!success || data == null) {
+            gangCache[gangId] = null;
+            return;
+          }
+
+          color             = data.Equipped;
+          gangCache[gangId] = color;
+        }
+
+
+        if (color != null) {
+          wrapper.PrintToChat(ChatColors.Grey + "Your gang will be "
+            + color.Value.GetChatColor() + color.Value.ToString().ToTitleCase()
+            + ChatColors.Grey + " during this special day.");
+          var toSet = color.Value.GetColor() ?? color.Value.PickRandom();
+          if (toSet != null)
+            await Server.NextFrameAsync(() => player.SetColor(toSet.Value));
+        }
+      });
+    }
   }
 
   [GameEventHandler]
