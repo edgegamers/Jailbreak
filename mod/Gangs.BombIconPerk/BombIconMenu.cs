@@ -50,11 +50,11 @@ public class BombIconMenu(IServiceProvider provider, BombPerkData data)
     BombIcon item) {
     if (item == data.Equipped)
       return Task.FromResult(
-        $"{ChatColors.DarkRed}{item} {ChatColors.Green}({ChatColors.Lime}Equipped{ChatColors.Green})");
+        $"{index}. {ChatColors.DarkRed}{item} {ChatColors.Green}({ChatColors.Lime}Equipped{ChatColors.Green})");
     if (item == data.Unlocked)
       return Task.FromResult(
-        $"{ChatColors.LightRed}{item} {ChatColors.Green}({ChatColors.BlueGrey}Unlocked{ChatColors.Green})");
+        $"{index}. {ChatColors.LightRed}{item} {ChatColors.Green}({ChatColors.BlueGrey}Unlocked{ChatColors.Green})");
     return Task.FromResult(
-      $"{ChatColors.Grey}{item} {ChatColors.DarkRed}({ChatColors.LightRed}{item.GetCost()}{ChatColors.DarkRed})");
+      $"{index}. {ChatColors.Grey}{item} {ChatColors.DarkRed}({ChatColors.LightRed}{item.GetCost()}{ChatColors.DarkRed})");
   }
 }
