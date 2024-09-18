@@ -41,6 +41,7 @@ public class BombIconMenu(IServiceProvider provider, BombPerkData data)
     List<BombIcon> items, int selectedIndex) {
     commands.ProcessCommand(player, CommandCallingContext.Chat, "css_bombicon",
       items[selectedIndex].ToString());
+    Close(player);
     return Task.CompletedTask;
   }
 
