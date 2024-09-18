@@ -1,5 +1,6 @@
 ﻿using CounterStrikeSharp.API.Core;
 using Gangs.BombIconPerk;
+using Gangs.SpecialDayColorPerk;
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
@@ -19,5 +20,6 @@ public class GangsInit : IPluginBehavior {
     if (services == null) return;
 
     _ = new BombIconBootstrap(services);
+    _ = new SDColorBootstrap(services);
   }
 }
