@@ -94,7 +94,7 @@ public class SDColorCommand(IServiceProvider provider) : ICommand {
 
       var cost = color.GetCost();
       if (await eco.TryPurchase(executor, cost,
-        item: "Bomb Icon: " + color.ToString().ToTitleCase()) < 0)
+        item: "Special Day Color: " + color.ToString().ToTitleCase()) < 0)
         return CommandResult.SUCCESS;
 
       data.Unlocked |= color;

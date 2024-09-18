@@ -67,9 +67,8 @@ public class SpecialDayManager(ISpecialDayFactory factory)
 
 
         if (color != null) {
-          wrapper.PrintToChat(ChatColors.Grey + "Your gang will be "
-            + color.Value.GetChatColor() + color.Value.ToString().ToTitleCase()
-            + ChatColors.Grey + " during this special day.");
+          wrapper.PrintToChat(
+            $" {ChatColors.Grey}Your gang will be {color.Value.GetChatColor()}{color.Value.ToString().ToTitleCase()}{ChatColors.Grey} during this special day.");
           var toSet = color.Value.GetColor() ?? color.Value.PickRandom();
           if (toSet != null)
             await Server.NextFrameAsync(() => player.SetColor(toSet.Value));
