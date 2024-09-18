@@ -1,7 +1,9 @@
-﻿using CounterStrikeSharp.API.Modules.Utils;
+﻿using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Utils;
 using GangsAPI.Data;
 using GangsAPI.Exceptions;
 using GangsAPI.Extensions;
+using GangsAPI.Services.Commands;
 using GangsAPI.Services.Gang;
 using GangsAPI.Services.Menu;
 using Menu;
@@ -11,6 +13,9 @@ namespace Gangs.BombIconPerk;
 
 public class BombIconMenu(IServiceProvider provider, BombPerkData data)
   : AbstractPagedMenu<BombIcon>(provider, NativeSenders.Chat, 7) {
+  private readonly ICommandManager commands =
+    provider.GetRequiredService<ICommandManager>();
+
   // Method to sort bomb icons
   private int CompareBombIcons(BombIcon a, BombIcon b) {
     // If the icon is equipped, it should be first
@@ -36,14 +41,20 @@ public class BombIconMenu(IServiceProvider provider, BombPerkData data)
 
   override protected Task HandleItemSelection(PlayerWrapper player,
     List<BombIcon> items, int selectedIndex) {
-    player.PrintToChat("Selected " + items[selectedIndex]);
+    commands.ProcessCommand(player, CommandCallingContext.Chat,
+      "css_bombicon " + items[selectedIndex]);
     return Task.CompletedTask;
   }
 
   override protected Task<string> FormatItem(PlayerWrapper player, int index,
     BombIcon item) {
-    if (item == data.Equipped) return Task.FromResult($"{item} (Equipped)");
-    if (item == data.Unlocked) return Task.FromResult($"{item} (Unlocked)");
-    return Task.FromResult($"{item} ({item.GetCost()})");
+    if (item == data.Equipped)
+      return Task.FromResult(
+        $"{ChatColors.DarkRed}{item} {ChatColors.Green}({ChatColors.Lime}Equipped{ChatColors.Green})");
+    if (item == data.Unlocked)
+      return Task.FromResult(
+        $"{ChatColors.LightRed}{item} {ChatColors.Green}({ChatColors.BlueGrey}Unlocked{ChatColors.Green})");
+    return Task.FromResult(
+      $"{ChatColors.Grey}{item} {ChatColors.DarkRed}({ChatColors.LightRed}{item.GetCost()}{ChatColors.DarkRed})");
   }
 }

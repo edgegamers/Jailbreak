@@ -110,6 +110,7 @@ public class BombIconCommand(IServiceProvider provider, BasePlugin plugin)
       return CommandResult.SUCCESS;
     }
 
+    if (data.Equipped == icon) return CommandResult.SUCCESS;
 
     var (canManage, required) =
       await ranks.CheckRank(player, Perm.MANAGE_PERKS);
