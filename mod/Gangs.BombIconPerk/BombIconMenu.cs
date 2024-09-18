@@ -42,8 +42,8 @@ public class BombIconMenu(IServiceProvider provider, BombPerkData data)
 
   override protected Task HandleItemSelection(PlayerWrapper player,
     List<BombIcon> items, int selectedIndex) {
-    commands.ProcessCommand(player, CommandCallingContext.Chat,
-      "css_bombicon " + items[selectedIndex]);
+    commands.ProcessCommand(player, CommandCallingContext.Chat, "css_bombicon",
+      items[selectedIndex].ToString());
     return Task.CompletedTask;
   }
 
@@ -52,7 +52,7 @@ public class BombIconMenu(IServiceProvider provider, BombPerkData data)
     var name = item.ToString().ToTitleCase();
     if (item == 0)
       return Task.FromResult(
-        $"{ChatColors.DarkBlue}Gang Perks: {ChatColors.LightBlue}Bomb Icons");
+        $" {ChatColors.DarkBlue}Gang Perks: {ChatColors.LightBlue}Bomb Icons");
     if (item == data.Equipped)
       return Task.FromResult(
         $"{index}. {ChatColors.DarkRed}{name} {ChatColors.Green}({ChatColors.Lime}Equipped{ChatColors.Green})");
