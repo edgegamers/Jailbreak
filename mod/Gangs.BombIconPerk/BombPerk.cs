@@ -1,4 +1,5 @@
-﻿using Gangs.BaseImpl;
+﻿using System.Diagnostics;
+using Gangs.BaseImpl;
 using GangsAPI.Data.Gang;
 using GangsAPI.Services.Menu;
 
@@ -24,7 +25,9 @@ public class BombPerk(IServiceProvider provider)
   }
 
   public override Task<IMenu?> GetMenu(IGangPlayer player) {
-    return Task.FromResult<IMenu?>(new BombIconMenu());
+    Debug.Assert(player.GangId != null, "player.GangId != null");
+    return Task.FromResult<IMenu?>(new BombIconMenu(Provider,
+      player.GangId.Value));
   }
 }
 

@@ -50,17 +50,10 @@ public class BombIconCommand(IServiceProvider provider, BasePlugin plugin)
   public string Name => "css_bombicon";
   public string[] Usage => ["<icon>"];
 
-  public void Start() {
-    plugin.AddCommand("css_bombicon", "", (player, info) => {
-      var playerWrapper = player == null ? null : new PlayerWrapper(player);
-      var infoWrapper   = new CommandInfoWrapper(info);
-      Task.Run(async () => await Execute(playerWrapper, infoWrapper));
-    });
-  }
+  public void Start() { commands.RegisterCommand(this); }
 
   public async Task<CommandResult> Execute(PlayerWrapper? executor,
     CommandInfoWrapper info) {
-    info.ReplySync("Test");
     if (executor == null) return CommandResult.PLAYER_ONLY;
     var player = await players.GetPlayer(executor.Steam)
       ?? throw new PlayerNotFoundException(executor.Steam);
@@ -78,7 +71,7 @@ public class BombIconCommand(IServiceProvider provider, BasePlugin plugin)
     if (!success || data == null) data = new BombPerkData();
 
     if (info.ArgCount == 1) {
-      var menu = new BombIconMenu();
+      var menu = new BombIconMenu(provider, gang.GangId);
       await menus.OpenMenu(executor, menu);
       return CommandResult.SUCCESS;
     }
