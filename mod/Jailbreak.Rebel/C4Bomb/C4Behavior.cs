@@ -7,6 +7,7 @@ using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
 using Gangs.BombIconPerk;
 using GangsAPI.Data;
+using GangsAPI.Services;
 using GangsAPI.Services.Gang;
 using GangsAPI.Services.Player;
 using Jailbreak.Formatting.Extensions;
@@ -264,6 +265,15 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
         ct.PlayerPawn.Value.Health -= (int)damage;
         Utilities.SetStateChanged(ct.PlayerPawn.Value, "CBaseEntity",
           "m_iHealth");
+      }
+    }
+
+    if (API.Gangs != null) {
+      var eco = API.Gangs.Services.GetService<IEcoManager>();
+      if (eco != null) {
+        var wrapper = new PlayerWrapper(player);
+        Task.Run(async ()
+          => await eco.Grant(wrapper, killed * 50, reason: "C4 Kill"));
       }
     }
 
