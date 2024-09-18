@@ -158,12 +158,13 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
     var gangStats   = API.Gangs.Services.GetService<IGangStatManager>();
     var gangPlayers = API.Gangs.Services.GetService<IPlayerManager>();
     if (gangStats == null || gangPlayers == null) return;
-
     Dictionary<int, string> cachedGangBombIcons = new();
     Task.Run(async () => {
       foreach (var player in players) {
         var gangPlayer = await gangPlayers.GetPlayer(player.Steam);
         if (gangPlayer?.GangId == null) continue;
+
+
         if (cachedGangBombIcons.TryGetValue(gangPlayer.GangId.Value,
           out var cached)) {
           cachedBombIcons[gangPlayer.Steam] = cached;
@@ -206,7 +207,7 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
   }
 
   // Thank you https://github.com/exkludera/cs2-killfeed-icons/blob/main/src/main.cs
-  [GameEventHandler]
+  [GameEventHandler(HookMode.Pre)]
   public HookResult OnPlayerDeath(EventPlayerDeath ev, GameEventInfo info) {
     var victim = ev.Userid;
 
