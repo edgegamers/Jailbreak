@@ -1,7 +1,4 @@
-﻿using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Commands;
-using GangsAPI;
+﻿using GangsAPI;
 using GangsAPI.Data;
 using GangsAPI.Data.Command;
 using GangsAPI.Exceptions;
@@ -15,12 +12,13 @@ using GangsAPI.Services.Menu;
 using GangsAPI.Services.Player;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
 
 namespace Gangs.BombIconPerk;
 
-public class BombIconCommand(IServiceProvider provider, BasePlugin plugin)
-  : ICommand {
+public class BombIconCommand(IServiceProvider provider) : ICommand {
+  private readonly ICommandManager commands =
+    provider.GetRequiredService<ICommandManager>();
+
   private readonly IEcoManager eco = provider.GetRequiredService<IEcoManager>();
 
   private readonly IGangChatPerk? gangChat =
@@ -43,9 +41,6 @@ public class BombIconCommand(IServiceProvider provider, BasePlugin plugin)
 
   private readonly IRankManager ranks =
     provider.GetRequiredService<IRankManager>();
-
-  private readonly ICommandManager commands =
-    provider.GetRequiredService<ICommandManager>();
 
   public string Name => "css_bombicon";
   public string[] Usage => ["<icon>"];

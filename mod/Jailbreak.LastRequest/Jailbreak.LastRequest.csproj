@@ -13,7 +13,7 @@
 
     <ItemGroup>
         <Reference Include="GangsAPI">
-          <HintPath>..\..\public\Jailbreak.Public\Mixin\GangsAPI.dll</HintPath>
+            <HintPath>..\..\public\Jailbreak.Public\Mixin\GangsAPI.dll</HintPath>
         </Reference>
         <Reference Include="MStatsShared">
             <HintPath>..\..\public\Jailbreak.Public\Mixin\MStatsShared.dll</HintPath>

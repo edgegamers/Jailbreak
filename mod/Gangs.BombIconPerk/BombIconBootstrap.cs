@@ -6,7 +6,7 @@ namespace Gangs.BombIconPerk;
 
 public class BombIconBootstrap {
   public BombIconBootstrap(IServiceProvider collection, BasePlugin plugin) {
-    new BombIconCommand(collection, plugin).Start();
+    new BombIconCommand(collection).Start();
     collection.GetRequiredService<IPerkManager>()
      .Perks.Add(new BombPerk(collection));
   }

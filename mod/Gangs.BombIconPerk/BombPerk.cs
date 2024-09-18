@@ -10,11 +10,12 @@ namespace Gangs.BombIconPerk;
 public class BombPerk(IServiceProvider provider)
   : BasePerk<BombPerkData>(provider) {
   public const string STAT_ID = "jb_bomb_icon";
-  public override string StatId => STAT_ID;
-  public override string Name => "Bomb Icon";
 
   private readonly IGangStatManager gangStats =
     provider.GetRequiredService<IGangStatManager>();
+
+  public override string StatId => STAT_ID;
+  public override string Name => "Bomb Icon";
 
   public override string? Description
     => "Customize the icon that is shown when you bomb a CT";

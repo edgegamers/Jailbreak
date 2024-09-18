@@ -1,18 +1,15 @@
 ﻿using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 using GangsAPI.Data;
-using GangsAPI.Exceptions;
 using GangsAPI.Extensions;
+using GangsAPI.Menu;
 using GangsAPI.Services.Commands;
-using GangsAPI.Services.Gang;
-using GangsAPI.Services.Menu;
-using Menu;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Gangs.BombIconPerk;
 
 public class BombIconMenu(IServiceProvider provider, BombPerkData data)
-  : AbstractPagedMenu<BombIcon>(provider, NativeSenders.Chat, 7) {
+  : AbstractPagedMenu<BombIcon>(provider, NativeSenders.Chat) {
   private readonly ICommandManager commands =
     provider.GetRequiredService<ICommandManager>();
 
