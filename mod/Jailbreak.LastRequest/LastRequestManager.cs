@@ -253,6 +253,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
   private void checkLR() {
     Server.RunOnTick(Server.TickCount + 32, () => {
+      if (IsLREnabled) return;
       if (Utilities.GetPlayers().All(p => p.Team != CsTeam.CounterTerrorist))
         return;
       if (countAlivePrisoners() > CV_PRISONER_TO_LR.Value) return;
