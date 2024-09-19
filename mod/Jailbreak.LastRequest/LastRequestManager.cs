@@ -5,6 +5,8 @@ using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
+using GangsAPI.Data;
+using GangsAPI.Services;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public;
@@ -105,6 +107,19 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
       if (died != null && player.SteamID == died.SteamID) continue;
       player.ExecuteClientCommandFromServer("css_lr");
     }
+
+    if (API.Gangs != null) {
+      var eco = API.Gangs.Services.GetService<IEcoManager>();
+      if (eco == null) return;
+      var survivors = Utilities.GetPlayers()
+       .Where(p => p is { IsBot: false, PawnIsAlive: true })
+       .Select(p => new PlayerWrapper(p))
+       .ToList();
+      Task.Run(async () => {
+        foreach (var survivor in survivors)
+          await eco.Grant(survivor, 100, reason: "LR Reached");
+      });
+    }
   }
 
   public bool InitiateLastRequest(CCSPlayerController prisoner,
@@ -137,6 +152,18 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     if (result is LRResult.GUARD_WIN or LRResult.PRISONER_WIN) {
       RoundUtil.AddTimeRemaining(CV_LR_BONUS_TIME.Value);
       messages.LastRequestDecided(lr, result).ToAllChat();
+
+      if (API.Gangs != null) {
+        var eco = API.Gangs.Services.GetService<IEcoManager>();
+        if (eco == null) return false;
+        var wrapper =
+          new PlayerWrapper(result == LRResult.GUARD_WIN ?
+            lr.Guard :
+            lr.Prisoner);
+        Task.Run(async () => {
+          await eco.Grant(wrapper, 30, reason: "LR Win");
+        });
+      }
     }
 
     API.Stats?.PushStat(new ServerStat("JB_LASTREQUEST_RESULT",
@@ -192,14 +219,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     if (!IsLREnabledForRound) return HookResult.Continue;
 
     if (player.Team != CsTeam.Terrorist) return HookResult.Continue;
-
-    if (countAlivePrisoners() - 1 > CV_PRISONER_TO_LR.Value)
-      return HookResult.Continue;
-
-    if (Utilities.GetPlayers().All(p => p.Team != CsTeam.CounterTerrorist))
-      return HookResult.Continue;
-
-    EnableLR(player);
+    checkLR();
     return HookResult.Continue;
   }
 
@@ -226,11 +246,18 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     if (!IsLREnabledForRound) return HookResult.Continue;
 
     if (player.Team != CsTeam.Terrorist) return HookResult.Continue;
-    if (countAlivePrisoners() > CV_PRISONER_TO_LR.Value)
-      return HookResult.Continue;
 
-    EnableLR();
+    checkLR();
     return HookResult.Continue;
+  }
+
+  private void checkLR() {
+    Server.NextFrame(() => {
+      if (Utilities.GetPlayers().All(p => p.Team != CsTeam.CounterTerrorist))
+        return;
+      if (countAlivePrisoners() > CV_PRISONER_TO_LR.Value) return;
+      EnableLR();
+    });
   }
 
   private int countAlivePrisoners() {

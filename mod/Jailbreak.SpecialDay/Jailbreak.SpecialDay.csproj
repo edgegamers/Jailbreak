@@ -10,11 +10,15 @@
         <ProjectReference Include="..\..\lang\Jailbreak.English\Jailbreak.English.csproj"/>
         <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj"/>
         <ProjectReference Include="..\..\public\Jailbreak.Validator\Jailbreak.Validator.csproj"/>
+        <ProjectReference Include="..\Gangs.SpecialDayColorPerk\Gangs.SpecialDayColorPerk.csproj" />
         <ProjectReference Include="..\Jailbreak.Trail\Jailbreak.Trail.csproj"/>
         <ProjectReference Include="..\Jailbreak.Zones\Jailbreak.Zones.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
+        <Reference Include="GangsAPI">
+          <HintPath>..\..\public\Jailbreak.Public\Mixin\GangsAPI.dll</HintPath>
+        </Reference>
         <Reference Include="MStatsShared">
             <HintPath>..\..\public\Jailbreak.Public\Mixin\MStatsShared.dll</HintPath>
         </Reference>

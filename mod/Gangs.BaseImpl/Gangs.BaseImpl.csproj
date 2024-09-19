@@ -7,17 +7,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\public\Jailbreak.Formatting\Jailbreak.Formatting.csproj"/>
-        <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <Reference Include="GangsAPI">
             <HintPath>..\..\public\Jailbreak.Public\Mixin\GangsAPI.dll</HintPath>
         </Reference>
-        <Reference Include="MStatsShared">
-            <HintPath>..\..\public\Jailbreak.Public\Mixin\MStatsShared.dll</HintPath>
-        </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj"/>
     </ItemGroup>
 
 </Project>

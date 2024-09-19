@@ -8,6 +8,10 @@ using CounterStrikeSharp.API.Modules.Utils;
 namespace Jailbreak.Public.Extensions;
 
 public static class PlayerExtensions {
+  public enum FadeFlags {
+    FADE_IN, FADE_OUT, FADE_STAYOUT
+  }
+
   [Obsolete("Use CCSPlayerController#Team instead")]
   public static CsTeam GetTeam(this CCSPlayerController controller) {
     return (CsTeam)controller.TeamNum;
@@ -150,10 +154,6 @@ public static class PlayerExtensions {
     return pawn.WeaponServices?.MyWeapons
      .FirstOrDefault(w => w.Value?.DesignerName == designerName)
     ?.Value;
-  }
-
-  public enum FadeFlags {
-    FADE_IN, FADE_OUT, FADE_STAYOUT
   }
 
   public static void ColorScreen(this CCSPlayerController player, Color color,

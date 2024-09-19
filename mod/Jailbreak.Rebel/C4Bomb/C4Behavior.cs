@@ -5,12 +5,18 @@ using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
+using Gangs.BombIconPerk;
+using GangsAPI.Data;
+using GangsAPI.Services;
+using GangsAPI.Services.Gang;
+using GangsAPI.Services.Player;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rebel;
+using Microsoft.Extensions.DependencyInjection;
 using MStatsShared;
 
 namespace Jailbreak.Rebel.C4Bomb;
@@ -35,17 +41,24 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
 
   private readonly Dictionary<CC4, C4Metadata> bombs = new();
 
+  private readonly Dictionary<ulong, string> cachedBombIcons = new();
+
   // EmitSound(CBaseEntity* pEnt, const char* sSoundName, int nPitch, float flVolume, float flDelay)
   private readonly MemoryFunctionVoid<CBaseEntity, string, int, float, float>
     // ReSharper disable once InconsistentNaming
     CBaseEntity_EmitSoundParamsLinux = new(
       "48 B8 ? ? ? ? ? ? ? ? 55 48 89 E5 41 55 41 54 49 89 FC 53 48 89 F3"); // LINUX ONLY.
 
+  private readonly Dictionary<int, int> deathToKiller = new();
+
   private bool giveNextRound = true;
 
   private BasePlugin? plugin;
 
-  public void ClearActiveC4s() { bombs.Clear(); }
+  public void ClearActiveC4s() {
+    bombs.Clear();
+    deathToKiller.Clear();
+  }
 
   public void TryGiveC4ToPlayer(CCSPlayerController player) {
     var bombEntity = new CC4(player.GiveNamedItem("weapon_c4"));
@@ -123,6 +136,7 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
     ClearActiveC4s();
+    refreshBombIcons();
 
     if (!CV_GIVE_BOMB.Value) return HookResult.Continue;
     if (!giveNextRound) {
@@ -132,6 +146,45 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
 
     TryGiveC4ToRandomTerrorist();
     return HookResult.Continue;
+  }
+
+  private void refreshBombIcons() {
+    if (API.Gangs == null) return;
+    var players = Utilities.GetPlayers()
+     .Where(p => p is { IsBot: false, Team: CsTeam.Terrorist })
+     .Select(p => new PlayerWrapper(p))
+     .ToList();
+    cachedBombIcons.Clear();
+
+    var gangStats   = API.Gangs.Services.GetService<IGangStatManager>();
+    var gangPlayers = API.Gangs.Services.GetService<IPlayerManager>();
+    if (gangStats == null || gangPlayers == null) return;
+    Dictionary<int, string> cachedGangBombIcons = new();
+    Task.Run(async () => {
+      foreach (var player in players) {
+        var gangPlayer = await gangPlayers.GetPlayer(player.Steam);
+        if (gangPlayer?.GangId == null) continue;
+
+
+        if (cachedGangBombIcons.TryGetValue(gangPlayer.GangId.Value,
+          out var cached)) {
+          cachedBombIcons[gangPlayer.Steam] = cached;
+          continue;
+        }
+
+        var (success, data) =
+          await gangStats.GetForGang<BombPerkData>(gangPlayer.GangId.Value,
+            BombPerk.STAT_ID);
+
+        if (!success || data == null || data.Equipped == 0)
+          cachedGangBombIcons[gangPlayer.GangId.Value] = "";
+        else
+          cachedGangBombIcons[gangPlayer.GangId.Value] =
+            data.Equipped.GetEquipment();
+        cachedBombIcons[gangPlayer.Steam] =
+          cachedGangBombIcons[gangPlayer.GangId.Value];
+      }
+    });
   }
 
   [GameEventHandler]
@@ -151,6 +204,25 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
       return HookResult.Stop;
     }
 
+    return HookResult.Continue;
+  }
+
+  // Thank you https://github.com/exkludera/cs2-killfeed-icons/blob/main/src/main.cs
+  [GameEventHandler(HookMode.Pre)]
+  public HookResult OnPlayerDeath(EventPlayerDeath ev, GameEventInfo info) {
+    var victim = ev.Userid;
+
+    if (victim == null || !victim.IsValid) return HookResult.Continue;
+    if (!deathToKiller.TryGetValue(victim.Slot, out var killerSlot))
+      return HookResult.Continue;
+
+    var killer = Utilities.GetPlayerFromSlot(killerSlot);
+    if (killer == null || !killer.IsValid) return HookResult.Continue;
+
+    cachedBombIcons.TryGetValue(killer.SteamID, out var killerIcon);
+    if (string.IsNullOrEmpty(killerIcon)) killerIcon = "weapon_c4";
+    ev.Attacker = killer;
+    ev.Weapon   = killerIcon;
     return HookResult.Continue;
   }
 
@@ -176,9 +248,7 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
     var killed = 0;
     /* Calculate damage here, only applies to alive CTs. */
     foreach (var ct in Utilities.GetPlayers()
-     .Where(p => p is {
-        Team: CsTeam.CounterTerrorist, PawnIsAlive: true, IsValid: true
-      })) {
+     .Where(p => p is { Team: CsTeam.CounterTerrorist, PawnIsAlive: true })) {
       var distanceFromBomb =
         ct.PlayerPawn.Value!.AbsOrigin!.Distance(player.PlayerPawn.Value
          .AbsOrigin!);
@@ -188,12 +258,22 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
       damage *= (CV_C4_RADIUS.Value - distanceFromBomb) / CV_C4_RADIUS.Value;
       float healthRef = ct.PlayerPawn.Value.Health;
       if (healthRef <= damage) {
+        deathToKiller[ct.Slot] = player.Slot;
         ct.CommitSuicide(true, true);
         killed++;
       } else {
         ct.PlayerPawn.Value.Health -= (int)damage;
         Utilities.SetStateChanged(ct.PlayerPawn.Value, "CBaseEntity",
           "m_iHealth");
+      }
+    }
+
+    if (API.Gangs != null) {
+      var eco = API.Gangs.Services.GetService<IEcoManager>();
+      if (eco != null) {
+        var wrapper = new PlayerWrapper(player);
+        Task.Run(async ()
+          => await eco.Grant(wrapper, killed * 50, reason: "C4 Kill"));
       }
     }
 
