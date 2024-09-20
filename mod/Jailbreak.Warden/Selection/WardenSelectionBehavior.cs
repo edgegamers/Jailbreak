@@ -112,6 +112,7 @@ public class
   /// </summary>
   protected void OnChooseWarden() {
     guaranteedWarden.Clear();
+    queueInactive = true;
     if (warden.HasWarden) return;
     var eligible = Utilities.GetPlayers()
      .Where(player => player.PawnIsAlive)
@@ -124,7 +125,6 @@ public class
 
     if (eligible.Count == 0) {
       locale.NoWardens.ToAllChat();
-      queueInactive = true;
 
       return;
     }
@@ -154,7 +154,6 @@ public class
 
     //	Disable the warden raffle for future wardens
     //	(eg in the event of warden death)
-    queueInactive = true;
   }
 
   private bool canEnterQueue(CCSPlayerController player) {

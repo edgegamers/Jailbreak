@@ -1,3 +1,4 @@
+using System;
 using CounterStrikeSharp.API.Core;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.LastRequest;
