@@ -123,7 +123,8 @@ public class RebelManager(IRebelLocale notifs, IRichLogService logs)
   }
 
   private Color getRebelColor(CCSPlayerController player) {
-    var percent             = getRebelTimePercentage(player);
+    var percent = getRebelTimePercentage(player);
+    percent = Math.Clamp(percent, 0, 1);
     var percentRgb          = 255 - (int)Math.Round(percent * 255.0);
     var color               = Color.FromArgb(255, 255, percentRgb, percentRgb);
     if (percent <= 0) color = Color.White;
