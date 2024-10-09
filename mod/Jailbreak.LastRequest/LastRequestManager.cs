@@ -37,6 +37,10 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     new("css_jb_lr_activate_lr_at", "Number of prisoners to activate LR at", 2,
       ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 32));
 
+  public static readonly FakeConVar<int> CV_MIN_PLAYERS_FOR_CREDITS =
+    new("css_jb_min_players_for_credits",
+      "Minimum number of players to start" + " giving credits out", 5);
+
   private ILastRequestFactory? factory;
   public bool IsLREnabledForRound { get; set; } = true;
 
@@ -87,6 +91,11 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     IsLREnabledForRound = false;
   }
 
+  private static bool shouldGrantCredits() {
+    if (API.Gangs == null) return false;
+    return Utilities.GetPlayers().Count >= CV_MIN_PLAYERS_FOR_CREDITS.Value;
+  }
+
   public void EnableLR(CCSPlayerController? died = null) {
     messages.LastRequestEnabled().ToAllChat();
     IsLREnabled = true;
@@ -101,25 +110,25 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
     RoundUtil.AddTimeRemaining(CV_LR_GUARD_TIME.Value * cts);
 
-    foreach (var player in Utilities.GetPlayers()) {
+    var players = Utilities.GetPlayers();
+    foreach (var player in players) {
       player.ExecuteClientCommand("play sounds/lr");
       if (player.Team != CsTeam.Terrorist || !player.PawnIsAlive) continue;
       if (died != null && player.SteamID == died.SteamID) continue;
       player.ExecuteClientCommandFromServer("css_lr");
     }
 
-    if (API.Gangs != null) {
-      var eco = API.Gangs.Services.GetService<IEcoManager>();
-      if (eco == null) return;
-      var survivors = Utilities.GetPlayers()
-       .Where(p => p is { IsBot: false, PawnIsAlive: true })
-       .Select(p => new PlayerWrapper(p))
-       .ToList();
-      Task.Run(async () => {
-        foreach (var survivor in survivors)
-          await eco.Grant(survivor, 100, reason: "LR Reached");
-      });
-    }
+    if (!shouldGrantCredits()) return;
+    var eco = API.Gangs?.Services.GetService<IEcoManager>();
+    if (eco == null) return;
+    var survivors = Utilities.GetPlayers()
+     .Where(p => p is { IsBot: false, PawnIsAlive: true })
+     .Select(p => new PlayerWrapper(p))
+     .ToList();
+    Task.Run(async () => {
+      foreach (var survivor in survivors)
+        await eco.Grant(survivor, 100, reason: "LR Reached");
+    });
   }
 
   public bool InitiateLastRequest(CCSPlayerController prisoner,
@@ -153,8 +162,8 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
       RoundUtil.AddTimeRemaining(CV_LR_BONUS_TIME.Value);
       messages.LastRequestDecided(lr, result).ToAllChat();
 
-      if (API.Gangs != null) {
-        var eco = API.Gangs.Services.GetService<IEcoManager>();
+      if (shouldGrantCredits()) {
+        var eco = API.Gangs?.Services.GetService<IEcoManager>();
         if (eco == null) return false;
         var wrapper =
           new PlayerWrapper(result == LRResult.GUARD_WIN ?
