@@ -13,11 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jailbreak.LastRequest.LastRequests;
 
 public class BulletForBullet : TeleportingRequest {
-  private static readonly string[] GUNS = [
-    "weapon_deagle", "weapon_usp_silencer", "weapon_tec9", "weapon_ssg08",
-    "weapon_nova"
-  ];
-
   private readonly ChatMenu chatMenu;
   private readonly bool magForMag;
   private readonly ILRB4BLocale msg;
@@ -30,45 +25,12 @@ public class BulletForBullet : TeleportingRequest {
     provider.GetRequiredService<ILastRequestManager>(), prisoner, guard) {
     this.magForMag = magForMag;
     chatMenu       = new ChatMenu(magForMag ? "Mag for Mag" : "Shot for Shot");
-    foreach (var pistol in GUNS)
-      chatMenu.AddMenuOption(pistol.GetFriendlyWeaponName(),
-        (player, option) => OnSelect(player, option, pistol));
 
     msg = provider.GetRequiredService<ILRB4BLocale>();
   }
 
   public override LRType Type
     => magForMag ? LRType.MAG_FOR_MAG : LRType.SHOT_FOR_SHOT;
-
-  private void OnSelect(CCSPlayerController player, ChatMenuOption _,
-    string designer) {
-    if (player.Slot != Prisoner.Slot) return;
-    designerName = designer;
-    MenuManager.CloseActiveMenu(player);
-
-    msg.WeaponSelected(player, designerName.GetFriendlyWeaponName())
-     .ToChat(Prisoner, Guard);
-
-    State = LRState.ACTIVE;
-
-    Prisoner.RemoveWeapons();
-    Guard.RemoveWeapons();
-    Prisoner.GiveNamedItem(designerName);
-    Guard.GiveNamedItem(designerName);
-
-    Plugin.AddTimer(0.5f, () => {
-      magSize = (magForMag ?
-        Prisoner.GetWeaponBase(designerName)!.VData?.MaxClip1 :
-        1) ?? 1;
-      Prisoner.GetWeaponBase(designerName).SetAmmo(0, 0);
-      Guard.GetWeaponBase(designerName).SetAmmo(0, 0);
-      var shooter = new Random().Next(2) == 0 ? Prisoner : Guard;
-      whosShot = shooter.Slot;
-      msg.PlayerGoesFirst(shooter).ToChat(Prisoner, Guard);
-
-      shooter.GetWeaponBase(designer).SetAmmo(magSize.Value, 0);
-    });
-  }
 
   public override void Setup() {
     Plugin.RegisterEventHandler<EventBulletImpact>(OnPlayerShoot);
@@ -78,17 +40,30 @@ public class BulletForBullet : TeleportingRequest {
 
     base.Setup();
     Execute();
-
-    chatMenu.Title =
-      $"{chatMenu.Title} - {Prisoner.PlayerName} vs {Guard.PlayerName}";
   }
 
+  private const string weaponName = "weapon_deagle";
 
   public override void Execute() {
     State = LRState.PENDING;
     MenuManager.OpenChatMenu(Prisoner, chatMenu);
 
-    Plugin.AddTimer(10, timeout, TimerFlags.STOP_ON_MAPCHANGE);
+    Plugin.AddTimer(5, () => {
+      if (State != LRState.PENDING) return;
+      Guard.GiveNamedItem(weaponName);
+      Prisoner.GiveNamedItem(weaponName);
+
+      magSize = (magForMag ?
+        Prisoner.GetWeaponBase(weaponName)!.VData?.MaxClip1 :
+        1) ?? 1;
+      Prisoner.GetWeaponBase(weaponName).SetAmmo(0, 0);
+      Guard.GetWeaponBase(weaponName).SetAmmo(0, 0);
+      var shooter = new Random().Next(2) == 0 ? Prisoner : Guard;
+      whosShot = shooter.Slot;
+      msg.PlayerGoesFirst(shooter).ToChat(Prisoner, Guard);
+      shooter.GetWeaponBase(weaponName).SetAmmo(magSize.Value, 0);
+      State = LRState.ACTIVE;
+    }, TimerFlags.STOP_ON_MAPCHANGE);
 
     Plugin.AddTimer(30, () => {
       if (State != LRState.ACTIVE) return;
@@ -116,11 +91,6 @@ public class BulletForBullet : TeleportingRequest {
       else
         Guard.Pawn.Value?.CommitSuicide(false, true);
     }, TimerFlags.STOP_ON_MAPCHANGE);
-  }
-
-  private void timeout() {
-    if (string.IsNullOrEmpty(designerName))
-      Manager.EndLastRequest(this, LRResult.TIMED_OUT);
   }
 
   private HookResult OnPlayerShoot(EventBulletImpact @event,

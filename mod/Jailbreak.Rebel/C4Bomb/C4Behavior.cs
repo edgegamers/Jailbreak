@@ -268,7 +268,7 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
       }
     }
 
-    if (API.Gangs != null) {
+    if (API.Gangs != null && killed > 0) {
       var eco = API.Gangs.Services.GetService<IEcoManager>();
       if (eco != null) {
         var wrapper = new PlayerWrapper(player);
