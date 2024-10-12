@@ -20,9 +20,8 @@ public class WeaponReward : IRTDReward {
   public virtual string Name => weapon.GetFriendlyWeaponName();
 
   public virtual string Description
-    => "You won a"
-      + (weapon.GetFriendlyWeaponName()[0].IsVowel() ? "n" : "") + " "
-      + weapon.GetFriendlyWeaponName() + " next round.";
+    => "You won a" + (weapon.GetFriendlyWeaponName()[0].IsVowel() ? "n" : "")
+      + " " + weapon.GetFriendlyWeaponName() + " next round.";
 
   public bool CanGrantReward(CCSPlayerController player) {
     if (requiredTeam == null) return true;

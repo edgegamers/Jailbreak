@@ -1,12 +1,9 @@
-﻿using System.Drawing;
-using System.Net;
-using CounterStrikeSharp.API;
+﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
 using Gangs.SpecialDayColorPerk;
 using GangsAPI.Data;
-using GangsAPI.Perks;
 using GangsAPI.Services.Gang;
 using GangsAPI.Services.Player;
 using Jailbreak.Formatting.Extensions;

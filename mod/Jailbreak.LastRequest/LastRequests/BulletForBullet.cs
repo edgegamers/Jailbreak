@@ -1,4 +1,3 @@
-using System;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
@@ -13,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jailbreak.LastRequest.LastRequests;
 
 public class BulletForBullet : TeleportingRequest {
+  private const string weaponName = "weapon_deagle";
   private readonly ChatMenu chatMenu;
   private readonly bool magForMag;
   private readonly ILRB4BLocale msg;
@@ -41,8 +41,6 @@ public class BulletForBullet : TeleportingRequest {
     base.Setup();
     Execute();
   }
-
-  private const string weaponName = "weapon_deagle";
 
   public override void Execute() {
     State = LRState.PENDING;

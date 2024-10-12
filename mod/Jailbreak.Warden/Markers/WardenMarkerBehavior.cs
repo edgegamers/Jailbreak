@@ -24,13 +24,14 @@ public class WardenMarkerBehavior(IWardenService warden)
     "css_jb_warden_resize_time", "Milliseconds to wait for resizing marker",
     800);
 
-  public Vector? MarkerPosition { get; private set; }
-  public float radius { get; private set; }
-
   // private Vector? MarkerPosition;
 
   private BeamCircle? marker;
   private long placementTime;
+
+  public Vector? MarkerPosition { get; private set; }
+
+  public float radius { get; private set; }
   // private float radius;
 
   public void Start(BasePlugin basePlugin) {

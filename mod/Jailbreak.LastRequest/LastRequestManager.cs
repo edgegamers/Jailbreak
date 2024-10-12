@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using CounterStrikeSharp.API;
+﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Cvars;
@@ -95,11 +91,6 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     IsLREnabledForRound = false;
   }
 
-  private static bool shouldGrantCredits() {
-    if (API.Gangs == null) return false;
-    return Utilities.GetPlayers().Count >= CV_MIN_PLAYERS_FOR_CREDITS.Value;
-  }
-
   public void EnableLR(CCSPlayerController? died = null) {
     messages.LastRequestEnabled().ToAllChat();
     IsLREnabled = true;
@@ -185,6 +176,11 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     lr.OnEnd(result);
     ActiveLRs.Remove(lr);
     return true;
+  }
+
+  private static bool shouldGrantCredits() {
+    if (API.Gangs == null) return false;
+    return Utilities.GetPlayers().Count >= CV_MIN_PLAYERS_FOR_CREDITS.Value;
   }
 
   [GameEventHandler(HookMode.Pre)]

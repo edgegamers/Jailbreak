@@ -1,4 +1,3 @@
-using System;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
 using Jailbreak.Formatting.Extensions;

@@ -20,7 +20,7 @@ public static class WardenServiceExtension {
      .AddPluginBehavior<ISpecialTreatmentService, SpecialTreatmentBehavior>();
     serviceCollection
      .AddPluginBehavior<IWardenOpenCommand, WardenOpenCommandsBehavior>();
-    
+
 
     serviceCollection.AddPluginBehavior<SpecialTreatmentCommandsBehavior>();
     serviceCollection.AddPluginBehavior<PeaceCommandsBehavior>();

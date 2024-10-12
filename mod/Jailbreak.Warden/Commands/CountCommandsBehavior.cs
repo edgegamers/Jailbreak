@@ -9,7 +9,6 @@ using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.Warden;
 using Jailbreak.Public.Utils;
-using Microsoft.VisualBasic;
 
 namespace Jailbreak.Warden.Commands;
 
