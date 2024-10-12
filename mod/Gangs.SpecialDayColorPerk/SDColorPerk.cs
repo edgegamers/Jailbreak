@@ -10,15 +10,18 @@ namespace Gangs.SpecialDayColorPerk;
 
 public class SDColorPerk(IServiceProvider provider)
   : BasePerk<SDColorData>(provider) {
-  public override string StatId => STAT_ID;
-  public override string Name => "Special Day Color";
   public const string STAT_ID = "jb_sd_color";
 
   private readonly IGangStatManager gangStats =
     provider.GetRequiredService<IGangStatManager>();
 
+  public override string StatId => STAT_ID;
+  public override string Name => "Special Day Color";
+
   public override string? Description
     => "Change the color of your gang during special days!";
+
+  public override SDColorData Value { get; set; } = new();
 
   public override Task<int?> GetCost(IGangPlayer player) {
     return Task.FromResult<int?>(null);
@@ -35,8 +38,6 @@ public class SDColorPerk(IServiceProvider provider)
   public override Task OnPurchase(IGangPlayer player) {
     return Task.CompletedTask;
   }
-
-  public override SDColorData Value { get; set; } = new();
 }
 
 public class SDColorData {

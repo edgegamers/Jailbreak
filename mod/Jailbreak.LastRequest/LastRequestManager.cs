@@ -91,11 +91,6 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     IsLREnabledForRound = false;
   }
 
-  private static bool shouldGrantCredits() {
-    if (API.Gangs == null) return false;
-    return Utilities.GetPlayers().Count >= CV_MIN_PLAYERS_FOR_CREDITS.Value;
-  }
-
   public void EnableLR(CCSPlayerController? died = null) {
     messages.LastRequestEnabled().ToAllChat();
     IsLREnabled = true;
@@ -183,6 +178,11 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     return true;
   }
 
+  private static bool shouldGrantCredits() {
+    if (API.Gangs == null) return false;
+    return Utilities.GetPlayers().Count >= CV_MIN_PLAYERS_FOR_CREDITS.Value;
+  }
+
   [GameEventHandler(HookMode.Pre)]
   public HookResult OnTakeDamage(EventPlayerHurt @event, GameEventInfo info) {
     IDamageBlocker damageBlockerHandler = this;
@@ -262,6 +262,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
   private void checkLR() {
     Server.RunOnTick(Server.TickCount + 32, () => {
+      if (IsLREnabled) return;
       if (Utilities.GetPlayers().All(p => p.Team != CsTeam.CounterTerrorist))
         return;
       if (countAlivePrisoners() > CV_PRISONER_TO_LR.Value) return;
