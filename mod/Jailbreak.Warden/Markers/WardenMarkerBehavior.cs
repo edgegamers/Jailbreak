@@ -12,7 +12,8 @@ using MStatsShared;
 
 namespace Jailbreak.Warden.Markers;
 
-public class WardenMarkerBehavior(IWardenService warden) : IPluginBehavior {
+public class WardenMarkerBehavior(IWardenService warden)
+  : IPluginBehavior, IMarkerService {
   public static readonly FakeConVar<float> CV_MAX_RADIUS = new(
     "css_jb_warden_marker_max_radius", "Maximum radius for warden marker", 360);
 
@@ -23,11 +24,14 @@ public class WardenMarkerBehavior(IWardenService warden) : IPluginBehavior {
     "css_jb_warden_resize_time", "Milliseconds to wait for resizing marker",
     800);
 
-  private Vector? currentPos;
+  public Vector? MarkerPosition { get; private set; }
+  public float radius { get; private set; }
+
+  // private Vector? MarkerPosition;
 
   private BeamCircle? marker;
   private long placementTime;
-  private float radius;
+  // private float radius;
 
   public void Start(BasePlugin basePlugin) {
     marker = new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value,
@@ -42,8 +46,8 @@ public class WardenMarkerBehavior(IWardenService warden) : IPluginBehavior {
     if (!warden.IsWarden(player)) return HookResult.Handled;
     var vec = new Vector(@event.X, @event.Y, @event.Z);
 
-    if (currentPos != null) {
-      var distance = currentPos.Distance(vec);
+    if (MarkerPosition != null) {
+      var distance = MarkerPosition.Distance(vec);
       var timeElapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
         - placementTime;
       if (timeElapsed < CV_RESIZE_TIME.Value) {
@@ -61,9 +65,9 @@ public class WardenMarkerBehavior(IWardenService warden) : IPluginBehavior {
       }
     }
 
-    radius        = CV_MIN_RADIUS.Value;
-    currentPos    = vec;
-    placementTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    radius         = CV_MIN_RADIUS.Value;
+    MarkerPosition = vec;
+    placementTime  = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
     API.Stats?.PushStat(new ServerStat("JB_MARKER",
       $"{vec.X:F2} {vec.Y:F2} {vec.Z:F2}"));

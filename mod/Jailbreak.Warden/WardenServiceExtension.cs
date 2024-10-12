@@ -20,6 +20,7 @@ public static class WardenServiceExtension {
      .AddPluginBehavior<ISpecialTreatmentService, SpecialTreatmentBehavior>();
     serviceCollection
      .AddPluginBehavior<IWardenOpenCommand, WardenOpenCommandsBehavior>();
+    
 
     serviceCollection.AddPluginBehavior<SpecialTreatmentCommandsBehavior>();
     serviceCollection.AddPluginBehavior<PeaceCommandsBehavior>();
@@ -28,7 +29,7 @@ public static class WardenServiceExtension {
     serviceCollection.AddPluginBehavior<ChickenCommandBehavior>();
     serviceCollection.AddPluginBehavior<SoccerCommandBehavior>();
 
-    serviceCollection.AddPluginBehavior<WardenMarkerBehavior>();
+    serviceCollection.AddPluginBehavior<IMarkerService, WardenMarkerBehavior>();
     serviceCollection.AddPluginBehavior<WardenPaintBehavior>();
   }
 }
