@@ -13,7 +13,6 @@ using GangsAPI.Services.Menu;
 using GangsAPI.Services.Player;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
-using Stats.Perk.Smoke;
 
 namespace Gangs.SpecialDayColorPerk;
 

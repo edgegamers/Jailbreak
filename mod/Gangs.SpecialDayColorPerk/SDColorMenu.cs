@@ -1,13 +1,12 @@
 ﻿using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
-using Gangs.SpecialDayColorPerk;
 using GangsAPI.Data;
 using GangsAPI.Extensions;
 using GangsAPI.Menu;
 using GangsAPI.Services.Commands;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Stats.Perk.Smoke;
+namespace Gangs.SpecialDayColorPerk;
 
 public class SDColorMenu(IServiceProvider provider, SDColorData data)
   : AbstractPagedMenu<SDColor>(provider, NativeSenders.Chat) {
