@@ -7,7 +7,7 @@ namespace Jailbreak.RTD.Rewards;
 public class CannotScope(BasePlugin plugin) : AbstractOnTickReward(plugin) {
   public override string Name => "Cannot Scope";
 
-  public override string? Description
+  public override string Description
     => "You will not be able to scope next round.";
 
   override protected void tick(CCSPlayerController player) {

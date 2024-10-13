@@ -16,7 +16,6 @@ public class BulletForBullet : TeleportingRequest {
   private readonly ChatMenu chatMenu;
   private readonly bool magForMag;
   private readonly ILRB4BLocale msg;
-  private string? designerName;
   private int? whosShot, magSize;
 
   public BulletForBullet(BasePlugin plugin, IServiceProvider provider,
@@ -108,13 +107,13 @@ public class BulletForBullet : TeleportingRequest {
       return HookResult.Handled;
     }
 
-    var bullets = player.GetWeaponBase(designerName!)?.Clip1 ?? 1;
+    var bullets = player.GetWeaponBase(weaponName)?.Clip1 ?? 1;
     if (bullets > 1) return HookResult.Continue;
 
     Server.NextFrame(() => {
       var opponent = player.Slot == Prisoner.Slot ? Guard : Prisoner;
       whosShot = opponent.Slot;
-      opponent.GetWeaponBase(designerName!)?.SetAmmo(magSize.Value, 0);
+      opponent.GetWeaponBase(weaponName)?.SetAmmo(magSize.Value, 0);
     });
     return HookResult.Continue;
   }

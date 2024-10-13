@@ -4,7 +4,6 @@ using GangsAPI.Data.Gang;
 using GangsAPI.Services.Gang;
 using GangsAPI.Services.Menu;
 using Microsoft.Extensions.DependencyInjection;
-using Stats.Perk.Smoke;
 
 namespace Gangs.SpecialDayColorPerk;
 
@@ -18,7 +17,7 @@ public class SDColorPerk(IServiceProvider provider)
   public override string StatId => STAT_ID;
   public override string Name => "Special Day Color";
 
-  public override string? Description
+  public override string Description
     => "Change the color of your gang during special days!";
 
   public override SDColorData Value { get; set; } = new();

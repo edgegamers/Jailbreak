@@ -17,7 +17,7 @@ public class BombPerk(IServiceProvider provider)
   public override string StatId => STAT_ID;
   public override string Name => "Bomb Icon";
 
-  public override string? Description
+  public override string Description
     => "Customize the icon that is shown when you bomb a CT";
 
   public override BombPerkData Value { get; set; } = new();

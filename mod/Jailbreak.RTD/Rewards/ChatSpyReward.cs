@@ -12,7 +12,7 @@ public class ChatSpyReward : IRTDReward {
 
   public string Name => "Chat Spy";
 
-  public string? Description
+  public string Description
     => "You will be able to read all team chats next round.";
 
   public bool Enabled => API.Actain != null;
