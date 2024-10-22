@@ -40,6 +40,6 @@ public class CountCommandsBehavior(IWardenService warden, IWardenLocale msg,
     var prisoners = PlayerUtil.FromTeam(CsTeam.Terrorist)
      .Count(markers.InMarker);
 
-    locale.PrisonersInMarker(prisoners);
+    locale.PrisonersInMarker(prisoners).ToChat(executor);
   }
 }
