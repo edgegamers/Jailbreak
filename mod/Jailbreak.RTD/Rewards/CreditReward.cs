@@ -13,11 +13,9 @@ public class CreditReward(int credits) : IRTDReward {
   public static readonly string PREFIX =
     $" {ChatColors.Purple}[{ChatColors.LightPurple}RTD{ChatColors.Purple}]";
 
-  public string Name => credits + " Credit";
+  public string Name => $"{credits} credit{(credits == 1 ? "" : "s")}";
 
-  public string Description
-    => "You won " + credits + " credit" + (credits == 1 ? "" : "s")
-      + (credits > 500 ? "!" : ".");
+  public string Description => $"You won {Name} {(credits > 500 ? "!" : ".")}";
 
   public bool Enabled => API.Gangs != null;
 
