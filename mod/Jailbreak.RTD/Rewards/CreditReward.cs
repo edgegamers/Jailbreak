@@ -15,7 +15,7 @@ public class CreditReward(int credits) : IRTDReward {
 
   public string Name => $"{credits} credit{(credits == 1 ? "" : "s")}";
 
-  public string Description => $"You won {Name} {(credits > 500 ? "!" : ".")}";
+  public string Description => $"You won {Name}{(credits > 500 ? "!" : ".")}";
 
   public bool Enabled => API.Gangs != null;
 
