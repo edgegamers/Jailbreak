@@ -40,7 +40,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   IMuteService mute, IServiceProvider provider)
   : IPluginBehavior, IWardenService {
   public static readonly FakeConVar<int> CV_ARMOR_EQUAL =
-    new("css_jb_hp_outnumbered", "Health points for CTs have equal balance", 50,
+    new("css_jb_hp_equal", "Health points for when CTs have equal ratio", 50,
       ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 200));
 
   public static readonly FakeConVar<int> CV_ARMOR_OUTNUMBER =

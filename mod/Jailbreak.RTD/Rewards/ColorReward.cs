@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
@@ -42,6 +43,7 @@ public class ColorReward(Color color, bool prisonerOnly) : IRTDReward {
 
   public bool GrantReward(CCSPlayerController player) {
     player.SetColor(color);
+    Server.RunOnTick(Server.TickCount + 2, () => GrantReward(player));
     return true;
   }
 }

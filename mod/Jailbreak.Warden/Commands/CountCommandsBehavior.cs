@@ -27,8 +27,10 @@ public class CountCommandsBehavior(IWardenService warden, IWardenLocale msg,
       return;
     }
 
-    if (RoundUtil.GetTimeElapsed() < CV_COUNT_COMMAND_COOLDOWN.Value) {
-      locale.CannotCountYet(CV_COUNT_COMMAND_COOLDOWN.Value).ToChat(executor);
+    var timeTillCount =
+      CV_COUNT_COMMAND_COOLDOWN.Value - RoundUtil.GetTimeElapsed();
+    if (timeTillCount > 0) {
+      locale.CannotCountYet(timeTillCount).ToChat(executor);
       return;
     }
 
@@ -40,6 +42,6 @@ public class CountCommandsBehavior(IWardenService warden, IWardenLocale msg,
     var prisoners = PlayerUtil.FromTeam(CsTeam.Terrorist)
      .Count(markers.InMarker);
 
-    locale.PrisonersInMarker(prisoners);
+    locale.PrisonersInMarker(prisoners).ToChat(executor);
   }
 }

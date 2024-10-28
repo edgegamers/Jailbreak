@@ -19,7 +19,7 @@ public class WardenOpenCommandsBehavior(IWardenService warden,
   IZoneManager zoneManager) : IPluginBehavior, IWardenOpenCommand {
   public static readonly FakeConVar<int> CV_OPEN_COMMAND_COOLDOWN = new(
     "css_jb_warden_open_cooldown",
-    "Minimum seconds warden must wait before being able to open the cells.", 30,
+    "Minimum seconds warden must wait before being able to open the cells.", 25,
     customValidators: new RangeValidator<int>(0, 300));
 
   public bool OpenedCells { get; set; }
