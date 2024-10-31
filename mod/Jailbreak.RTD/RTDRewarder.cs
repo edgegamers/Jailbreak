@@ -1,8 +1,10 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Drawing;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using Jailbreak.Formatting.Views.Logging;
 using Jailbreak.Public.Behaviors;
+using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.RTD;
 using Jailbreak.Public.Utils;
 
@@ -35,6 +37,8 @@ public class RTDRewarder(IRichLogService logs) : IRTDRewarder, IPluginBehavior {
     var reward = GetReward(id);
     if (reward == null) return HookResult.Continue;
     if (!reward.CanGrantReward(player)) return HookResult.Continue;
+
+    player.SetColor(Color.White);
 
     Server.RunOnTick(Server.TickCount + 2, () => {
       if (!player.IsValid) return;
