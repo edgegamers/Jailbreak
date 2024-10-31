@@ -42,7 +42,6 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
     base.Execute();
 
     foreach (var player in PlayerUtil.GetAlive()) {
-      player.RemoveWeapons();
       if (CV_ADDITIONAL_WEAPON.Value.Length > 0)
         player.GiveNamedItem(CV_ADDITIONAL_WEAPON.Value);
       if (CV_WEAPON.Value.Length > 0) {
