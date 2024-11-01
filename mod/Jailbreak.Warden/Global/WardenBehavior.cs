@@ -298,19 +298,26 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   public HookResult OnDeath(EventPlayerDeath ev, GameEventInfo info) {
     var player = ev.Userid;
     if (player == null || !player.IsValid) return HookResult.Continue;
-    var isWarden = ((IWardenService)this).IsWarden(ev.Userid);
+    var isWarden = ((IWardenService)this).IsWarden(player);
     if (API.Gangs != null) {
+      Server.PrintToConsole("WardenBehavior: OnDeath");
       if (ev.Attacker != null && ev.Attacker.IsValid && ev.Attacker != player
         && isWarden) {
+        Server.PrintToConsole("WardenBehavior: OnDeath: Attacker is valid");
         var wrapper = new PlayerWrapper(ev.Attacker);
         Task.Run(async () => await incrementWardenKills(wrapper));
       }
 
+      Server.PrintToConsole(
+        "WardenBehavior: OnDeath: Updating guard death stats");
       foreach (var guard in PlayerUtil.FromTeam(CsTeam.CounterTerrorist)) {
+        Server.PrintToConsole($"WardenBehavior: OnDeath: Guard: {guard}");
         var wrapper = new PlayerWrapper(guard);
         // If the guard is the warden, update all guards' stats
         // If the guard is not the warden, only update the warden's stats
         if (guard.SteamID == player.SteamID != isWarden) continue;
+        Server.PrintToConsole(
+          $"WardenBehavior: OnDeath: Guard: {guard} is the warden");
         Task.Run(async () => await updateGuardDeathStats(wrapper, isWarden));
       }
     }
