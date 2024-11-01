@@ -46,6 +46,13 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   private ILastRequestFactory? factory;
   public bool IsLREnabledForRound { get; set; } = true;
 
+  public void Start(BasePlugin basePlugin, bool hotreload) {
+    var stats = API.Gangs?.Services.GetService<IStatManager>();
+    if (stats == null) return;
+    
+    stats.Stats.Add(new LRStat());
+  }
+
   public bool ShouldBlockDamage(CCSPlayerController player,
     CCSPlayerController? attacker, EventPlayerHurt @event) {
     if (!IsLREnabled) return false;
