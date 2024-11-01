@@ -163,7 +163,7 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
     var player = @event.Userid;
     if (player == null) return HookResult.Continue;
 
-    Server.NextFrame(() => checkLastGuard(@event.Userid));
+    checkLastGuard(@event.Userid);
 
     if (!IsLastGuardActive) return HookResult.Continue;
 
