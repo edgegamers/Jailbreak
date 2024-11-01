@@ -310,7 +310,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
         var wrapper = new PlayerWrapper(guard);
         // If the guard is the warden, update all guards' stats
         // If the guard is not the warden, only update the warden's stats
-        if (guard.SteamID == player.SteamID != isWarden) continue;
+        if (guard.SteamID == player.SteamID == isWarden) continue;
         Task.Run(async () => await updateGuardDeathStats(wrapper, isWarden));
       }
     }
