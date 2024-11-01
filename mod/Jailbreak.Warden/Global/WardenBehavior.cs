@@ -245,7 +245,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
       logs.Append(logs.Player(Warden), "is no longer the warden.");
 
-      if (!isPass) {
+      if (!isPass && false) {
         var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
         if (stats != null) {
           var wrapper = new PlayerWrapper(Warden);
