@@ -6,4 +6,6 @@ public interface ILastGuardService {
   void StartLastGuard(CCSPlayerController lastGuard);
 
   public void DisableLastGuardForRound();
+  
+  bool IsLastGuardActive { get; }
 }

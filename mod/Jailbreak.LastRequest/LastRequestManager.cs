@@ -14,15 +14,18 @@ using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Damage;
+using Jailbreak.Public.Mod.LastGuard;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
+using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using MStatsShared;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
+public class LastRequestManager(ILRLocale messages, IServiceProvider provider,
+  ILastGuardService lastGuard, IRebelService rebel)
   : ILastRequestManager, IDamageBlocker {
   public static readonly FakeConVar<int> CV_LR_BASE_TIME =
     new("css_jb_lr_time_base",
@@ -49,7 +52,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   public void Start(BasePlugin basePlugin, bool hotreload) {
     var stats = API.Gangs?.Services.GetService<IStatManager>();
     if (stats == null) return;
-    
+
     stats.Stats.Add(new LRStat());
   }
 
@@ -146,6 +149,8 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
       if (player.Team != CsTeam.Terrorist) continue;
       if (died != null && player.SteamID == died.SteamID) continue;
+
+      if (lastGuard.IsLastGuardActive) rebel.UnmarkRebel(player);
       player.ExecuteClientCommandFromServer("css_lr");
     }
 
