@@ -249,7 +249,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
         var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
         if (stats != null) {
           var wrapper = new PlayerWrapper(Warden);
-          Task.Run(async () => await updateWardenDeathStats(wrapper));
+          // Task.Run(async () => await updateWardenDeathStats(wrapper));
         }
       }
     }
