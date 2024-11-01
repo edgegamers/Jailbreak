@@ -299,7 +299,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     var player = ev.Userid;
     if (player == null || !player.IsValid) return HookResult.Continue;
     var isWarden = ((IWardenService)this).IsWarden(player);
-    if (API.Gangs != null) {
+    if (API.Gangs != null && false) {
       Server.PrintToConsole("WardenBehavior: OnDeath");
       if (ev.Attacker != null && ev.Attacker.IsValid && ev.Attacker != player
         && isWarden) {
