@@ -9,8 +9,14 @@ public class LRStat : BaseStat<LRData> {
 }
 
 public class LRData {
+  public int LRsReachedAsCt { get; set; }
+  public int LRsReachedAsT { get; set; }
   public int CtLrs { get; set; }
   public int TLrs { get; set; }
+  public int CTLrsWon { get; set; }
+  public int TLrsWon { get; set; }
 
-  public override string ToString() { return $"{CtLrs}/{TLrs}"; }
+  public override string ToString() {
+    return $"{CtLrs}/{TLrs} {CTLrsWon}/{TLrsWon}";
+  }
 }

@@ -150,9 +150,62 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
      .Select(p => new PlayerWrapper(p))
      .ToList();
     Task.Run(async () => {
-      foreach (var survivor in survivors)
+      foreach (var survivor in survivors) {
         await eco.Grant(survivor, 100, reason: "LR Reached");
+        await incrementLRReached(survivor);
+      }
     });
+  }
+
+  private async Task incrementLRReached(PlayerWrapper player) {
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats == null) return;
+    var stat = await getStat(player);
+    if (stat == null) return;
+
+    if (player.Team == CsTeam.Terrorist)
+      stat.LRsReachedAsT++;
+    else
+      stat.LRsReachedAsCt++;
+
+    await stats.SetForPlayer(player, LRStat.STAT_ID, stat);
+  }
+
+  private async Task incrementLRStart(PlayerWrapper player) {
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats == null) return;
+    var stat = await getStat(player);
+    if (stat == null) return;
+
+    if (player.Team == CsTeam.Terrorist)
+      stat.TLrs++;
+    else
+      stat.CtLrs++;
+
+    await stats.SetForPlayer(player, LRStat.STAT_ID, stat);
+  }
+
+  private async Task incrementLRWin(PlayerWrapper player) {
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats == null) return;
+    var stat = await getStat(player);
+    if (stat == null) return;
+
+    if (player.Team == CsTeam.Terrorist)
+      stat.TLrsWon++;
+    else
+      stat.CTLrsWon++;
+
+    await stats.SetForPlayer(player, LRStat.STAT_ID, stat);
+  }
+
+  private async Task<LRData?> getStat(PlayerWrapper player) {
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats == null) return null;
+    var (success, data) =
+      await stats.GetForPlayer<LRData>(player, LRStat.STAT_ID);
+    if (!success || data == null) data = new LRData();
+    return data;
   }
 
   public bool InitiateLastRequest(CCSPlayerController prisoner,
@@ -186,17 +239,18 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
       RoundUtil.AddTimeRemaining(CV_LR_BONUS_TIME.Value);
       messages.LastRequestDecided(lr, result).ToAllChat();
 
+      var wrapper =
+        new PlayerWrapper(result == LRResult.GUARD_WIN ?
+          lr.Guard :
+          lr.Prisoner);
       if (shouldGrantCredits()) {
         var eco = API.Gangs?.Services.GetService<IEcoManager>();
         if (eco == null) return false;
-        var wrapper =
-          new PlayerWrapper(result == LRResult.GUARD_WIN ?
-            lr.Guard :
-            lr.Prisoner);
-        Task.Run(async () => {
-          await eco.Grant(wrapper, 30, reason: "LR Win");
-        });
+        Task.Run(async () => await eco.Grant(wrapper, 30, reason: "LR Win"));
       }
+
+      if (API.Gangs != null)
+        Task.Run(async () => await incrementLRWin(wrapper));
     }
 
     API.Stats?.PushStat(new ServerStat("JB_LASTREQUEST_RESULT",

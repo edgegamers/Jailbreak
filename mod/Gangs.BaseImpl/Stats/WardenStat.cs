@@ -14,4 +14,12 @@ public class WardenData {
   public int WardensKilled { get; set; }
   public int GuardDeathsAsWarden { get; set; }
   public int WardenDeathsAsGuard { get; set; }
+
+  public override string ToString() {
+    return $"WardenData:\n" + $"  Times Wardened: {TimesWardened}\n"
+      + $"  Warden Deaths: {WardenDeaths}\n"
+      + $"  Wardens Killed: {WardensKilled}\n"
+      + $"  Guard Deaths as Warden: {GuardDeathsAsWarden}\n"
+      + $"  Warden Deaths as Guard: {WardenDeathsAsGuard}";
+  }
 }

@@ -11,4 +11,6 @@ public class LGStat : BaseStat<LGData> {
 public class LGData {
   public int CtLgs { get; set; }
   public int TLgs { get; set; }
+
+  public override string ToString() { return $"{CtLgs}/{TLgs}"; }
 }
