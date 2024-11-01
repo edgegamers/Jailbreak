@@ -249,7 +249,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
         var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
         if (stats != null) {
           var wrapper = new PlayerWrapper(Warden);
-          // Task.Run(async () => await updateWardenDeathStats(wrapper));
+          Task.Run(async () => await updateWardenDeathStats(wrapper));
         }
       }
     }
@@ -300,7 +300,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     if (player == null || !player.IsValid) return HookResult.Continue;
     var isWarden = ((IWardenService)this).IsWarden(ev.Userid);
     if (API.Gangs != null) {
-      if (ev.Attacker != null && ev.Attacker != player && ev.Attacker.IsValid
+      if (ev.Attacker != null && ev.Attacker.IsValid && ev.Attacker != player
         && isWarden) {
         var wrapper = new PlayerWrapper(ev.Attacker);
         Task.Run(async () => await incrementWardenKills(wrapper));
@@ -311,8 +311,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
         // If the guard is the warden, update all guards' stats
         // If the guard is not the warden, only update the warden's stats
         if (guard.SteamID == player.SteamID != isWarden) continue;
-        Task.Run(
-          async () => { await updateGuardDeathStats(wrapper, isWarden); });
+        Task.Run(async () => await updateGuardDeathStats(wrapper, isWarden));
       }
     }
 
@@ -356,6 +355,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       // The guard let the warden die
       stat.WardenDeathsAsGuard++;
     }
+
+    await stats.SetForPlayer(player, WardenStat.STAT_ID, stat);
   }
 
   [GameEventHandler]
