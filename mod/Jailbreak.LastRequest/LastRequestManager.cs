@@ -24,8 +24,7 @@ using MStatsShared;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestManager(ILRLocale messages, IServiceProvider provider,
-  ILastGuardService lastGuard, IRebelService rebel)
+public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   : ILastRequestManager, IDamageBlocker {
   public static readonly FakeConVar<int> CV_LR_BASE_TIME =
     new("css_jb_lr_time_base",
@@ -123,7 +122,9 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider,
 
     RoundUtil.AddTimeRemaining(CV_LR_GUARD_TIME.Value * cts);
 
-    var players = Utilities.GetPlayers();
+    var players   = Utilities.GetPlayers();
+    var lastGuard = provider.GetService<ILastGuardService>();
+    var rebel     = provider.GetService<IRebelService>();
     foreach (var player in players) {
       player.ExecuteClientCommand("play sounds/lr");
       var wrapper = new PlayerWrapper(player);
@@ -150,7 +151,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider,
       if (player.Team != CsTeam.Terrorist) continue;
       if (died != null && player.SteamID == died.SteamID) continue;
 
-      if (lastGuard.IsLastGuardActive) rebel.UnmarkRebel(player);
+      if (lastGuard is { IsLastGuardActive: true }) rebel?.UnmarkRebel(player);
       player.ExecuteClientCommandFromServer("css_lr");
     }
 
