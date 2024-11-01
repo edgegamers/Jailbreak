@@ -161,7 +161,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     if (API.Gangs != null) {
       var wrapper = new PlayerWrapper(Warden);
       var stats   = API.Gangs.Services.GetService<IPlayerStatManager>();
-      if (stats != null) {
+      if (stats != null)
         Task.Run(async () => {
           var (success, stat) =
             await stats.GetForPlayer<WardenData>(wrapper, WardenStat.STAT_ID);
@@ -171,7 +171,6 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
           stat.TimesWardened++;
           await stats.SetForPlayer(wrapper, WardenStat.STAT_ID, stat);
         });
-      }
     }
 
     foreach (var player in Utilities.GetPlayers())
@@ -348,13 +347,12 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
     if (!success || stat == null) stat = new WardenData();
 
-    if (isWarden) {
+    if (isWarden)
       // The warden let a guard die
       stat.GuardDeathsAsWarden++;
-    } else {
+    else
       // The guard let the warden die
       stat.WardenDeathsAsGuard++;
-    }
 
     await stats.SetForPlayer(player, WardenStat.STAT_ID, stat);
   }

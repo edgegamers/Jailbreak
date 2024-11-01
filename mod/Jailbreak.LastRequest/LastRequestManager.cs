@@ -48,13 +48,6 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   private ILastRequestFactory? factory;
   public bool IsLREnabledForRound { get; set; } = true;
 
-  public void Start(BasePlugin basePlugin, bool hotreload) {
-    var stats = API.Gangs?.Services.GetService<IStatManager>();
-    if (stats == null) return;
-
-    stats.Stats.Add(new LRStat());
-  }
-
   public bool ShouldBlockDamage(CCSPlayerController player,
     CCSPlayerController? attacker, EventPlayerHurt @event) {
     if (!IsLREnabled) return false;
@@ -91,15 +84,13 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     if (API.Gangs == null) return;
 
     var stats = API.Gangs.Services.GetService<IStatManager>();
-    if (stats == null) return;
-    stats.Stats.Add(new LRStat());
+    stats?.Stats.Add(new LRStat());
   }
 
   public bool IsLREnabled { get; set; }
 
   public IList<AbstractLastRequest> ActiveLRs { get; } =
     new List<AbstractLastRequest>();
-
 
   public void DisableLR() { IsLREnabled = false; }
 
@@ -133,7 +124,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
       if (API.Gangs != null) {
         var playerStatMgr = API.Gangs.Services.GetService<IPlayerStatManager>();
-        if (playerStatMgr != null) {
+        if (playerStatMgr != null)
           Task.Run(async () => {
             var (success, stat) =
               await playerStatMgr.GetForPlayer<LRData>(wrapper, LRStat.STAT_ID);
@@ -145,7 +136,6 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
             await playerStatMgr.SetForPlayer(wrapper, LRStat.STAT_ID, stat);
           });
-        }
       }
 
       if (player.Team != CsTeam.Terrorist) continue;
@@ -168,57 +158,6 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
         await incrementLRReached(survivor);
       }
     });
-  }
-
-  private async Task incrementLRReached(PlayerWrapper player) {
-    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
-    if (stats == null) return;
-    var stat = await getStat(player);
-    if (stat == null) return;
-
-    if (player.Team == CsTeam.Terrorist)
-      stat.LRsReachedAsT++;
-    else
-      stat.LRsReachedAsCt++;
-
-    await stats.SetForPlayer(player, LRStat.STAT_ID, stat);
-  }
-
-  private async Task incrementLRStart(PlayerWrapper player) {
-    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
-    if (stats == null) return;
-    var stat = await getStat(player);
-    if (stat == null) return;
-
-    if (player.Team == CsTeam.Terrorist)
-      stat.TLrs++;
-    else
-      stat.CtLrs++;
-
-    await stats.SetForPlayer(player, LRStat.STAT_ID, stat);
-  }
-
-  private async Task incrementLRWin(PlayerWrapper player) {
-    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
-    if (stats == null) return;
-    var stat = await getStat(player);
-    if (stat == null) return;
-
-    if (player.Team == CsTeam.Terrorist)
-      stat.TLrsWon++;
-    else
-      stat.CTLrsWon++;
-
-    await stats.SetForPlayer(player, LRStat.STAT_ID, stat);
-  }
-
-  private async Task<LRData?> getStat(PlayerWrapper player) {
-    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
-    if (stats == null) return null;
-    var (success, data) =
-      await stats.GetForPlayer<LRData>(player, LRStat.STAT_ID);
-    if (!success || data == null) data = new LRData();
-    return data;
   }
 
   public bool InitiateLastRequest(CCSPlayerController prisoner,
@@ -272,6 +211,57 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     lr.OnEnd(result);
     ActiveLRs.Remove(lr);
     return true;
+  }
+
+  private async Task incrementLRReached(PlayerWrapper player) {
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats == null) return;
+    var stat = await getStat(player);
+    if (stat == null) return;
+
+    if (player.Team == CsTeam.Terrorist)
+      stat.LRsReachedAsT++;
+    else
+      stat.LRsReachedAsCt++;
+
+    await stats.SetForPlayer(player, LRStat.STAT_ID, stat);
+  }
+
+  private async Task incrementLRStart(PlayerWrapper player) {
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats == null) return;
+    var stat = await getStat(player);
+    if (stat == null) return;
+
+    if (player.Team == CsTeam.Terrorist)
+      stat.TLrs++;
+    else
+      stat.CtLrs++;
+
+    await stats.SetForPlayer(player, LRStat.STAT_ID, stat);
+  }
+
+  private async Task incrementLRWin(PlayerWrapper player) {
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats == null) return;
+    var stat = await getStat(player);
+    if (stat == null) return;
+
+    if (player.Team == CsTeam.Terrorist)
+      stat.TLrsWon++;
+    else
+      stat.CTLrsWon++;
+
+    await stats.SetForPlayer(player, LRStat.STAT_ID, stat);
+  }
+
+  private async Task<LRData?> getStat(PlayerWrapper player) {
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats == null) return null;
+    var (success, data) =
+      await stats.GetForPlayer<LRData>(player, LRStat.STAT_ID);
+    if (!success || data == null) data = new LRData();
+    return data;
   }
 
   private static bool shouldGrantCredits() {

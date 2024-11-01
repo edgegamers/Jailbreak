@@ -25,10 +25,9 @@ public class CreditReward(int credits) : IRTDReward {
     var wrapper = new PlayerWrapper(player);
     Task.Run(async () => await eco.Grant(wrapper, credits, true, "RTD"));
 
-    if (Math.Abs(credits) >= 5000) {
+    if (Math.Abs(credits) >= 5000)
       Server.PrintToChatAll(
         $"{PREFIX} {ChatColors.Yellow}{wrapper.Name} {ChatColors.Default}won the jackpot of {ChatColors.Green}{credits} {ChatColors.Default}credits!");
-    }
 
     return true;
   }

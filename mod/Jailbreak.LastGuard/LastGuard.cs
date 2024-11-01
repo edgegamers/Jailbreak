@@ -67,16 +67,8 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
 
   private readonly Random rng = new();
   private bool canStart;
-  public bool IsLastGuardActive { get; private set; }
   private List<CCSPlayerController> lastGuardPrisoners = [];
-
-  public void Start(BasePlugin basePlugin, bool hotreload) {
-    if (API.Gangs == null) return;
-
-    var stats = API.Gangs.Services.GetService<IStatManager>();
-    if (stats == null) return;
-    stats.Stats.Add(new LGStat());
-  }
+  public bool IsLastGuardActive { get; private set; }
 
   public void StartLastGuard(CCSPlayerController lastGuard) {
     var guardPlayerPawn = lastGuard.PlayerPawn.Value;
@@ -86,7 +78,7 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
     IsLastGuardActive = true;
 
     var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
-    if (stats != null) {
+    if (stats != null)
       foreach (var player in PlayerUtil.GetAlive()) {
         var wrapper = new PlayerWrapper(player);
         Task.Run(async () => {
@@ -100,7 +92,6 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
           await stats.SetForPlayer(wrapper, LGStat.STAT_ID, stat);
         });
       }
-    }
 
     API.Stats?.PushStat(new ServerStat("JB_LASTGUARD",
       lastGuard.SteamID.ToString()));
@@ -144,6 +135,14 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
   }
 
   public void DisableLastGuardForRound() { canStart = false; }
+
+  public void Start(BasePlugin basePlugin, bool hotreload) {
+    if (API.Gangs == null) return;
+
+    var stats = API.Gangs.Services.GetService<IStatManager>();
+    if (stats == null) return;
+    stats.Stats.Add(new LGStat());
+  }
 
   private int calculateHealth() {
     var aliveTerrorists = Utilities.GetPlayers()
