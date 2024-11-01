@@ -162,7 +162,8 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
     GameEventInfo info) {
     var player = @event.Userid;
     if (player == null) return HookResult.Continue;
-    checkLastGuard(@event.Userid);
+
+    Server.NextFrame(() => checkLastGuard(@event.Userid));
 
     if (!IsLastGuardActive) return HookResult.Continue;
 
