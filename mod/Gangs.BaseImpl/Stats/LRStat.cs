@@ -17,6 +17,6 @@ public class LRData {
   public int TLrsWon { get; set; }
 
   public override string ToString() {
-    return $"{CtLrs}/{TLrs} {CTLrsWon}/{TLrsWon}";
+    return $"CT/T LRs, CT/T LR Wins: {CtLrs}/{TLrs} {CTLrsWon}/{TLrsWon}";
   }
 }

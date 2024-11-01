@@ -12,5 +12,5 @@ public class LGData {
   public int CtLgs { get; set; }
   public int TLgs { get; set; }
 
-  public override string ToString() { return $"{CtLgs}/{TLgs}"; }
+  public override string ToString() { return $"CT/T Last Guards: {CtLgs}/{TLgs}"; }
 }

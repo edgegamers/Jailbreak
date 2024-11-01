@@ -245,11 +245,10 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
       logs.Append(logs.Player(Warden), "is no longer the warden.");
 
-      if (API.Gangs != null && !isPass) {
-        var stats = API.Gangs.Services.GetService<IPlayerStatManager>();
+      if (!isPass) {
+        var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
         if (stats != null) {
-          var wardenSteam = Warden.SteamID;
-          var wrapper     = new PlayerWrapper(Warden);
+          var wrapper = new PlayerWrapper(Warden);
           Task.Run(async () => await updateWardenDeathStats(wrapper));
         }
       }
@@ -301,7 +300,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     if (player == null || !player.IsValid) return HookResult.Continue;
     var isWarden = ((IWardenService)this).IsWarden(ev.Userid);
     if (API.Gangs != null) {
-      if (ev.Attacker != null && ev.Attacker.IsValid && isWarden) {
+      if (ev.Attacker != null && ev.Attacker != player && ev.Attacker.IsValid
+        && isWarden) {
         var wrapper = new PlayerWrapper(ev.Attacker);
         Task.Run(async () => await incrementWardenKills(wrapper));
       }
