@@ -5,8 +5,10 @@ using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
+using Gangs.BaseImpl.Stats;
 using GangsAPI.Data;
 using GangsAPI.Services;
+using GangsAPI.Services.Player;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public;
@@ -76,6 +78,12 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
   public void Start(BasePlugin basePlugin) {
     factory = provider.GetRequiredService<ILastRequestFactory>();
+
+    if (API.Gangs == null) return;
+
+    var stats = API.Gangs.Services.GetService<IStatManager>();
+    if (stats == null) return;
+    stats.Stats.Add(new LRStat());
   }
 
   public bool IsLREnabled { get; set; }
@@ -108,7 +116,28 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     var players = Utilities.GetPlayers();
     foreach (var player in players) {
       player.ExecuteClientCommand("play sounds/lr");
-      if (player.Team != CsTeam.Terrorist || !player.PawnIsAlive) continue;
+      var wrapper = new PlayerWrapper(player);
+
+      if (!player.PawnIsAlive) continue;
+
+      if (API.Gangs != null) {
+        var playerStatMgr = API.Gangs.Services.GetService<IPlayerStatManager>();
+        if (playerStatMgr != null) {
+          Task.Run(async () => {
+            var (success, stat) =
+              await playerStatMgr.GetForPlayer<LRData>(wrapper, LRStat.STAT_ID);
+            if (stat == null || !success) stat = new LRData();
+            if (wrapper.Team == CsTeam.Terrorist)
+              stat.TLrs++;
+            else
+              stat.CtLrs++;
+
+            await playerStatMgr.SetForPlayer(wrapper, LRStat.STAT_ID, stat);
+          });
+        }
+      }
+
+      if (player.Team != CsTeam.Terrorist) continue;
       if (died != null && player.SteamID == died.SteamID) continue;
       player.ExecuteClientCommandFromServer("css_lr");
     }
@@ -261,7 +290,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   }
 
   private void checkLR() {
-    Server.RunOnTick(Server.TickCount + 32, () => {
+    Server.RunOnTick(Server.TickCount + 2, () => {
       if (IsLREnabled) return;
       if (Utilities.GetPlayers().All(p => p.Team != CsTeam.CounterTerrorist))
         return;

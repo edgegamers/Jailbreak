@@ -4,6 +4,10 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Utils;
+using Gangs.BaseImpl.Stats;
+using GangsAPI.Data;
+using GangsAPI.Services;
+using GangsAPI.Services.Player;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public;
@@ -12,6 +16,7 @@ using Jailbreak.Public.Mod.LastGuard;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Utils;
 using Jailbreak.Validator;
+using Microsoft.Extensions.DependencyInjection;
 using MStatsShared;
 
 namespace Jailbreak.LastGuard;
@@ -64,12 +69,37 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager)
   private bool isLastGuard;
   private List<CCSPlayerController> lastGuardPrisoners = [];
 
+  public void Start(BasePlugin basePlugin, bool hotreload) {
+    if (API.Gangs == null) return;
+
+    var stats = API.Gangs.Services.GetService<IStatManager>();
+    if (stats == null) return;
+    stats.Stats.Add(new LGStat());
+  }
+
   public void StartLastGuard(CCSPlayerController lastGuard) {
     var guardPlayerPawn = lastGuard.PlayerPawn.Value;
 
     if (guardPlayerPawn == null || !guardPlayerPawn.IsValid) return;
 
     isLastGuard = true;
+
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats != null) {
+      foreach (var player in PlayerUtil.GetAlive()) {
+        var wrapper = new PlayerWrapper(player);
+        Task.Run(async () => {
+          var (success, stat) =
+            await stats.GetForPlayer<LGData>(wrapper, LGStat.STAT_ID);
+          if (!success || stat == null) stat = new LGData();
+          if (wrapper.Team == CsTeam.CounterTerrorist)
+            stat.CtLgs++;
+          else
+            stat.TLgs++;
+          await stats.SetForPlayer(wrapper, LGStat.STAT_ID, stat);
+        });
+      }
+    }
 
     API.Stats?.PushStat(new ServerStat("JB_LASTGUARD",
       lastGuard.SteamID.ToString()));
@@ -200,10 +230,12 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager)
   [GameEventHandler]
   public HookResult OnRoundStartEvent(EventRoundStart @event,
     GameEventInfo info) {
-    canStart = Utilities.GetPlayers()
-       .Count(plr
-          => plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist })
-      >= CV_MINIMUM_CTS.Value;
+    Server.NextFrame(() => {
+      canStart = Utilities.GetPlayers()
+         .Count(plr
+            => plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist })
+        >= CV_MINIMUM_CTS.Value;
+    });
     return HookResult.Continue;
   }
 
