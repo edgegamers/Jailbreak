@@ -296,6 +296,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
   [GameEventHandler]
   public HookResult OnDeath(EventPlayerDeath ev, GameEventInfo info) {
+    return HookResult.Continue;
     var player = ev.Userid;
     if (player == null || !player.IsValid) return HookResult.Continue;
     var isWarden = ((IWardenService)this).IsWarden(player);
