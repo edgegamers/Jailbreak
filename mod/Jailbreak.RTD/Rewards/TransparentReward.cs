@@ -8,4 +8,6 @@ public class TransparentReward()
 
   public override string Description
     => "You will spawn transparent next round.";
+
+  public override bool Enabled => false;
 }

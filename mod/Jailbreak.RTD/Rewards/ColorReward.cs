@@ -37,6 +37,8 @@ public class ColorReward(Color color, bool prisonerOnly) : IRTDReward {
   public virtual string Description
     => $"You will spawn {ChatColor}{ColorName}{ChatColors.Grey} next round.";
 
+  public virtual bool Enabled => true;
+
   public bool CanGrantReward(CCSPlayerController player) {
     return player.Team == CsTeam.Terrorist || !prisonerOnly;
   }
