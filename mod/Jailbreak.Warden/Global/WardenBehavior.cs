@@ -5,6 +5,10 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Utils;
+using Gangs.BaseImpl.Stats;
+using GangsAPI.Data;
+using GangsAPI.Services;
+using GangsAPI.Services.Player;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.Logging;
 using Jailbreak.Formatting.Views.Warden;
@@ -39,9 +43,9 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   ISpecialTreatmentService specialTreatment, IRebelService rebels,
   IMuteService mute, IServiceProvider provider)
   : IPluginBehavior, IWardenService {
-  public static readonly FakeConVar<int> CV_ARMOR_EQUAL =
-    new("css_jb_hp_equal", "Health points for when CTs have equal ratio", 50,
-      ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 200));
+  public static readonly FakeConVar<int> CV_ARMOR_EQUAL = new("css_jb_hp_equal",
+    "Health points for when CTs have equal ratio", 50, ConVarFlags.FCVAR_NONE,
+    new RangeValidator<int>(1, 200));
 
   public static readonly FakeConVar<int> CV_ARMOR_OUTNUMBER =
     new("css_jb_hp_outnumber", "HP for CTs when outnumbering Ts", 25,
@@ -98,7 +102,14 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   private PreWardenStats? preWardenStats;
   private Timer? unblueTimer, openCellsTimer;
 
-  public void Start(BasePlugin basePlugin) { parent = basePlugin; }
+  public void Start(BasePlugin basePlugin) {
+    parent = basePlugin;
+    if (API.Gangs != null) {
+      var stats = API.Gangs.Services.GetService<IStatManager>();
+      if (stats == null) return;
+      stats.Stats.Add(new WardenStat());
+    }
+  }
 
   /// <summary>
   ///   Get the current warden, if there is one.
@@ -145,6 +156,21 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
            .SetTagColor(Warden, ChatColors.DarkBlue, false);
         });
       });
+    }
+
+    if (API.Gangs != null) {
+      var wrapper = new PlayerWrapper(Warden);
+      var stats   = API.Gangs.Services.GetService<IPlayerStatManager>();
+      if (stats != null)
+        Task.Run(async () => {
+          var (success, stat) =
+            await stats.GetForPlayer<WardenData>(wrapper, WardenStat.STAT_ID);
+
+          if (!success || stat == null) stat = new WardenData();
+
+          stat.TimesWardened++;
+          await stats.SetForPlayer(wrapper, WardenStat.STAT_ID, stat);
+        });
     }
 
     foreach (var player in Utilities.GetPlayers())
@@ -217,6 +243,14 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
          .SetTagColor(Warden, oldTagColor.Value, false);
 
       logs.Append(logs.Player(Warden), "is no longer the warden.");
+
+      if (!isPass) {
+        var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+        if (stats != null) {
+          var wrapper = new PlayerWrapper(Warden);
+          Task.Run(async () => await updateWardenDeathStats(wrapper));
+        }
+      }
     }
 
     var wardenPawn = Warden!.PlayerPawn.Value;
@@ -247,15 +281,80 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     return true;
   }
 
+  private async Task updateWardenDeathStats(PlayerWrapper player) {
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats == null) return;
+
+    var (success, stat) =
+      await stats.GetForPlayer<WardenData>(player, WardenStat.STAT_ID);
+    if (!success || stat == null) stat = new WardenData();
+    stat.WardenDeaths++;
+
+    await stats.SetForPlayer(player, WardenStat.STAT_ID, stat);
+  }
+
   [GameEventHandler]
   public HookResult OnDeath(EventPlayerDeath ev, GameEventInfo info) {
-    if (!((IWardenService)this).IsWarden(ev.Userid)) return HookResult.Continue;
+    var player = ev.Userid;
+    if (player == null || !player.IsValid) return HookResult.Continue;
+    var isWarden = ((IWardenService)this).IsWarden(player);
+    if (API.Gangs != null) {
+      if (ev.Attacker != null && ev.Attacker.IsValid && ev.Attacker != player
+        && isWarden) {
+        var wrapper = new PlayerWrapper(ev.Attacker);
+        Task.Run(async () => await incrementWardenKills(wrapper));
+      }
+
+      foreach (var guard in PlayerUtil.FromTeam(CsTeam.CounterTerrorist)) {
+        var wrapper = new PlayerWrapper(guard);
+        // If the guard is the warden, update all guards' stats
+        // If the guard is not the warden, only update the warden's stats
+        if (guard.SteamID == player.SteamID == isWarden) continue;
+        Task.Run(async () => await updateGuardDeathStats(wrapper, isWarden));
+      }
+    }
+
+    if (!isWarden) return HookResult.Continue;
 
     API.Stats?.PushStat(new ServerStat("JB_WARDEN_DEATH"));
 
     mute.UnPeaceMute();
     processWardenDeath();
     return HookResult.Continue;
+  }
+
+  private async Task incrementWardenKills(PlayerWrapper attacker) {
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats == null) return;
+    await Task.Run(async () => {
+      var (success, stat) =
+        await stats.GetForPlayer<WardenData>(attacker, WardenStat.STAT_ID);
+
+      if (!success || stat == null) stat = new WardenData();
+
+      stat.WardensKilled++;
+      await stats.SetForPlayer(attacker, WardenStat.STAT_ID, stat);
+    });
+  }
+
+  private async Task
+    updateGuardDeathStats(PlayerWrapper player, bool isWarden) {
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats == null) return;
+
+    var (success, stat) =
+      await stats.GetForPlayer<WardenData>(player, WardenStat.STAT_ID);
+
+    if (!success || stat == null) stat = new WardenData();
+
+    if (isWarden)
+      // The warden let a guard die
+      stat.GuardDeathsAsWarden++;
+    else
+      // The guard let the warden die
+      stat.WardenDeathsAsGuard++;
+
+    await stats.SetForPlayer(player, WardenStat.STAT_ID, stat);
   }
 
   [GameEventHandler]

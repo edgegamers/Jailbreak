@@ -13,6 +13,9 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Reference Include="GangsAPI">
+            <HintPath>..\..\public\Jailbreak.Public\Mixin\GangsAPI.dll</HintPath>
+        </Reference>
         <Reference Include="MAULActainShared">
             <HintPath>..\..\public\Jailbreak.Public\Mixin\MAULActainShared.dll</HintPath>
         </Reference>

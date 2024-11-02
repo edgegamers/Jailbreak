@@ -9,15 +9,19 @@ using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
+using Gangs.BaseImpl.Stats;
 using GangsAPI.Data;
 using GangsAPI.Services;
+using GangsAPI.Services.Player;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Damage;
+using Jailbreak.Public.Mod.LastGuard;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
+using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using MStatsShared;
@@ -80,13 +84,17 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
   public void Start(BasePlugin basePlugin) {
     factory = provider.GetRequiredService<ILastRequestFactory>();
+
+    if (API.Gangs == null) return;
+
+    var stats = API.Gangs.Services.GetService<IStatManager>();
+    stats?.Stats.Add(new LRStat());
   }
 
   public bool IsLREnabled { get; set; }
 
   public IList<AbstractLastRequest> ActiveLRs { get; } =
     new List<AbstractLastRequest>();
-
 
   public void DisableLR() { IsLREnabled = false; }
 
@@ -109,11 +117,35 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
     RoundUtil.AddTimeRemaining(CV_LR_GUARD_TIME.Value * cts);
 
-    var players = Utilities.GetPlayers();
+    var players   = Utilities.GetPlayers();
+    var lastGuard = provider.GetService<ILastGuardService>();
+    var rebel     = provider.GetService<IRebelService>();
     foreach (var player in players) {
       player.ExecuteClientCommand("play sounds/lr");
-      if (player.Team != CsTeam.Terrorist || !player.PawnIsAlive) continue;
+      var wrapper = new PlayerWrapper(player);
+
+      if (!player.PawnIsAlive) continue;
+
+      if (API.Gangs != null) {
+        var playerStatMgr = API.Gangs.Services.GetService<IPlayerStatManager>();
+        if (playerStatMgr != null)
+          Task.Run(async () => {
+            var (success, stat) =
+              await playerStatMgr.GetForPlayer<LRData>(wrapper, LRStat.STAT_ID);
+            if (stat == null || !success) stat = new LRData();
+            if (wrapper.Team == CsTeam.Terrorist)
+              stat.TLrs++;
+            else
+              stat.CtLrs++;
+
+            await playerStatMgr.SetForPlayer(wrapper, LRStat.STAT_ID, stat);
+          });
+      }
+
+      if (player.Team != CsTeam.Terrorist) continue;
       if (died != null && player.SteamID == died.SteamID) continue;
+
+      if (lastGuard is { IsLastGuardActive: true }) rebel?.UnmarkRebel(player);
       player.ExecuteClientCommandFromServer("css_lr");
     }
 
@@ -125,8 +157,10 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
      .Select(p => new PlayerWrapper(p))
      .ToList();
     Task.Run(async () => {
-      foreach (var survivor in survivors)
+      foreach (var survivor in survivors) {
         await eco.Grant(survivor, 100, reason: "LR Reached");
+        await incrementLRReached(survivor);
+      }
     });
   }
 
@@ -161,17 +195,18 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
       RoundUtil.AddTimeRemaining(CV_LR_BONUS_TIME.Value);
       messages.LastRequestDecided(lr, result).ToAllChat();
 
+      var wrapper =
+        new PlayerWrapper(result == LRResult.GUARD_WIN ?
+          lr.Guard :
+          lr.Prisoner);
       if (shouldGrantCredits()) {
         var eco = API.Gangs?.Services.GetService<IEcoManager>();
         if (eco == null) return false;
-        var wrapper =
-          new PlayerWrapper(result == LRResult.GUARD_WIN ?
-            lr.Guard :
-            lr.Prisoner);
-        Task.Run(async () => {
-          await eco.Grant(wrapper, 30, reason: "LR Win");
-        });
+        Task.Run(async () => await eco.Grant(wrapper, 30, reason: "LR Win"));
       }
+
+      if (API.Gangs != null)
+        Task.Run(async () => await incrementLRWin(wrapper));
     }
 
     API.Stats?.PushStat(new ServerStat("JB_LASTREQUEST_RESULT",
@@ -180,6 +215,57 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     lr.OnEnd(result);
     ActiveLRs.Remove(lr);
     return true;
+  }
+
+  private async Task incrementLRReached(PlayerWrapper player) {
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats == null) return;
+    var stat = await getStat(player);
+    if (stat == null) return;
+
+    if (player.Team == CsTeam.Terrorist)
+      stat.LRsReachedAsT++;
+    else
+      stat.LRsReachedAsCt++;
+
+    await stats.SetForPlayer(player, LRStat.STAT_ID, stat);
+  }
+
+  private async Task incrementLRStart(PlayerWrapper player) {
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats == null) return;
+    var stat = await getStat(player);
+    if (stat == null) return;
+
+    if (player.Team == CsTeam.Terrorist)
+      stat.TLrs++;
+    else
+      stat.CtLrs++;
+
+    await stats.SetForPlayer(player, LRStat.STAT_ID, stat);
+  }
+
+  private async Task incrementLRWin(PlayerWrapper player) {
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats == null) return;
+    var stat = await getStat(player);
+    if (stat == null) return;
+
+    if (player.Team == CsTeam.Terrorist)
+      stat.TLrsWon++;
+    else
+      stat.CTLrsWon++;
+
+    await stats.SetForPlayer(player, LRStat.STAT_ID, stat);
+  }
+
+  private async Task<LRData?> getStat(PlayerWrapper player) {
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats == null) return null;
+    var (success, data) =
+      await stats.GetForPlayer<LRData>(player, LRStat.STAT_ID);
+    if (!success || data == null) data = new LRData();
+    return data;
   }
 
   private static bool shouldGrantCredits() {
@@ -265,7 +351,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   }
 
   private void checkLR() {
-    Server.RunOnTick(Server.TickCount + 32, () => {
+    Server.RunOnTick(Server.TickCount + 2, () => {
       if (IsLREnabled) return;
       if (Utilities.GetPlayers().All(p => p.Team != CsTeam.CounterTerrorist))
         return;

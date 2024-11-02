@@ -4,20 +4,26 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Utils;
+using Gangs.BaseImpl.Stats;
+using GangsAPI.Data;
+using GangsAPI.Services;
+using GangsAPI.Services.Player;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.LastGuard;
 using Jailbreak.Public.Mod.LastRequest;
+using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Utils;
 using Jailbreak.Validator;
+using Microsoft.Extensions.DependencyInjection;
 using MStatsShared;
 
 namespace Jailbreak.LastGuard;
 
-public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager)
-  : ILastGuardService, IPluginBehavior {
+public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
+  IRebelService rebel) : ILastGuardService, IPluginBehavior {
   public static readonly FakeConVar<bool> CV_ALWAYS_OVERRIDE_CT = new(
     "css_jb_lg_apply_lower_hp",
     "If true, the LG will be forced lower health if calculated");
@@ -61,15 +67,31 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager)
 
   private readonly Random rng = new();
   private bool canStart;
-  private bool isLastGuard;
   private List<CCSPlayerController> lastGuardPrisoners = [];
+  public bool IsLastGuardActive { get; private set; }
 
   public void StartLastGuard(CCSPlayerController lastGuard) {
     var guardPlayerPawn = lastGuard.PlayerPawn.Value;
 
     if (guardPlayerPawn == null || !guardPlayerPawn.IsValid) return;
 
-    isLastGuard = true;
+    IsLastGuardActive = true;
+
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats != null)
+      foreach (var player in PlayerUtil.GetAlive()) {
+        var wrapper = new PlayerWrapper(player);
+        Task.Run(async () => {
+          var (success, stat) =
+            await stats.GetForPlayer<LGData>(wrapper, LGStat.STAT_ID);
+          if (!success || stat == null) stat = new LGData();
+          if (wrapper.Team == CsTeam.CounterTerrorist)
+            stat.CtLgs++;
+          else
+            stat.TLgs++;
+          await stats.SetForPlayer(wrapper, LGStat.STAT_ID, stat);
+        });
+      }
 
     API.Stats?.PushStat(new ServerStat("JB_LASTGUARD",
       lastGuard.SteamID.ToString()));
@@ -104,6 +126,8 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager)
      .ToAllCenter()
      .ToAllChat();
 
+    foreach (var player in lastGuardPrisoners) rebel.MarkRebel(player);
+
     if (string.IsNullOrEmpty(CV_LG_WEAPON.Value)) return;
 
     foreach (var player in lastGuardPrisoners)
@@ -111,6 +135,14 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager)
   }
 
   public void DisableLastGuardForRound() { canStart = false; }
+
+  public void Start(BasePlugin basePlugin, bool hotreload) {
+    if (API.Gangs == null) return;
+
+    var stats = API.Gangs.Services.GetService<IStatManager>();
+    if (stats == null) return;
+    stats.Stats.Add(new LGStat());
+  }
 
   private int calculateHealth() {
     var aliveTerrorists = Utilities.GetPlayers()
@@ -129,9 +161,10 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager)
     GameEventInfo info) {
     var player = @event.Userid;
     if (player == null) return HookResult.Continue;
+
     checkLastGuard(@event.Userid);
 
-    if (!isLastGuard) return HookResult.Continue;
+    if (!IsLastGuardActive) return HookResult.Continue;
 
     if (player.Team != CsTeam.Terrorist) return HookResult.Continue;
 
@@ -174,7 +207,7 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager)
 
   private void checkLastGuard(CCSPlayerController? poi) {
     if (poi == null) return;
-    if (isLastGuard) return;
+    if (IsLastGuardActive) return;
     lastGuardPrisoners.Remove(poi);
     if (poi.Team != CsTeam.CounterTerrorist) return;
     var aliveCts = Utilities.GetPlayers()
@@ -193,17 +226,19 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager)
 
   [GameEventHandler]
   public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
-    isLastGuard = false;
+    IsLastGuardActive = false;
     return HookResult.Continue;
   }
 
   [GameEventHandler]
   public HookResult OnRoundStartEvent(EventRoundStart @event,
     GameEventInfo info) {
-    canStart = Utilities.GetPlayers()
-       .Count(plr
-          => plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist })
-      >= CV_MINIMUM_CTS.Value;
+    Server.NextFrame(() => {
+      canStart = Utilities.GetPlayers()
+         .Count(plr
+            => plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist })
+        >= CV_MINIMUM_CTS.Value;
+    });
     return HookResult.Continue;
   }
 
