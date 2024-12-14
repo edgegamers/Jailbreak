@@ -45,7 +45,6 @@ public class ColorReward(Color color, bool prisonerOnly) : IRTDReward {
 
   public bool GrantReward(CCSPlayerController player) {
     player.SetColor(color);
-    Server.RunOnTick(Server.TickCount + 2, () => GrantReward(player));
     return true;
   }
 }
