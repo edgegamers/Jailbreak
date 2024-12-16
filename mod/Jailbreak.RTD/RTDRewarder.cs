@@ -38,8 +38,6 @@ public class RTDRewarder(IRichLogService logs) : IRTDRewarder, IPluginBehavior {
     if (reward == null) return HookResult.Continue;
     if (!reward.CanGrantReward(player)) return HookResult.Continue;
 
-    player.SetColor(Color.White);
-
     Server.RunOnTick(Server.TickCount + 2, () => {
       if (!player.IsValid) return;
       if (reward.Name != "Nothing")
