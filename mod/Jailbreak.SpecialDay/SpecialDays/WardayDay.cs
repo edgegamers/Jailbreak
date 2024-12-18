@@ -19,9 +19,10 @@ public class WardayDay(BasePlugin plugin, IServiceProvider provider)
   public ISDInstanceLocale Locale => new WardayInstanceLocale();
 
   public override void Setup() {
-    Timers[15]  += () => Locale.BeginsIn(15).ToAllChat();
-    Timers[30]  += () => Locale.BeginsIn(5).ToAllChat();
-    Timers[35]  += Execute;
+    Timers[20]  += () => Locale.BeginsIn(30).ToAllChat();
+    Timers[35]  += () => Locale.BeginsIn(15).ToAllChat();
+    Timers[45]  += () => Locale.BeginsIn(5).ToAllChat();
+    Timers[50]  += Execute;
     Timers[120] += () => msg.ExpandIn(30).ToAllChat();
     Timers[150] += () => {
       msg.ExpandNow.ToAllChat();
