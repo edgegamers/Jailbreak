@@ -7,14 +7,20 @@ namespace Jailbreak.English.Rebel;
 
 public class C4Locale : IC4Locale, ILanguage<Formatting.Languages.English> {
   public IView JihadC4Pickup
-    => new SimpleView { RebelLocale.PREFIX, "You picked up a Jihad C4!" };
+    => new SimpleView {
+      RebelLocale.PREFIX,
+      $"You picked up a {ChatColors.Red}Jihad C4{ChatColors.Grey}!"
+    };
 
   public IView JihadC4Received
-    => new SimpleView { RebelLocale.PREFIX, "You received a Jihad C4!" };
+    => new SimpleView {
+      RebelLocale.PREFIX,
+      $"You received a {ChatColors.Red}Jihad C4{ChatColors.Grey}!"
+    };
 
   public IView JihadC4Usage1
     => new SimpleView {
       RebelLocale.PREFIX,
-      $"To detonate it, hold it out and press {ChatColors.Yellow + "E" + ChatColors.Default}."
+      $"To detonate it, hold it out and press {ChatColors.Yellow + "E" + ChatColors.Grey}."
     };
 }
