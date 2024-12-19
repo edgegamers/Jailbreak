@@ -1,14 +1,19 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
+using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Logistics;
+using Jailbreak.Formatting.Objects;
 using Jailbreak.Formatting.Views.RTD;
 using Jailbreak.Public.Mod.RTD;
 
 namespace Jailbreak.English.RTD;
 
 public class RTDLocale : IRTDLocale, ILanguage<Formatting.Languages.English> {
-  public static readonly string PREFIX = $" {ChatColors.LightBlue}RTD>";
+  public static readonly FormatObject PREFIX =
+    new HiddenFormatObject($" {ChatColors.DarkBlue}RTD>") {
+      Plain = false, Panorama = false, Chat = true
+    };
 
   public IView RewardSelected(IRTDReward reward) {
     var view = new SimpleView {

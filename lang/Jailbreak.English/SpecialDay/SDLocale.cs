@@ -9,7 +9,7 @@ namespace Jailbreak.English.SpecialDay;
 
 public class SDLocale : ISDLocale, ILanguage<Formatting.Languages.English> {
   public static readonly FormatObject PREFIX =
-    new HiddenFormatObject($" {ChatColors.LightBlue}Game>") {
+    new HiddenFormatObject($" {ChatColors.DarkBlue}Game>") {
       //	Hide in panorama and center text
       Plain = false, Panorama = false, Chat = true
     };

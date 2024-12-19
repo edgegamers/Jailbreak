@@ -11,7 +11,7 @@ namespace Jailbreak.English.Generic;
 public class GenericCmdLocale : IGenericCmdLocale,
   ILanguage<Formatting.Languages.English> {
   private static readonly FormatObject PREFIX =
-    new HiddenFormatObject($" {ChatColors.LightBlue}Server>") {
+    new HiddenFormatObject($" {ChatColors.DarkBlue}Server>") {
       //	Hide in panorama and center text
       Plain = false, Panorama = false, Chat = true
     };

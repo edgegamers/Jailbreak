@@ -14,7 +14,7 @@ namespace Jailbreak.English.LastRequest;
 public class LastRequestLocale : ILRLocale,
   ILanguage<Formatting.Languages.English> {
   public static readonly FormatObject PREFIX =
-    new HiddenFormatObject($" {ChatColors.LightBlue}LR>") {
+    new HiddenFormatObject($" {ChatColors.DarkBlue}LR>") {
       //	Hide in panorama and center text
       Plain = false, Panorama = false, Chat = true
     };

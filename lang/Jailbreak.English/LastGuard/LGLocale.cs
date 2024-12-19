@@ -10,7 +10,7 @@ namespace Jailbreak.English.LastGuard;
 
 public class LGLocale : ILGLocale, ILanguage<Formatting.Languages.English> {
   private static readonly FormatObject PREFIX =
-    new HiddenFormatObject($" {ChatColors.LightBlue}Guard>") {
+    new HiddenFormatObject($" {ChatColors.DarkBlue}Guard>") {
       //	Hide in panorama and center text
       Plain = false, Panorama = false, Chat = true
     };

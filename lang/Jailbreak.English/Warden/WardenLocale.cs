@@ -11,7 +11,7 @@ namespace Jailbreak.English.Warden;
 public class WardenLocale : IWardenLocale,
   ILanguage<Formatting.Languages.English> {
   public static readonly FormatObject PREFIX =
-    new HiddenFormatObject($" {ChatColors.LightBlue}Guard>") {
+    new HiddenFormatObject($" {ChatColors.DarkBlue}Guard>") {
       //	Hide in panorama and center text
       Plain = false, Panorama = false, Chat = true
     };
@@ -28,7 +28,7 @@ public class WardenLocale : IWardenLocale,
   public IView NoWardens
     => new SimpleView {
       PREFIX,
-      $"No wardens in queue. Next player to {ChatColors.BlueGrey}!warden{ChatColors.White} will become warden."
+      $"No wardens in queue. Next player to {ChatColors.BlueGrey}!warden{ChatColors.Grey} will become warden."
     };
 
   public IView WardenLeft

@@ -10,7 +10,7 @@ namespace Jailbreak.English.Mute;
 public class WardenPeaceLocale : IWardenPeaceLocale,
   ILanguage<Formatting.Languages.English> {
   private static readonly FormatObject PREFIX =
-    new HiddenFormatObject($" {ChatColors.LightBlue}Voice>") {
+    new HiddenFormatObject($" {ChatColors.DarkBlue}Voice>") {
       Plain = false, Panorama = false, Chat = true
     };
 
