@@ -18,17 +18,14 @@ public class WardenLocale : IWardenLocale,
 
   public IView PickingShortly
     => new SimpleView {
-      { PREFIX, $"Picking a warden shortly..." },
-      SimpleView.NEWLINE, {
-        PREFIX,
-        $"To enter the queue, type {ChatColors.BlueGrey}!warden{ChatColors.Grey}."
-      }
+      PREFIX,
+      $"Picking a warden shortly, type {ChatColors.BlueGrey}!warden{ChatColors.Grey} to enter the queue."
     };
 
   public IView NoWardens
     => new SimpleView {
       PREFIX,
-      $"No wardens in queue. Next player to {ChatColors.BlueGrey}!warden{ChatColors.Grey} will become warden."
+      $"No one in queue. Next guard to {ChatColors.BlueGrey}!warden{ChatColors.Grey} will become warden."
     };
 
   public IView WardenLeft
