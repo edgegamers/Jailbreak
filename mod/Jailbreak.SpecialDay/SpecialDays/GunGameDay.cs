@@ -200,6 +200,13 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     var weapon  = weaponProgression[progress];
     var allowed = new HashSet<string> { weapon, "weapon_knife" };
 
+    if (allowed.Contains("weapon_mp5sd")) allowed.Add("weapon_mp7");
+    if (allowed.Contains("weapon_mp7")) allowed.Add("weapon_mp5sd");
+    if (allowed.Contains("weapon_m4a1_silencer")) allowed.Add("weapon_m4a1");
+    if (allowed.Contains("weapon_m4a1")) allowed.Add("weapon_m4a1_silencer");
+    if (allowed.Contains("weapon_usp_silencer")) allowed.Add("weapon_hkp2000");
+    if (allowed.Contains("weapon_hkp2000")) allowed.Add("weapon_usp_silencer");
+
     return allowed.Union(Tag.UTILITY).ToHashSet();
   }
 
