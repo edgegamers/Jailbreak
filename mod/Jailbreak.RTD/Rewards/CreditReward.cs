@@ -19,16 +19,36 @@ public class CreditReward(int credits, IRTDLocale locale) : IRTDReward {
 
   public bool Enabled => API.Gangs != null;
 
+  private static readonly Queue<(PlayerWrapper, int)> rewards = new();
+
   public bool PrepareReward(CCSPlayerController player) {
     var eco = API.Gangs?.Services.GetService<IEcoManager>();
     if (eco == null) return false;
     var wrapper = new PlayerWrapper(player);
-    Task.Run(async () => await eco.Grant(wrapper, credits, true, "RTD"));
+
+    rewards.Enqueue((wrapper, credits));
+
+    Task.Run(async () => await processQueue());
 
     if (Math.Abs(credits) >= 5000)
       locale.JackpotReward(player, credits).ToAllChat();
 
     return true;
+  }
+
+  private async Task processQueue() {
+    while (true) {
+      var eco = API.Gangs?.Services.GetService<IEcoManager>();
+      if (eco == null) {
+        rewards.Clear();
+        return;
+      }
+
+      if (rewards.Count == 0) return;
+      var (player, amount) = rewards.Dequeue();
+
+      await eco.Grant(player, amount, true, "RTD");
+    }
   }
 
   public bool GrantReward(CCSPlayerController player) { return true; }
