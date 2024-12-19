@@ -206,6 +206,8 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     if (allowed.Contains("weapon_m4a1")) allowed.Add("weapon_m4a1_silencer");
     if (allowed.Contains("weapon_usp_silencer")) allowed.Add("weapon_hkp2000");
     if (allowed.Contains("weapon_hkp2000")) allowed.Add("weapon_usp_silencer");
+    if (allowed.Contains("weapon_deagle")) allowed.Add("weapon_revolver");
+    if (allowed.Contains("weapon_revolver")) allowed.Add("weapon_deagle");
 
     return allowed.Union(Tag.UTILITY).ToHashSet();
   }
