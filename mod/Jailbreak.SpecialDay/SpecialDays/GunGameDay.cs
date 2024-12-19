@@ -13,8 +13,14 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
-public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
-  : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
+public class GunGameDay : AbstractSpecialDay, ISpecialDayMessageProvider {
+  private readonly SpecialDaySettings settings;
+
+  public GunGameDay(BasePlugin plugin, IServiceProvider provider) : base(plugin,
+    provider) {
+    settings = new GunGameSettings(this);
+  }
+
   private readonly IList<string> BAD = [
     "weapon_deagle", "weapon_elite", "weapon_fiveseven", "weapon_glock",
     "weapon_hkp2000", "weapon_p250", "weapon_usp_silencer", "weapon_tec9",
@@ -49,7 +55,8 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
   private ShuffleBag<Vector>? spawns;
 
   public override SDType Type => SDType.GUNGAME;
-  public override SpecialDaySettings Settings => new GunGameSettings();
+  public override SpecialDaySettings Settings => settings;
+
   private IGunDayLocale msg => (IGunDayLocale)Locale;
 
   public ISDInstanceLocale Locale => new GunDayLocale();
@@ -146,6 +153,7 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
       RoundUtil.SetTimeRemaining(Math.Min(RoundUtil.GetTimeRemaining(), 30));
 
       Plugin.DeregisterEventHandler<EventPlayerDeath>(OnDeath, HookMode.Pre);
+      Plugin.RemoveListener<Listeners.OnTick>(OnTick);
       return HookResult.Continue;
     }
 
@@ -184,14 +192,26 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
   }
 
   public class GunGameSettings : SpecialDaySettings {
-    public GunGameSettings() {
+    private readonly GunGameDay day;
+
+    public GunGameSettings(GunGameDay day) {
+      this.day                                = day;
       CtTeleport                              = TeleportType.RANDOM;
       TTeleport                               = TeleportType.RANDOM;
       FreezePlayers                           = false;
       ConVarValues["mp_respawn_immunitytime"] = 5.0f;
       ConVarValues["mp_death_drop_gun"]       = 0;
+      RestrictWeapons                         = true;
       WithFriendlyFire();
       WithRespawns();
+    }
+
+    public override ISet<string>? AllowedWeapons(CCSPlayerController player) {
+      var progress =
+        day.progressions.TryGetValue(player.Slot, out var p) ? p : 0;
+      var weapon  = day.weaponProgression[progress];
+      var allowed = new HashSet<string> { weapon, "weapon_knife" };
+      return allowed.Union(Tag.UTILITY).ToHashSet();
     }
   }
 }

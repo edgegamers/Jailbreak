@@ -223,7 +223,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       || speedrunner.PlayerPawn.Value.AbsOrigin == null
       || start.DistanceSquared(speedrunner.PlayerPawn.Value.AbsOrigin) < 100) {
       panic("Execute: Start is null or too close to speedrunner");
-      return;
     }
 
     target       = target.Clone();
