@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using Jailbreak.English.SpecialDay;
+using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.SpecialDay;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDay;
@@ -13,7 +14,7 @@ using Jailbreak.Validator;
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
-  : FFADay(plugin, provider) {
+  : AbstractSpecialDay(plugin, provider) {
   public static readonly FakeConVar<string> CV_WEAPON = new(
     "jb_sd_noscope_weapon",
     "Weapon to give to all players, recommended it be a weapon with a scope (duh)",
@@ -38,13 +39,16 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
 
   public override SDType Type => SDType.NOSCOPE;
 
-  public override ISDInstanceLocale Locale
+  public ISDInstanceLocale Locale
     => new SoloDayLocale("No Scope",
       "Your scope broke! Fight against everyone else. No camping!");
 
   public override SpecialDaySettings Settings => new NoScopeSettings();
 
   public override void Setup() {
+    Timers[10] += () => Locale.BeginsIn(10).ToAllChat();
+    Timers[15] += () => Locale.BeginsIn(5).ToAllChat();
+    Timers[20] += Execute;
     if (CV_KNIFE_DELAY.Value > 0)
       Timers[CV_KNIFE_DELAY.Value] += () => {
         foreach (var player in PlayerUtil.GetAlive())
@@ -63,6 +67,7 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
     Plugin.RegisterListener<Listeners.OnTick>(onTick);
 
     base.Execute();
+    Locale.BeginsIn(0).ToAllChat();
   }
 
   private void onTick() {
@@ -92,10 +97,11 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
     return result;
   }
 
-  private class NoScopeSettings : FFASettings {
+  private class NoScopeSettings : SpecialDaySettings {
     public NoScopeSettings() {
       CtTeleport = TeleportType.RANDOM;
       TTeleport  = TeleportType.RANDOM;
+      WithFriendlyFire();
 
       ConVarValues["sv_gravity"]        = CV_GRAVITY.Value;
       ConVarValues["sv_infinite_ammo"]  = 2;

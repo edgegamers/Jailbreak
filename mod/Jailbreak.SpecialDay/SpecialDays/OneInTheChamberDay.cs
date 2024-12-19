@@ -2,6 +2,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
 using Jailbreak.English.SpecialDay;
+using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.SpecialDay;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.SpecialDay;
@@ -12,7 +13,7 @@ using Jailbreak.Validator;
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
-  : FFADay(plugin, provider) {
+  : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
   public static readonly FakeConVar<string> CV_WEAPON = new("jb_sd_oitc_weapon",
     "Weapon to give to players for the day", "weapon_deagle",
     ConVarFlags.FCVAR_NONE, new ItemValidator(WeaponType.GUNS));
@@ -25,13 +26,16 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
   private bool started;
   public override SDType Type => SDType.OITC;
 
-  public override ISDInstanceLocale Locale
+  public ISDInstanceLocale Locale
     => new SoloDayLocale("One in the Chamber", "You only have one bullet.",
       "Kill someone to get another bullet.", "One-Hit-Kills! No camping!");
 
   public override SpecialDaySettings Settings => new OitcSettings();
 
   public override void Setup() {
+    Timers[10] += () => Locale.BeginsIn(10).ToAllChat();
+    Timers[15] += () => Locale.BeginsIn(5).ToAllChat();
+    Timers[20] += Execute;
     base.Setup();
     Plugin.RegisterEventHandler<EventItemPickup>(OnPickup);
     Plugin.RegisterEventHandler<EventPlayerHurt>(OnPlayerDamage);
@@ -40,8 +44,10 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
 
   public override void Execute() {
     base.Execute();
+    Locale.BeginsIn(0).ToAllChat();
 
     foreach (var player in PlayerUtil.GetAlive()) {
+      player.RemoveWeapons();
       if (CV_ADDITIONAL_WEAPON.Value.Length > 0)
         player.GiveNamedItem(CV_ADDITIONAL_WEAPON.Value);
       if (CV_WEAPON.Value.Length > 0) {
@@ -58,8 +64,9 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
 
     var player = @event.Userid;
     if (player == null || !player.IsValid) return HookResult.Continue;
+    if (@event.Item == "knife") return HookResult.Continue;
     player.RemoveWeapons();
-    player.SetHealth(1);
+    player.GiveNamedItem("weapon_knife");
     return HookResult.Continue;
   }
 

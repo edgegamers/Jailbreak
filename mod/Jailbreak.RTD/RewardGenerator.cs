@@ -2,6 +2,7 @@
 using System.Drawing;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
+using Jailbreak.Formatting.Views.RTD;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.RTD;
@@ -12,7 +13,8 @@ using Jailbreak.RTD.Rewards;
 namespace Jailbreak.RTD;
 
 public class RewardGenerator(IZoneManager mgr, IC4Service bomb,
-  IWardenSelectionService warden) : IPluginBehavior, IRewardGenerator {
+  IWardenSelectionService warden, IRTDLocale locale)
+  : IPluginBehavior, IRewardGenerator {
   private const float PROB_LOTTERY = 1 / 3000f;
   private const float PROB_EXTREMELY_LOW = 1 / 800f;
   private const float PROB_VERY_LOW = 1 / 100f;
@@ -32,18 +34,19 @@ public class RewardGenerator(IZoneManager mgr, IC4Service bomb,
     rewards.AddRange([
       // Very often
       (new NothingReward(), PROB_VERY_OFTEN),
-      (new CreditReward(1), PROB_VERY_OFTEN),
-      (new CreditReward(-1), PROB_VERY_OFTEN),
+      (new CreditReward(1, locale), PROB_VERY_OFTEN),
+      (new CreditReward(-1, locale), PROB_VERY_OFTEN),
 
       // Often
       (new WeaponReward("weapon_healthshot"), PROB_OFTEN),
       (new WeaponReward("weapon_decoy"), PROB_OFTEN),
       (new HPReward(110), PROB_OFTEN), (new ArmorReward(15), PROB_OFTEN),
-      (new CreditReward(-10), PROB_VERY_OFTEN),
+      (new CreditReward(-10, locale), PROB_VERY_OFTEN),
 
       // Medium
-      (new CreditReward(1), PROB_MEDIUM), (new CreditReward(2), PROB_MEDIUM),
-      (new CreditReward(3), PROB_MEDIUM),
+      (new CreditReward(1, locale), PROB_MEDIUM),
+      (new CreditReward(2, locale), PROB_MEDIUM),
+      (new CreditReward(3, locale), PROB_MEDIUM),
       (new WeaponReward("weapon_flashbang"), PROB_MEDIUM),
       (new WeaponReward("weapon_hegrenade"), PROB_MEDIUM),
       (new WeaponReward("weapon_smokegrenade"), PROB_MEDIUM),
@@ -53,7 +56,7 @@ public class RewardGenerator(IZoneManager mgr, IC4Service bomb,
       (new ArmorReward(150), PROB_MEDIUM),
       (new GuaranteedWardenReward(warden), PROB_MEDIUM),
       (new WeaponReward("weapon_g3sg1", CsTeam.CounterTerrorist), PROB_MEDIUM),
-      (new CreditReward(5), PROB_MEDIUM),
+      (new CreditReward(5, locale), PROB_MEDIUM),
 
       // Low
       (new ChatSpyReward(basePlugin), PROB_LOW),
@@ -67,7 +70,7 @@ public class RewardGenerator(IZoneManager mgr, IC4Service bomb,
       (new AmmoWeaponReward("weapon_negev", 0, 5), PROB_LOW),
       (new CannotUseReward(basePlugin, WeaponType.SNIPERS), PROB_LOW),
       (new CannotUseReward(basePlugin, WeaponType.HEAVY), PROB_LOW),
-      (new CreditReward(50), PROB_LOW), (new HPReward(1), PROB_LOW / 2),
+      (new CreditReward(50, locale), PROB_LOW), (new HPReward(1), PROB_LOW / 2),
 
       // Very low
       (new FakeBombReward(), PROB_VERY_LOW * 2),
@@ -79,19 +82,19 @@ public class RewardGenerator(IZoneManager mgr, IC4Service bomb,
       (new RandomTeleportReward(mgr), PROB_VERY_LOW),
       (new BombReward(bomb), PROB_VERY_LOW),
       (new CannotUseReward(basePlugin, WeaponType.UTILITY), PROB_VERY_LOW),
-      (new CreditReward(-100), PROB_VERY_LOW),
-      (new CreditReward(500), PROB_VERY_LOW),
+      (new CreditReward(-100, locale), PROB_VERY_LOW),
+      (new CreditReward(500, locale), PROB_VERY_LOW),
       (new AmmoWeaponReward("weapon_awp", 1, 0), PROB_VERY_LOW / 2),
 
       // Extremely low
       (new AmmoWeaponReward("weapon_awp", 3, 0), PROB_EXTREMELY_LOW),
       (new WeaponReward("weapon_glock"), PROB_EXTREMELY_LOW),
       (new CannotUseReward(basePlugin, WeaponType.GUNS), PROB_EXTREMELY_LOW),
-      (new CreditReward(1000), PROB_EXTREMELY_LOW),
-      (new CreditReward(-5000), PROB_EXTREMELY_LOW / 2),
+      (new CreditReward(1000, locale), PROB_EXTREMELY_LOW),
+      (new CreditReward(-5000, locale), PROB_EXTREMELY_LOW / 2),
 
       // Lottery
-      (new CreditReward(10000), PROB_LOTTERY)
+      (new CreditReward(10000, locale), PROB_LOTTERY)
     ]);
   }
 

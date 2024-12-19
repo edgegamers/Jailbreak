@@ -11,52 +11,47 @@ namespace Jailbreak.English.Warden;
 public class WardenLocale : IWardenLocale,
   ILanguage<Formatting.Languages.English> {
   public static readonly FormatObject PREFIX =
-    new HiddenFormatObject(
-      $" {ChatColors.Green}[{ChatColors.Olive}WARDEN{ChatColors.Green}]") {
+    new HiddenFormatObject($" {ChatColors.DarkBlue}Guard>") {
       //	Hide in panorama and center text
       Plain = false, Panorama = false, Chat = true
     };
 
   public IView PickingShortly
     => new SimpleView {
-      { PREFIX, $"{ChatColors.Grey}Picking a warden shortly..." },
-      SimpleView.NEWLINE, {
-        PREFIX,
-        $"{ChatColors.Grey}To enter the warden queue, type {ChatColors.Blue}!warden{ChatColors.Grey} in chat."
-      }
+      PREFIX,
+      $"Picking a warden shortly, type {ChatColors.BlueGrey}!warden{ChatColors.Grey} to enter the queue."
     };
 
   public IView NoWardens
     => new SimpleView {
       PREFIX,
-      $"No wardens in queue! The next player to run {ChatColors.Blue}!warden{ChatColors.White} will become a warden."
+      $"No one in queue. Next guard to {ChatColors.BlueGrey}!warden{ChatColors.Grey} will become warden."
     };
 
   public IView WardenLeft
-    => new SimpleView { PREFIX, "The warden has left the game." };
+    => new SimpleView { PREFIX, "The warden left the game." };
 
   public IView WardenDied
     => new SimpleView {
       PREFIX,
-      $"{ChatColors.Red}The warden has {ChatColors.DarkRed}died{ChatColors.Red}! CTs must pursue {ChatColors.Blue}!warden{ChatColors.Red}."
+      $"The warden {ChatColors.Red}died{ChatColors.Grey}. CTs must pursue {ChatColors.BlueGrey}!warden{ChatColors.Grey}."
     };
 
   public IView BecomeNextWarden
     => new SimpleView {
       PREFIX,
-      $"{ChatColors.Grey}Type {ChatColors.Blue}!warden{ChatColors.Grey} to become the next warden"
+      $"Type {ChatColors.BlueGrey}!warden{ChatColors.Grey} to become the warden."
     };
 
   public IView JoinRaffle
     => new SimpleView {
       PREFIX,
-      $"{ChatColors.Grey}You've {ChatColors.Green}joined {ChatColors.Grey}the warden raffle."
+      $"You {ChatColors.White}joined {ChatColors.Grey}the warden raffle."
     };
 
   public IView LeaveRaffle
     => new SimpleView {
-      PREFIX,
-      $"{ChatColors.Grey}You've {ChatColors.Red}left {ChatColors.Grey}the warden raffle."
+      PREFIX, $"You {ChatColors.Red}left {ChatColors.Grey}the warden raffle."
     };
 
   public IView NotWarden
@@ -66,15 +61,15 @@ public class WardenLocale : IWardenLocale,
 
   public IView FireCommandFailed
     => new SimpleView {
-      PREFIX, "The fire command has failed to work for some unknown reason..."
+      PREFIX, "The fire command failed for some unknown reason..."
     };
 
   public IView PassWarden(CCSPlayerController player) {
-    return new SimpleView { PREFIX, player, "resigned from being warden." };
+    return new SimpleView { PREFIX, player, "resigned from warden." };
   }
 
   public IView FireWarden(CCSPlayerController player) {
-    return new SimpleView { PREFIX, player, "was fired from being warden." };
+    return new SimpleView { PREFIX, player, "was fired from warden." };
   }
 
   public IView
@@ -84,12 +79,12 @@ public class WardenLocale : IWardenLocale,
       admin,
       "fired",
       player,
-      "from being warden."
+      "from warden."
     };
   }
 
   public IView NewWarden(CCSPlayerController player) {
-    return new SimpleView { PREFIX, player, "is now the warden!" };
+    return new SimpleView { PREFIX, player, "is now the warden." };
   }
 
   public IView CurrentWarden(CCSPlayerController? player) {

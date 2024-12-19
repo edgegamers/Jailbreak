@@ -9,8 +9,7 @@ namespace Jailbreak.English.SpecialDay;
 
 public class SDLocale : ISDLocale, ILanguage<Formatting.Languages.English> {
   public static readonly FormatObject PREFIX =
-    new HiddenFormatObject(
-      $" {ChatColors.BlueGrey}[{ChatColors.Green}S{ChatColors.Blue}D{ChatColors.BlueGrey}]") {
+    new HiddenFormatObject($" {ChatColors.DarkBlue}Game>") {
       //	Hide in panorama and center text
       Plain = false, Panorama = false, Chat = true
     };
@@ -18,16 +17,16 @@ public class SDLocale : ISDLocale, ILanguage<Formatting.Languages.English> {
   public IView SpecialDayRunning(string name) {
     return new SimpleView {
       PREFIX,
-      ChatColors.Grey + "The current special day is",
-      ChatColors.Gold + name
+      "The current day is",
+      ChatColors.BlueGrey + name + ChatColors.Grey + "."
     };
   }
 
   public IView InvalidSpecialDay(string name) {
     return new SimpleView {
       PREFIX,
-      ChatColors.DarkRed + name,
-      ChatColors.Red + "is not a valid special day."
+      ChatColors.Red + name,
+      ChatColors.Grey + "is not a valid special day."
     };
   }
 
@@ -46,7 +45,7 @@ public class SDLocale : ISDLocale, ILanguage<Formatting.Languages.English> {
       PREFIX,
       "You must start a special day within",
       maxTime,
-      "second" + (maxTime == 1 ? "" : "s") + " of the round start."
+      "second" + (maxTime == 1 ? "" : "s") + " of round start."
     };
   }
 }

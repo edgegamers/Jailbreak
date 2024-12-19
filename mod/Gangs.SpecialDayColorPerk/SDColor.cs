@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using CounterStrikeSharp.API.Modules.Utils;
+using GangsAPI.Extensions;
 
 namespace Gangs.SpecialDayColorPerk;
 
@@ -60,6 +61,17 @@ public static class SmokeColorExtensions {
       SDColor.RANDOM  => ChatColors.White,
       _               => ChatColors.White
     };
+  }
+
+  public static char GetChatColor(this Color color) {
+    if (color == Color.Red) return ChatColors.Red;
+    if (color == Color.Orange) return ChatColors.Orange;
+    if (color == Color.Yellow) return ChatColors.Yellow;
+    if (color == Color.Green) return ChatColors.Green;
+    if (color == Color.Cyan) return ChatColors.LightBlue;
+    if (color == Color.Blue) return ChatColors.Blue;
+    if (color == Color.Purple) return ChatColors.Purple;
+    return ChatColors.White;
   }
 
   public static Color? PickRandom(this SDColor color) {

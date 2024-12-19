@@ -10,15 +10,14 @@ namespace Jailbreak.English.Mute;
 public class WardenPeaceLocale : IWardenPeaceLocale,
   ILanguage<Formatting.Languages.English> {
   private static readonly FormatObject PREFIX =
-    new HiddenFormatObject(
-      $" {ChatColors.DarkBlue}[{ChatColors.LightBlue}Voice{ChatColors.DarkBlue}]{ChatColors.Grey} ") {
+    new HiddenFormatObject($" {ChatColors.DarkBlue}Voice>") {
       Plain = false, Panorama = false, Chat = true
     };
 
   public IView PeaceEnactedByAdmin(int seconds) {
     return new SimpleView {
       PREFIX,
-      $"{ChatColors.Red}An admin {ChatColors.White}enacted peace for",
+      "An admin enacted peace for",
       seconds,
       "second" + (seconds == 1 ? "" : "s") + "."
     };
@@ -26,10 +25,7 @@ public class WardenPeaceLocale : IWardenPeaceLocale,
 
   public IView WardenEnactedPeace(int seconds) {
     return new SimpleView {
-      PREFIX,
-      $"{ChatColors.Blue}The warden {ChatColors.White}enacted peace for",
-      seconds,
-      "seconds."
+      PREFIX, $"The warden enacted peace for", seconds, "seconds."
     };
   }
 
@@ -56,7 +52,7 @@ public class WardenPeaceLocale : IWardenPeaceLocale,
 
   public IView MuteReminder
     => new SimpleView {
-      { PREFIX, ChatColors.Red + "You are currently muted!" }
+      { PREFIX, ChatColors.Red + "You are currently muted." }
     };
 
   public IView PeaceReminder
@@ -81,5 +77,5 @@ public class WardenPeaceLocale : IWardenPeaceLocale,
     };
 
   public IView PeaceActive
-    => new SimpleView { { PREFIX, "Peace is currently active." } };
+    => new SimpleView { PREFIX, "Peace is currently active." };
 }

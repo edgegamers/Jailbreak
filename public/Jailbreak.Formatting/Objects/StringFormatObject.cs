@@ -1,8 +1,9 @@
-﻿using Jailbreak.Formatting.Core;
+﻿using CounterStrikeSharp.API.Modules.Utils;
+using Jailbreak.Formatting.Core;
 
 namespace Jailbreak.Formatting.Objects;
 
-public class StringFormatObject(string value, char chatColor = '\x01')
+public class StringFormatObject(string value, char chatColor = '\x08')
   : FormatObject {
   public string Value { get; } = value;
 
