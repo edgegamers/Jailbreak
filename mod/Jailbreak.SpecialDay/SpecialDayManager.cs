@@ -73,7 +73,7 @@ public class SpecialDayManager(ISpecialDayFactory factory)
         if (color != null) {
           await Server.NextFrameAsync(() => player.SetColor(color.Value.Item2));
           wrapper.PrintToChat(
-            $" {ChatColors.DarkBlue}Gangs> {ChatColors.Grey}Your gang will be {color.Value.Item1}{color.Value.Item2.ToString().ToTitleCase()}{ChatColors.Grey} this special day.");
+            $" {ChatColors.DarkBlue}Gangs> {ChatColors.Grey}Your gang will be {color.Value.Item1}{color.Value.Item2.Name}{ChatColors.Grey} this special day.");
         }
       });
     }
