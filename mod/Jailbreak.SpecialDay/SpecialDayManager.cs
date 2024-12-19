@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Drawing;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -42,7 +43,7 @@ public class SpecialDayManager(ISpecialDayFactory factory)
     var players   = API.Gangs.Services.GetService<IPlayerManager>();
     var gangStats = API.Gangs.Services.GetService<IGangStatManager>();
     if (players == null || gangStats == null) return;
-    var gangCache = new Dictionary<int, SDColor?>();
+    var gangCache = new Dictionary<int, (char, Color)?>();
     foreach (var player in Utilities.GetPlayers().Where(p => !p.IsBot)) {
       var wrapper = new PlayerWrapper(player);
       Task.Run(async () => {
@@ -58,17 +59,21 @@ public class SpecialDayManager(ISpecialDayFactory factory)
             return;
           }
 
-          color             = data.Equipped;
+          var col = data.Equipped.GetColor() ?? data.Unlocked.PickRandom();
+
+          if (col == null) {
+            gangCache[gangId] = null;
+            return;
+          }
+
+          color             = (col.Value.GetChatColor(), col.Value);
           gangCache[gangId] = color;
         }
 
-
         if (color != null) {
+          await Server.NextFrameAsync(() => player.SetColor(color.Value.Item2));
           wrapper.PrintToChat(
-            $" {ChatColors.Grey}Your gang will be {color.Value.GetChatColor()}{color.Value.ToString().ToTitleCase()}{ChatColors.Grey} during this special day.");
-          var toSet = color.Value.GetColor() ?? color.Value.PickRandom();
-          if (toSet != null)
-            await Server.NextFrameAsync(() => player.SetColor(toSet.Value));
+            $" {ChatColors.DarkBlue}Gangs> {ChatColors.Grey}Your gang will be {color.Value.Item1}{color.Value.Item2.ToString().ToTitleCase()}{ChatColors.Grey} this special day.");
         }
       });
     }

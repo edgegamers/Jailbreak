@@ -62,6 +62,17 @@ public static class SmokeColorExtensions {
     };
   }
 
+  public static char GetChatColor(this Color color) {
+    if (color == Color.Red) return ChatColors.Red;
+    if (color == Color.Orange) return ChatColors.Orange;
+    if (color == Color.Yellow) return ChatColors.Yellow;
+    if (color == Color.Green) return ChatColors.Green;
+    if (color == Color.Cyan) return ChatColors.LightBlue;
+    if (color == Color.Blue) return ChatColors.Blue;
+    if (color == Color.Purple) return ChatColors.Purple;
+    return ChatColors.White;
+  }
+
   public static Color? PickRandom(this SDColor color) {
     var n = new Random().Next(Enum.GetValues<SDColor>().Length);
     var available = Enum.GetValues<SDColor>()

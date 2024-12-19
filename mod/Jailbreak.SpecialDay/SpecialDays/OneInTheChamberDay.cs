@@ -13,7 +13,7 @@ using Jailbreak.Validator;
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
-  : AbstractSpecialDay(plugin, provider) {
+  : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
   public static readonly FakeConVar<string> CV_WEAPON = new("jb_sd_oitc_weapon",
     "Weapon to give to players for the day", "weapon_deagle",
     ConVarFlags.FCVAR_NONE, new ItemValidator(WeaponType.GUNS));
@@ -44,8 +44,10 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
 
   public override void Execute() {
     base.Execute();
+    Locale.BeginsIn(0).ToAllChat();
 
     foreach (var player in PlayerUtil.GetAlive()) {
+      player.RemoveWeapons();
       if (CV_ADDITIONAL_WEAPON.Value.Length > 0)
         player.GiveNamedItem(CV_ADDITIONAL_WEAPON.Value);
       if (CV_WEAPON.Value.Length > 0) {
@@ -62,8 +64,9 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
 
     var player = @event.Userid;
     if (player == null || !player.IsValid) return HookResult.Continue;
+    if (@event.Item == "knife") return HookResult.Continue;
     player.RemoveWeapons();
-    Server.NextFrame(() => player.GiveNamedItem("weapon_knife"));
+    player.GiveNamedItem("weapon_knife");
     return HookResult.Continue;
   }
 
