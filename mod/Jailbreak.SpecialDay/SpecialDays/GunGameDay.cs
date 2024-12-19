@@ -13,14 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
-public class GunGameDay : AbstractSpecialDay, ISpecialDayMessageProvider {
-  private readonly SpecialDaySettings settings;
-
-  public GunGameDay(BasePlugin plugin, IServiceProvider provider) : base(plugin,
-    provider) {
-    settings = new GunGameSettings(this);
-  }
-
+public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
+  : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
   private readonly IList<string> BAD = [
     "weapon_deagle", "weapon_elite", "weapon_fiveseven", "weapon_glock",
     "weapon_hkp2000", "weapon_p250", "weapon_usp_silencer", "weapon_tec9",
@@ -55,11 +49,11 @@ public class GunGameDay : AbstractSpecialDay, ISpecialDayMessageProvider {
   private ShuffleBag<Vector>? spawns;
 
   public override SDType Type => SDType.GUNGAME;
-  public override SpecialDaySettings Settings => settings;
 
   private IGunDayLocale msg => (IGunDayLocale)Locale;
 
   public ISDInstanceLocale Locale => new GunDayLocale();
+  public override SpecialDaySettings Settings => new GunGameSettings();
 
   public override void Setup() {
     Timers[5]  += () => Locale.BeginsIn(5).ToAllChat();
@@ -191,11 +185,40 @@ public class GunGameDay : AbstractSpecialDay, ISpecialDayMessageProvider {
     return result;
   }
 
-  public class GunGameSettings : SpecialDaySettings {
-    private readonly GunGameDay day;
+  override protected void OnTick() {
+    foreach (var player in PlayerUtil.GetAlive()) {
+      var weapons = allowedWeapons(player);
+      disableWeapon(player, weapons);
+    }
+  }
 
-    public GunGameSettings(GunGameDay day) {
-      this.day                                = day;
+  private ISet<string> allowedWeapons(CCSPlayerController player) {
+    var progress = progressions.TryGetValue(player.Slot, out var index) ?
+      index :
+      0;
+
+    var weapon  = weaponProgression[progress];
+    var allowed = new HashSet<string> { weapon, "weapon_knife" };
+
+    return allowed.Union(Tag.UTILITY).ToHashSet();
+  }
+
+  private void disableWeapon(CCSPlayerController player,
+    ICollection<string> allowed) {
+    if (!player.IsReal()) return;
+    var pawn = player.PlayerPawn.Value;
+    if (pawn == null || !pawn.IsValid) return;
+    var weaponServices = pawn.WeaponServices;
+    if (weaponServices == null) return;
+    var activeWeapon = weaponServices.ActiveWeapon.Value;
+    if (activeWeapon == null || !activeWeapon.IsValid) return;
+    if (allowed.Contains(activeWeapon.DesignerName)) return;
+    activeWeapon.NextSecondaryAttackTick = Server.TickCount + 500;
+    activeWeapon.NextPrimaryAttackTick   = Server.TickCount + 500;
+  }
+
+  public class GunGameSettings : SpecialDaySettings {
+    public GunGameSettings() {
       CtTeleport                              = TeleportType.RANDOM;
       TTeleport                               = TeleportType.RANDOM;
       FreezePlayers                           = false;
@@ -204,14 +227,6 @@ public class GunGameDay : AbstractSpecialDay, ISpecialDayMessageProvider {
       RestrictWeapons                         = true;
       WithFriendlyFire();
       WithRespawns();
-    }
-
-    public override ISet<string>? AllowedWeapons(CCSPlayerController player) {
-      var progress =
-        day.progressions.TryGetValue(player.Slot, out var p) ? p : 0;
-      var weapon  = day.weaponProgression[progress];
-      var allowed = new HashSet<string> { weapon, "weapon_knife" };
-      return allowed.Union(Tag.UTILITY).ToHashSet();
     }
   }
 }
