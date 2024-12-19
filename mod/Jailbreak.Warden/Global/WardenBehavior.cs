@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Text.Json;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
@@ -149,7 +150,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       Server.NextFrameAsync(async () => {
         oldTag      = await API.Actain.getTagService().GetTag(steam);
         oldTagColor = await API.Actain.getTagService().GetTagColor(steam);
-        Server.NextFrame(() => {
+        await Server.NextFrameAsync(() => {
           if (!Warden.IsValid) return;
           API.Actain.getTagService().SetTag(Warden, "[WARDEN]", false);
           API.Actain.getTagService()
@@ -299,19 +300,25 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     if (player == null || !player.IsValid) return HookResult.Continue;
     var isWarden = ((IWardenService)this).IsWarden(player);
     if (API.Gangs != null) {
+      PlayerWrapper? wardenWrapper = null;
       if (ev.Attacker != null && ev.Attacker.IsValid && ev.Attacker != player
-        && isWarden) {
-        var wrapper = new PlayerWrapper(ev.Attacker);
-        Task.Run(async () => await incrementWardenKills(wrapper));
-      }
+        && isWarden)
+        wardenWrapper = new PlayerWrapper(ev.Attacker);
 
-      foreach (var guard in PlayerUtil.FromTeam(CsTeam.CounterTerrorist)) {
-        var wrapper = new PlayerWrapper(guard);
-        // If the guard is the warden, update all guards' stats
-        // If the guard is not the warden, only update the warden's stats
-        if (guard.SteamID == player.SteamID == isWarden) continue;
-        Task.Run(async () => await updateGuardDeathStats(wrapper, isWarden));
-      }
+      var wardenSteam = player.SteamID;
+      var toDecrement = PlayerUtil.FromTeam(CsTeam.CounterTerrorist)
+       .Where(p => p.IsReal() && !p.IsBot)
+       .Select(p => new PlayerWrapper(p));
+      Task.Run(async () => {
+        if (wardenWrapper != null) await incrementWardenKills(wardenWrapper);
+        foreach (var guard in toDecrement) {
+          // var wrapper = new PlayerWrapper(guard);
+          // If the guard is the warden, update all guards' stats
+          // If the guard is not the warden, only update the warden's stats
+          if (guard.Steam == wardenSteam == isWarden) continue;
+          await updateGuardDeathStats(guard, isWarden);
+        }
+      });
     }
 
     if (!isWarden) return HookResult.Continue;
@@ -319,6 +326,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     API.Stats?.PushStat(new ServerStat("JB_WARDEN_DEATH"));
 
     mute.UnPeaceMute();
+
     processWardenDeath();
     return HookResult.Continue;
   }
