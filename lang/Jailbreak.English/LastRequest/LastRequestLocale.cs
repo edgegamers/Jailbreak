@@ -14,8 +14,7 @@ namespace Jailbreak.English.LastRequest;
 public class LastRequestLocale : ILRLocale,
   ILanguage<Formatting.Languages.English> {
   public static readonly FormatObject PREFIX =
-    new HiddenFormatObject(
-      $" {ChatColors.Green}[{ChatColors.Lime}LR{ChatColors.Green}]") {
+    new HiddenFormatObject($" {ChatColors.LightBlue}LR>") {
       //	Hide in panorama and center text
       Plain = false, Panorama = false, Chat = true
     };
@@ -24,24 +23,19 @@ public class LastRequestLocale : ILRLocale,
     return new SimpleView {
       {
         PREFIX,
-        $"Last Request activated. {ChatColors.Grey}Type {ChatColors.LightBlue}!lr{ChatColors.Grey} to start a last request."
+        $"Last Request activated. Type {ChatColors.BlueGrey}!lr{ChatColors.Grey} to start a last request."
       }
     };
   }
 
   public IView LastRequestDisabled() {
     return new SimpleView {
-      {
-        PREFIX,
-        $"{ChatColors.Grey}Last Request {ChatColors.Red}disabled{ChatColors.Grey}."
-      }
+      { PREFIX, $"Last Request {ChatColors.Red}disabled{ChatColors.Grey}." }
     };
   }
 
   public IView LastRequestNotEnabled() {
-    return new SimpleView {
-      { PREFIX, $"{ChatColors.Red}Last Request is not enabled." }
-    };
+    return new SimpleView { { PREFIX, $"Last Request is not enabled." } };
   }
 
   public IView InvalidLastRequest(string query) {
@@ -52,22 +46,16 @@ public class LastRequestLocale : ILRLocale,
     return new SimpleView {
       PREFIX,
       lr.Prisoner,
-      ChatColors.Grey + "is starting a",
+      "is starting a",
       ChatColors.White + lr.Type.ToFriendlyString(),
-      ChatColors.Grey + "LR against",
-      lr.Guard
+      "LR against",
+      lr.Guard,
+      "."
     };
   }
 
   public IView AnnounceLastRequest(AbstractLastRequest lr) {
-    return new SimpleView {
-      PREFIX,
-      lr.Prisoner,
-      "is doing a",
-      lr.Type.ToFriendlyString(),
-      "Last Request against",
-      lr.Guard
-    };
+    return InformLastRequest(lr);
   }
 
   public IView LastRequestDecided(AbstractLastRequest lr, LRResult result) {
@@ -102,16 +90,16 @@ public class LastRequestLocale : ILRLocale,
   public IView CannotLR(string reason) {
     return new SimpleView {
       PREFIX,
-      $"{ChatColors.Red}You cannot LR: {ChatColors.White + reason + ChatColors.Red}."
+      $"You cannot LR, {ChatColors.BlueGrey + reason + ChatColors.Grey}."
     };
   }
 
   public IView CannotLR(CCSPlayerController player, string reason) {
     return new SimpleView {
       PREFIX,
-      ChatColors.Red + "You cannot LR",
+      "You cannot LR",
       player,
-      ": " + ChatColors.White + reason + ChatColors.Red + "."
+      ", " + ChatColors.BlueGrey + reason + ChatColors.Red + "."
     };
   }
 

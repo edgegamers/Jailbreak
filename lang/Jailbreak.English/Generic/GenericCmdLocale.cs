@@ -11,8 +11,7 @@ namespace Jailbreak.English.Generic;
 public class GenericCmdLocale : IGenericCmdLocale,
   ILanguage<Formatting.Languages.English> {
   private static readonly FormatObject PREFIX =
-    new HiddenFormatObject(
-      $" {ChatColors.DarkRed}[{ChatColors.LightRed}JB{ChatColors.DarkRed}]") {
+    new HiddenFormatObject($" {ChatColors.LightBlue}Server>") {
       //	Hide in panorama and center text
       Plain = false, Panorama = false, Chat = true
     };
@@ -20,14 +19,14 @@ public class GenericCmdLocale : IGenericCmdLocale,
   public IView PlayerNotFound(string query) {
     return new SimpleView {
       PREFIX,
-      $"{ChatColors.Red}Player '{ChatColors.LightBlue}{query}{ChatColors.Red}' not found."
+      $"Player '{ChatColors.BlueGrey}{query}{ChatColors.Grey}' not found."
     };
   }
 
   public IView PlayerFoundMultiple(string query) {
     return new SimpleView {
       PREFIX,
-      $"{ChatColors.Red}Multiple players found for '{ChatColors.LightBlue}{query}{ChatColors.Red}'."
+      $"Multiple players found for '{ChatColors.BlueGrey}{query}{ChatColors.Grey}'."
     };
   }
 
@@ -35,31 +34,31 @@ public class GenericCmdLocale : IGenericCmdLocale,
     var seconds = (int)(cooldownEndsAt - DateTime.Now).TotalSeconds;
     return new SimpleView {
       PREFIX,
-      $"{ChatColors.Grey}Command is on cooldown for",
+      "Command is on cooldown for",
       seconds,
-      $"{ChatColors.Grey}second" + (seconds == 1 ? "" : "s") + "."
+      "second" + (seconds == 1 ? "" : "s") + "."
     };
   }
 
   public IView InvalidParameter(string parameter, string expected) {
     return new SimpleView {
       PREFIX,
-      $"{ChatColors.Red}Invalid parameter '{ChatColors.LightBlue}{parameter}{ChatColors.Red}',",
+      $"Invalid parameter '{ChatColors.BlueGrey}{parameter}{ChatColors.Grey}',",
       "expected a" + (expected[0].IsVowel() ? "n" : ""),
-      $"{ChatColors.White}{expected}{ChatColors.Red}."
+      $"{ChatColors.BlueGrey}{expected}{ChatColors.Grey}."
     };
   }
 
   public IView NoPermissionMessage(string permission) {
     return new SimpleView {
       PREFIX,
-      $"{ChatColors.DarkRed}This requires the {ChatColors.White}{permission}{ChatColors.Red} permission."
+      $"This requires the {ChatColors.BlueGrey}{permission}{ChatColors.Grey} permission."
     };
   }
 
   public IView Error(string message) {
     return new SimpleView {
-      PREFIX, $"{ChatColors.Red}An error occurred: {ChatColors.White}{message}"
+      PREFIX, $"An error occurred: {ChatColors.Red}{message}{ChatColors.Grey}."
     };
   }
 }

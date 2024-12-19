@@ -24,7 +24,7 @@ public class SimpleView : IView, IEnumerable<IList<FormatObject>> {
   /// </summary>
   /// <param name="item"></param>
   public void Add(FormatObject item) {
-    if (lines.Count == 0) lines.Add(new List<FormatObject>());
+    if (lines.Count == 0) lines.Add([]);
 
     lines[lines.Count - 1].Add(item);
   }
@@ -34,7 +34,7 @@ public class SimpleView : IView, IEnumerable<IList<FormatObject>> {
   /// </summary>
   /// <param name="line"></param>
   public void Add(params FormatObject[] line) {
-    if (lines.Count == 0) lines.Add(new List<FormatObject>());
+    if (lines.Count == 0) lines.Add([]);
 
     lines[lines.Count - 1].AddRange(line);
   }
@@ -43,7 +43,7 @@ public class SimpleView : IView, IEnumerable<IList<FormatObject>> {
   ///   Add a new line to this SimpleView
   /// </summary>
   /// <param name="newline"></param>
-  public void Add(Newline newline) { lines.Add(new List<FormatObject>()); }
+  public void Add(Newline newline) { lines.Add([]); }
 
   public struct Newline { }
 }

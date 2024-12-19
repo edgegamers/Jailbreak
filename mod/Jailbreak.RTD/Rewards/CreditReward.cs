@@ -3,16 +3,16 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using GangsAPI.Data;
 using GangsAPI.Services;
+using Jailbreak.English.RTD;
+using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views.RTD;
 using Jailbreak.Public;
 using Jailbreak.Public.Mod.RTD;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.RTD.Rewards;
 
-public class CreditReward(int credits) : IRTDReward {
-  public static readonly string PREFIX =
-    $" {ChatColors.Purple}[{ChatColors.LightPurple}RTD{ChatColors.Purple}]";
-
+public class CreditReward(int credits, IRTDLocale locale) : IRTDReward {
   public string Name => $"{credits} credit{(credits == 1 ? "" : "s")}";
 
   public string Description => $"You won {Name}{(credits > 500 ? "!" : ".")}";
@@ -26,8 +26,7 @@ public class CreditReward(int credits) : IRTDReward {
     Task.Run(async () => await eco.Grant(wrapper, credits, true, "RTD"));
 
     if (Math.Abs(credits) >= 5000)
-      Server.PrintToChatAll(
-        $"{PREFIX} {ChatColors.Yellow}{wrapper.Name} {ChatColors.Default}won the jackpot of {ChatColors.Green}{credits} {ChatColors.Default}credits!");
+      locale.JackpotReward(player, credits).ToAllChat();
 
     return true;
   }

@@ -29,9 +29,9 @@ public class MuteSystem(IServiceProvider provider)
   public void PeaceMute(MuteReason reason) {
     var duration   = getPeaceDuration(reason);
     var ctDuration = Math.Min(10, duration);
-    foreach (var player in Utilities.GetPlayers())
-      if (!warden!.IsWarden(player))
-        mute(player);
+    foreach (var player in Utilities.GetPlayers()
+     .Where(player => !warden!.IsWarden(player)))
+      mute(player);
 
     switch (reason) {
       case MuteReason.ADMIN:
@@ -101,7 +101,7 @@ public class MuteSystem(IServiceProvider provider)
       }))
       unmute(player);
 
-    messages!.UnmutedGuards.ToAllChat();
+    if (guardTimer != null) messages!.UnmutedGuards.ToAllChat();
     guardTimer = null;
   }
 
@@ -110,7 +110,7 @@ public class MuteSystem(IServiceProvider provider)
      .Where(player => player is { Team: CsTeam.Terrorist, PawnIsAlive: true }))
       unmute(player);
 
-    messages!.UnmutedPrisoners.ToAllChat();
+    if (prisonerTimer != null) messages!.UnmutedPrisoners.ToAllChat();
     prisonerTimer = null;
   }
 

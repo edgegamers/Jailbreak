@@ -10,8 +10,7 @@ namespace Jailbreak.English.Rebel;
 public class RebelLocale : IRebelLocale,
   ILanguage<Formatting.Languages.English> {
   public static readonly FormatObject PREFIX =
-    new HiddenFormatObject(
-      $" {ChatColors.DarkRed}[{ChatColors.LightRed}Rebel{ChatColors.DarkRed}]") {
+    new HiddenFormatObject($" {ChatColors.LightBlue}Game>") {
       //	Hide in panorama and center text
       Plain = false, Panorama = false, Chat = true
     };
