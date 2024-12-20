@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
+using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using Gangs.BaseImpl.Stats;
 using GangsAPI.Data;
@@ -70,69 +71,73 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
   private List<CCSPlayerController> lastGuardPrisoners = [];
   public bool IsLastGuardActive { get; private set; }
 
-  public void StartLastGuard(CCSPlayerController lastGuard) {
-    var guardPlayerPawn = lastGuard.PlayerPawn.Value;
+    public void StartLastGuard(CCSPlayerController lastGuard)
+    {
+        var guardPlayerPawn = lastGuard.PlayerPawn.Value;
 
-    if (guardPlayerPawn == null || !guardPlayerPawn.IsValid) return;
+        if (guardPlayerPawn == null || !guardPlayerPawn.IsValid) return;
 
-    IsLastGuardActive = true;
+        IsLastGuardActive = true;
 
-    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
-    if (stats != null)
-      foreach (var player in PlayerUtil.GetAlive()) {
-        var wrapper = new PlayerWrapper(player);
-        Task.Run(async () => {
-          var (success, stat) =
-            await stats.GetForPlayer<LGData>(wrapper, LGStat.STAT_ID);
-          if (!success || stat == null) stat = new LGData();
-          if (wrapper.Team == CsTeam.CounterTerrorist)
-            stat.CtLgs++;
-          else
-            stat.TLgs++;
-          await stats.SetForPlayer(wrapper, LGStat.STAT_ID, stat);
-        });
-      }
+        var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
 
-    API.Stats?.PushStat(new ServerStat("JB_LASTGUARD",
-      lastGuard.SteamID.ToString()));
+        if (stats != null)
 
-    var calculated = calculateHealth();
+        foreach (var player in PlayerUtil.GetAlive())
+        {
+            var wrapper = new PlayerWrapper(player);
+            Task.Run(async () => {
+                var (success, stat) =
+                    await stats.GetForPlayer<LGData>(wrapper, LGStat.STAT_ID);
+                if (!success || stat == null) stat = new LGData();
+                if (wrapper.Team == CsTeam.CounterTerrorist)
+                    stat.CtLgs++;
+                else
+                    stat.TLgs++;
+                await stats.SetForPlayer(wrapper, LGStat.STAT_ID, stat);
+            });
+        }
 
-    if (calculated < guardPlayerPawn.Health && !CV_ALWAYS_OVERRIDE_CT.Value) {
-      if (guardPlayerPawn.Health > CV_MAX_CT_HEALTH.Value)
-        guardPlayerPawn.Health = CV_MAX_CT_HEALTH.Value;
-    } else { guardPlayerPawn.Health = calculated; }
+        API.Stats?.PushStat(new ServerStat("JB_LASTGUARD", lastGuard.SteamID.ToString()));
 
-    Utilities.SetStateChanged(guardPlayerPawn, "CBaseEntity", "m_iHealth");
+        var calculated = calculateHealth();
 
-    // foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal()))
-    //     player.ExecuteClientCommand("play sounds/lastct");
+        if (calculated < guardPlayerPawn.Health && !CV_ALWAYS_OVERRIDE_CT.Value)
+        {
+            if (guardPlayerPawn.Health > CV_MAX_CT_HEALTH.Value)
+                guardPlayerPawn.Health = CV_MAX_CT_HEALTH.Value;
+        }
 
-    lastGuardPrisoners = Utilities.GetPlayers()
-     .Where(p => p is { PawnIsAlive: true, Team: CsTeam.Terrorist })
-     .ToList();
+        else { guardPlayerPawn.Health = calculated; }
 
-    if (CV_LG_BASE_ROUND_TIME.Value != 0)
-      RoundUtil.SetTimeRemaining(Math.Min(CV_LG_BASE_ROUND_TIME.Value,
-        CV_LG_MAX_TIME.Value));
-    addRoundTimeCapped(CV_LG_PER_PRISONER_TIME.Value * lastGuardPrisoners.Count,
-      CV_LG_MAX_TIME.Value);
+        Utilities.SetStateChanged(guardPlayerPawn, "CBaseEntity", "m_iHealth");
 
-    var prisonerHp =
-      lastGuardPrisoners.Sum(prisoner
-        => prisoner.PlayerPawn.Value?.Health ?? 0);
+        lastGuardPrisoners = Utilities.GetPlayers().Where(p => p is { PawnIsAlive: true, Team: CsTeam.Terrorist }).ToList();
 
-    notifications.LGStarted(lastGuard, guardPlayerPawn.Health, prisonerHp)
-     .ToAllCenter()
-     .ToAllChat();
+        if (CV_LG_BASE_ROUND_TIME.Value == 0)
+        {
+            notifications.LGStarted(lastGuard, guardPlayerPawn.Health, 0).ToAllCenter().ToAllChat();
 
-    foreach (var player in lastGuardPrisoners) rebel.MarkRebel(player);
+            RoundUtil.SetTimeRemaining(1);
 
-    if (string.IsNullOrEmpty(CV_LG_WEAPON.Value)) return;
+            return;
+        }
 
-    foreach (var player in lastGuardPrisoners)
-      player.GiveNamedItem(CV_LG_WEAPON.Value);
-  }
+        RoundUtil.SetTimeRemaining(Math.Min(CV_LG_BASE_ROUND_TIME.Value, CV_LG_MAX_TIME.Value));
+
+        addRoundTimeCapped(CV_LG_PER_PRISONER_TIME.Value * lastGuardPrisoners.Count, CV_LG_MAX_TIME.Value);
+
+        var prisonerHp = lastGuardPrisoners.Sum(prisoner => prisoner.PlayerPawn.Value?.Health ?? 0);
+
+        notifications.LGStarted(lastGuard, guardPlayerPawn.Health, prisonerHp).ToAllCenter().ToAllChat();
+
+        foreach (var player in lastGuardPrisoners) rebel.MarkRebel(player);
+
+        if (string.IsNullOrEmpty(CV_LG_WEAPON.Value)) 
+            return;
+
+        foreach (var player in lastGuardPrisoners) player.GiveNamedItem(CV_LG_WEAPON.Value);
+    }
 
   public void DisableLastGuardForRound() { canStart = false; }
 
@@ -208,6 +213,7 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
     private void checkLastGuard(CCSPlayerController? poi)
     {
         if (poi == null) return;
+
         if (IsLastGuardActive) return;
 
         lastGuardPrisoners.Remove(poi);
