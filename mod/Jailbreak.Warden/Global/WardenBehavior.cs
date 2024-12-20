@@ -302,8 +302,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     var isWarden = ((IWardenService)this).IsWarden(player);
     if (API.Gangs != null) {
       PlayerWrapper? attackerWrapper = null;
-      if (ev.Attacker != null && ev.Attacker.IsValid && ev.Attacker != player
-        && isWarden)
+      if (ev.Attacker != null && ev.Attacker.IsValid && ev.Attacker != player)
         attackerWrapper = new PlayerWrapper(ev.Attacker);
 
       var wardenSteam = player.SteamID;
@@ -313,7 +312,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       var eco = API.Gangs.Services.GetService<IEcoManager>();
       Task.Run(async () => {
         if (attackerWrapper != null) {
-          await incrementWardenKills(attackerWrapper);
+          if (isWarden) await incrementWardenKills(attackerWrapper);
           if (eco != null) {
             var giveReason = (isWarden ? "Warden" : "Guard") + " Kill";
             var giveAmo    = isWarden ? 25 : 10;

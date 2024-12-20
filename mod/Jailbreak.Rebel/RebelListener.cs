@@ -39,11 +39,15 @@ public class RebelListener(IRebelService rebelService,
     if (player.Team != CsTeam.Terrorist) return HookResult.Continue;
     if (!rebelService.IsRebel(player)) return HookResult.Continue;
 
-    var eco = API.Gangs?.Services.GetService<IEcoManager>();
+    var attacker = ev.Attacker;
 
+    if (attacker == null || !attacker.IsValid || attacker.IsBot)
+      return HookResult.Continue;
+
+    var eco = API.Gangs?.Services.GetService<IEcoManager>();
     if (eco == null) return HookResult.Continue;
 
-    var wrapper = new PlayerWrapper(player);
+    var wrapper = new PlayerWrapper(attacker);
     var hasGun  = playerHasGun(player);
 
     Task.Run(async ()
