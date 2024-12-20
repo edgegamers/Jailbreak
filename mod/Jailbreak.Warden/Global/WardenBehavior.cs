@@ -211,10 +211,10 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
         var guardPawn = guardController.PlayerPawn.Value;
         if (guardPawn == null) continue;
 
-        guardPawn.ArmorValue = ctArmorValue;
+        guardPawn.ArmorValue = ctArmorValue < guard.ArmorValue ? guard.ArmorValue : ctArmorValue;
         Utilities.SetStateChanged(guardPawn, "CCSPlayerPawn", "m_ArmorValue");
       }
-
+    
       setWardenStats(wardenPawn, CV_WARDEN_ARMOR.Value, CV_WARDEN_HEALTH.Value,
         CV_WARDEN_MAX_HEALTH.Value);
       if (!hasHealthshot) Warden.GiveNamedItem("weapon_healthshot");
