@@ -29,4 +29,9 @@ public interface ILRLocale {
   public IView WinByHealth(CCSPlayerController player);
   public IView WinByReason(CCSPlayerController player, string reason);
   public IView Win(CCSPlayerController player);
+  
+  public IView LastRequestRebel(CCSPlayerController player, int tHealth);
+  public IView LastRequestRebelDisabled();
+  public IView CannotLastRequestRebelT();
+  public IView CannotLastRequestRebelCt();
 }
