@@ -205,26 +205,32 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
     return false;
   }
 
-  private void checkLastGuard(CCSPlayerController? poi) {
-    if (poi == null) return;
-    if (IsLastGuardActive) return;
-    lastGuardPrisoners.Remove(poi);
-    if (poi.Team != CsTeam.CounterTerrorist) return;
-    var aliveCts = Utilities.GetPlayers()
-     .Count(plr => plr.SteamID != poi.SteamID && plr is {
-        PawnIsAlive: true, Team: CsTeam.CounterTerrorist
-      });
+    private void checkLastGuard(CCSPlayerController? poi)
+    {
+        if (poi == null) return;
+        if (IsLastGuardActive) return;
 
-    if (aliveCts != 1 || lrManager.IsLREnabled) return;
-    var lastGuard = Utilities.GetPlayers()
-     .First(plr => plr != poi && plr is {
-        PawnIsAlive: true, Team: CsTeam.CounterTerrorist
-      });
+        lastGuardPrisoners.Remove(poi);
 
-    if (canStart) StartLastGuard(lastGuard);
-  }
+        if (poi.Team != CsTeam.CounterTerrorist) return;
 
-  [GameEventHandler]
+        var totalCts = Utilities.GetPlayers().Count(plr => plr.Team == CsTeam.CounterTerrorist);
+        var aliveCts = Utilities.GetPlayers().Count(plr => plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist });
+
+        if (totalCts >= 4 && aliveCts == 1 && !lrManager.IsLREnabled)
+        {
+            var lastGuard = Utilities.GetPlayers()
+
+            .FirstOrDefault(plr => plr is
+            {
+                PawnIsAlive: true, Team: CsTeam.CounterTerrorist
+            });
+
+            if (lastGuard != null && canStart) StartLastGuard(lastGuard);
+        }
+    }
+
+    [GameEventHandler]
   public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
     IsLastGuardActive = false;
     return HookResult.Continue;
