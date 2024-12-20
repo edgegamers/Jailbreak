@@ -12,6 +12,7 @@ using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
+using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastGuard;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.Rebel;
@@ -77,21 +78,24 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
 
     IsLastGuardActive = true;
 
-    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
-    if (stats != null)
-      foreach (var player in PlayerUtil.GetAlive()) {
-        var wrapper = new PlayerWrapper(player);
-        Task.Run(async () => {
+    var gangStats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (gangStats != null) {
+      var players = PlayerUtil.GetAlive()
+       .Where(p => p.IsReal() && !p.IsBot)
+       .Select(p => new PlayerWrapper(p));
+      Task.Run(async () => {
+        foreach (var wrapper in players) {
           var (success, stat) =
-            await stats.GetForPlayer<LGData>(wrapper, LGStat.STAT_ID);
+            await gangStats.GetForPlayer<LGData>(wrapper, LGStat.STAT_ID);
           if (!success || stat == null) stat = new LGData();
           if (wrapper.Team == CsTeam.CounterTerrorist)
             stat.CtLgs++;
           else
             stat.TLgs++;
-          await stats.SetForPlayer(wrapper, LGStat.STAT_ID, stat);
-        });
-      }
+          await gangStats.SetForPlayer(wrapper, LGStat.STAT_ID, stat);
+        }
+      });
+    }
 
     API.Stats?.PushStat(new ServerStat("JB_LASTGUARD",
       lastGuard.SteamID.ToString()));

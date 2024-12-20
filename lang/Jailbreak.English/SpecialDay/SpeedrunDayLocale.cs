@@ -39,7 +39,7 @@ public class SpeedrunDayLocale() : SoloDayLocale("Speedrunners",
       return new SimpleView {
         {
           PREFIX,
-          $"Round {ChatColors.Yellow}#{round}{ChatColors.Default} begins! The slowest",
+          $"Round{ChatColors.Yellow}#{round}{ChatColors.Grey} begins! The slowest",
           "player to reach the goal will be eliminated!"
         },
         SimpleView.NEWLINE,
@@ -49,7 +49,7 @@ public class SpeedrunDayLocale() : SoloDayLocale("Speedrunners",
     return new SimpleView {
       {
         PREFIX,
-        $"Round {ChatColors.Yellow}#{round}{ChatColors.Default} begins! The slowest",
+        $"Round {ChatColors.Yellow}#{round}{ChatColors.Grey} begins! The slowest",
         eliminationCount, "players to reach the goal will be eliminated!"
       },
       SimpleView.NEWLINE,
