@@ -211,7 +211,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
         var guardPawn = guardController.PlayerPawn.Value;
         if (guardPawn == null) continue;
 
-        guardPawn.ArmorValue = ctArmorValue < guard.ArmorValue ? guard.ArmorValue : ctArmorValue;
+        guardPawn.ArmorValue = ctArmorValue < guardPawn.ArmorValue ? guardPawn.ArmorValue : ctArmorValue;
         Utilities.SetStateChanged(guardPawn, "CCSPlayerPawn", "m_ArmorValue");
       }
     
