@@ -24,7 +24,6 @@ public class CreditReward(int credits, IRTDLocale locale) : IRTDReward {
     if (eco == null) return false;
     var wrapper = new PlayerWrapper(player);
 
-
     if (Math.Abs(credits) >= 5000)
       locale.JackpotReward(player, credits).ToAllChat();
 

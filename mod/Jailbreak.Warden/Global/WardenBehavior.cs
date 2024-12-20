@@ -13,6 +13,7 @@ using GangsAPI.Services.Player;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.Logging;
 using Jailbreak.Formatting.Views.Warden;
+using Jailbreak.LastRequest;
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
@@ -313,7 +314,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       Task.Run(async () => {
         if (attackerWrapper != null) {
           if (isWarden) await incrementWardenKills(attackerWrapper);
-          if (eco != null) {
+          if (LastRequestManager.shouldGrantCredits() && eco != null) {
             var giveReason = (isWarden ? "Warden" : "Guard") + " Kill";
             var giveAmo    = isWarden ? 50 : 20;
             await eco.Grant(attackerWrapper, giveAmo, true, giveReason);
@@ -353,8 +354,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     });
   }
 
-  private async Task
-    updateGuardDeathStats(PlayerWrapper player, bool isWarden) {
+  private async Task updateGuardDeathStats(PlayerWrapper player,
+    bool isWarden) {
     var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
     if (stats == null) return;
 

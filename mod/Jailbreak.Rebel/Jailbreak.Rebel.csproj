@@ -10,6 +10,7 @@
         <ProjectReference Include="..\..\public\Jailbreak.Formatting\Jailbreak.Formatting.csproj"/>
         <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj"/>
         <ProjectReference Include="..\Gangs.BombIconPerk\Gangs.BombIconPerk.csproj"/>
+        <ProjectReference Include="..\Jailbreak.LastRequest\Jailbreak.LastRequest.csproj" />
     </ItemGroup>
 
     <ItemGroup>
