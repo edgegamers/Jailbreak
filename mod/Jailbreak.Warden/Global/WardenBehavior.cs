@@ -298,19 +298,29 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   public HookResult OnDeath(EventPlayerDeath ev, GameEventInfo info) {
     var player = ev.Userid;
     if (player == null || !player.IsValid) return HookResult.Continue;
+    if (player.Team != CsTeam.CounterTerrorist) return HookResult.Continue;
     var isWarden = ((IWardenService)this).IsWarden(player);
     if (API.Gangs != null) {
-      PlayerWrapper? wardenWrapper = null;
+      var            eco = API.Gangs.Services.GetService<IEcoManager>();
+      PlayerWrapper? attackerWrapper = null;
       if (ev.Attacker != null && ev.Attacker.IsValid && ev.Attacker != player
         && isWarden)
-        wardenWrapper = new PlayerWrapper(ev.Attacker);
+        attackerWrapper = new PlayerWrapper(ev.Attacker);
 
       var wardenSteam = player.SteamID;
       var toDecrement = PlayerUtil.FromTeam(CsTeam.CounterTerrorist)
        .Where(p => p.IsReal() && !p.IsBot)
        .Select(p => new PlayerWrapper(p));
       Task.Run(async () => {
-        if (wardenWrapper != null) await incrementWardenKills(wardenWrapper);
+        if (attackerWrapper != null) {
+          await incrementWardenKills(attackerWrapper);
+          if (eco != null) {
+            var giveReason = (isWarden ? "Warden" : "Guard") + " Kill";
+            var giveAmo    = isWarden ? 25 : 10;
+            await eco.Grant(attackerWrapper, giveAmo, true, giveReason);
+          }
+        }
+
         foreach (var guard in toDecrement) {
           // var wrapper = new PlayerWrapper(guard);
           // If the guard is the warden, update all guards' stats
