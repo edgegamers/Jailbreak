@@ -23,11 +23,12 @@ public class CreditReward(int credits, IRTDLocale locale) : IRTDReward {
     var eco = API.Gangs?.Services.GetService<IEcoManager>();
     if (eco == null) return false;
     var wrapper = new PlayerWrapper(player);
-    Task.Run(async () => await eco.Grant(wrapper, credits, true, "RTD"));
+
 
     if (Math.Abs(credits) >= 5000)
       locale.JackpotReward(player, credits).ToAllChat();
 
+    Task.Run(async () => await eco.Grant(wrapper, credits, true, "RTD"));
     return true;
   }
 
