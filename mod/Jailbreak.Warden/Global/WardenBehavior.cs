@@ -315,7 +315,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
           if (isWarden) await incrementWardenKills(attackerWrapper);
           if (eco != null) {
             var giveReason = (isWarden ? "Warden" : "Guard") + " Kill";
-            var giveAmo    = isWarden ? 25 : 10;
+            var giveAmo    = isWarden ? 50 : 20;
             await eco.Grant(attackerWrapper, giveAmo, true, giveReason);
           }
         }
