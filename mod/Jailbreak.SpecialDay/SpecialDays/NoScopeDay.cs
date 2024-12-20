@@ -14,7 +14,7 @@ using Jailbreak.Validator;
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
-  : AbstractSpecialDay(plugin, provider) {
+  : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
   public static readonly FakeConVar<string> CV_WEAPON = new(
     "jb_sd_noscope_weapon",
     "Weapon to give to all players, recommended it be a weapon with a scope (duh)",
