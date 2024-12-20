@@ -336,7 +336,6 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     API.Stats?.PushStat(new ServerStat("JB_WARDEN_DEATH"));
 
     mute.UnPeaceMute();
-
     processWardenDeath();
     return HookResult.Continue;
   }
