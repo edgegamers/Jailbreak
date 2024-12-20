@@ -130,9 +130,9 @@ public class LastRequestLocale : ILRLocale,
     => new SimpleView {
       PREFIX, "You are not in the same LR as them, damage blocked."
     };
-  
+
   public IView LastRequestRebel(CCSPlayerController player, int tHealth) {
-    return new SimpleView { PREFIX, player, $"with {ChatColors.Yellow}{tHealth} {ChatColors.Red}HP has decided to {ChatColors.DarkRed}rebel!" };
+    return new SimpleView { PREFIX, player, $"{ChatColors.LightRed}has decided to {ChatColors.DarkRed}LR Rebel {ChatColors.LightRed}with", tHealth, $"{ChatColors.LightRed}HP!"};
   }  
   
   public IView LastRequestRebelDisabled() {
@@ -142,8 +142,11 @@ public class LastRequestLocale : ILRLocale,
   public IView CannotLastRequestRebelT() {
     return new SimpleView { PREFIX, "You are already rebelling in the last request." };
   }
+  public IView CannotLastRequestRebelTActive() {
+    return new SimpleView { PREFIX, "You are in an active LR, cannot LR rebel." };
+  }
   
   public IView CannotLastRequestRebelCt() {
-    return new SimpleView { PREFIX, "You can not rebel as a CT during the last request." };
+    return new SimpleView { PREFIX, "You cannot rebel as a CT during the last request." };
   }
 }
