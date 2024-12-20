@@ -5,17 +5,20 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
+using CounterStrikeSharp.API.Modules.Entities;
+using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
+using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Validator;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestRebelCommand(ILastRequestManager manager,
+public class LastRequestRebelCommand(IRebelService rebelService, ILastRequestManager manager,
   ILRLocale messages) : IPluginBehavior {
   private readonly HashSet<int> players_rebelling = new HashSet<int>();
 
@@ -69,6 +72,11 @@ public class LastRequestRebelCommand(ILastRequestManager manager,
       return;
     }
 
+    if (manager.IsInLR(rebeller)) {
+      messages.CannotLastRequestRebelTActive().ToChat(rebeller);
+      return;
+    }
+
     if (players_rebelling.Contains(rebeller.Slot)) {
       messages.CannotLastRequestRebelT().ToChat(rebeller);
       return;
@@ -80,9 +88,11 @@ public class LastRequestRebelCommand(ILastRequestManager manager,
       if (rebellerPlayerPawn.Health > CV_MAX_T_HEALTH.Value)
         rebellerPlayerPawn.Health = CV_MAX_T_HEALTH.Value;
     } else { rebellerPlayerPawn.Health = calculated; }
-
-    players_rebelling.Add(rebeller.Slot);
+    
+    MenuManager.CloseActiveMenu(rebeller);
     messages.LastRequestRebel(rebeller, rebellerPlayerPawn.Health).ToAllChat();
+    players_rebelling.Add(rebeller.Slot);
+    rebelService.MarkRebel(rebeller);
     rebeller.SetColor(Color.Red);
     rebeller.RemoveWeapons();
     rebeller.GiveNamedItem(CV_REBEL_WEAPON.Value);
