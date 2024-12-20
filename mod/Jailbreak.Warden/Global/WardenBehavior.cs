@@ -301,7 +301,6 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     if (player.Team != CsTeam.CounterTerrorist) return HookResult.Continue;
     var isWarden = ((IWardenService)this).IsWarden(player);
     if (API.Gangs != null) {
-      var            eco = API.Gangs.Services.GetService<IEcoManager>();
       PlayerWrapper? attackerWrapper = null;
       if (ev.Attacker != null && ev.Attacker.IsValid && ev.Attacker != player
         && isWarden)
@@ -311,6 +310,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       var toDecrement = PlayerUtil.FromTeam(CsTeam.CounterTerrorist)
        .Where(p => p.IsReal() && !p.IsBot)
        .Select(p => new PlayerWrapper(p));
+      var eco = API.Gangs.Services.GetService<IEcoManager>();
       Task.Run(async () => {
         if (attackerWrapper != null) {
           await incrementWardenKills(attackerWrapper);
