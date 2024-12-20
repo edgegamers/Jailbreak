@@ -92,7 +92,7 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
       var value  = await cookie.Get(steam);
       var enable = value is not (null or "Y");
       await cookie.Set(steam, enable ? "Y" : "N");
-      Server.NextFrame(() => {
+      await Server.NextFrameAsync(() => {
         if (!executor.IsValid) return;
         locale.AutoRTDToggled(enable).ToChat(executor);
         cachedCookies[steam] = enable;
