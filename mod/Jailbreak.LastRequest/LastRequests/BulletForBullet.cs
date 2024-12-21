@@ -3,6 +3,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Timers;
+using CounterStrikeSharp.API.Modules.Cvars;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public.Extensions;
@@ -20,7 +21,7 @@ public class BulletForBullet : TeleportingRequest {
   private int? whosShot, magSize;
   public static readonly FakeConVar<bool> KILL_BY_HEALTH = new(
     "css_jb_lr_b4b_kill_by_health",
-    "If true, the player with the lowest health will die after 60 seconds.");
+    "If true, the player with the lowest health will die after 60 seconds.", true);
 
   public BulletForBullet(BasePlugin plugin, IServiceProvider provider,
     CCSPlayerController prisoner, CCSPlayerController guard,
