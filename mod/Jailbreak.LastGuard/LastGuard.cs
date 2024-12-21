@@ -226,7 +226,7 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
         PawnIsAlive: true, Team: CsTeam.CounterTerrorist
       });
 
-    if (canStart) StartLastGuard(lastGuard);
+    if (canStart && CV_LG_BASE_ROUND_TIME.Value != 0) StartLastGuard(lastGuard);
   }
 
   [GameEventHandler]
