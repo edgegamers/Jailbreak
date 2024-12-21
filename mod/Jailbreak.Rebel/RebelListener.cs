@@ -57,7 +57,7 @@ public class RebelListener(IRebelService rebelService,
       return HookResult.Continue;
     if (player.Team != CsTeam.Terrorist) return HookResult.Continue;
     if (!rebelService.IsRebel(player)) return HookResult.Continue;
-    if (LastRequestManager.shouldGrantCredits()) return HookResult.Continue;
+    if (!LastRequestManager.shouldGrantCredits()) return HookResult.Continue;
 
     var attacker = ev.Attacker;
     if (attacker == null || !attacker.IsValid || attacker.IsBot)
