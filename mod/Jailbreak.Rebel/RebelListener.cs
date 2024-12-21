@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
 using GangsAPI.Data;
 using GangsAPI.Services;
+using Jailbreak.LastRequest;
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
@@ -31,13 +32,13 @@ public class RebelListener(IRebelService rebelService,
 
     var weapon = "weapon_" + @event.Weapon;
     if (Tag.SNIPERS.Contains(weapon) && weapon != "weapon_ssg08")
-      weaponScores[player.Slot] = 25;
+      weaponScores[attacker.Slot] = 25;
     else if (Tag.RIFLES.Contains(weapon))
-      weaponScores[player.Slot] = 20;
+      weaponScores[attacker.Slot] = 20;
     else if (Tag.GUNS.Contains(weapon))
-      weaponScores[player.Slot] = 15;
+      weaponScores[attacker.Slot] = 15;
     else
-      weaponScores[player.Slot] = 10;
+      weaponScores[attacker.Slot] = 10;
 
     rebelService.MarkRebel(attacker);
     return HookResult.Continue;
@@ -56,9 +57,9 @@ public class RebelListener(IRebelService rebelService,
       return HookResult.Continue;
     if (player.Team != CsTeam.Terrorist) return HookResult.Continue;
     if (!rebelService.IsRebel(player)) return HookResult.Continue;
+    if (!LastRequestManager.shouldGrantCredits()) return HookResult.Continue;
 
     var attacker = ev.Attacker;
-
     if (attacker == null || !attacker.IsValid || attacker.IsBot)
       return HookResult.Continue;
 

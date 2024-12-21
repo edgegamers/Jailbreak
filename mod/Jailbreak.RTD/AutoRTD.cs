@@ -37,6 +37,8 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
   public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
     if (RoundUtil.IsWarmup()) return HookResult.Continue;
 
+    if (cookie == null) return HookResult.Continue;
+
     Server.NextFrame(() => {
       foreach (var player in Utilities.GetPlayers()
        .Where(player
@@ -44,20 +46,7 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
        .Where(player => !rewarder.HasReward(player))) {
         var steam = player.SteamID;
         if (!cachedCookies.ContainsKey(steam)) {
-          if (cookie != null) {
-            Server.NextFrameAsync(async () => {
-              var val = await cookie.Get(steam);
-              cachedCookies[steam] = val is null or "Y";
-              if (cachedCookies[steam])
-                Server.NextFrame(() => {
-                  if (!player.IsValid) return;
-                  player.ExecuteClientCommandFromServer("css_rtd");
-                });
-            });
-            continue;
-          }
-
-          cachedCookies[steam] = true;
+          Server.NextFrameAsync(async () => await populateCache(player, steam));
         }
 
         if (cachedCookies.TryGetValue(player.SteamID, out var value) && value)
@@ -66,6 +55,17 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
     });
 
     return HookResult.Continue;
+  }
+
+  private async Task populateCache(CCSPlayerController player, ulong steam) {
+    if (cookie == null) return;
+    var val = await cookie.Get(steam);
+    cachedCookies[steam] = val is null or "Y";
+    if (!cachedCookies[steam]) return;
+    await Server.NextFrameAsync(() => {
+      if (!player.IsValid) return;
+      player.ExecuteClientCommandFromServer("css_rtd");
+    });
   }
 
   [ConsoleCommand("css_autortd")]
@@ -92,7 +92,7 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
       var value  = await cookie.Get(steam);
       var enable = value is not (null or "Y");
       await cookie.Set(steam, enable ? "Y" : "N");
-      Server.NextFrame(() => {
+      await Server.NextFrameAsync(() => {
         if (!executor.IsValid) return;
         locale.AutoRTDToggled(enable).ToChat(executor);
         cachedCookies[steam] = enable;

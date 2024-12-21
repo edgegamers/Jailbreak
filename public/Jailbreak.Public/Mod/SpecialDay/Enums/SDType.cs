@@ -2,6 +2,7 @@ namespace Jailbreak.Public.Mod.SpecialDay.Enums;
 
 public enum SDType {
   CUSTOM,
+  BHOP,
   FFA,
   GUNGAME,
   GHOST,

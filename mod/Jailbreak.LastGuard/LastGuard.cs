@@ -82,7 +82,8 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
     if (gangStats != null) {
       var players = PlayerUtil.GetAlive()
        .Where(p => p.IsReal() && !p.IsBot)
-       .Select(p => new PlayerWrapper(p));
+       .Select(p => new PlayerWrapper(p))
+       .ToList();
       Task.Run(async () => {
         foreach (var wrapper in players) {
           var (success, stat) =

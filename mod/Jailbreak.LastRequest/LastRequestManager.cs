@@ -269,7 +269,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     return data;
   }
 
-  private static bool shouldGrantCredits() {
+  public static bool shouldGrantCredits() {
     if (API.Gangs == null) return false;
     return Utilities.GetPlayers().Count >= CV_MIN_PLAYERS_FOR_CREDITS.Value;
   }
