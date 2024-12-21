@@ -13,11 +13,13 @@ using GangsAPI.Services.Player;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.Logging;
 using Jailbreak.Formatting.Views.Warden;
+using Jailbreak.LastRequest;
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Mute;
 using Jailbreak.Public.Mod.Rebel;
+using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.Warden;
 using Jailbreak.Public.Mod.Zones;
 using Jailbreak.Public.Utils;
@@ -42,7 +44,7 @@ public struct PreWardenStats(int armorValue, int health, int maxHealth,
 public class WardenBehavior(ILogger<WardenBehavior> logger,
   IWardenLocale locale, IRichLogService logs,
   ISpecialTreatmentService specialTreatment, IRebelService rebels,
-  IMuteService mute, IServiceProvider provider)
+  IMuteService mute, ISpecialDayManager specialDays, IServiceProvider provider)
   : IPluginBehavior, IWardenService {
   public static readonly FakeConVar<int> CV_ARMOR_EQUAL = new("css_jb_hp_equal",
     "Health points for when CTs have equal ratio", 50, ConVarFlags.FCVAR_NONE,
@@ -211,7 +213,9 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
         var guardPawn = guardController.PlayerPawn.Value;
         if (guardPawn == null) continue;
 
-        guardPawn.ArmorValue = ctArmorValue;
+        guardPawn.ArmorValue = ctArmorValue < guardPawn.ArmorValue ?
+          guardPawn.ArmorValue :
+          ctArmorValue;
         Utilities.SetStateChanged(guardPawn, "CCSPlayerPawn", "m_ArmorValue");
       }
 
@@ -300,7 +304,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     if (player == null || !player.IsValid) return HookResult.Continue;
     if (player.Team != CsTeam.CounterTerrorist) return HookResult.Continue;
     var isWarden = ((IWardenService)this).IsWarden(player);
-    if (API.Gangs != null) {
+    if (API.Gangs != null && !specialDays.IsSDRunning) {
       PlayerWrapper? attackerWrapper = null;
       if (ev.Attacker != null && ev.Attacker.IsValid && ev.Attacker != player)
         attackerWrapper = new PlayerWrapper(ev.Attacker);
@@ -309,11 +313,12 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       var toDecrement = PlayerUtil.FromTeam(CsTeam.CounterTerrorist)
        .Where(p => p.IsReal() && !p.IsBot)
        .Select(p => new PlayerWrapper(p));
-      var eco = API.Gangs.Services.GetService<IEcoManager>();
+      var eco                = API.Gangs.Services.GetService<IEcoManager>();
+      var shouldGrantCredits = LastRequestManager.shouldGrantCredits();
       Task.Run(async () => {
         if (attackerWrapper != null) {
           if (isWarden) await incrementWardenKills(attackerWrapper);
-          if (eco != null) {
+          if (shouldGrantCredits && eco != null) {
             var giveReason = (isWarden ? "Warden" : "Guard") + " Kill";
             var giveAmo    = isWarden ? 50 : 20;
             await eco.Grant(attackerWrapper, giveAmo, true, giveReason);
@@ -321,7 +326,6 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
         }
 
         foreach (var guard in toDecrement) {
-          // var wrapper = new PlayerWrapper(guard);
           // If the guard is the warden, update all guards' stats
           // If the guard is not the warden, only update the warden's stats
           if (guard.Steam == wardenSteam == isWarden) continue;
@@ -353,8 +357,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     });
   }
 
-  private async Task
-    updateGuardDeathStats(PlayerWrapper player, bool isWarden) {
+  private async Task updateGuardDeathStats(PlayerWrapper player,
+    bool isWarden) {
     var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
     if (stats == null) return;
 
