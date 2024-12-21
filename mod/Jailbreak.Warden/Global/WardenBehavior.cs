@@ -19,6 +19,7 @@ using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Mute;
 using Jailbreak.Public.Mod.Rebel;
+using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.Warden;
 using Jailbreak.Public.Mod.Zones;
 using Jailbreak.Public.Utils;
@@ -43,7 +44,7 @@ public struct PreWardenStats(int armorValue, int health, int maxHealth,
 public class WardenBehavior(ILogger<WardenBehavior> logger,
   IWardenLocale locale, IRichLogService logs,
   ISpecialTreatmentService specialTreatment, IRebelService rebels,
-  IMuteService mute, IServiceProvider provider)
+  IMuteService mute, ISpecialDayManager specialDays, IServiceProvider provider)
   : IPluginBehavior, IWardenService {
   public static readonly FakeConVar<int> CV_ARMOR_EQUAL = new("css_jb_hp_equal",
     "Health points for when CTs have equal ratio", 50, ConVarFlags.FCVAR_NONE,
@@ -212,10 +213,12 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
         var guardPawn = guardController.PlayerPawn.Value;
         if (guardPawn == null) continue;
 
-        guardPawn.ArmorValue = ctArmorValue < guardPawn.ArmorValue ? guardPawn.ArmorValue : ctArmorValue;
+        guardPawn.ArmorValue = ctArmorValue < guardPawn.ArmorValue ?
+          guardPawn.ArmorValue :
+          ctArmorValue;
         Utilities.SetStateChanged(guardPawn, "CCSPlayerPawn", "m_ArmorValue");
       }
-    
+
       setWardenStats(wardenPawn, CV_WARDEN_ARMOR.Value, CV_WARDEN_HEALTH.Value,
         CV_WARDEN_MAX_HEALTH.Value);
       if (!hasHealthshot) Warden.GiveNamedItem("weapon_healthshot");
@@ -301,7 +304,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     if (player == null || !player.IsValid) return HookResult.Continue;
     if (player.Team != CsTeam.CounterTerrorist) return HookResult.Continue;
     var isWarden = ((IWardenService)this).IsWarden(player);
-    if (API.Gangs != null) {
+    if (API.Gangs != null && !specialDays.IsSDRunning) {
       PlayerWrapper? attackerWrapper = null;
       if (ev.Attacker != null && ev.Attacker.IsValid && ev.Attacker != player)
         attackerWrapper = new PlayerWrapper(ev.Attacker);
