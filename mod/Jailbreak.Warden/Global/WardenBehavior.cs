@@ -313,11 +313,12 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       var toDecrement = PlayerUtil.FromTeam(CsTeam.CounterTerrorist)
        .Where(p => p.IsReal() && !p.IsBot)
        .Select(p => new PlayerWrapper(p));
-      var eco = API.Gangs.Services.GetService<IEcoManager>();
+      var eco                = API.Gangs.Services.GetService<IEcoManager>();
+      var shouldGrantCredits = LastRequestManager.shouldGrantCredits();
       Task.Run(async () => {
         if (attackerWrapper != null) {
           if (isWarden) await incrementWardenKills(attackerWrapper);
-          if (LastRequestManager.shouldGrantCredits() && eco != null) {
+          if (shouldGrantCredits && eco != null) {
             var giveReason = (isWarden ? "Warden" : "Guard") + " Kill";
             var giveAmo    = isWarden ? 50 : 20;
             await eco.Grant(attackerWrapper, giveAmo, true, giveReason);
@@ -325,7 +326,6 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
         }
 
         foreach (var guard in toDecrement) {
-          // var wrapper = new PlayerWrapper(guard);
           // If the guard is the warden, update all guards' stats
           // If the guard is not the warden, only update the warden's stats
           if (guard.Steam == wardenSteam == isWarden) continue;
