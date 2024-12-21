@@ -52,7 +52,7 @@ public class LastRequestCommand(ILastRequestManager manager, ILRLocale messages,
       return;
     }
 
-    if (manager.IsInLR(executor)) {
+    if (manager.IsInLR(executor) || LastRequestRebelCommand.PlayersRebelling.Contains(executor.Slot)) {
       messages.CannotLR("You are already in an LR").ToChat(executor);
       return;
     }

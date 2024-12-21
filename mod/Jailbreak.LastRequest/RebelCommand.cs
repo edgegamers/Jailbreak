@@ -19,7 +19,7 @@ namespace Jailbreak.LastRequest;
 
 public class LastRequestRebelCommand(IRebelService rebelService, ILastRequestManager manager,
   ILRLocale messages) : IPluginBehavior {
-  private readonly HashSet<int> players_rebelling = new HashSet<int>();
+  public static HashSet<int> PlayersRebelling { get; } = new HashSet<int>();
 
   public static readonly FakeConVar<string> CV_REBEL_WEAPON =
     new("css_jb_rebel_t_weapon", "Weapon to give to rebeller during LR",
@@ -60,7 +60,12 @@ public class LastRequestRebelCommand(IRebelService rebelService, ILastRequestMan
       messages.LastRequestRebelDisabled().ToChat(rebeller);
       return;
     }
-
+    
+    if (PlayersRebelling.Contains(rebeller.Slot)) {
+      messages.CannotLastRequestRebelT().ToChat(rebeller);
+      return;
+    }
+    
     if (rebeller.Team != CsTeam.Terrorist) {
       messages.CannotLastRequestRebelCt().ToChat(rebeller);
       return;
@@ -76,11 +81,6 @@ public class LastRequestRebelCommand(IRebelService rebelService, ILastRequestMan
       return;
     }
 
-    if (players_rebelling.Contains(rebeller.Slot)) {
-      messages.CannotLastRequestRebelT().ToChat(rebeller);
-      return;
-    }
-
     var calculated         = calculateHealth();
     var rebellerPlayerPawn = rebeller.PlayerPawn.Value;
     if (calculated < rebellerPlayerPawn.Health) {
@@ -90,7 +90,7 @@ public class LastRequestRebelCommand(IRebelService rebelService, ILastRequestMan
     
     MenuManager.CloseActiveMenu(rebeller);
     messages.LastRequestRebel(rebeller, rebellerPlayerPawn.Health).ToAllChat();
-    players_rebelling.Add(rebeller.Slot);
+    PlayersRebelling.Add(rebeller.Slot);
     rebelService.MarkRebel(rebeller);
     rebeller.SetColor(Color.Red);
     rebeller.RemoveWeapons();
@@ -100,7 +100,7 @@ public class LastRequestRebelCommand(IRebelService rebelService, ILastRequestMan
 
   [GameEventHandler]
   public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
-    players_rebelling.Clear();
+    PlayersRebelling.Clear();
     return HookResult.Continue;
   }
 }
