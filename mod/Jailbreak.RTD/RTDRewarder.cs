@@ -1,10 +1,8 @@
-﻿using System.Drawing;
-using CounterStrikeSharp.API;
+﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using Jailbreak.Formatting.Views.Logging;
 using Jailbreak.Public.Behaviors;
-using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.RTD;
 using Jailbreak.Public.Utils;
 

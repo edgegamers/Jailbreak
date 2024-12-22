@@ -25,7 +25,7 @@ public class WardenPeaceLocale : IWardenPeaceLocale,
 
   public IView WardenEnactedPeace(int seconds) {
     return new SimpleView {
-      PREFIX, $"The warden enacted peace for", seconds, "seconds."
+      PREFIX, "The warden enacted peace for", seconds, "seconds."
     };
   }
 

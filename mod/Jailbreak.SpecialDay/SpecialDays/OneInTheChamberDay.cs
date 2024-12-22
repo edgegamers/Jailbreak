@@ -26,11 +26,11 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
   private bool started;
   public override SDType Type => SDType.OITC;
 
+  public override SpecialDaySettings Settings => new OitcSettings();
+
   public ISDInstanceLocale Locale
     => new SoloDayLocale("One in the Chamber", "You only have one bullet.",
       "Kill someone to get another bullet.", "One-Hit-Kills! No camping!");
-
-  public override SpecialDaySettings Settings => new OitcSettings();
 
   public override void Setup() {
     Timers[10] += () => Locale.BeginsIn(10).ToAllChat();
@@ -64,9 +64,9 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
 
     var player = @event.Userid;
     if (player == null || !player.IsValid) return HookResult.Continue;
-    if (@event.Item == "knife") return HookResult.Continue;
+    if (@event.Item is "knife" or "bayonet") return HookResult.Continue;
     player.RemoveWeapons();
-    player.GiveNamedItem("weapon_knife");
+    Server.NextFrame(() => player.GiveNamedItem("weapon_knife"));
     return HookResult.Continue;
   }
 

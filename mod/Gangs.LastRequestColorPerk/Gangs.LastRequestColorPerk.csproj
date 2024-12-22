@@ -4,13 +4,11 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <RootNamespace>Gangs.LastRequestColorPerk</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Gangs.BombIconPerk\Gangs.BombIconPerk.csproj"/>
-        <ProjectReference Include="..\Gangs.CellsPerk\Gangs.CellsPerk.csproj"/>
-        <ProjectReference Include="..\Gangs.LastRequestColorPerk\Gangs.LastRequestColorPerk.csproj"/>
-        <ProjectReference Include="..\Gangs.SpecialDayColorPerk\Gangs.SpecialDayColorPerk.csproj"/>
+        <ProjectReference Include="..\Gangs.BaseImpl\Gangs.BaseImpl.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

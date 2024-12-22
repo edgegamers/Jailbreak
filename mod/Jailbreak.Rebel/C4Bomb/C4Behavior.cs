@@ -273,7 +273,7 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
       if (eco != null) {
         var wrapper = new PlayerWrapper(player);
         Task.Run(async ()
-          => await eco.Grant(wrapper, killed * 50, reason: "C4 Kill"));
+          => await eco.Grant(wrapper, killed * 25, reason: "C4 Kill"));
       }
     }
 

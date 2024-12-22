@@ -45,9 +45,8 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
           => AdminManager.PlayerHasPermissions(player, CV_AUTORTD_FLAG.Value))
        .Where(player => !rewarder.HasReward(player))) {
         var steam = player.SteamID;
-        if (!cachedCookies.ContainsKey(steam)) {
+        if (!cachedCookies.ContainsKey(steam))
           Server.NextFrameAsync(async () => await populateCache(player, steam));
-        }
 
         if (cachedCookies.TryGetValue(player.SteamID, out var value) && value)
           player.ExecuteClientCommandFromServer("css_rtd");

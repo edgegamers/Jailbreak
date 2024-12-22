@@ -51,9 +51,9 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
   public override SDType Type => SDType.GUNGAME;
 
   private IGunDayLocale msg => (IGunDayLocale)Locale;
+  public override SpecialDaySettings Settings => new GunGameSettings();
 
   public ISDInstanceLocale Locale => new GunDayLocale();
-  public override SpecialDaySettings Settings => new GunGameSettings();
 
   public override void Setup() {
     Timers[5]  += () => Locale.BeginsIn(5).ToAllChat();
