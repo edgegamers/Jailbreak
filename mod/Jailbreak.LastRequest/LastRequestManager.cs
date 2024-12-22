@@ -27,6 +27,7 @@ using Jailbreak.Public.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using MStatsShared;
+using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.LastRequest;
 
