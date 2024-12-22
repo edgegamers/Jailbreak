@@ -158,7 +158,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
      .ToList();
     Task.Run(async () => {
       foreach (var survivor in survivors) {
-        await eco.Grant(survivor, survivor.Team == CsTeam.Terrorist ? 75 : 50,
+        await eco.Grant(survivor, survivor.Team == CsTeam.Terrorist ? 50 : 25,
           reason: "LR Reached");
         await incrementLRReached(survivor);
       }
@@ -203,7 +203,8 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
       if (shouldGrantCredits()) {
         var eco = API.Gangs?.Services.GetService<IEcoManager>();
         if (eco == null) return false;
-        Task.Run(async () => await eco.Grant(wrapper, 30, reason: "LR Win"));
+        Task.Run(async () => await eco.Grant(wrapper,
+          wrapper.Team == CsTeam.CounterTerrorist ? 50 : 25, reason: "LR Win"));
       }
 
       if (API.Gangs != null)
