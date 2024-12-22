@@ -20,6 +20,7 @@ using Jailbreak.LastGuard;
 using Jailbreak.LastRequest;
 using Jailbreak.Logs;
 using Jailbreak.Mute;
+using Jailbreak.Rainbow;
 using Jailbreak.Rebel;
 using Jailbreak.RTD;
 using Jailbreak.SpecialDay;
@@ -74,5 +75,6 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
     serviceCollection.AddJailbreakZones();
     serviceCollection.AddDiceRoll();
     serviceCollection.AddGangs();
+    serviceCollection.AddJailbreakRainbow();
   }
 }
