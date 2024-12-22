@@ -36,10 +36,10 @@ public class CellsPerk(IServiceProvider provider) : BasePerk<int>(provider) {
     return getCostFor(cells + 1);
   }
 
-  // https://www.desmos.com/calculator/ie4owyajay
+  // https://www.desmos.com/calculator/u94hnq6cw0
   private static int getCostFor(int size) {
-    var numerator = 100 * size + 4.9 * Math.Pow(size, 5);
-    return (int)(Math.Ceiling(numerator / 500) * 100);
+    var numerator = 40 * size + 5 * Math.Pow(size, 3);
+    return (int)(Math.Ceiling(numerator / 10) * 100);
   }
 
   public override async Task OnPurchase(IGangPlayer player) {
