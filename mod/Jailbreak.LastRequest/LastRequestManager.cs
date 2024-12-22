@@ -7,8 +7,10 @@ using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
+using Gangs.BaseImpl.Extensions;
 using Gangs.BaseImpl.Stats;
 using Gangs.LastRequestColorPerk;
+using GangsAPI;
 using GangsAPI.Data;
 using GangsAPI.Permissions;
 using GangsAPI.Services;
@@ -25,6 +27,7 @@ using Jailbreak.Public.Mod.LastRequest.Enums;
 using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Utils;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using MStatsShared;
 
 namespace Jailbreak.LastRequest;
@@ -204,7 +207,8 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
   private async Task colorForLR(PlayerWrapper a, PlayerWrapper b) {
     var playerStats = API.Gangs?.Services.GetService<IPlayerStatManager>();
-    if (playerStats == null) return;
+    var localizer   = API.Gangs?.Services.GetService<IStringLocalizer>();
+    if (playerStats == null || localizer == null) return;
     var (aSuccess, aData) =
       await playerStats.GetForPlayer<LRColor>(a, LRColorPerk.STAT_ID);
     var (bSuccess, bData) =
@@ -226,6 +230,12 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     await Server.NextFrameAsync(() => {
       a.Player.SetColor(toApply.Value);
       b.Player.SetColor(toApply.Value);
+
+      var msg = localizer.Get(MSG.PREFIX)
+        + $"Your LR partner will be {toApply.GetChatColor()} {toApply.Value.Name}";
+
+      a.Player.PrintToChat(msg);
+      b.Player.PrintToChat(msg);
     });
   }
 
