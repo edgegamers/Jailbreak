@@ -62,6 +62,7 @@
         <ProjectReference Include="..\..\mod\Jailbreak.LastRequest\Jailbreak.LastRequest.csproj"/>
         <ProjectReference Include="..\..\mod\Jailbreak.Mute\Jailbreak.Mute.csproj"/>
         <ProjectReference Include="..\..\mod\Jailbreak.LastGuard\Jailbreak.LastGuard.csproj"/>
+        <ProjectReference Include="..\..\mod\Jailbreak.Rainbow\Jailbreak.Rainbow.csproj" />
         <ProjectReference Include="..\..\mod\Jailbreak.RTD\Jailbreak.RTD.csproj"/>
         <ProjectReference Include="..\..\mod\Jailbreak.SpecialDay\Jailbreak.SpecialDay.csproj"/>
         <ProjectReference Include="..\..\mod\Jailbreak.Warden\Jailbreak.Warden.csproj"/>
