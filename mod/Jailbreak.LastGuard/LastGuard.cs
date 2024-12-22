@@ -103,12 +103,10 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
 
     var calculated = calculateHealth();
 
-    if (calculated < guardPlayerPawn.Health && !CV_ALWAYS_OVERRIDE_CT.Value) {
+    if (calculated < lastGuard.Health && !CV_ALWAYS_OVERRIDE_CT.Value) {
       if (guardPlayerPawn.Health > CV_MAX_CT_HEALTH.Value)
-        guardPlayerPawn.Health = CV_MAX_CT_HEALTH.Value;
+        lastGuard.SetHealth(CV_MAX_CT_HEALTH.Value);
     } else { guardPlayerPawn.Health = calculated; }
-
-    Utilities.SetStateChanged(guardPlayerPawn, "CBaseEntity", "m_iHealth");
 
     // foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal()))
     //     player.ExecuteClientCommand("play sounds/lastct");
