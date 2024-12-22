@@ -35,7 +35,7 @@ public class LastRequestLocale : ILRLocale,
   }
 
   public IView LastRequestNotEnabled() {
-    return new SimpleView { { PREFIX, $"Last Request is not enabled." } };
+    return new SimpleView { { PREFIX, "Last Request is not enabled." } };
   }
 
   public IView InvalidLastRequest(string query) {

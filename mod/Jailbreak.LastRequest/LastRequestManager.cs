@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Diagnostics.Eventing.Reader;
+using System.Drawing;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
@@ -10,8 +8,11 @@ using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
 using Gangs.BaseImpl.Stats;
+using Gangs.LastRequestColorPerk;
 using GangsAPI.Data;
+using GangsAPI.Permissions;
 using GangsAPI.Services;
+using GangsAPI.Services.Gang;
 using GangsAPI.Services.Player;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.LastRequest;
@@ -193,10 +194,72 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     Task.Run(async () => {
       await incrementLRStart(prisonerWrapper);
       await incrementLRStart(guardWrapper);
+
+      await colorForLR(prisonerWrapper, guardWrapper);
     });
 
     messages.InformLastRequest(lr).ToAllChat();
     return true;
+  }
+
+  private async Task colorForLR(PlayerWrapper a, PlayerWrapper b) {
+    var playerStats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (playerStats == null) return;
+    var (aSuccess, aData) =
+      await playerStats.GetForPlayer<LRColor>(a, LRColorPerk.STAT_ID);
+    var (bSuccess, bData) =
+      await playerStats.GetForPlayer<LRColor>(b, LRColorPerk.STAT_ID);
+
+    if (!aSuccess) aData = LRColor.DEFAULT;
+    if (!bSuccess) bData = LRColor.DEFAULT;
+
+    var toApply = aData.GetColor() ?? bData.GetColor();
+    if (aSuccess && bSuccess) {
+      var higher = await getHigherPlayer(a, b);
+      toApply = higher.Steam == a.Steam ? aData.GetColor() : bData.GetColor();
+    }
+
+    if (toApply == null) return;
+
+    if (a.Player == null || b.Player == null) return;
+
+    await Server.NextFrameAsync(() => {
+      a.Player.SetColor(toApply.Value);
+      b.Player.SetColor(toApply.Value);
+    });
+  }
+
+  private async Task<PlayerWrapper> getHigherPlayer(PlayerWrapper a,
+    PlayerWrapper b) {
+    var leaderboard = API.Gangs?.Services.GetService<ILeaderboard>();
+    var players     = API.Gangs?.Services.GetService<IPlayerManager>();
+    if (leaderboard == null || players == null) return a;
+    var aGangPlayer = await players.GetPlayer(a.Steam);
+    var bGangPlayer = await players.GetPlayer(b.Steam);
+
+    if (aGangPlayer == null && bGangPlayer != null) return b;
+    if (aGangPlayer != null && bGangPlayer == null) return a;
+
+    if (aGangPlayer == null || bGangPlayer == null) return a;
+
+    var aGang = aGangPlayer.GangId;
+    var bGang = bGangPlayer.GangId;
+
+    if (aGang == null && bGang != null) return b;
+    if (aGang != null && bGang == null) return a;
+
+    if (aGang == null || bGang == null) return a;
+    if (aGang == bGang) return a;
+
+    var aRank = await leaderboard.GetPosition(aGang.Value);
+    var bRank = await leaderboard.GetPosition(bGang.Value);
+
+    if (aRank == null && bRank != null) return b;
+    if (aRank != null && bRank == null) return a;
+
+    if (aRank == null || bRank == null) return a;
+
+    return aRank < bRank ? a : b;
   }
 
   public bool EndLastRequest(AbstractLastRequest lr, LRResult result) {
