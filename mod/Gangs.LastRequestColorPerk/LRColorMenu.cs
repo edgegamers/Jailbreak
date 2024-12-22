@@ -16,6 +16,8 @@ public class LRColorMenu(IServiceProvider provider, LRColor data,
 
   // Method to sort smoke colors
   private int CompareSmokeColors(LRColor a, LRColor b) {
+    if (a == data) return -1;
+    if (b == data) return 1;
     // If icon is unlocked, it should be next
     // If both are unlocked, sort by cost (highest first)
     if (data.HasFlag(a)) {

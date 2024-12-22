@@ -180,18 +180,10 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     API.Stats?.PushStat(new ServerStat("JB_LASTREQUEST",
       $"{prisoner.SteamID} {type.ToFriendlyString()}"));
 
-    if (prisoner.Pawn.Value != null) {
-      prisoner.Pawn.Value.Health            = 100;
-      prisoner.PlayerPawn.Value!.ArmorValue = 0;
-      Utilities.SetStateChanged(prisoner.Pawn.Value, "CBaseEntity",
-        "m_iHealth");
-    }
-
-    if (guard.Pawn.Value != null) {
-      guard.Pawn.Value.Health            = 100;
-      guard.PlayerPawn.Value!.ArmorValue = 0;
-      Utilities.SetStateChanged(guard.Pawn.Value, "CBaseEntity", "m_iHealth");
-    }
+    prisoner.SetHealth(100);
+    prisoner.SetArmor(0);
+    guard.SetHealth(100);
+    guard.SetArmor(0);
 
     var prisonerWrapper = new PlayerWrapper(prisoner);
     var guardWrapper    = new PlayerWrapper(guard);
@@ -254,7 +246,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
         rainbowColorizer.StartRainbow(a.Player);
         rainbowColorizer.StartRainbow(b.Player);
         var rmsg = localizer.Get(MSG.PREFIX)
-          + $"Your LR partner is {ChatColors.DarkRed}R{ChatColors.Orange}a{ChatColors.Yellow}i{ChatColors.Green}n{ChatColors.Blue}b{ChatColors.Purple}o{ChatColors.Grey}w{ChatColors.Grey}.";
+          + $"Your LR will be {ChatColors.DarkRed}R{ChatColors.Orange}a{ChatColors.Yellow}i{ChatColors.Green}n{ChatColors.Blue}b{ChatColors.Purple}o{ChatColors.Grey}w{ChatColors.Grey}.";
 
         a.Player.PrintToChat(rmsg);
         b.Player.PrintToChat(rmsg);
@@ -265,7 +257,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
       b.Player.SetColor(color.Value);
 
       var msg = localizer.Get(MSG.PREFIX)
-        + $"Your LR partner is {color.GetChatColor()}{color.Value.Name}{ChatColors.Grey}.";
+        + $"Your LR will be {color.GetChatColor()}{color.Value.Name}{ChatColors.Grey}.";
 
       a.Player.PrintToChat(msg);
       b.Player.PrintToChat(msg);
