@@ -274,7 +274,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
         rainbowColorizer.StartRainbow(a.Player);
         rainbowColorizer.StartRainbow(b.Player);
         var rmsg = localizer.Get(MSG.PREFIX)
-          + $"Your LR will be {ChatColors.DarkRed}R{ChatColors.Orange}a{ChatColors.Yellow}i{ChatColors.Green}n{ChatColors.Blue}b{ChatColors.Purple}o{ChatColors.White}w{ChatColors.Grey}.";
+          + $"Your LR will be {IRainbowColorizer.RAINBOW}.";
 
         a.Player.PrintToChat(rmsg);
         b.Player.PrintToChat(rmsg);

@@ -54,7 +54,7 @@ public class Rainbowizer : IRainbowColorizer {
   }
 
   private Color calculateColor(TimeSpan dt) {
-    var hue = dt.TotalSeconds % 360;
+    var hue = dt.TotalSeconds * 10 % 360;
     return Color.FromArgb(255, ColorFromHSV(hue, 1, 1));
   }
 

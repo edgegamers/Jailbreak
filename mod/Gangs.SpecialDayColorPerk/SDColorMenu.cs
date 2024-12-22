@@ -1,5 +1,6 @@
 ﻿using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
+using Gangs.BaseImpl.Extensions;
 using GangsAPI.Data;
 using GangsAPI.Extensions;
 using GangsAPI.Menu;
@@ -55,11 +56,11 @@ public class SDColorMenu(IServiceProvider provider, SDColorData data)
         $" {ChatColors.DarkBlue}Gang Perks: {ChatColors.LightBlue}Special Day Colors");
     if (item == data.Equipped)
       return Task.FromResult(
-        $"{index}. {item.GetChatColor()}{name} {ChatColors.Green}({ChatColors.Lime}Equipped{ChatColors.Green})");
+        $"{index}. {item.GetColor().GetChatColor()}{name} {ChatColors.Green}({ChatColors.Lime}Equipped{ChatColors.Green})");
     if (data.Unlocked.HasFlag(item))
       return Task.FromResult(
-        $"{index}. {item.GetChatColor()}{name} {ChatColors.Green}({ChatColors.Grey}Unlocked{ChatColors.Green})");
+        $"{index}. {item.GetColor().GetChatColor()}{name} {ChatColors.Green}({ChatColors.Grey}Unlocked{ChatColors.Green})");
     return Task.FromResult(
-      $"{index}. {item.GetChatColor()}{name} {ChatColors.DarkRed}({ChatColors.LightRed}{item.GetCost()}{ChatColors.DarkRed})");
+      $"{index}. {item.GetColor().GetChatColor()}{name} {ChatColors.DarkRed}({ChatColors.LightRed}{item.GetCost()}{ChatColors.DarkRed})");
   }
 }

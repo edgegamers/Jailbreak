@@ -14,11 +14,13 @@ public enum SDColor {
   BLUE = 1 << 5,
   PURPLE = 1 << 6,
   DEFAULT = 1 << 7,
-  RANDOM = 1 << 8
+  RANDOM = 1 << 8,
+  RAINBOW = 1 << 9
 }
 
-public static class SmokeColorExtensions {
+public static class SDColorExtensions {
   public static int GetCost(this SDColor color) {
+    if (color == SDColor.RAINBOW) return 10 * 2500;
     return (int)Math.Round(color.GetColor().GetColorMultiplier() * 2500);
   }
 
@@ -35,21 +37,6 @@ public static class SmokeColorExtensions {
       SDColor.RANDOM  => null,
       _               => Color.White
     };
-  }
-
-  public static char GetChatColor(this SDColor color) {
-    return color.GetColor().GetChatColor();
-  }
-
-  public static char GetChatColor(this Color color) {
-    if (color == Color.Red) return ChatColors.Red;
-    if (color == Color.Orange) return ChatColors.Orange;
-    if (color == Color.Yellow) return ChatColors.Yellow;
-    if (color == Color.Green) return ChatColors.Green;
-    if (color == Color.Cyan) return ChatColors.LightBlue;
-    if (color == Color.Blue) return ChatColors.Blue;
-    if (color == Color.Purple) return ChatColors.Purple;
-    return ChatColors.White;
   }
 
   public static Color? PickRandom(this SDColor color) {
