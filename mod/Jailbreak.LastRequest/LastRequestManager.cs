@@ -47,7 +47,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
   public static readonly FakeConVar<int> CV_MIN_PLAYERS_FOR_CREDITS =
     new("css_jb_min_players_for_credits",
-      "Minimum number of players to start" + " giving credits out", 5);
+      "Minimum number of players to start giving credits out", 5);
 
   private ILastRequestFactory? factory;
   public bool IsLREnabledForRound { get; set; } = true;
