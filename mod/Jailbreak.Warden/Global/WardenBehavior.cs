@@ -320,7 +320,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
           if (isWarden) await incrementWardenKills(attackerWrapper);
           if (shouldGrantCredits && eco != null) {
             var giveReason = (isWarden ? "Warden" : "Guard") + " Kill";
-            var giveAmo    = isWarden ? 50 : 20;
+            var giveAmo    = isWarden ? 20 : 10;
             await eco.Grant(attackerWrapper, giveAmo, true, giveReason);
           }
         }
