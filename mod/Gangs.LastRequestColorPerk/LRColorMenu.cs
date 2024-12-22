@@ -48,6 +48,9 @@ public class LRColorMenu(IServiceProvider provider, LRColor data)
     if (item == 0)
       return Task.FromResult(
         $" {ChatColors.DarkBlue}Gang Perks: {ChatColors.LightBlue}Special Day Colors");
+    if (data == item)
+      return Task.FromResult(
+        $"{index}. {item.GetColor().GetChatColor()}{name} {ChatColors.Green}({ChatColors.Lime}Equipped{ChatColors.Green})");
     if (data.HasFlag(item))
       return Task.FromResult(
         $"{index}. {item.GetColor().GetChatColor()}{name} {ChatColors.Green}({ChatColors.Grey}Unlocked{ChatColors.Green})");

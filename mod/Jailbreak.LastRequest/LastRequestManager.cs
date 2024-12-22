@@ -217,14 +217,19 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     if (!aSuccess) aData = LRColor.DEFAULT;
     if (!bSuccess) bData = LRColor.DEFAULT;
 
-    var toApply = aData.GetColor() ?? bData.GetColor();
+    Color? toApply = null;
     if (aSuccess && bSuccess) {
       var higher = await getHigherPlayer(a, b);
-      toApply = higher.Steam == a.Steam ? aData.GetColor() : bData.GetColor();
+      toApply = higher.Steam == a.Steam ?
+        aData.GetColor() ?? aData.PickRandomColor() :
+        bData.GetColor() ?? bData.PickRandomColor();
+    } else if (aSuccess) {
+      toApply = aData.GetColor() ?? aData.PickRandomColor();
+    } else if (bSuccess) {
+      toApply = bData.GetColor() ?? bData.PickRandomColor();
     }
 
     if (toApply == null) return;
-
     if (a.Player == null || b.Player == null) return;
 
     await Server.NextFrameAsync(() => {
@@ -232,7 +237,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
       b.Player.SetColor(toApply.Value);
 
       var msg = localizer.Get(MSG.PREFIX)
-        + $"Your LR partner will be {toApply.GetChatColor()}{toApply.Value.Name}";
+        + $"Your LR partner is {toApply.GetChatColor()}{toApply.Value.Name}{ChatColors.Grey}.";
 
       a.Player.PrintToChat(msg);
       b.Player.PrintToChat(msg);
