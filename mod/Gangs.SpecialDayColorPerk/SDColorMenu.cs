@@ -15,7 +15,7 @@ public class SDColorMenu(IServiceProvider provider, SDColorData data)
     provider.GetRequiredService<ICommandManager>();
 
   // Method to sort smoke colors
-  private int CompareSmokeColors(SDColor a, SDColor b) {
+  private int CompareSDColors(SDColor a, SDColor b) {
     // If the icon is equipped, it should be first
     if (a == data.Equipped) return -1;
     if (b == data.Equipped) return 1;
@@ -35,7 +35,7 @@ public class SDColorMenu(IServiceProvider provider, SDColorData data)
 
   override protected Task<List<SDColor>> GetItems(PlayerWrapper player) {
     var list = Enum.GetValues<SDColor>().ToList();
-    list.Sort(CompareSmokeColors);
+    list.Sort(CompareSDColors);
     list.Insert(0, 0);
     return Task.FromResult(list);
   }

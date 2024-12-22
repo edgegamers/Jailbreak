@@ -16,8 +16,8 @@ public class LRColorMenu(IServiceProvider provider, LRColor data,
 
   // Method to sort smoke colors
   private int CompareSmokeColors(LRColor a, LRColor b) {
-    if (a == data) return -1;
-    if (b == data) return 1;
+    if (a == equipped) return -1;
+    if (b == equipped) return 1;
     // If icon is unlocked, it should be next
     // If both are unlocked, sort by cost (highest first)
     if (data.HasFlag(a)) {
@@ -49,7 +49,7 @@ public class LRColorMenu(IServiceProvider provider, LRColor data,
     var name = item.ToString().ToTitleCase();
     if (item == 0)
       return Task.FromResult(
-        $" {ChatColors.DarkBlue}Gang Perks: {ChatColors.LightBlue}Last Request Colors");
+        $" {ChatColors.DarkBlue}Gang Perks: {ChatColors.LightBlue}Last Request Colors\n{new LRColorPerk(provider).Description}");
     if (item == equipped)
       return Task.FromResult(
         $"{index}. {item.GetColor().GetChatColor()}{name} {ChatColors.Green}({ChatColors.Lime}Equipped{ChatColors.Green})");

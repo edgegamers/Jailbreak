@@ -50,7 +50,8 @@ public class SpecialDayManager(ISpecialDayFactory factory,
     if (players == null || gangStats == null) return;
     var playerWrappers = Utilities.GetPlayers()
      .Where(p => !p.IsBot)
-     .Select(p => new PlayerWrapper(p));
+     .Select(p => new PlayerWrapper(p))
+     .ToList();
     Task.Run(async () => {
       foreach (var wrapper in playerWrappers) {
         var gangPlayer = await players.GetPlayer(wrapper.Steam);
