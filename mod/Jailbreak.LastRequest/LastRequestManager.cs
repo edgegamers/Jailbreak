@@ -27,7 +27,6 @@ using Jailbreak.Public.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using MStatsShared;
-using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.LastRequest;
 
@@ -298,8 +297,8 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   }
 
   public bool EndLastRequest(AbstractLastRequest lr, LRResult result) {
-    // rainbowColorizer.StopRainbow(lr.Prisoner);
-    // rainbowColorizer.StopRainbow(lr.Guard);
+    rainbowColorizer.StopRainbow(lr.Prisoner);
+    rainbowColorizer.StopRainbow(lr.Guard);
     if (result is LRResult.GUARD_WIN or LRResult.PRISONER_WIN) {
       RoundUtil.AddTimeRemaining(CV_LR_BONUS_TIME.Value);
       messages.LastRequestDecided(lr, result).ToAllChat();
