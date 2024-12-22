@@ -187,6 +187,14 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
       Utilities.SetStateChanged(guard.Pawn.Value, "CBaseEntity", "m_iHealth");
     }
 
+    var prisonerWrapper = new PlayerWrapper(prisoner);
+    var guardWrapper    = new PlayerWrapper(guard);
+
+    Task.Run(async () => {
+      await incrementLRStart(prisonerWrapper);
+      await incrementLRStart(guardWrapper);
+    });
+
     messages.InformLastRequest(lr).ToAllChat();
     return true;
   }
