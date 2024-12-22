@@ -9,6 +9,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Gangs.BombIconPerk\Gangs.BombIconPerk.csproj"/>
         <ProjectReference Include="..\Gangs.CellsPerk\Gangs.CellsPerk.csproj" />
+        <ProjectReference Include="..\Gangs.LastRequestColorPerk\Gangs.LastRequestColorPerk.csproj" />
         <ProjectReference Include="..\Gangs.SpecialDayColorPerk\Gangs.SpecialDayColorPerk.csproj"/>
     </ItemGroup>
 
