@@ -21,8 +21,8 @@ public class Rainbowizer : IRainbowColorizer {
 
   public void StartRainbow(CCSPlayerController player) {
     if (!player.IsValid) return;
-    rainbowTimers[player.Slot] =   DateTime.Now;
-    colorTimer                 ??= parent.AddTimer(1, tick, TimerFlags.REPEAT);
+    rainbowTimers[player.Slot] = DateTime.Now;
+    colorTimer ??= parent.AddTimer(0.2f, tick, TimerFlags.REPEAT);
   }
 
   private void tick() {
@@ -47,7 +47,7 @@ public class Rainbowizer : IRainbowColorizer {
   }
 
   private Color calculateColor(TimeSpan dt) {
-    var hue = (dt.TotalSeconds * 100) % 360;
+    var hue = dt.TotalSeconds % 360;
     return Color.FromArgb(255, ColorFromHSV(hue, 1, 1));
   }
 
