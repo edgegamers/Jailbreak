@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using CounterStrikeSharp.API;
+﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
@@ -12,14 +11,12 @@ using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
-using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Validator;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestRebelCommand(IRebelService rebelService, ILastRequestManager manager,
+public class LastRequestRebelCommand(ILastRequestManager lastRequestManager, ILastRequestRebelManager lastRequestRebelManager,
   ILRLocale messages) : IPluginBehavior {
-  public static HashSet<int> PlayersRebelling { get; } = new HashSet<int>();
 
   public static readonly FakeConVar<string> CV_REBEL_WEAPON =
     new("css_jb_rebel_t_weapon", "Weapon to give to rebeller during LR",
@@ -61,7 +58,7 @@ public class LastRequestRebelCommand(IRebelService rebelService, ILastRequestMan
       return;
     }
     
-    if (PlayersRebelling.Contains(rebeller.Slot)) {
+    if (lastRequestRebelManager.IsInLRRebelling(rebeller.Slot)) {
       messages.CannotLastRequestRebelT().ToChat(rebeller);
       return;
     }
@@ -71,12 +68,12 @@ public class LastRequestRebelCommand(IRebelService rebelService, ILastRequestMan
       return;
     }
 
-    if (!manager.IsLREnabled) {
+    if (!lastRequestManager.IsLREnabled) {
       messages.LastRequestNotEnabled().ToChat(rebeller);
       return;
     }
 
-    if (manager.IsInLR(rebeller)) {
+    if (lastRequestManager.IsInLR(rebeller)) {
       messages.CannotLastRequestRebelTActive().ToChat(rebeller);
       return;
     }
@@ -90,9 +87,7 @@ public class LastRequestRebelCommand(IRebelService rebelService, ILastRequestMan
     
     MenuManager.CloseActiveMenu(rebeller);
     messages.LastRequestRebel(rebeller, rebellerPlayerPawn.Health).ToAllChat();
-    PlayersRebelling.Add(rebeller.Slot);
-    rebelService.MarkRebel(rebeller);
-    rebeller.SetColor(Color.Red);
+    lastRequestRebelManager.MarkLRRebelling(rebeller);
     rebeller.RemoveWeapons();
     rebeller.GiveNamedItem(CV_REBEL_WEAPON.Value);
     rebeller.GiveNamedItem("weapon_knife");
@@ -100,7 +95,7 @@ public class LastRequestRebelCommand(IRebelService rebelService, ILastRequestMan
 
   [GameEventHandler]
   public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
-    PlayersRebelling.Clear();
+    lastRequestRebelManager.ClearLRRebelling();
     return HookResult.Continue;
   }
 }

@@ -13,7 +13,7 @@ using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestCommand(ILastRequestManager manager, ILRLocale messages,
+public class LastRequestCommand(ILastRequestManager manager, ILastRequestRebelManager lastRequestRebelManager, ILRLocale messages,
   IGenericCmdLocale generic, ILastRequestFactory factory) : IPluginBehavior {
   private LastRequestMenuSelector? menuSelector;
   private LastRequestPlayerSelector? playerSelector;
@@ -52,7 +52,7 @@ public class LastRequestCommand(ILastRequestManager manager, ILRLocale messages,
       return;
     }
 
-    if (manager.IsInLR(executor) || LastRequestRebelCommand.PlayersRebelling.Contains(executor.Slot)) {
+    if (manager.IsInLR(executor) || lastRequestRebelManager.IsInLRRebelling(executor.Slot)) {
       messages.CannotLR("You are already in an LR").ToChat(executor);
       return;
     }
