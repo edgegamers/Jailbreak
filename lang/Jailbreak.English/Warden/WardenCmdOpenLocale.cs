@@ -37,10 +37,9 @@ public class WardenCmdOpenLocale : IWardenCmdOpenLocale,
   public IView CellsOpenedWithPrisoners(int prisoners) {
     return new SimpleView {
       WardenLocale.PREFIX,
-      ChatColors.Grey + "Detected",
+      "Detected",
       prisoners,
-      ChatColors.Grey + "prisoner" + (prisoners == 1 ? "" : "s")
-      + " still in cells, opening..."
+      "prisoner" + (prisoners == 1 ? "" : "s") + " still in cells, opening..."
     };
   }
 
@@ -49,8 +48,7 @@ public class WardenCmdOpenLocale : IWardenCmdOpenLocale,
       WardenLocale.PREFIX,
       ChatColors.Grey + "Detected",
       prisoners,
-      ChatColors.Green + "prisoner" + (prisoners == 1 ? "" : "s")
-      + " still in cells..."
+      "prisoner" + (prisoners == 1 ? "" : "s") + " still in cells..."
     };
   }
 

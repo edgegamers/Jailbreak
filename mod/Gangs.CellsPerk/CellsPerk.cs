@@ -1,8 +1,11 @@
 ﻿using Gangs.BaseImpl;
+using GangsAPI;
 using GangsAPI.Data.Gang;
+using GangsAPI.Perks;
 using GangsAPI.Services.Gang;
 using GangsAPI.Services.Menu;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 
 namespace Gangs.CellsPerk;
 
@@ -13,6 +16,12 @@ public class CellsPerk(IServiceProvider provider) : BasePerk<int>(provider) {
 
   private readonly IGangStatManager gangStats =
     provider.GetRequiredService<IGangStatManager>();
+
+  private readonly IStringLocalizer localizer =
+    provider.GetRequiredService<IStringLocalizer>();
+
+  private readonly IGangManager gangs =
+    provider.GetRequiredService<IGangManager>();
 
   public override string? Description
     => "# of gang members that can hide in cells without being detected";
@@ -40,6 +49,14 @@ public class CellsPerk(IServiceProvider provider) : BasePerk<int>(provider) {
     if (!success) cells = 1;
     cells++;
     await gangStats.SetForGang(player.GangId.Value, StatId, cells);
+
+    var gang     = await gangs.GetGang(player.GangId.Value);
+    var gangChat = Provider.GetService<IGangChatPerk>();
+
+    var str = localizer.Get(MSG.PERK_PURCHASED,
+      player.Name ?? player.Steam.ToString(), $"{Name} ({cells})");
+    if (gang != null && gangChat != null)
+      await gangChat.SendGangChat(gang, str);
   }
 
   public override Task<IMenu?> GetMenu(IGangPlayer player) {
