@@ -3,6 +3,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Timers;
+using CounterStrikeSharp.API.Modules.Cvars;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public.Extensions;
@@ -18,6 +19,9 @@ public class BulletForBullet : TeleportingRequest {
   private readonly bool magForMag;
   private readonly ILRB4BLocale msg;
   private int? whosShot, magSize;
+  public static readonly FakeConVar<bool> KILL_BY_HEALTH = new(
+    "css_jb_lr_b4b_kill_by_health",
+    "If true, the player with the lowest health will die after 60 seconds.", true);
 
   public BulletForBullet(BasePlugin plugin, IServiceProvider provider,
     CCSPlayerController prisoner, CCSPlayerController guard,
@@ -68,6 +72,9 @@ public class BulletForBullet : TeleportingRequest {
       Prisoner.GiveNamedItem("weapon_knife");
       Guard.GiveNamedItem("weapon_knife");
     });
+
+    if (!KILL_BY_HEALTH.Value) return;
+    
     Plugin.AddTimer(60, () => {
       if (State != LRState.ACTIVE) return;
       var result = Guard.Health > Prisoner.Health ?
