@@ -1,5 +1,4 @@
-﻿using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
 using GangsAPI.Data;
@@ -28,7 +27,9 @@ public class RebelListener(IRebelService rebelService,
     if (attacker == null || !attacker.IsReal()) return HookResult.Continue;
 
     if (attacker.Team != CsTeam.Terrorist) return HookResult.Continue;
-    if (lastRequestManager.IsInLR(attacker)) return HookResult.Continue;
+    if (lastRequestManager.IsInLR(attacker)
+      || lastRequestManager.IsInLR(player))
+      return HookResult.Continue;
 
     var weapon = "weapon_" + @event.Weapon;
     if (!weaponScores.TryGetValue(attacker.Slot, out var old)) old = 0;

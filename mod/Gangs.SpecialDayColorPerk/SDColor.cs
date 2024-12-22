@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 using CounterStrikeSharp.API.Modules.Utils;
-using GangsAPI.Extensions;
+using Gangs.BaseImpl.Extensions;
 
 namespace Gangs.SpecialDayColorPerk;
 
@@ -19,18 +19,7 @@ public enum SDColor {
 
 public static class SmokeColorExtensions {
   public static int GetCost(this SDColor color) {
-    return color switch {
-      SDColor.RED     => 10000,
-      SDColor.ORANGE  => 4000,
-      SDColor.YELLOW  => 3000,
-      SDColor.GREEN   => 3500,
-      SDColor.CYAN    => 8500,
-      SDColor.BLUE    => 6000,
-      SDColor.PURPLE  => 4000,
-      SDColor.DEFAULT => 1,
-      SDColor.RANDOM  => 35000,
-      _               => 0
-    };
+    return (int)Math.Round(color.GetColor().GetColorMultiplier() * 2500);
   }
 
   public static Color? GetColor(this SDColor color) {
@@ -49,18 +38,7 @@ public static class SmokeColorExtensions {
   }
 
   public static char GetChatColor(this SDColor color) {
-    return color switch {
-      SDColor.RED     => ChatColors.Red,
-      SDColor.ORANGE  => ChatColors.Orange,
-      SDColor.YELLOW  => ChatColors.Yellow,
-      SDColor.GREEN   => ChatColors.Green,
-      SDColor.CYAN    => ChatColors.LightBlue,
-      SDColor.BLUE    => ChatColors.Blue,
-      SDColor.PURPLE  => ChatColors.Purple,
-      SDColor.DEFAULT => ChatColors.White,
-      SDColor.RANDOM  => ChatColors.White,
-      _               => ChatColors.White
-    };
+    return color.GetColor().GetChatColor();
   }
 
   public static char GetChatColor(this Color color) {
