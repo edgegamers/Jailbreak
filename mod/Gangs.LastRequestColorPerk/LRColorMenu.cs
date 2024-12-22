@@ -37,9 +37,9 @@ public class LRColorMenu(IServiceProvider provider, LRColor data)
 
   override protected Task HandleItemSelection(PlayerWrapper player,
     List<LRColor> items, int selectedIndex) {
-    commands.ProcessCommand(player, CommandCallingContext.Chat, "css_sdcolor",
+    commands.ProcessCommand(player, CommandCallingContext.Chat, "css_lrcolor",
       items[selectedIndex].ToString());
-    Close(player);
+    Menus.CloseMenu(player);
     return Task.CompletedTask;
   }
 

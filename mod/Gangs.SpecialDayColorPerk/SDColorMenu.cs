@@ -43,7 +43,7 @@ public class SDColorMenu(IServiceProvider provider, SDColorData data)
     List<SDColor> items, int selectedIndex) {
     commands.ProcessCommand(player, CommandCallingContext.Chat, "css_sdcolor",
       items[selectedIndex].ToString());
-    Close(player);
+    Menus.CloseMenu(player);
     return Task.CompletedTask;
   }
 

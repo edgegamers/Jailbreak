@@ -71,7 +71,7 @@ public class LRColorCommand(IServiceProvider provider) : ICommand {
 
     if (!success) data = LRColor.DEFAULT;
 
-    if (info.Args.Length == 0) {
+    if (info.Args.Length == 1) {
       var menu = new LRColorMenu(provider, data);
       await menus.OpenMenu(executor, menu);
       return CommandResult.SUCCESS;
