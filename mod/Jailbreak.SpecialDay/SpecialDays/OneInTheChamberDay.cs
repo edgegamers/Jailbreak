@@ -64,9 +64,9 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
 
     var player = @event.Userid;
     if (player == null || !player.IsValid) return HookResult.Continue;
-    if (@event.Item == "knife") return HookResult.Continue;
+    if (@event.Item is "knife" or "bayonet") return HookResult.Continue;
     player.RemoveWeapons();
-    player.GiveNamedItem("weapon_knife");
+    Server.NextFrame(() => player.GiveNamedItem("weapon_knife"));
     return HookResult.Continue;
   }
 
