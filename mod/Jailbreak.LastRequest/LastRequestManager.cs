@@ -162,7 +162,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
      .ToList();
     Task.Run(async () => {
       foreach (var survivor in survivors) {
-        await eco.Grant(survivor, survivor.Team == CsTeam.Terrorist ? 50 : 25,
+        await eco.Grant(survivor, survivor.Team == CsTeam.Terrorist ? 65 : 60,
           reason: "LR Reached");
         await incrementLRReached(survivor);
       }

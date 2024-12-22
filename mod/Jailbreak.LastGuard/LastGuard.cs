@@ -169,12 +169,26 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
 
     if (!IsLastGuardActive) return HookResult.Continue;
 
+    if (player.Team == CsTeam.CounterTerrorist) { grantLastGuardKill(@event); }
+
     if (player.Team != CsTeam.Terrorist) return HookResult.Continue;
 
     addRoundTimeCapped(CV_LG_KILL_BONUS_TIME.Value, CV_LG_MAX_TIME.Value);
 
     giveGun(player);
     return HookResult.Continue;
+  }
+
+  private void grantLastGuardKill(EventPlayerDeath ev) {
+    var victim = ev.Userid;
+    var killer = ev.Attacker;
+    if (victim == null || !victim.IsValid || killer == null || !killer.IsValid)
+      return;
+    if (killer.Slot == victim.Slot) return;
+    var eco = API.Gangs?.Services.GetService<IEcoManager>();
+    if (eco == null) return;
+    var wrapper = new PlayerWrapper(killer);
+    Task.Run(async () => await eco.Grant(wrapper, 40, true, "LG Kill"));
   }
 
   [GameEventHandler]
