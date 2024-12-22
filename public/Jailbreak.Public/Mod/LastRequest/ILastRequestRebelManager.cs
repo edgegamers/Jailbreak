@@ -9,4 +9,5 @@ public interface ILastRequestRebelManager : IPluginBehavior {
   public bool IsInLRRebelling(int playerSlot);
   public void AddLRRebelling(int playerSlot);
   public void ClearLRRebelling();
+  public int CalculateHealth();
 }

@@ -139,13 +139,6 @@ public class LastRequestLocale : ILRLocale,
     return new SimpleView { PREFIX, "Rebelling during last request is disabled." };
   }  
   
-  public IView CannotLastRequestRebelT() {
-    return new SimpleView { PREFIX, "You are already rebelling in the last request." };
-  }
-  public IView CannotLastRequestRebelTActive() {
-    return new SimpleView { PREFIX, "You are in an active LR, cannot LR rebel." };
-  }
-  
   public IView CannotLastRequestRebelCt() {
     return new SimpleView { PREFIX, "You cannot rebel as a CT during the last request." };
   }

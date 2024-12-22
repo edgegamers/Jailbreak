@@ -32,7 +32,5 @@ public interface ILRLocale {
   
   public IView LastRequestRebel(CCSPlayerController player, int tHealth);
   public IView LastRequestRebelDisabled();
-  public IView CannotLastRequestRebelT();
-  public IView CannotLastRequestRebelTActive();
   public IView CannotLastRequestRebelCt();
 }
