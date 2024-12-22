@@ -4,7 +4,6 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Menu;
-using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using Gangs.BaseImpl.Extensions;
 using Gangs.BaseImpl.Stats;
@@ -27,7 +26,6 @@ using Jailbreak.Public.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using MStatsShared;
-using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.LastRequest;
 
@@ -199,6 +197,36 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     return true;
   }
 
+  public bool EndLastRequest(AbstractLastRequest lr, LRResult result) {
+    rainbowColorizer.StopRainbow(lr.Prisoner);
+    rainbowColorizer.StopRainbow(lr.Guard);
+    if (result is LRResult.GUARD_WIN or LRResult.PRISONER_WIN) {
+      RoundUtil.AddTimeRemaining(CV_LR_BONUS_TIME.Value);
+      messages.LastRequestDecided(lr, result).ToAllChat();
+
+      var wrapper =
+        new PlayerWrapper(result == LRResult.GUARD_WIN ?
+          lr.Guard :
+          lr.Prisoner);
+      if (shouldGrantCredits()) {
+        var eco = API.Gangs?.Services.GetService<IEcoManager>();
+        if (eco == null) return false;
+        Task.Run(async () => await eco.Grant(wrapper,
+          wrapper.Team == CsTeam.CounterTerrorist ? 35 : 20, reason: "LR Win"));
+      }
+
+      if (API.Gangs != null)
+        Task.Run(async () => await incrementLRWin(wrapper));
+    }
+
+    API.Stats?.PushStat(new ServerStat("JB_LASTREQUEST_RESULT",
+      $"{lr.Prisoner.SteamID} {result.ToString()}"));
+
+    lr.OnEnd(result);
+    ActiveLRs.Remove(lr);
+    return true;
+  }
+
   private async Task colorForLR(PlayerWrapper a, PlayerWrapper b) {
     var playerStats = API.Gangs?.Services.GetService<IPlayerStatManager>();
     var localizer   = API.Gangs?.Services.GetService<IStringLocalizer>();
@@ -295,36 +323,6 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     if (aRank == null || bRank == null) return a;
 
     return aRank < bRank ? a : b;
-  }
-
-  public bool EndLastRequest(AbstractLastRequest lr, LRResult result) {
-    rainbowColorizer.StopRainbow(lr.Prisoner);
-    rainbowColorizer.StopRainbow(lr.Guard);
-    if (result is LRResult.GUARD_WIN or LRResult.PRISONER_WIN) {
-      RoundUtil.AddTimeRemaining(CV_LR_BONUS_TIME.Value);
-      messages.LastRequestDecided(lr, result).ToAllChat();
-
-      var wrapper =
-        new PlayerWrapper(result == LRResult.GUARD_WIN ?
-          lr.Guard :
-          lr.Prisoner);
-      if (shouldGrantCredits()) {
-        var eco = API.Gangs?.Services.GetService<IEcoManager>();
-        if (eco == null) return false;
-        Task.Run(async () => await eco.Grant(wrapper,
-          wrapper.Team == CsTeam.CounterTerrorist ? 35 : 20, reason: "LR Win"));
-      }
-
-      if (API.Gangs != null)
-        Task.Run(async () => await incrementLRWin(wrapper));
-    }
-
-    API.Stats?.PushStat(new ServerStat("JB_LASTREQUEST_RESULT",
-      $"{lr.Prisoner.SteamID} {result.ToString()}"));
-
-    lr.OnEnd(result);
-    ActiveLRs.Remove(lr);
-    return true;
   }
 
   private async Task incrementLRReached(PlayerWrapper player) {

@@ -11,8 +11,9 @@ namespace Gangs.CellsPerk;
 
 public class CellsPerk(IServiceProvider provider) : BasePerk<int>(provider) {
   public const string STAT_ID = "jb_cells";
-  public override string StatId => STAT_ID;
-  public override string Name => "Hide in Cells";
+
+  private readonly IGangManager gangs =
+    provider.GetRequiredService<IGangManager>();
 
   private readonly IGangStatManager gangStats =
     provider.GetRequiredService<IGangStatManager>();
@@ -20,11 +21,13 @@ public class CellsPerk(IServiceProvider provider) : BasePerk<int>(provider) {
   private readonly IStringLocalizer localizer =
     provider.GetRequiredService<IStringLocalizer>();
 
-  private readonly IGangManager gangs =
-    provider.GetRequiredService<IGangManager>();
+  public override string StatId => STAT_ID;
+  public override string Name => "Hide in Cells";
 
   public override string? Description
     => "# of gang members that can hide in cells without being detected";
+
+  public override int Value { get; set; }
 
   public override async Task<int?> GetCost(IGangPlayer player) {
     if (player.GangId == null || player.GangRank == null) return null;
@@ -63,6 +66,4 @@ public class CellsPerk(IServiceProvider provider) : BasePerk<int>(provider) {
     var menu = new BasicPerkMenu(Provider, this);
     return Task.FromResult<IMenu?>(menu);
   }
-
-  public override int Value { get; set; }
 }

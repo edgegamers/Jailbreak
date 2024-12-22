@@ -39,11 +39,11 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
 
   public override SDType Type => SDType.NOSCOPE;
 
+  public override SpecialDaySettings Settings => new NoScopeSettings();
+
   public ISDInstanceLocale Locale
     => new SoloDayLocale("No Scope",
       "Your scope broke! Fight against everyone else. No camping!");
-
-  public override SpecialDaySettings Settings => new NoScopeSettings();
 
   public override void Setup() {
     Timers[10] += () => Locale.BeginsIn(10).ToAllChat();

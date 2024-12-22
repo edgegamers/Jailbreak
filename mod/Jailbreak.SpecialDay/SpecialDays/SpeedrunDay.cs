@@ -221,9 +221,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
     if (start == null || speedrunner.PlayerPawn.Value == null
       || speedrunner.PlayerPawn.Value.AbsOrigin == null
-      || start.DistanceSquared(speedrunner.PlayerPawn.Value.AbsOrigin) < 100) {
+      || start.DistanceSquared(speedrunner.PlayerPawn.Value.AbsOrigin) < 100)
       panic("Execute: Start is null or too close to speedrunner");
-    }
 
     target       = target.Clone();
     targetCircle = new BeamCircle(Plugin, target!, 10, 8);

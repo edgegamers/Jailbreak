@@ -24,6 +24,8 @@ public class LRColorPerk(IServiceProvider provider)
   public override string? Description
     => "Pick the color of you and your partner during your LRs\nConflicting colors are resolved by gang rank";
 
+  public override LRColor Value { get; set; } = LRColor.DEFAULT;
+
   public override Task<int?> GetCost(IGangPlayer player) {
     return Task.FromResult<int?>(null);
   }
@@ -41,6 +43,4 @@ public class LRColorPerk(IServiceProvider provider)
       await playerStats.GetForPlayer<LRColor>(player.Steam, STAT_ID);
     return new LRColorMenu(Provider, data, equipped);
   }
-
-  public override LRColor Value { get; set; } = LRColor.DEFAULT;
 }

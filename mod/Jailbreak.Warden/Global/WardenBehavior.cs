@@ -561,9 +561,9 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
       if (prisoners.Count == 0) return;
 
-      if (CV_WARDEN_AUTO_SNITCH.Value) {
+      if (CV_WARDEN_AUTO_SNITCH.Value)
         snitchPrisoners(prisoners, false);
-      } else
+      else
         cmdLocale.CellsOpened.ToAllChat();
     });
 
@@ -571,7 +571,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   }
 
   private void snitchPrisoners(List<CCSPlayerController> players, bool opened) {
-    if (API.Gangs == null) { return; }
+    if (API.Gangs == null) return;
 
     var wrappers = players.Select(p => new PlayerWrapper(p)).ToList();
     Task.Run(async () => {

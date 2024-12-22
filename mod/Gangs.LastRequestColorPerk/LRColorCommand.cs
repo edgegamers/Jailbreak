@@ -18,19 +18,16 @@ using Microsoft.Extensions.Localization;
 namespace Gangs.LastRequestColorPerk;
 
 public class LRColorCommand(IServiceProvider provider) : ICommand {
-  public string Name => "css_lrcolor";
-  public string[] Aliases => [Name, "css_lr_color"];
+  private readonly ICommandManager commands =
+    provider.GetRequiredService<ICommandManager>();
 
-  public string[] Usage => ["<color>"];
+  private readonly IEcoManager eco = provider.GetRequiredService<IEcoManager>();
 
-  private readonly IPlayerManager players =
-    provider.GetRequiredService<IPlayerManager>();
+  private readonly IGangChatPerk? gangChat =
+    provider.GetService<IGangChatPerk>();
 
   private readonly IGangManager gangs =
     provider.GetRequiredService<IGangManager>();
-
-  private readonly IPlayerStatManager playerStats =
-    provider.GetRequiredService<IPlayerStatManager>();
 
   private readonly IGangStatManager gangStats =
     provider.GetRequiredService<IGangStatManager>();
@@ -41,16 +38,19 @@ public class LRColorCommand(IServiceProvider provider) : ICommand {
   private readonly IMenuManager menus =
     provider.GetRequiredService<IMenuManager>();
 
+  private readonly IPlayerManager players =
+    provider.GetRequiredService<IPlayerManager>();
+
+  private readonly IPlayerStatManager playerStats =
+    provider.GetRequiredService<IPlayerStatManager>();
+
   private readonly IRankManager ranks =
     provider.GetRequiredService<IRankManager>();
 
-  private readonly IGangChatPerk? gangChat =
-    provider.GetService<IGangChatPerk>();
+  public string Name => "css_lrcolor";
+  public string[] Aliases => [Name, "css_lr_color"];
 
-  private readonly ICommandManager commands =
-    provider.GetRequiredService<ICommandManager>();
-
-  private readonly IEcoManager eco = provider.GetRequiredService<IEcoManager>();
+  public string[] Usage => ["<color>"];
 
   public void Start() { commands.RegisterCommand(this); }
 

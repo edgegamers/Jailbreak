@@ -11,9 +11,9 @@ namespace Jailbreak.Rainbow;
 
 public class Rainbowizer : IRainbowColorizer {
   private readonly Dictionary<int, DateTime> rainbowTimers = new();
+  private Timer? colorTimer;
 
   private BasePlugin parent = null!;
-  private Timer? colorTimer;
 
   public void Start(BasePlugin basePlugin, bool hotreload) {
     parent = basePlugin;
@@ -23,6 +23,13 @@ public class Rainbowizer : IRainbowColorizer {
     if (!player.IsValid) return;
     rainbowTimers[player.Slot] = DateTime.Now;
     colorTimer ??= parent.AddTimer(0.2f, tick, TimerFlags.REPEAT);
+  }
+
+  public void StopRainbow(int slot) {
+    rainbowTimers.Remove(slot);
+    if (rainbowTimers.Count != 0) return;
+    colorTimer?.Kill();
+    colorTimer = null;
   }
 
   private void tick() {
@@ -70,12 +77,5 @@ public class Rainbowizer : IRainbowColorizer {
       4 => Color.FromArgb(255, t, p, v),
       _ => Color.FromArgb(255, v, p, q)
     };
-  }
-
-  public void StopRainbow(int slot) {
-    rainbowTimers.Remove(slot);
-    if (rainbowTimers.Count != 0) return;
-    colorTimer?.Kill();
-    colorTimer = null;
   }
 }
