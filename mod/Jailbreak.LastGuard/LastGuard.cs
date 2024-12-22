@@ -103,12 +103,10 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
 
     var calculated = calculateHealth();
 
-    if (calculated < guardPlayerPawn.Health && !CV_ALWAYS_OVERRIDE_CT.Value) {
+    if (calculated < lastGuard.Health && !CV_ALWAYS_OVERRIDE_CT.Value) {
       if (guardPlayerPawn.Health > CV_MAX_CT_HEALTH.Value)
-        guardPlayerPawn.Health = CV_MAX_CT_HEALTH.Value;
+        lastGuard.SetHealth(CV_MAX_CT_HEALTH.Value);
     } else { guardPlayerPawn.Health = calculated; }
-
-    Utilities.SetStateChanged(guardPlayerPawn, "CBaseEntity", "m_iHealth");
 
     // foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal()))
     //     player.ExecuteClientCommand("play sounds/lastct");
@@ -171,12 +169,26 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
 
     if (!IsLastGuardActive) return HookResult.Continue;
 
+    if (player.Team == CsTeam.CounterTerrorist) { grantLastGuardKill(@event); }
+
     if (player.Team != CsTeam.Terrorist) return HookResult.Continue;
 
     addRoundTimeCapped(CV_LG_KILL_BONUS_TIME.Value, CV_LG_MAX_TIME.Value);
 
     giveGun(player);
     return HookResult.Continue;
+  }
+
+  private void grantLastGuardKill(EventPlayerDeath ev) {
+    var victim = ev.Userid;
+    var killer = ev.Attacker;
+    if (victim == null || !victim.IsValid || killer == null || !killer.IsValid)
+      return;
+    if (killer.Slot == victim.Slot) return;
+    var eco = API.Gangs?.Services.GetService<IEcoManager>();
+    if (eco == null) return;
+    var wrapper = new PlayerWrapper(killer);
+    Task.Run(async () => await eco.Grant(wrapper, 40, true, "LG Kill"));
   }
 
   [GameEventHandler]
@@ -226,7 +238,7 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
         PawnIsAlive: true, Team: CsTeam.CounterTerrorist
       });
 
-    if (canStart) StartLastGuard(lastGuard);
+    if (canStart && CV_LG_BASE_ROUND_TIME.Value != 0) StartLastGuard(lastGuard);
   }
 
   [GameEventHandler]

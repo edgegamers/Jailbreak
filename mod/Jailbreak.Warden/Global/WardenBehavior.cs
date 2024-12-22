@@ -1,5 +1,4 @@
 ﻿using System.Drawing;
-using System.Text.Json;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
@@ -7,8 +6,10 @@ using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Utils;
 using Gangs.BaseImpl.Stats;
+using Gangs.CellsPerk;
 using GangsAPI.Data;
 using GangsAPI.Services;
+using GangsAPI.Services.Gang;
 using GangsAPI.Services.Player;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.Logging;
@@ -320,7 +321,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
           if (isWarden) await incrementWardenKills(attackerWrapper);
           if (shouldGrantCredits && eco != null) {
             var giveReason = (isWarden ? "Warden" : "Guard") + " Kill";
-            var giveAmo    = isWarden ? 50 : 20;
+            var giveAmo    = isWarden ? 15 : 35;
             await eco.Grant(attackerWrapper, giveAmo, true, giveReason);
           }
         }
@@ -537,12 +538,13 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       var cellZone = getCellZone();
 
       var prisoners = PlayerUtil.FromTeam(CsTeam.Terrorist)
-       .Count(p => p.Pawn.Value != null && p.PlayerPawn.Value?.AbsOrigin != null
-          && cellZone.IsInsideZone(p.PlayerPawn.Value?.AbsOrigin!));
+       .Where(p => p.Pawn.Value != null && p.PlayerPawn.Value?.AbsOrigin != null
+          && cellZone.IsInsideZone(p.PlayerPawn.Value?.AbsOrigin!))
+       .ToList();
 
       if (openCmd.OpenedCells) {
-        if (CV_WARDEN_AUTO_SNITCH.Value && prisoners > 0)
-          cmdLocale.CellsOpenedSnitchPrisoners(prisoners);
+        if (CV_WARDEN_AUTO_SNITCH.Value && prisoners.Count != 0)
+          snitchPrisoners(prisoners, true);
         return;
       }
 
@@ -557,15 +559,59 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       // Only if we detect prisoners in cells (i.e. presumably
       // cells haven't been opened yet) should we send the message
 
-      if (prisoners == 0) return;
+      if (prisoners.Count == 0) return;
 
       if (CV_WARDEN_AUTO_SNITCH.Value)
-        cmdLocale.CellsOpenedWithPrisoners(prisoners).ToAllChat();
+        snitchPrisoners(prisoners, false);
       else
         cmdLocale.CellsOpened.ToAllChat();
     });
 
     return HookResult.Continue;
+  }
+
+  private void snitchPrisoners(List<CCSPlayerController> players, bool opened) {
+    if (API.Gangs == null) return;
+
+    var wrappers = players.Select(p => new PlayerWrapper(p)).ToList();
+    Task.Run(async () => {
+      var toReport    = wrappers.Count;
+      var gangStats   = API.Gangs.Services.GetService<IGangStatManager>();
+      var gangPlayers = API.Gangs.Services.GetService<IPlayerManager>();
+      if (gangStats == null || gangPlayers == null) {
+        baseSnitchPrisoners(wrappers.Count, opened);
+        return;
+      }
+
+      Dictionary<int, int> gangMembers = new();
+      foreach (var wrapper in wrappers) {
+        var gangPlayer = await gangPlayers.GetPlayer(wrapper.Steam);
+        var gangId     = gangPlayer?.GangId;
+        if (gangId == null) continue;
+
+        var (success, cells) =
+          await gangStats.GetForGang<int>(gangId.Value, CellsPerk.STAT_ID);
+        if (!success) cells = 0;
+
+        gangMembers.TryGetValue(gangId.Value, out var count);
+        gangMembers[gangId.Value] = ++count;
+
+        if (count > cells) continue;
+
+        toReport--;
+      }
+
+      if (toReport == 0) return;
+      await Server.NextFrameAsync(() => baseSnitchPrisoners(toReport, opened));
+    });
+  }
+
+  private void baseSnitchPrisoners(int count, bool opened) {
+    var cmdLocale = provider.GetRequiredService<IWardenCmdOpenLocale>();
+    var msg = opened ?
+      cmdLocale.CellsOpenedSnitchPrisoners(count) :
+      cmdLocale.CellsOpenedWithPrisoners(count);
+    msg.ToAllChat();
   }
 
   private IZone getCellZone() {

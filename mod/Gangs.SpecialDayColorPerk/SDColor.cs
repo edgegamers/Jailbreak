@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 using CounterStrikeSharp.API.Modules.Utils;
-using GangsAPI.Extensions;
+using Gangs.BaseImpl.Extensions;
 
 namespace Gangs.SpecialDayColorPerk;
 
@@ -14,23 +14,14 @@ public enum SDColor {
   BLUE = 1 << 5,
   PURPLE = 1 << 6,
   DEFAULT = 1 << 7,
-  RANDOM = 1 << 8
+  RANDOM = 1 << 8,
+  RAINBOW = 1 << 9
 }
 
-public static class SmokeColorExtensions {
+public static class SDColorExtensions {
   public static int GetCost(this SDColor color) {
-    return color switch {
-      SDColor.RED     => 2000,
-      SDColor.ORANGE  => 1000,
-      SDColor.YELLOW  => 1000,
-      SDColor.GREEN   => 2000,
-      SDColor.CYAN    => 5000,
-      SDColor.BLUE    => 4000,
-      SDColor.PURPLE  => 2000,
-      SDColor.DEFAULT => 1000,
-      SDColor.RANDOM  => 10000,
-      _               => 0
-    };
+    if (color == SDColor.RAINBOW) return 10 * 2500;
+    return (int)Math.Round(color.GetColor().GetColorMultiplier() * 2500);
   }
 
   public static Color? GetColor(this SDColor color) {
@@ -46,32 +37,6 @@ public static class SmokeColorExtensions {
       SDColor.RANDOM  => null,
       _               => Color.White
     };
-  }
-
-  public static char GetChatColor(this SDColor color) {
-    return color switch {
-      SDColor.RED     => ChatColors.Red,
-      SDColor.ORANGE  => ChatColors.Orange,
-      SDColor.YELLOW  => ChatColors.Yellow,
-      SDColor.GREEN   => ChatColors.Green,
-      SDColor.CYAN    => ChatColors.LightBlue,
-      SDColor.BLUE    => ChatColors.Blue,
-      SDColor.PURPLE  => ChatColors.Purple,
-      SDColor.DEFAULT => ChatColors.White,
-      SDColor.RANDOM  => ChatColors.White,
-      _               => ChatColors.White
-    };
-  }
-
-  public static char GetChatColor(this Color color) {
-    if (color == Color.Red) return ChatColors.Red;
-    if (color == Color.Orange) return ChatColors.Orange;
-    if (color == Color.Yellow) return ChatColors.Yellow;
-    if (color == Color.Green) return ChatColors.Green;
-    if (color == Color.Cyan) return ChatColors.LightBlue;
-    if (color == Color.Blue) return ChatColors.Blue;
-    if (color == Color.Purple) return ChatColors.Purple;
-    return ChatColors.White;
   }
 
   public static Color? PickRandom(this SDColor color) {
