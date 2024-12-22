@@ -3,6 +3,7 @@ using Gangs.BaseImpl;
 using GangsAPI.Data.Gang;
 using GangsAPI.Services.Gang;
 using GangsAPI.Services.Menu;
+using GangsAPI.Services.Player;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Gangs.LastRequestColorPerk;
@@ -13,6 +14,9 @@ public class LRColorPerk(IServiceProvider provider)
 
   private readonly IGangStatManager gangStats =
     provider.GetRequiredService<IGangStatManager>();
+
+  private readonly IPlayerStatManager playerStats =
+    provider.GetRequiredService<IPlayerStatManager>();
 
   public override string StatId => STAT_ID;
   public override string Name => "LR Colors";
@@ -33,7 +37,9 @@ public class LRColorPerk(IServiceProvider provider)
     var (success, data) =
       await gangStats.GetForGang<LRColor>(player.GangId.Value, STAT_ID);
     if (!success) data = LRColor.DEFAULT;
-    return new LRColorMenu(Provider, data);
+    var (_, equipped) =
+      await playerStats.GetForPlayer<LRColor>(player.Steam, STAT_ID);
+    return new LRColorMenu(Provider, data, equipped);
   }
 
   public override LRColor Value { get; set; } = LRColor.DEFAULT;
