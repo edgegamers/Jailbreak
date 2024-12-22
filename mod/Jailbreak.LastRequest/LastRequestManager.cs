@@ -232,7 +232,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
       b.Player.SetColor(toApply.Value);
 
       var msg = localizer.Get(MSG.PREFIX)
-        + $"Your LR partner will be {toApply.GetChatColor()} {toApply.Value.Name}";
+        + $"Your LR partner will be {toApply.GetChatColor()}{toApply.Value.Name}";
 
       a.Player.PrintToChat(msg);
       b.Player.PrintToChat(msg);
