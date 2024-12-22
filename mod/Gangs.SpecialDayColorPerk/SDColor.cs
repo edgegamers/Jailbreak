@@ -20,15 +20,15 @@ public enum SDColor {
 public static class SmokeColorExtensions {
   public static int GetCost(this SDColor color) {
     return color switch {
-      SDColor.RED     => 2000,
-      SDColor.ORANGE  => 1000,
-      SDColor.YELLOW  => 1000,
-      SDColor.GREEN   => 2000,
-      SDColor.CYAN    => 5000,
-      SDColor.BLUE    => 4000,
-      SDColor.PURPLE  => 2000,
-      SDColor.DEFAULT => 1000,
-      SDColor.RANDOM  => 10000,
+      SDColor.RED     => 10000,
+      SDColor.ORANGE  => 4000,
+      SDColor.YELLOW  => 3000,
+      SDColor.GREEN   => 3500,
+      SDColor.CYAN    => 8500,
+      SDColor.BLUE    => 6000,
+      SDColor.PURPLE  => 4000,
+      SDColor.DEFAULT => 1,
+      SDColor.RANDOM  => 35000,
       _               => 0
     };
   }
