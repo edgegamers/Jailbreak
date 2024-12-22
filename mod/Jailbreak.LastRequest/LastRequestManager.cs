@@ -1,20 +1,17 @@
-﻿using System.Diagnostics.Eventing.Reader;
-using System.Drawing;
-using CounterStrikeSharp.API;
+﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Menu;
+using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using Gangs.BaseImpl.Extensions;
 using Gangs.BaseImpl.Stats;
 using Gangs.LastRequestColorPerk;
 using GangsAPI;
 using GangsAPI.Data;
-using GangsAPI.Permissions;
 using GangsAPI.Services;
-using GangsAPI.Services.Gang;
 using GangsAPI.Services.Player;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.LastRequest;
@@ -24,11 +21,13 @@ using Jailbreak.Public.Mod.Damage;
 using Jailbreak.Public.Mod.LastGuard;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
+using Jailbreak.Public.Mod.Rainbow;
 using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using MStatsShared;
+using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.LastRequest;
 
@@ -52,6 +51,9 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   public static readonly FakeConVar<int> CV_MIN_PLAYERS_FOR_CREDITS =
     new("css_jb_min_players_for_credits",
       "Minimum number of players to start giving credits out", 5);
+
+  private readonly IRainbowColorizer rainbowColorizer =
+    provider.GetRequiredService<IRainbowColorizer>();
 
   private ILastRequestFactory? factory;
   public bool IsLREnabledForRound { get; set; } = true;
@@ -217,27 +219,53 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     if (!aSuccess) aData = LRColor.DEFAULT;
     if (!bSuccess) bData = LRColor.DEFAULT;
 
-    Color? toApply = null;
+    LRColor?       toApply = null;
+    PlayerWrapper? higher  = null;
     if (aSuccess && bSuccess) {
-      var higher = await getHigherPlayer(a, b);
-      toApply = higher.Steam == a.Steam ?
-        aData.GetColor() ?? aData.PickRandomColor() :
-        bData.GetColor() ?? bData.PickRandomColor();
+      higher  = await getHigherPlayer(a, b);
+      toApply = higher.Steam == a.Steam ? aData : bData;
     } else if (aSuccess) {
-      toApply = aData.GetColor() ?? aData.PickRandomColor();
+      toApply = aData;
+      higher  = a;
     } else if (bSuccess) {
-      toApply = bData.GetColor() ?? bData.PickRandomColor();
+      toApply = bData;
+      higher  = b;
     }
 
-    if (toApply == null) return;
+    if (toApply == null || higher == null) return;
     if (a.Player == null || b.Player == null) return;
 
+    var color = toApply.Value.GetColor();
+
+    if (color == null) { // Player picked random, but we need to pick
+      // the random from their GANG's colors
+      var gangStats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+      if (gangStats == null) return;
+      var (success, gangData) =
+        await gangStats.GetForPlayer<LRColor>(higher, LRColorPerk.STAT_ID);
+      if (!success) return;
+      color = gangData.PickRandomColor();
+    }
+
+    if (color == null) return;
+
     await Server.NextFrameAsync(() => {
-      a.Player.SetColor(toApply.Value);
-      b.Player.SetColor(toApply.Value);
+      if (toApply == LRColor.RAINBOW) {
+        rainbowColorizer.StartRainbow(a.Player);
+        rainbowColorizer.StartRainbow(b.Player);
+        var rmsg = localizer.Get(MSG.PREFIX)
+          + $"Your LR partner is {ChatColors.DarkRed}R{ChatColors.Orange}a{ChatColors.Yellow}i{ChatColors.Green}n{ChatColors.Blue}b{ChatColors.Purple}o{ChatColors.Grey}w{ChatColors.Grey}.";
+
+        a.Player.PrintToChat(rmsg);
+        b.Player.PrintToChat(rmsg);
+        return;
+      }
+
+      a.Player.SetColor(color.Value);
+      b.Player.SetColor(color.Value);
 
       var msg = localizer.Get(MSG.PREFIX)
-        + $"Your LR partner is {toApply.GetChatColor()}{toApply.Value.Name}{ChatColors.Grey}.";
+        + $"Your LR partner is {color.GetChatColor()}{color.Value.Name}{ChatColors.Grey}.";
 
       a.Player.PrintToChat(msg);
       b.Player.PrintToChat(msg);
@@ -278,6 +306,8 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   }
 
   public bool EndLastRequest(AbstractLastRequest lr, LRResult result) {
+    rainbowColorizer.StopRainbow(lr.Prisoner);
+    rainbowColorizer.StopRainbow(lr.Guard);
     if (result is LRResult.GUARD_WIN or LRResult.PRISONER_WIN) {
       RoundUtil.AddTimeRemaining(CV_LR_BONUS_TIME.Value);
       messages.LastRequestDecided(lr, result).ToAllChat();
@@ -290,7 +320,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
         var eco = API.Gangs?.Services.GetService<IEcoManager>();
         if (eco == null) return false;
         Task.Run(async () => await eco.Grant(wrapper,
-          wrapper.Team == CsTeam.CounterTerrorist ? 50 : 25, reason: "LR Win"));
+          wrapper.Team == CsTeam.CounterTerrorist ? 35 : 20, reason: "LR Win"));
       }
 
       if (API.Gangs != null)
