@@ -27,7 +27,6 @@ public class LRColorMenu(IServiceProvider provider, LRColor data)
     return data.HasFlag(b) ? 1 : a.GetCost().CompareTo(b.GetCost());
   }
 
-
   override protected Task<List<LRColor>> GetItems(PlayerWrapper player) {
     var list = Enum.GetValues<LRColor>().ToList();
     list.Sort(CompareSmokeColors);
