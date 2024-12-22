@@ -575,6 +575,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     if (API.Gangs == null) { return; }
 
     var wrappers = players.Select(p => new PlayerWrapper(p)).ToList();
+    Server.PrintToChatAll(
+      $"Attempiting to open cells with {wrappers.Count} prisoners");
     Task.Run(async () => {
       var toReport    = wrappers.Count;
       var gangStats   = API.Gangs.Services.GetService<IGangStatManager>();
@@ -603,7 +605,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       }
 
       if (toReport == 0) return;
-      baseSnitchPrisoners(toReport, opened);
+      await Server.NextFrameAsync(() => baseSnitchPrisoners(toReport, opened));
     });
   }
 
