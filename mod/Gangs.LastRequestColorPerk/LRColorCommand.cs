@@ -1,4 +1,5 @@
-﻿using Gangs.BaseImpl.Extensions;
+﻿using CounterStrikeSharp.API.Modules.Utils;
+using Gangs.BaseImpl.Extensions;
 using GangsAPI;
 using GangsAPI.Data;
 using GangsAPI.Data.Command;
@@ -71,8 +72,12 @@ public class LRColorCommand(IServiceProvider provider) : ICommand {
 
     if (!success) data = LRColor.DEFAULT;
 
+    var (_, equipped) =
+      await playerStats.GetForPlayer<LRColor>(player.Steam,
+        LRColorPerk.STAT_ID);
+
     if (info.Args.Length == 1) {
-      var menu = new LRColorMenu(provider, data);
+      var menu = new LRColorMenu(provider, data, equipped);
       await menus.OpenMenu(executor, menu);
       return CommandResult.SUCCESS;
     }
@@ -112,7 +117,8 @@ public class LRColorCommand(IServiceProvider provider) : ICommand {
 
     await playerStats.SetForPlayer(executor, LRColorPerk.STAT_ID, color);
     executor.PrintToChat(localizer.Get(MSG.PREFIX) + "Set your LR color to "
-      + color.GetColor().GetChatColor() + color.ToString().ToTitleCase());
+      + color.GetColor().GetChatColor() + color.ToString().ToTitleCase()
+      + ChatColors.Grey + ".");
 
     return CommandResult.SUCCESS;
   }

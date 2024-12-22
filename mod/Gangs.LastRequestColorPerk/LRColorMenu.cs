@@ -9,8 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Gangs.LastRequestColorPerk;
 
-public class LRColorMenu(IServiceProvider provider, LRColor data)
-  : AbstractPagedMenu<LRColor>(provider, NativeSenders.Chat) {
+public class LRColorMenu(IServiceProvider provider, LRColor data,
+  LRColor equipped) : AbstractPagedMenu<LRColor>(provider, NativeSenders.Chat) {
   private readonly ICommandManager commands =
     provider.GetRequiredService<ICommandManager>();
 
@@ -47,8 +47,8 @@ public class LRColorMenu(IServiceProvider provider, LRColor data)
     var name = item.ToString().ToTitleCase();
     if (item == 0)
       return Task.FromResult(
-        $" {ChatColors.DarkBlue}Gang Perks: {ChatColors.LightBlue}Special Day Colors");
-    if (data == item)
+        $" {ChatColors.DarkBlue}Gang Perks: {ChatColors.LightBlue}Last Request Colors");
+    if (item == equipped)
       return Task.FromResult(
         $"{index}. {item.GetColor().GetChatColor()}{name} {ChatColors.Green}({ChatColors.Lime}Equipped{ChatColors.Green})");
     if (data.HasFlag(item))
