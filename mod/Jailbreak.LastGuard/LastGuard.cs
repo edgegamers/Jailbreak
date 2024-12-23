@@ -169,7 +169,7 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
 
     if (!IsLastGuardActive) return HookResult.Continue;
 
-    if (player.Team == CsTeam.CounterTerrorist) { grantLastGuardKill(@event); }
+    if (player.Team == CsTeam.CounterTerrorist) grantLastGuardKill(@event);
 
     if (player.Team != CsTeam.Terrorist) return HookResult.Continue;
 

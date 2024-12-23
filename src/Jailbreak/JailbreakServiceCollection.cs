@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API.Core;
 using Gangs.Boostrap;
 using Jailbreak.Debug;
+using Jailbreak.Draw;
 using Jailbreak.English.Generic;
 using Jailbreak.English.LastGuard;
 using Jailbreak.English.LastRequest;
@@ -76,5 +77,6 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
     serviceCollection.AddDiceRoll();
     serviceCollection.AddGangs();
     serviceCollection.AddJailbreakRainbow();
+    serviceCollection.AddTextSpawner();
   }
 }

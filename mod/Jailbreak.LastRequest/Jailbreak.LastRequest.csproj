@@ -9,6 +9,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\public\Jailbreak.Formatting\Jailbreak.Formatting.csproj"/>
         <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj"/>
+        <ProjectReference Include="..\..\public\Jailbreak.Validator\Jailbreak.Validator.csproj" />
         <ProjectReference Include="..\Gangs.BaseImpl\Gangs.BaseImpl.csproj"/>
         <ProjectReference Include="..\Gangs.LastRequestColorPerk\Gangs.LastRequestColorPerk.csproj"/>
     </ItemGroup>

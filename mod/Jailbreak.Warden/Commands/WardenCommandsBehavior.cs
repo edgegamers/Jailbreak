@@ -95,7 +95,8 @@ public class WardenCommandsBehavior(IWardenLocale locale,
     if (player.Team != CsTeam.CounterTerrorist || !player.PawnIsAlive) return;
 
     // If they're already in the cooldown dictionary, check if their cooldown has expired.
-    if (lastPassCommand.TryGetValue(player, out var last)) {
+    if (lastPassCommand.TryGetValue(player, out var last)
+      && !AdminManager.PlayerHasPermissions(player, "@css/rcon")) {
       var cooldown = last.AddSeconds(15);
       if (DateTime.Now < cooldown) {
         generics.CommandOnCooldown(cooldown).ToChat(player);

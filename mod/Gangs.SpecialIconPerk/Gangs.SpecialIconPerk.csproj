@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Gangs.BaseImpl\Gangs.BaseImpl.csproj"/>
+        <ProjectReference Include="..\Gangs.WardenIconPerk\Gangs.WardenIconPerk.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Reference Include="GangsAPI">
+            <HintPath>..\..\public\Jailbreak.Public\Mixin\GangsAPI.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+</Project>

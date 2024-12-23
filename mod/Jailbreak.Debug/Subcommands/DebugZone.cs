@@ -13,11 +13,10 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
   private readonly IDictionary<ulong, ITypedZoneCreator> creators =
     new Dictionary<ulong, ITypedZoneCreator>();
 
-  private readonly IZoneFactory factory =
-    services.GetRequiredService<IZoneFactory>();
+  private readonly IZoneFactory? factory = services.GetService<IZoneFactory>();
 
-  private readonly IZoneManager zoneManager =
-    services.GetRequiredService<IZoneManager>();
+  private readonly IZoneManager? zoneManager =
+    services.GetService<IZoneManager>();
 
   public override void OnCommand(CCSPlayerController? executor,
     WrappedInfo info) {
@@ -25,6 +24,11 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
     if (executor.PlayerPawn.Value?.AbsOrigin == null) {
       info.ReplyToCommand(
         "Unable to find your position. Please try again later.");
+      return;
+    }
+
+    if (factory == null || zoneManager == null) {
+      info.ReplyToCommand("Zone factory or manager not found");
       return;
     }
 

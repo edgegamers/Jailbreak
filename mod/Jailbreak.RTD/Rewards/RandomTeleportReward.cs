@@ -6,11 +6,13 @@ using Jailbreak.Public.Utils;
 
 namespace Jailbreak.RTD.Rewards;
 
-public class RandomTeleportReward(IZoneManager zones) : IRTDReward {
+public class RandomTeleportReward(IZoneManager? zones) : IRTDReward {
   public string Name => "Random Teleport";
 
   public string Description
     => "You will be teleported to a random location next round.";
+
+  public bool Enabled => zones != null;
 
   public bool CanGrantReward(CCSPlayerController player) {
     return player.Team == CsTeam.Terrorist;

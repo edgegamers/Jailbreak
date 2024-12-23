@@ -1,4 +1,6 @@
-﻿using Gangs.BombIconPerk;
+﻿using CounterStrikeSharp.API.Modules.Utils;
+using Gangs.BaseImpl.Extensions;
+using Gangs.BombIconPerk;
 using GangsAPI;
 using GangsAPI.Data;
 using GangsAPI.Data.Command;
@@ -124,7 +126,8 @@ public class SDColorCommand(IServiceProvider provider) : ICommand {
 
     await gangChat.SendGangChat(player, gang,
       localizer.Get(MSG.GANG_THING_SET, "SD Color",
-        color.ToString().ToTitleCase()));
+        color.GetColor().GetChatColor() + color.ToString().ToTitleCase()
+        + ChatColors.Grey));
     return CommandResult.SUCCESS;
   }
 }

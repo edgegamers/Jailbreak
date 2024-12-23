@@ -7,12 +7,15 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Generic;
 using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.Warden;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Warden.SpecialTreatment;
 
 public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
-  IRebelService rebel, IWardenSTLocale notifications)
+  IRebelService rebel, IWardenSTLocale notifications, IServiceProvider provider)
   : IPluginBehavior, ISpecialTreatmentService {
+  private readonly ISpecialIcon? iconer = provider.GetService<ISpecialIcon>();
+
   private readonly IPlayerState<SpecialTreatmentState> sts =
     factory.Round<SpecialTreatmentState>();
 
@@ -32,8 +35,9 @@ public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
       PlayerExtensions.FadeFlags.FADE_OUT);
 
     notifications.Granted.ToChat(player).ToCenter(player);
-
     notifications.GrantedTo(player).ToAllChat();
+
+    iconer?.AssignSpecialIcon(player);
   }
 
   public void Revoke(CCSPlayerController player) {
@@ -46,8 +50,9 @@ public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
     player.ColorScreen(Color.FromArgb(16, 0, 255, 0), 0f, 1.5f);
 
     notifications.Revoked.ToChat(player).ToCenter(player);
-
     notifications.RevokedFrom(player).ToAllChat();
+
+    iconer?.RemoveSpecialIcon(player);
   }
 
   private void setSpecialColor(CCSPlayerController player, bool hasSt) {

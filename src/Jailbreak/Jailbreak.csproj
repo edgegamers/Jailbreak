@@ -59,6 +59,7 @@
         <ProjectReference Include="..\..\lang\Jailbreak.English\Jailbreak.English.csproj"/>
         <ProjectReference Include="..\..\mod\Gangs.Boostrap\Gangs.Boostrap.csproj"/>
         <ProjectReference Include="..\..\mod\Jailbreak.Debug\Jailbreak.Debug.csproj"/>
+        <ProjectReference Include="..\..\mod\Jailbreak.Draw\Jailbreak.Draw.csproj"/>
         <ProjectReference Include="..\..\mod\Jailbreak.LastRequest\Jailbreak.LastRequest.csproj"/>
         <ProjectReference Include="..\..\mod\Jailbreak.Mute\Jailbreak.Mute.csproj"/>
         <ProjectReference Include="..\..\mod\Jailbreak.LastGuard\Jailbreak.LastGuard.csproj"/>

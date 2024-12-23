@@ -11,14 +11,16 @@ public class SDColorPerk(IServiceProvider provider)
   : BasePerk<SDColorData>(provider) {
   public const string STAT_ID = "jb_sd_color";
 
+  public const string DESC =
+    "Change the color of your gang during special days!";
+
   private readonly IGangStatManager gangStats =
     provider.GetRequiredService<IGangStatManager>();
 
   public override string StatId => STAT_ID;
   public override string Name => "Special Day Color";
 
-  public override string Description
-    => "Change the color of your gang during special days!";
+  public override string Description => DESC;
 
   public override SDColorData Value { get; set; } = new();
 

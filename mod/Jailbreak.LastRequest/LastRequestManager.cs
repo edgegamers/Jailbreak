@@ -11,6 +11,7 @@ using Gangs.LastRequestColorPerk;
 using GangsAPI;
 using GangsAPI.Data;
 using GangsAPI.Services;
+using GangsAPI.Services.Gang;
 using GangsAPI.Services.Player;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.LastRequest;
@@ -229,8 +230,12 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
   private async Task colorForLR(PlayerWrapper a, PlayerWrapper b) {
     var playerStats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    var gangStats   = API.Gangs?.Services.GetService<IGangStatManager>();
+    var gangs       = API.Gangs?.Services.GetService<IGangManager>();
     var localizer   = API.Gangs?.Services.GetService<IStringLocalizer>();
-    if (playerStats == null || localizer == null) return;
+    if (playerStats == null || localizer == null || gangs == null
+      || gangStats == null)
+      return;
     var (aSuccess, aData) =
       await playerStats.GetForPlayer<LRColor>(a, LRColorPerk.STAT_ID);
     var (bSuccess, bData) =
@@ -255,14 +260,21 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     if (toApply == null || higher == null) return;
     if (a.Player == null || b.Player == null) return;
 
+    var higherGang = await gangs.GetGang(higher.Steam);
+    if (higherGang == null) return;
+
+    var (gangSuccess, gData) =
+      await gangStats.GetForGang<LRColor>(higherGang, LRColorPerk.STAT_ID);
+
+    if (!gangSuccess) return;
+    if ((gData & toApply.Value) == 0) return;
+
     var color = toApply.Value.GetColor();
 
     if (color == null) { // Player picked random, but we need to pick
       // the random from their GANG's colors
-      var gangStats = API.Gangs?.Services.GetService<IPlayerStatManager>();
-      if (gangStats == null) return;
       var (success, gangData) =
-        await gangStats.GetForPlayer<LRColor>(higher, LRColorPerk.STAT_ID);
+        await playerStats.GetForPlayer<LRColor>(higher, LRColorPerk.STAT_ID);
       if (!success) return;
       color = gangData.PickRandomColor();
     }
