@@ -32,6 +32,10 @@ public class Rainbowizer : IRainbowColorizer {
     colorTimer = null;
   }
 
+  public Color GetRainbow() {
+    return calculateColor(DateTime.Now - DateTime.UnixEpoch);
+  }
+
   private void tick() {
     foreach (var (slot, start) in rainbowTimers) {
       var player = Utilities.GetPlayerFromSlot(slot);

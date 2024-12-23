@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using System.Drawing;
+using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Behaviors;
 
@@ -16,4 +17,6 @@ public interface IRainbowColorizer : IPluginBehavior {
   }
 
   void StopRainbow(int slot);
+
+  Color GetRainbow();
 }

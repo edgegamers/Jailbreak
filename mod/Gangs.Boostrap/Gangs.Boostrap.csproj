@@ -13,6 +13,7 @@
         <ProjectReference Include="..\Gangs.SpecialDayColorPerk\Gangs.SpecialDayColorPerk.csproj"/>
         <ProjectReference Include="..\Gangs.SpecialIconPerk\Gangs.SpecialIconPerk.csproj"/>
         <ProjectReference Include="..\Gangs.WardenIconPerk\Gangs.WardenIconPerk.csproj"/>
+        <ProjectReference Include="..\WardenPaintColorPerk\WardenPaintColorPerk.csproj" />
     </ItemGroup>
 
     <ItemGroup>
