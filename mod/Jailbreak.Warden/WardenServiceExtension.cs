@@ -1,4 +1,5 @@
-﻿using Jailbreak.Public.Extensions;
+﻿using GangsAPI.Extensions;
+using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Warden;
 using Jailbreak.Warden.Commands;
 using Jailbreak.Warden.Global;
@@ -20,6 +21,7 @@ public static class WardenServiceExtension {
      .AddPluginBehavior<ISpecialTreatmentService, SpecialTreatmentBehavior>();
     serviceCollection
      .AddPluginBehavior<IWardenOpenCommand, WardenOpenCommandsBehavior>();
+    serviceCollection.AddPluginBehavior<IWardenIcon, WardenIconBehavior>();
     serviceCollection.AddPluginBehavior<CountCommandsBehavior>();
 
 

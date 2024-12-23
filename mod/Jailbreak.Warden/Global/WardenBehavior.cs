@@ -99,6 +99,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   private readonly ISet<CCSPlayerController> bluePrisoners =
     new HashSet<CCSPlayerController>();
 
+  private readonly IWardenIcon? iconer = provider.GetService<IWardenIcon>();
+
   private bool firstWarden;
   private string? oldTag;
   private char? oldTagColor;
@@ -106,8 +108,6 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   private BasePlugin parent = null!;
   private PreWardenStats? preWardenStats;
   private Timer? unblueTimer, openCellsTimer;
-
-  private IEnumerable<CPointWorldText>? wardenHat;
 
   public void Start(BasePlugin basePlugin) {
     parent = basePlugin;
@@ -180,10 +180,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
         });
     }
 
-    var spawner = provider.GetService<ITextSpawner>();
-    wardenHat =
-      spawner?.CreateTextHat(new TextSetting { msg = "W", color = Color.Blue },
-        Warden);
+    iconer?.AssignWardenIcon(Warden);
 
     foreach (var player in Utilities.GetPlayers())
       player.ExecuteClientCommand($"play sounds/{CV_WARDEN_SOUND_NEW.Value}");
@@ -265,15 +262,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
           Task.Run(async () => await updateWardenDeathStats(wrapper));
         }
       }
-    }
 
-    if (wardenHat != null) {
-      foreach (var ent in wardenHat) {
-        if (!ent.IsValid) continue;
-        ent.Remove();
-      }
-
-      wardenHat = null;
+      iconer?.RemoveWardenIcon(Warden);
     }
 
     var wardenPawn = Warden!.PlayerPawn.Value;
