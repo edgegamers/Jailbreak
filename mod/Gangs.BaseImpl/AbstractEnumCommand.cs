@@ -143,7 +143,7 @@ public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
 
     await playerStats.SetForPlayer(executor, statId, val);
     executor.PrintToChat(
-      $"{localizer.Get(MSG.PREFIX)}Set your {ChatColors.BlueGrey}{title}{ChatColors.Grey} to {formatItem(val)}.");
+      $"{localizer.Get(MSG.PREFIX)}Set your {ChatColors.BlueGrey + title}{ChatColors.Grey} to {formatItem(val)}.");
     return CommandResult.SUCCESS;
   }
 
