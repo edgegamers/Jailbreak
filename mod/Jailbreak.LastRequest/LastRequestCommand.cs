@@ -13,7 +13,7 @@ using Jailbreak.Public.Mod.LastRequest.Enums;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestCommand(ILastRequestManager manager, ILRLocale messages,
+public class LastRequestCommand(ILastRequestManager lastRequestManager, ILastRequestRebelManager lastRequestRebelManager, ILRLocale messages,
   IGenericCmdLocale generic, ILastRequestFactory factory) : IPluginBehavior {
   private LastRequestMenuSelector? menuSelector;
   private LastRequestPlayerSelector? playerSelector;
@@ -22,7 +22,7 @@ public class LastRequestCommand(ILastRequestManager manager, ILRLocale messages,
   // css_lr <player> <LRType>
   public void Start(BasePlugin basePlugin) {
     plugin         = basePlugin;
-    playerSelector = new LastRequestPlayerSelector(manager, plugin);
+    playerSelector = new LastRequestPlayerSelector(lastRequestManager, plugin);
     menuSelector   = new LastRequestMenuSelector(factory, plugin);
   }
 
@@ -31,7 +31,7 @@ public class LastRequestCommand(ILastRequestManager manager, ILRLocale messages,
   public void Command_LastRequest(CCSPlayerController? executor,
     CommandInfo info) {
     if (executor == null || !executor.IsReal()) return;
-    if (!manager.IsLREnabled) {
+    if (!lastRequestManager.IsLREnabled) {
       messages.LastRequestNotEnabled().ToChat(executor);
       return;
     }
@@ -52,7 +52,7 @@ public class LastRequestCommand(ILastRequestManager manager, ILRLocale messages,
       return;
     }
 
-    if (manager.IsInLR(executor)) {
+    if (lastRequestManager.IsInLR(executor) || lastRequestRebelManager.IsInLRRebelling(executor.Slot)) {
       messages.CannotLR("You are already in an LR").ToChat(executor);
       return;
     }
@@ -99,12 +99,12 @@ public class LastRequestCommand(ILastRequestManager manager, ILRLocale messages,
       return;
     }
 
-    if (manager.IsInLR(player)) {
+    if (lastRequestManager.IsInLR(player)) {
       messages.CannotLR(player, "They are already in an LR").ToChat(executor);
       return;
     }
 
-    if (!manager.InitiateLastRequest(executor, player, (LRType)type))
+    if (!lastRequestManager.InitiateLastRequest(executor, player, (LRType)type))
       info.ReplyToCommand(
         "An error occurred while initiating the last request. Please try again later.");
   }
