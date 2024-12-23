@@ -12,10 +12,11 @@ public interface ITextSpawner {
   CPointWorldText CreateText(TextSetting setting, Vector position,
     QAngle rotation);
 
-  CPointWorldText CreateTextHat(string text, CCSPlayerController player) {
+  IEnumerable<CPointWorldText>
+    CreateTextHat(string text, CCSPlayerController player) {
     return CreateTextHat(new TextSetting { msg = text }, player);
   }
 
-  CPointWorldText
-    CreateTextHat(TextSetting setting, CCSPlayerController player);
+  IEnumerable<CPointWorldText> CreateTextHat(TextSetting setting,
+    CCSPlayerController player);
 }

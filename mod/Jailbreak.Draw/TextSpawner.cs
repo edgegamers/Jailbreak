@@ -31,27 +31,38 @@ public class TextSpawner : ITextSpawner {
     return ent;
   }
 
-  public CPointWorldText CreateTextHat(TextSetting setting,
+  public IEnumerable<CPointWorldText> CreateTextHat(TextSetting setting,
     CCSPlayerController player) {
+    var one = spawnHatPart(setting, player, 270);
+    var two = spawnHatPart(setting, player, 180);
+
+    return [one, two];
+  }
+
+  private CPointWorldText spawnHatPart(TextSetting setting,
+    CCSPlayerController player, float yRot) {
     var position = player.PlayerPawn.Value?.AbsOrigin;
     var rotation = player.PlayerPawn.Value?.AbsRotation;
     if (position == null || rotation == null)
       throw new Exception("Failed to get player position");
     position = position.Clone();
     position.Add(new Vector(0, 0, 72));
-    // position.Add(-GetForward(rotation) * 8);
-    rotation = new QAngle(rotation.X, rotation.Y + 270, rotation.Z + 90);
+    rotation = new QAngle(rotation.X, rotation.Y + yRot, rotation.Z + 90);
+
+    // Current position is a bit to the right of the player's head
+    // so we need to move it to the center
+    position.Add(GetForwardVector(rotation) * -10);
+
     var ent = CreateText(setting, position, rotation);
     ent.AcceptInput("SetParent", player.PlayerPawn.Value, null, "!activator");
     return ent;
   }
 
-  public static Vector GetForward(QAngle angle) {
-    var pitch = angle.X;
-    var yaw   = angle.Y;
-    var x     = (float)(Math.Cos(pitch) * Math.Cos(yaw));
-    var y     = (float)(Math.Cos(pitch) * Math.Sin(yaw));
-    var z     = (float)(-Math.Sin(pitch));
-    return new Vector(x, y, z);
+  public static Vector GetForwardVector(QAngle rotation) {
+    var forward = new Vector();
+    forward.X = (float)Math.Cos(rotation.Y * Math.PI / 180);
+    forward.Y = (float)Math.Sin(rotation.Y * Math.PI / 180);
+    forward.Z = 0;
+    return forward;
   }
 }

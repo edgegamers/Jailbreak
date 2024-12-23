@@ -107,7 +107,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   private PreWardenStats? preWardenStats;
   private Timer? unblueTimer, openCellsTimer;
 
-  private CPointWorldText? wardenHat;
+  private IEnumerable<CPointWorldText>? wardenHat;
 
   public void Start(BasePlugin basePlugin) {
     parent = basePlugin;
@@ -268,7 +268,11 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     }
 
     if (wardenHat != null) {
-      if (wardenHat.IsValid) wardenHat.Remove();
+      foreach (var ent in wardenHat) {
+        if (!ent.IsValid) continue;
+        ent.Remove();
+      }
+
       wardenHat = null;
     }
 
