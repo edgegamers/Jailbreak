@@ -34,14 +34,15 @@ public class WardenIconBehavior(ITextSpawner spawner)
 
     if (!success) icon = WardenIcon.DEFAULT;
 
-    if (icon != WardenIcon.RANDOM || gangStats == null || players == null)
-      return icon.GetIcon();
+    if (gangStats == null || players == null) return icon.GetIcon();
 
     var gangPlayer = await players.GetPlayer(player.Steam);
     if (gangPlayer?.GangId == null) return WardenIcon.DEFAULT.GetIcon();
     var (_, available) =
       await gangStats.GetForGang<WardenIcon>(gangPlayer.GangId.Value,
         WardenIconPerk.STAT_ID);
-    return available.PickRandom();
+
+    if ((available & icon) == 0) return WardenIcon.DEFAULT.GetIcon();
+    return icon != WardenIcon.RANDOM ? icon.GetIcon() : available.PickRandom();
   }
 }

@@ -34,14 +34,15 @@ public class SpecialIconBehavior(ITextSpawner spawner)
 
     if (!success) icon = SpecialIcon.DEFAULT;
 
-    if (icon != SpecialIcon.RANDOM || gangStats == null || players == null)
-      return icon.GetIcon();
+    if (gangStats == null || players == null) return icon.GetIcon();
 
     var gangPlayer = await players.GetPlayer(player.Steam);
     if (gangPlayer?.GangId == null) return SpecialIcon.DEFAULT.GetIcon();
     var (_, available) =
       await gangStats.GetForGang<SpecialIcon>(gangPlayer.GangId.Value,
         SpecialIconPerk.STAT_ID);
-    return available.PickRandom();
+
+    if ((available & icon) == 0) return SpecialIcon.DEFAULT.GetIcon();
+    return icon != SpecialIcon.RANDOM ? icon.GetIcon() : available.PickRandom();
   }
 }

@@ -18,8 +18,7 @@ using Microsoft.Extensions.Localization;
 namespace Gangs.BaseImpl;
 
 public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
-  string statId, T def, string title, bool isOnlyGang)
-  : ICommand where T : struct, Enum {
+  string statId, T def, string title) : ICommand where T : struct, Enum {
   private readonly ICommandManager commands =
     provider.GetRequiredService<ICommandManager>();
 
@@ -75,13 +74,8 @@ public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
     if (!success) data = def;
 
     T equipped;
-    if (isOnlyGang) {
-      var (_, tmp) = await gangStats.GetForGang<T>(player.GangId.Value, statId);
-      equipped     = tmp;
-    } else {
-      var (_, tmp) = await playerStats.GetForPlayer<T>(player.Steam, statId);
-      equipped     = tmp;
-    }
+    var (_, tmp) = await playerStats.GetForPlayer<T>(player.Steam, statId);
+    equipped     = tmp;
 
     if (info.Args.Length == 1) {
       openMenu(executor, data, equipped);
@@ -120,24 +114,6 @@ public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
       if (gangChat != null)
         await gangChat.SendGangChat(player, gang,
           localizer.Get(MSG.PERK_PURCHASED, $"{title} ({formatItem(val)})"));
-      return CommandResult.SUCCESS;
-    }
-
-    if (isOnlyGang) {
-      var (canManage, required) =
-        await ranks.CheckRank(player, Perm.MANAGE_PERKS);
-      if (!canManage) {
-        info.ReplySync(localizer.Get(MSG.GENERIC_NOPERM_RANK, required.Name));
-        return CommandResult.SUCCESS;
-      }
-
-      Unsafe.As<T, short>(ref equipped) = Unsafe.As<T, short>(ref val);
-      await gangStats.SetForGang(gang, statId, data);
-
-      if (gangChat == null) return CommandResult.SUCCESS;
-
-      await gangChat.SendGangChat(player, gang,
-        localizer.Get(MSG.GANG_THING_SET, title, formatItem(val)));
       return CommandResult.SUCCESS;
     }
 

@@ -8,7 +8,7 @@ namespace Gangs.LastRequestColorPerk;
 
 public class LRColorCommand(IServiceProvider provider)
   : AbstractEnumCommand<LRColor>(provider, LRColorPerk.STAT_ID, LRColor.DEFAULT,
-    "LR Color", false) {
+    "LR Color") {
   public override string Name => "css_lrcolor";
 
   override protected void openMenu(PlayerWrapper player, LRColor data,

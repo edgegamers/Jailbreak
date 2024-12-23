@@ -6,7 +6,7 @@ namespace Gangs.SpecialIconPerk;
 
 public class SpecialIconCommand(IServiceProvider provider)
   : AbstractEnumCommand<SpecialIcon>(provider, SpecialIconPerk.STAT_ID,
-    SpecialIcon.DEFAULT, "ST Icon", false) {
+    SpecialIcon.DEFAULT, "ST Icon") {
   public override string Name => "css_sticon";
 
   override protected void openMenu(PlayerWrapper player, SpecialIcon data,

@@ -5,7 +5,7 @@ namespace Gangs.WardenIconPerk;
 
 public class WardenIconCommand(IServiceProvider provider)
   : AbstractEnumCommand<WardenIcon>(provider, WardenIconPerk.STAT_ID,
-    WardenIcon.DEFAULT, "Warden Icon", false) {
+    WardenIcon.DEFAULT, "Warden Icon") {
   public override string Name => "css_wardenicon";
 
   override protected void openMenu(PlayerWrapper player, WardenIcon data,
