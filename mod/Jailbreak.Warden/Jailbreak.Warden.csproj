@@ -10,8 +10,8 @@
         <ProjectReference Include="..\..\public\Jailbreak.Formatting\Jailbreak.Formatting.csproj"/>
         <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj"/>
         <ProjectReference Include="..\Gangs.CellsPerk\Gangs.CellsPerk.csproj"/>
-        <ProjectReference Include="..\Gangs.SpecialIconPerk\Gangs.SpecialIconPerk.csproj" />
-        <ProjectReference Include="..\Gangs.WardenIconPerk\Gangs.WardenIconPerk.csproj" />
+        <ProjectReference Include="..\Gangs.SpecialIconPerk\Gangs.SpecialIconPerk.csproj"/>
+        <ProjectReference Include="..\Gangs.WardenIconPerk\Gangs.WardenIconPerk.csproj"/>
         <ProjectReference Include="..\Jailbreak.Zones\Jailbreak.Zones.csproj"/>
     </ItemGroup>
 

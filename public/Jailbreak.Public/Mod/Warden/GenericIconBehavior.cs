@@ -2,11 +2,8 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using GangsAPI.Data;
-using GangsAPI.Services.Gang;
-using GangsAPI.Services.Player;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.Draw;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Public.Mod.Warden;
 

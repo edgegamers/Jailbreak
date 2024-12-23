@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using CounterStrikeSharp.API;
+﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -23,12 +22,12 @@ namespace Jailbreak.SpecialDay;
 
 public class SpecialDayManager(ISpecialDayFactory factory,
   IServiceProvider provider) : ISpecialDayManager {
+  private readonly IRainbowColorizer colorizer =
+    provider.GetRequiredService<IRainbowColorizer>();
+
   public bool IsSDRunning { get; set; }
   public AbstractSpecialDay? CurrentSD { get; private set; }
   public int RoundsSinceLastSD { get; set; }
-
-  private IRainbowColorizer colorizer =
-    provider.GetRequiredService<IRainbowColorizer>();
 
   public bool InitiateSpecialDay(SDType type) {
     API.Stats?.PushStat(new ServerStat("JB_SPECIALDAY", type.ToString()));

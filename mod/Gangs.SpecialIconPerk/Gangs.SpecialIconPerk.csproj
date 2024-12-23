@@ -7,14 +7,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Gangs.BaseImpl\Gangs.BaseImpl.csproj" />
-      <ProjectReference Include="..\Gangs.WardenIconPerk\Gangs.WardenIconPerk.csproj" />
+        <ProjectReference Include="..\Gangs.BaseImpl\Gangs.BaseImpl.csproj"/>
+        <ProjectReference Include="..\Gangs.WardenIconPerk\Gangs.WardenIconPerk.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="GangsAPI">
-        <HintPath>..\..\public\Jailbreak.Public\Mixin\GangsAPI.dll</HintPath>
-      </Reference>
+        <Reference Include="GangsAPI">
+            <HintPath>..\..\public\Jailbreak.Public\Mixin\GangsAPI.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
 </Project>

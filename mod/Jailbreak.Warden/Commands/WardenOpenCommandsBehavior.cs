@@ -58,9 +58,7 @@ public class WardenOpenCommandsBehavior(IWardenService warden,
 
     OpenedCells = true;
 
-    if (zoneManager == null)
-      MapUtil.OpenCells();
-    else {
+    if (zoneManager == null) { MapUtil.OpenCells(); } else {
       var   result = MapUtil.OpenCells(zoneManager);
       IView message;
       if (result) {

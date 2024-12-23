@@ -5,7 +5,6 @@ using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Generic;
-using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.Warden;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,10 +14,10 @@ namespace Jailbreak.Warden.SpecialTreatment;
 public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
   IRebelService rebel, IWardenSTLocale notifications, IServiceProvider provider)
   : IPluginBehavior, ISpecialTreatmentService {
+  private readonly ISpecialIcon? iconer = provider.GetService<ISpecialIcon>();
+
   private readonly IPlayerState<SpecialTreatmentState> sts =
     factory.Round<SpecialTreatmentState>();
-
-  private readonly ISpecialIcon? iconer = provider.GetService<ISpecialIcon>();
 
   public bool IsSpecialTreatment(CCSPlayerController player) {
     return sts.Get(player).HasSpecialTreatment;

@@ -1,11 +1,5 @@
-﻿using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Utils;
-using Gangs.BaseImpl;
-using GangsAPI.Data;
-using GangsAPI.Menu;
-using GangsAPI.Services.Commands;
+﻿using Gangs.BaseImpl;
 using Jailbreak.Public.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Gangs.BombIconPerk;
 

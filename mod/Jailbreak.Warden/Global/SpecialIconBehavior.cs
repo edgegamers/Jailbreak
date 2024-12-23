@@ -1,9 +1,6 @@
 ﻿using System.Drawing;
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Gangs.SpecialIconPerk;
-using Gangs.WardenIconPerk;
-using GangsAPI;
 using GangsAPI.Data;
 using GangsAPI.Services.Gang;
 using GangsAPI.Services.Player;
@@ -16,6 +13,14 @@ namespace Jailbreak.Warden.Global;
 
 public class SpecialIconBehavior(ITextSpawner spawner)
   : GenericIconBehavior(spawner, Color.Green), ISpecialIcon {
+  public void AssignSpecialIcon(CCSPlayerController player) {
+    AssignIcon(player);
+  }
+
+  public void RemoveSpecialIcon(CCSPlayerController player) {
+    RemoveIcon(player);
+  }
+
   override protected async Task<string> getIcon(PlayerWrapper player) {
     var playerStats = API.Gangs?.Services.GetService<IPlayerStatManager>();
     var gangStats   = API.Gangs?.Services.GetService<IGangStatManager>();
@@ -38,13 +43,5 @@ public class SpecialIconBehavior(ITextSpawner spawner)
       await gangStats.GetForGang<SpecialIcon>(gangPlayer.GangId.Value,
         SpecialIconPerk.STAT_ID);
     return available.PickRandom();
-  }
-
-  public void AssignSpecialIcon(CCSPlayerController player) {
-    AssignIcon(player);
-  }
-
-  public void RemoveSpecialIcon(CCSPlayerController player) {
-    RemoveIcon(player);
   }
 }

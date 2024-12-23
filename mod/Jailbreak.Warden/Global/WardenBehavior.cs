@@ -18,7 +18,6 @@ using Jailbreak.LastRequest;
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.Mute;
 using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.SpecialDay;

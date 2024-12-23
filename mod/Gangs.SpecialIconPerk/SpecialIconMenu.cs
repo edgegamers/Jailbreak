@@ -1,18 +1,11 @@
-﻿using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Utils;
-using Gangs.BaseImpl;
-using Gangs.WardenIconPerk;
-using GangsAPI.Data;
-using GangsAPI.Menu;
-using GangsAPI.Services.Commands;
+﻿using Gangs.BaseImpl;
 using Jailbreak.Public.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Gangs.SpecialIconPerk;
 
 public class SpecialIconMenu(IServiceProvider provider, SpecialIcon data,
-  SpecialIcon equipped) : AbstractEnumMenu<SpecialIcon>(provider, data, equipped,
-  "css_sticon", "ST Icon",
+  SpecialIcon equipped) : AbstractEnumMenu<SpecialIcon>(provider, data,
+  equipped, "css_sticon", "ST Icon",
   new SpecialIconPerk(provider).Description ?? "") {
   override protected int getCost(SpecialIcon item) { return item.GetCost(); }
 

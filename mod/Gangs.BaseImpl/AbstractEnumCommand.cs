@@ -1,5 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
-using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Modules.Utils;
 using GangsAPI;
 using GangsAPI.Data;
 using GangsAPI.Data.Command;
@@ -20,10 +20,6 @@ namespace Gangs.BaseImpl;
 public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
   string statId, T def, string title, bool isOnlyGang)
   : ICommand where T : struct, Enum {
-  abstract protected void openMenu(PlayerWrapper player, T data, T equipped);
-
-  protected readonly IServiceProvider Provider = provider;
-
   private readonly ICommandManager commands =
     provider.GetRequiredService<ICommandManager>();
 
@@ -50,43 +46,31 @@ public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
   private readonly IPlayerStatManager playerStats =
     provider.GetRequiredService<IPlayerStatManager>();
 
+  protected readonly IServiceProvider Provider = provider;
+
   private readonly IRankManager ranks =
     provider.GetRequiredService<IRankManager>();
 
   public abstract string Name { get; }
 
-  abstract protected int getCost(T item);
-
   public void Start() { commands.RegisterCommand(this); }
-
-  private void debug(string msg) {
-    Server.NextFrame(() => Server.PrintToChatAll(msg));
-  }
 
   public async Task<CommandResult> Execute(PlayerWrapper? executor,
     CommandInfoWrapper info) {
-    debug($"Executing {Name}");
     if (executor == null) return CommandResult.PLAYER_ONLY;
-    debug($"Executor is {executor.Steam}");
     var player = await players.GetPlayer(executor.Steam)
       ?? throw new PlayerNotFoundException(executor.Steam);
-    debug($"Player is {player.Steam}");
 
     if (player.GangId == null) {
       info.ReplySync(localizer.Get(MSG.NOT_IN_GANG));
       return CommandResult.SUCCESS;
     }
 
-    debug($"Player is in gang {player.GangId.Value}");
-
     var gang = await gangs.GetGang(player.GangId.Value)
       ?? throw new GangNotFoundException(player.GangId.Value);
 
-    debug($"Gang is {gang.Name}");
     var (success, data) =
       await gangStats.GetForGang<T>(player.GangId.Value, statId);
-
-    debug($"Got data: {success} {data}");
 
     if (!success) data = def;
 
@@ -99,14 +83,10 @@ public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
       equipped     = tmp;
     }
 
-    debug($"Equipped: {equipped}");
-
     if (info.Args.Length == 1) {
       openMenu(executor, data, equipped);
       return CommandResult.SUCCESS;
     }
-
-    debug($"Args: {string.Join(", ", info.Args)}");
 
     T   val;
     var query = string.Join('_', info.Args.Skip(1)).ToUpper();
@@ -117,8 +97,7 @@ public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
           "an icon"));
         return CommandResult.SUCCESS;
       }
-    } else
-      val = (T)(object)enumInt;
+    } else { val = (T)(object)enumInt; }
 
     if (!data.HasFlag(val)) {
       var (canPurchase, minRank) =
@@ -132,9 +111,8 @@ public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
       var cost = getCost(val);
 
       if (await eco.TryPurchase(executor, cost,
-        item: $"{title} ({formatItem(val)})") < 0) {
+        item: $"{title} ({formatItem(val)})") < 0)
         return CommandResult.SUCCESS;
-      }
 
       Unsafe.As<T, short>(ref data) |= Unsafe.As<T, short>(ref val);
       await gangStats.SetForGang(gang, statId, data);
@@ -165,9 +143,13 @@ public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
 
     await playerStats.SetForPlayer(executor, statId, val);
     executor.PrintToChat(
-      $"{localizer.Get(MSG.PREFIX)}Set your {title} to {formatItem(val)}");
+      $"{localizer.Get(MSG.PREFIX)}Set your {ChatColors.BlueGrey}{title}{ChatColors.Grey} to {formatItem(val)}.");
     return CommandResult.SUCCESS;
   }
+
+  abstract protected void openMenu(PlayerWrapper player, T data, T equipped);
+
+  abstract protected int getCost(T item);
 
   virtual protected string formatItem(T item) {
     return $"{item.ToString().ToTitleCase()}";

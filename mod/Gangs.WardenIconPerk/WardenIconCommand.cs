@@ -91,8 +91,7 @@ public class WardenIconCommand(IServiceProvider provider) : ICommand {
           "an icon"));
         return CommandResult.SUCCESS;
       }
-    } else
-      icon = (WardenIcon)iconInt;
+    } else { icon = (WardenIcon)iconInt; }
 
     if (!data.HasFlag(icon)) {
       var (canPurchase, minRank) = await ranks.CheckRank(player,
