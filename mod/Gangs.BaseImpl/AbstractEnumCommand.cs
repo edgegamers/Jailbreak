@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using CounterStrikeSharp.API;
 using GangsAPI;
 using GangsAPI.Data;
 using GangsAPI.Data.Command;
@@ -60,6 +61,7 @@ public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
 
   public async Task<CommandResult> Execute(PlayerWrapper? executor,
     CommandInfoWrapper info) {
+    Server.NextFrame(() => Server.PrintToChatAll($"Execute called for {Name}"));
     if (executor == null) return CommandResult.PLAYER_ONLY;
 
     var player = await players.GetPlayer(executor.Steam)
@@ -89,7 +91,7 @@ public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
     var query = string.Join('_', info.Args.Skip(1)).ToUpper();
 
     if (!int.TryParse(info[1], out var enumInt) || enumInt < 0) {
-      if (!Enum.TryParse<T>(query, out val)) {
+      if (!Enum.TryParse(query, out val)) {
         info.ReplySync(localizer.Get(MSG.COMMAND_INVALID_PARAM, info[1],
           "an icon"));
         return CommandResult.SUCCESS;
@@ -109,7 +111,7 @@ public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
       var cost = getCost(val);
 
       if (await eco.TryPurchase(executor, cost,
-        item: $"title ({val.ToString().ToTitleCase()})") < 0) {
+        item: $"{title} ({formatItem(val)})") < 0) {
         return CommandResult.SUCCESS;
       }
 
@@ -118,8 +120,7 @@ public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
 
       if (gangChat != null)
         await gangChat.SendGangChat(player, gang,
-          localizer.Get(MSG.PERK_PURCHASED,
-            $"{title} ({val.ToString().ToTitleCase()})"));
+          localizer.Get(MSG.PERK_PURCHASED, $"{title} ({formatItem(val)})"));
       return CommandResult.SUCCESS;
     }
 

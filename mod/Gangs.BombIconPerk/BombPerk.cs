@@ -11,14 +11,16 @@ public class BombPerk(IServiceProvider provider)
   : BasePerk<BombPerkData>(provider) {
   public const string STAT_ID = "jb_bomb_icon";
 
+  public const string DESC =
+    "Customize the icon that is shown when you bomb a CT";
+
   private readonly IGangStatManager gangStats =
     provider.GetRequiredService<IGangStatManager>();
 
   public override string StatId => STAT_ID;
   public override string Name => "Bomb Icon";
 
-  public override string Description
-    => "Customize the icon that is shown when you bomb a CT";
+  public override string Description => DESC;
 
   public override BombPerkData Value { get; set; } = new();
 

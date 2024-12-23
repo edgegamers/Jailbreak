@@ -11,7 +11,7 @@ namespace Gangs.BombIconPerk;
 
 public class BombIconMenu(IServiceProvider provider, BombPerkData data)
   : AbstractEnumMenu<BombIcon>(provider, data.Unlocked, data.Equipped,
-    "css_bombicon", "Bomb Icon", new BombPerk(provider).Description) {
+    "css_bombicon", "Bomb Icon", BombPerk.DESC) {
   override protected int getCost(BombIcon item) { return item.GetCost(); }
 
   override protected List<BombIcon> getValues() {
