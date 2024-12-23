@@ -8,8 +8,8 @@ public class TextSetting {
   public string fontName = "Arial";
   public bool enabled = true;
   public bool fullbright = true;
-  public float worldUnitsPerPx = 0.5f;
-  public float fontSize = 20;
+  public float worldUnitsPerPx = 0.4f;
+  public float fontSize = 50;
   public float depthOffset = 0.0f;
   public Color color = Color.White;
 

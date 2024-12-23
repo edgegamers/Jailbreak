@@ -39,9 +39,19 @@ public class TextSpawner : ITextSpawner {
       throw new Exception("Failed to get player position");
     position = position.Clone();
     position.Add(new Vector(0, 0, 72));
-    rotation = new QAngle(rotation.X, rotation.Y, rotation.Z + 90);
+    // position.Add(-GetForward(rotation) * 8);
+    rotation = new QAngle(rotation.X, rotation.Y + 270, rotation.Z + 90);
     var ent = CreateText(setting, position, rotation);
     ent.AcceptInput("SetParent", player.PlayerPawn.Value, null, "!activator");
     return ent;
+  }
+
+  public static Vector GetForward(QAngle angle) {
+    var pitch = angle.X;
+    var yaw   = angle.Y;
+    var x     = (float)(Math.Cos(pitch) * Math.Cos(yaw));
+    var y     = (float)(Math.Cos(pitch) * Math.Sin(yaw));
+    var z     = (float)(-Math.Sin(pitch));
+    return new Vector(x, y, z);
   }
 }

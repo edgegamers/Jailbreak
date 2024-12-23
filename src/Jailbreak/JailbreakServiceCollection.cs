@@ -73,7 +73,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
     serviceCollection.AddJailbreakLastRequest();
     serviceCollection.AddJailbreakLastGuard();
     serviceCollection.AddJailbreakSpecialDay();
-    // serviceCollection.AddJailbreakZones();
+    serviceCollection.AddJailbreakZones();
     serviceCollection.AddDiceRoll();
     serviceCollection.AddGangs();
     serviceCollection.AddJailbreakRainbow();
