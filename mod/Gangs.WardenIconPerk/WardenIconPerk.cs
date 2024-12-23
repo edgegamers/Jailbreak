@@ -12,6 +12,9 @@ public class WardenIconPerk(IServiceProvider provider)
   : BasePerk<WardenIcon>(provider) {
   public const string STAT_ID = "jb_wardenicon";
 
+  public const string DESC =
+    "Change the icon that appears above your head as warden";
+
   private readonly IGangStatManager gangStats =
     provider.GetRequiredService<IGangStatManager>();
 
@@ -21,8 +24,7 @@ public class WardenIconPerk(IServiceProvider provider)
   public override string StatId => STAT_ID;
   public override string Name => "Warden Icon";
 
-  public override string? Description
-    => "Change the icon that appears above your head as warden";
+  public override string? Description => DESC;
 
   public override WardenIcon Value { get; set; } = WardenIcon.DEFAULT;
 
