@@ -59,23 +59,34 @@ public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
 
   public void Start() { commands.RegisterCommand(this); }
 
+  private void debug(string msg) {
+    Server.NextFrame(() => Server.PrintToChatAll(msg));
+  }
+
   public async Task<CommandResult> Execute(PlayerWrapper? executor,
     CommandInfoWrapper info) {
+    debug($"Executing {Name}");
     if (executor == null) return CommandResult.PLAYER_ONLY;
-
+    debug($"Executor is {executor.Steam}");
     var player = await players.GetPlayer(executor.Steam)
       ?? throw new PlayerNotFoundException(executor.Steam);
+    debug($"Player is {player.Steam}");
 
     if (player.GangId == null) {
       info.ReplySync(localizer.Get(MSG.NOT_IN_GANG));
       return CommandResult.SUCCESS;
     }
 
+    debug($"Player is in gang {player.GangId.Value}");
+
     var gang = await gangs.GetGang(player.GangId.Value)
       ?? throw new GangNotFoundException(player.GangId.Value);
 
+    debug($"Gang is {gang.Name}");
     var (success, data) =
       await gangStats.GetForGang<T>(player.GangId.Value, statId);
+
+    debug($"Got data: {success} {data}");
 
     if (!success) data = def;
 
@@ -88,10 +99,14 @@ public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
       equipped     = tmp;
     }
 
+    debug($"Equipped: {equipped}");
+
     if (info.Args.Length == 1) {
       openMenu(executor, data, equipped);
       return CommandResult.SUCCESS;
     }
+
+    debug($"Args: {string.Join(", ", info.Args)}");
 
     T   val;
     var query = string.Join('_', info.Args.Skip(1)).ToUpper();

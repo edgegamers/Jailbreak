@@ -47,7 +47,6 @@ public abstract class AbstractEnumMenu<T>(IServiceProvider provider, T data,
 
   override protected Task<string> FormatItem(PlayerWrapper player, int index,
     T item) {
-    var name = item.ToString().ToTitleCase();
     if (item.Equals((T)(object)0)) {
       return Task.FromResult(
         $" {ChatColors.DarkBlue}Gang Perks: {ChatColors.LightBlue}{title}\n {ChatColors.Grey}{desc}");
@@ -59,7 +58,7 @@ public abstract class AbstractEnumMenu<T>(IServiceProvider provider, T data,
 
     if (data.HasFlag(item))
       return Task.FromResult(
-        $"{index}. {formatItem(item)} {ChatColors.Grey}({ChatColors.Green}Unlocked{ChatColors.Grey})");
+        $"{index}. {formatItem(item)} {ChatColors.Green}({ChatColors.Grey}Unlocked{ChatColors.Green})");
 
     return Task.FromResult(
       $"{index}. {formatItem(item)} {ChatColors.DarkRed}({ChatColors.LightRed}{getCost(item)}{ChatColors.DarkRed})");

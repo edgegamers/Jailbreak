@@ -12,6 +12,9 @@ public class LRColorPerk(IServiceProvider provider)
   : BasePerk<LRColor>(provider) {
   public const string STAT_ID = "jb_lr_color";
 
+  public const string DESC =
+    "Pick the color of you and your partner during your LRs\nConflicting colors are resolved by gang rank";
+
   private readonly IGangStatManager gangStats =
     provider.GetRequiredService<IGangStatManager>();
 
@@ -21,8 +24,7 @@ public class LRColorPerk(IServiceProvider provider)
   public override string StatId => STAT_ID;
   public override string Name => "LR Colors";
 
-  public override string? Description
-    => "Pick the color of you and your partner during your LRs\nConflicting colors are resolved by gang rank";
+  public override string? Description => DESC;
 
   public override LRColor Value { get; set; } = LRColor.DEFAULT;
 
