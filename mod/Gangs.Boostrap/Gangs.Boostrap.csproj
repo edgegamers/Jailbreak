@@ -11,6 +11,7 @@
         <ProjectReference Include="..\Gangs.CellsPerk\Gangs.CellsPerk.csproj"/>
         <ProjectReference Include="..\Gangs.LastRequestColorPerk\Gangs.LastRequestColorPerk.csproj"/>
         <ProjectReference Include="..\Gangs.SpecialDayColorPerk\Gangs.SpecialDayColorPerk.csproj"/>
+        <ProjectReference Include="..\Gangs.SpecialIconPerk\Gangs.SpecialIconPerk.csproj" />
         <ProjectReference Include="..\Gangs.WardenIconPerk\Gangs.WardenIconPerk.csproj" />
     </ItemGroup>
 
