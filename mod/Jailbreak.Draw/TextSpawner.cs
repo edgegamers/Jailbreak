@@ -39,6 +39,7 @@ public class TextSpawner : ITextSpawner {
       throw new Exception("Failed to get player position");
     position = position.Clone();
     position.Add(new Vector(0, 0, 72));
+    rotation = new QAngle(rotation.X, rotation.Y, rotation.Z + 90);
     var ent = CreateText(setting, position, rotation);
     ent.AcceptInput("SetParent", player.PlayerPawn.Value, null, "!activator");
     return ent;

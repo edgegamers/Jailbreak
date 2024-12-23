@@ -9,11 +9,12 @@ using Jailbreak.Public.Mod.RTD;
 using Jailbreak.Public.Mod.Warden;
 using Jailbreak.Public.Mod.Zones;
 using Jailbreak.RTD.Rewards;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.RTD;
 
-public class RewardGenerator(IZoneManager mgr, IC4Service bomb,
-  IWardenSelectionService warden, IRTDLocale locale)
+public class RewardGenerator(IC4Service bomb, IWardenSelectionService warden,
+  IRTDLocale locale, IServiceProvider provider)
   : IPluginBehavior, IRewardGenerator {
   private const float PROB_LOTTERY = 1 / 3000f;
   private const float PROB_EXTREMELY_LOW = 1 / 800f;
@@ -79,7 +80,8 @@ public class RewardGenerator(IZoneManager mgr, IC4Service bomb,
       (new AmmoWeaponReward("weapon_deagle", 1, 0), PROB_VERY_LOW),
       (new CannotUseReward(basePlugin, WeaponType.SMGS), PROB_VERY_LOW),
       (new CannotUseReward(basePlugin, WeaponType.PISTOLS), PROB_VERY_LOW),
-      (new RandomTeleportReward(mgr), PROB_VERY_LOW),
+      (new RandomTeleportReward(provider.GetService<IZoneManager>()),
+        PROB_VERY_LOW),
       (new BombReward(bomb), PROB_VERY_LOW),
       (new CannotUseReward(basePlugin, WeaponType.UTILITY), PROB_VERY_LOW),
       (new CreditReward(-100, locale), PROB_VERY_LOW),

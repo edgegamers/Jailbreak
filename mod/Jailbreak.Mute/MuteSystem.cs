@@ -78,7 +78,7 @@ public class MuteSystem(IServiceProvider provider)
   }
 
   public void Dispose() {
-    parent!.RemoveListener<Listeners.OnClientVoice>(OnPlayerSpeak);
+    parent?.RemoveListener<Listeners.OnClientVoice>(OnPlayerSpeak);
   }
 
   [GameEventHandler]
