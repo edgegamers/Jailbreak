@@ -20,6 +20,7 @@ public enum SDColor {
 public static class SDColorExtensions {
   public static int GetCost(this SDColor color) {
     if (color == SDColor.RAINBOW) return 10 * 2500;
+    if (color == SDColor.DEFAULT) return 0;
     return (int)Math.Round(color.GetColor().GetColorMultiplier() * 2500);
   }
 

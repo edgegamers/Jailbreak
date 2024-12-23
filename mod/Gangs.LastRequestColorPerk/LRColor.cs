@@ -21,6 +21,7 @@ public static class LRColorExtensions {
 
   public static int GetCost(this LRColor color) {
     if (color == LRColor.RAINBOW) return 10 * 8000;
+    if (color == LRColor.DEFAULT) return 0;
     return (int)Math.Round(color.GetColor().GetColorMultiplier() * 8000);
   }
 
