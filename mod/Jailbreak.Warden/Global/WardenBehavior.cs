@@ -18,6 +18,7 @@ using Jailbreak.LastRequest;
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.Mute;
 using Jailbreak.Public.Mod.Rebel;
 using Jailbreak.Public.Mod.SpecialDay;
@@ -106,6 +107,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   private PreWardenStats? preWardenStats;
   private Timer? unblueTimer, openCellsTimer;
 
+  private CPointWorldText? wardenHat;
+
   public void Start(BasePlugin basePlugin) {
     parent = basePlugin;
     if (API.Gangs != null) {
@@ -176,6 +179,9 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
           await stats.SetForPlayer(wrapper, WardenStat.STAT_ID, stat);
         });
     }
+
+    var spawner = provider.GetService<ITextSpawner>();
+    wardenHat = spawner?.CreateTextHat("foo", Warden);
 
     foreach (var player in Utilities.GetPlayers())
       player.ExecuteClientCommand($"play sounds/{CV_WARDEN_SOUND_NEW.Value}");
