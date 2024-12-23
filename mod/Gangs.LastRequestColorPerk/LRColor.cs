@@ -17,6 +17,8 @@ public enum LRColor {
 }
 
 public static class LRColorExtensions {
+  private static readonly Random rng = new();
+
   public static int GetCost(this LRColor color) {
     if (color == LRColor.RAINBOW) return 10 * 8000;
     return (int)Math.Round(color.GetColor().GetColorMultiplier() * 8000);
@@ -37,7 +39,7 @@ public static class LRColorExtensions {
   }
 
   public static Color? PickRandomColor(this LRColor color) {
-    var n = new Random().Next(Enum.GetValues<LRColor>().Length);
+    var n = rng.Next(Enum.GetValues<LRColor>().Length);
     var available = Enum.GetValues<LRColor>()
      .Where(c => color.HasFlag(c) && c.GetColor() != null)
      .ToList();

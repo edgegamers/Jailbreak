@@ -3,6 +3,7 @@ using Gangs.BombIconPerk;
 using Gangs.CellsPerk;
 using Gangs.LastRequestColorPerk;
 using Gangs.SpecialDayColorPerk;
+using Gangs.WardenIconPerk;
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
@@ -25,5 +26,6 @@ public class GangsInit : IPluginBehavior {
     _ = new SDColorBootstrap(services);
     _ = new CellsPerkBootstrap(services);
     _ = new LRColorBootstrap(services);
+    _ = new WardenIconBootstrap(services);
   }
 }

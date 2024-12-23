@@ -11,16 +11,20 @@ using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.Warden;
 using Jailbreak.Public.Mod.Zones;
 using Jailbreak.Public.Utils;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Warden.Commands;
 
 public class WardenOpenCommandsBehavior(IWardenService warden,
   IWardenLocale msg, IWardenCmdOpenLocale wardenCmdOpenMsg,
-  IZoneManager zoneManager) : IPluginBehavior, IWardenOpenCommand {
+  IServiceProvider provider) : IPluginBehavior, IWardenOpenCommand {
   public static readonly FakeConVar<int> CV_OPEN_COMMAND_COOLDOWN = new(
     "css_jb_warden_open_cooldown",
     "Minimum seconds warden must wait before being able to open the cells.", 25,
     customValidators: new RangeValidator<int>(0, 300));
+
+  private readonly IZoneManager? zoneManager =
+    provider.GetService<IZoneManager>();
 
   public bool OpenedCells { get; set; }
 
@@ -53,15 +57,20 @@ public class WardenOpenCommandsBehavior(IWardenService warden,
     }
 
     OpenedCells = true;
-    var   result = MapUtil.OpenCells(zoneManager);
-    IView message;
-    if (result) {
-      if (executor != null && !warden.IsWarden(executor))
-        message = wardenCmdOpenMsg.CellsOpenedBy(executor);
-      else
-        message = wardenCmdOpenMsg.CellsOpenedBy(null);
-    } else { message = wardenCmdOpenMsg.OpeningFailed; }
 
-    message.ToAllChat();
+    if (zoneManager == null)
+      MapUtil.OpenCells();
+    else {
+      var   result = MapUtil.OpenCells(zoneManager);
+      IView message;
+      if (result) {
+        if (executor != null && !warden.IsWarden(executor))
+          message = wardenCmdOpenMsg.CellsOpenedBy(executor);
+        else
+          message = wardenCmdOpenMsg.CellsOpenedBy(null);
+      } else { message = wardenCmdOpenMsg.OpeningFailed; }
+
+      message.ToAllChat();
+    }
   }
 }
