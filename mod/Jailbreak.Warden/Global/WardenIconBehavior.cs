@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Drawing;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Gangs.WardenIconPerk;
 using GangsAPI;
@@ -23,8 +24,10 @@ public class WardenIconBehavior(ITextSpawner spawner)
     Task.Run(async () => {
       var icon = await getIcon(wrapper);
 
+      var data = new TextSetting { msg = icon, color = Color.Blue };
+
       await Server.NextFrameAsync(() => {
-        var hat = spawner.CreateTextHat(icon, warden);
+        var hat = spawner.CreateTextHat(data, warden);
         wardenIcons[warden.Slot] = hat;
       });
     });

@@ -52,7 +52,7 @@ public class WardenIconMenu(IServiceProvider provider, WardenIcon data,
         $" {ChatColors.DarkBlue}Gang Perks: {ChatColors.LightBlue}Warden Icon\n{new WardenIconPerk(Provider).Description}");
     if (item == equipped)
       return Task.FromResult(
-        $"{index} {ChatColors.LightBlue}{item.GetIcon()} {ChatColors.White}{item.ToString().ToTitleCase()}");
+        $"{index} {ChatColors.LightBlue}{item.GetIcon()} {ChatColors.White}{item.ToString().ToTitleCase()} {ChatColors.Green}({ChatColors.Lime}Equipped{ChatColors.Green})");
     if (data.HasFlag(item))
       return Task.FromResult(
         $"{index}. {ChatColors.DarkBlue}{item.GetIcon()} {ChatColors.Grey}{item.ToString().ToTitleCase()} {ChatColors.Green}({ChatColors.Grey}Unlocked{ChatColors.Green})");
