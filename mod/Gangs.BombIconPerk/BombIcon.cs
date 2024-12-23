@@ -20,7 +20,8 @@ public enum BombIcon {
   STEAM = 1 << 15,
   THINKING = 1 << 16,
   UWUNUKE = 1 << 17,
-  ZZZ = 1 << 18
+  ZZZ = 1 << 18,
+  DEFAULT = 1 << 19
 }
 
 public static class BombIconExtensions {

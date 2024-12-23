@@ -15,7 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jailbreak.Warden.Global;
 
 public class SpecialIconBehavior(ITextSpawner spawner)
-  : GenericIconBehavior(spawner, Color.Blue), ISpecialIcon {
+  : GenericIconBehavior(spawner, Color.Green), ISpecialIcon {
   override protected async Task<string> getIcon(PlayerWrapper player) {
     var playerStats = API.Gangs?.Services.GetService<IPlayerStatManager>();
     var gangStats   = API.Gangs?.Services.GetService<IGangStatManager>();

@@ -220,7 +220,8 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
     if (killer == null || !killer.IsValid) return HookResult.Continue;
 
     cachedBombIcons.TryGetValue(killer.SteamID, out var killerIcon);
-    if (string.IsNullOrEmpty(killerIcon)) killerIcon = "weapon_c4";
+    if (string.IsNullOrEmpty(killerIcon) || killerIcon == "default")
+      killerIcon = "weapon_c4";
     ev.Attacker = killer;
     ev.Weapon   = killerIcon;
     return HookResult.Continue;
