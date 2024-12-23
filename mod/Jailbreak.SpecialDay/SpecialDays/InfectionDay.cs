@@ -82,7 +82,7 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
           @event.Attacker :
           null)
      .ToChat(player);
-    Plugin.AddTimer(0.1f, () => {
+    Plugin.AddTimer(0.5f, () => {
       player.SwitchTeam(CsTeam.CounterTerrorist);
       player.Respawn();
       Plugin.AddTimer(0.1f, () => {
@@ -120,7 +120,7 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
     Plugin.DeregisterEventHandler<EventPlayerDeath>(onPlayerDeath);
     Plugin.DeregisterEventHandler<EventPlayerSpawn>(onRespawn);
 
-    Plugin.AddTimer(0.1f, () => {
+    Plugin.AddTimer(0.5f, () => {
       foreach (var index in swappedPrisoners) {
         var player = Utilities.GetPlayerFromSlot(index);
         if (player == null || !player.IsValid) continue;
