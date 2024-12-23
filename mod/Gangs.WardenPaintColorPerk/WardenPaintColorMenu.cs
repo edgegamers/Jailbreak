@@ -1,4 +1,5 @@
-﻿using Gangs.BaseImpl;
+﻿using CounterStrikeSharp.API.Modules.Utils;
+using Gangs.BaseImpl;
 using Gangs.BaseImpl.Extensions;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rainbow;
@@ -19,6 +20,7 @@ public class WardenPaintColorMenu(IServiceProvider provider,
 
   override protected string formatItem(WardenPaintColor item) {
     if (item == WardenPaintColor.RAINBOW) return IRainbowColorizer.RAINBOW;
-    return $"{item.GetColor().GetChatColor()}{item.ToString().ToTitleCase()}";
+    return
+      $"{item.GetColor().GetChatColor()}{item.ToString().ToTitleCase()}{ChatColors.Grey}";
   }
 }

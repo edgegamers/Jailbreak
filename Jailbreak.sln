@@ -66,7 +66,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gangs.WardenIconPerk", "mod
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gangs.SpecialIconPerk", "mod\Gangs.SpecialIconPerk\Gangs.SpecialIconPerk.csproj", "{7F4BCD17-658C-4928-9AC1-61EFDEABDF5C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WardenPaintColorPerk", "mod\WardenPaintColorPerk\WardenPaintColorPerk.csproj", "{71D8A1A7-EB94-485A-82CC-D2D5124FE690}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gangs.WardenPaintColorPerk", "mod\Gangs.WardenPaintColorPerk\Gangs.WardenPaintColorPerk.csproj", "{71D8A1A7-EB94-485A-82CC-D2D5124FE690}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

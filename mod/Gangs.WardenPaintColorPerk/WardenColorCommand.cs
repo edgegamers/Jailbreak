@@ -1,4 +1,5 @@
-﻿using Gangs.BaseImpl;
+﻿using CounterStrikeSharp.API.Modules.Utils;
+using Gangs.BaseImpl;
 using Gangs.BaseImpl.Extensions;
 using GangsAPI.Data;
 using Jailbreak.Public.Extensions;
@@ -23,6 +24,7 @@ public class WardenColorCommand(IServiceProvider provider)
 
   override protected string formatItem(WardenPaintColor item) {
     if (item == WardenPaintColor.RAINBOW) return IRainbowColorizer.RAINBOW;
-    return $"{item.GetColor().GetChatColor()}{item.ToString().ToTitleCase()}";
+    return
+      $"{item.GetColor().GetChatColor()}{item.ToString().ToTitleCase()}{ChatColors.Grey}";
   }
 }

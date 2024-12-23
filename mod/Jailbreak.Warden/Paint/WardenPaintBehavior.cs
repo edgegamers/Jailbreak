@@ -26,6 +26,7 @@ public class WardenPaintBehavior(IWardenService wardenService,
     provider.GetService<IRainbowColorizer>();
 
   private WardenPaintColor?[] colors = new WardenPaintColor?[65];
+  private bool[] fetched = new bool[65];
 
   public void Start(BasePlugin basePlugin) {
     parent = basePlugin;
@@ -34,7 +35,8 @@ public class WardenPaintBehavior(IWardenService wardenService,
 
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart ev, GameEventInfo info) {
-    colors = new WardenPaintColor?[65];
+    colors  = new WardenPaintColor?[65];
+    fetched = new bool[65];
     return HookResult.Continue;
   }
 
@@ -83,6 +85,8 @@ public class WardenPaintBehavior(IWardenService wardenService,
       return color.Value.GetColor() ?? Color.White;
     }
 
+    if (fetched[player.Index]) return Color.White;
+    fetched[player.Index] = true;
     var wrapper = new PlayerWrapper(player);
     Task.Run(async () => {
       color                = await fetchColor(wrapper);
@@ -117,6 +121,9 @@ public class WardenPaintBehavior(IWardenService wardenService,
 
     var (_, available) = await gangStats.GetForGang<WardenPaintColor>(gang,
       WardenPaintColorPerk.WardenPaintColorPerk.STAT_ID);
+
+    if (playerColors == WardenPaintColor.RANDOM)
+      return playerColors | available;
 
     return playerColors & available;
   }

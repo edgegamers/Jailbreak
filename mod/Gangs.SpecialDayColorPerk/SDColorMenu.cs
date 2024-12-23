@@ -22,6 +22,7 @@ public class SDColorMenu(IServiceProvider provider, SDColorData data)
 
   override protected string formatItem(SDColor item) {
     if (item == SDColor.RAINBOW) return IRainbowColorizer.RAINBOW;
-    return $"{item.GetColor().GetChatColor()}{item.ToString().ToTitleCase()}";
+    return
+      $"{item.GetColor().GetChatColor()}{item.ToString().ToTitleCase()}{ChatColors.Grey}";
   }
 }
