@@ -39,14 +39,18 @@ public class LastRequestRebelManager(IRebelService rebelService,
   public void MarkLRRebelling(CCSPlayerController player) {
     MenuManager.CloseActiveMenu(player);
 
-    var playerPawn = player.PlayerPawn.Value;
-    var calculated = CalculateHealth();
-    if (playerPawn != null && calculated < playerPawn.Health) {
+    int updatedHealth   = 0;
+    var calculatedHealth = CalculateHealth();
+    var playerPawn      = player.PlayerPawn.Value;
+    if (playerPawn != null && calculatedHealth < playerPawn.Health) {
       if (playerPawn.Health > CV_MAX_T_HEALTH.Value)
-        player.SetHealth(CV_MAX_T_HEALTH.Value);
-    } else { player.SetHealth(calculated); }
+        updatedHealth = CV_MAX_T_HEALTH.Value;
+    } else {
+      updatedHealth = calculatedHealth;
+    }
 
-    messages.LastRequestRebel(player, player.Health).ToAllChat();
+    player.SetHealth(updatedHealth);
+    messages.LastRequestRebel(player, updatedHealth).ToAllChat();
     AddLRRebelling(player.Slot);
     rebelService.MarkRebel(player);
     player.RemoveWeapons();
