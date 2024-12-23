@@ -181,7 +181,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     }
 
     var spawner = provider.GetService<ITextSpawner>();
-    wardenHat = spawner?.CreateTextHat("foo", Warden);
+    wardenHat = spawner?.CreateTextHat("W", Warden);
 
     foreach (var player in Utilities.GetPlayers())
       player.ExecuteClientCommand($"play sounds/{CV_WARDEN_SOUND_NEW.Value}");
@@ -263,6 +263,11 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
           Task.Run(async () => await updateWardenDeathStats(wrapper));
         }
       }
+    }
+
+    if (wardenHat != null) {
+      if (wardenHat.IsValid) wardenHat.Remove();
+      wardenHat = null;
     }
 
     var wardenPawn = Warden!.PlayerPawn.Value;
