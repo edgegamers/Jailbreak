@@ -34,19 +34,19 @@ public class LastRequestRebelManager(IRebelService rebelService,
     new("css_jb_rebel_t_max_hp", "Max HP that the rebeller can have otherwise",
       125, ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 1000));
 
-  public HashSet<int> PlayersLRRebelling { get; } = new HashSet<int>();
+  public HashSet<int> PlayersLRRebelling { get; } = [];
 
   public void MarkLRRebelling(CCSPlayerController player) {
     MenuManager.CloseActiveMenu(player);
 
     var playerPawn = player.PlayerPawn.Value;
     var calculated = CalculateHealth();
-    if (calculated < playerPawn.Health) {
+    if (playerPawn != null && calculated < playerPawn.Health) {
       if (playerPawn.Health > CV_MAX_T_HEALTH.Value)
         player.SetHealth(CV_MAX_T_HEALTH.Value);
     } else { player.SetHealth(calculated); }
 
-    messages.LastRequestRebel(player, calculated).ToAllChat();
+    messages.LastRequestRebel(player, player.Health).ToAllChat();
     AddLRRebelling(player.Slot);
     rebelService.MarkRebel(player);
     player.RemoveWeapons();
