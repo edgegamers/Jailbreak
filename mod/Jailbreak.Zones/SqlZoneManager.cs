@@ -19,12 +19,13 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
 
   private BasePlugin plugin = null!;
 
-  public void Start(BasePlugin basePlugin) {
+  public void Start(BasePlugin basePlugin, bool hotReload) {
     plugin = basePlugin;
 
-    CV_SQL_CONNECTION_STRING.ValueChanged += async (_, _) => {
-      await LoadZones(Server.MapName);
-    };
+    if (!hotReload)
+      CV_SQL_CONNECTION_STRING.ValueChanged += async (_, _) => {
+        await LoadZones(Server.MapName);
+      };
 
     basePlugin.RegisterListener<Listeners.OnMapStart>(OnMapStart);
     basePlugin.RegisterListener<Listeners.OnMapEnd>(OnMapEnd);

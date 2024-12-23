@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Draw;

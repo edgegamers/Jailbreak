@@ -181,7 +181,9 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     }
 
     var spawner = provider.GetService<ITextSpawner>();
-    wardenHat = spawner?.CreateTextHat("W", Warden);
+    wardenHat =
+      spawner?.CreateTextHat(new TextSetting { msg = "W", color = Color.Blue },
+        Warden);
 
     foreach (var player in Utilities.GetPlayers())
       player.ExecuteClientCommand($"play sounds/{CV_WARDEN_SOUND_NEW.Value}");
