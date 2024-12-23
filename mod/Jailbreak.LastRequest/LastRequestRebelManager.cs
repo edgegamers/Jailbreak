@@ -46,7 +46,7 @@ public class LastRequestRebelManager(IRebelService rebelService,
         player.SetHealth(CV_MAX_T_HEALTH.Value);
     } else { player.SetHealth(calculated); }
 
-    messages.LastRequestRebel(player, player.Health).ToAllChat();
+    messages.LastRequestRebel(player, playerPawn.Health).ToAllChat();
     AddLRRebelling(player.Slot);
     rebelService.MarkRebel(player);
     player.RemoveWeapons();
