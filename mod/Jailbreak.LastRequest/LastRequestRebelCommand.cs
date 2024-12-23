@@ -27,7 +27,7 @@ public class LastRequestRebelCommand(ILastRequestManager lastRequestManager,
       return;
     }
 
-    if (!lastRequestManager.IsLREnabled) {
+    if (!lastRequestManager.IsLREnabled || !rebeller.PawnIsAlive) {
       messages.LastRequestNotEnabled().ToChat(rebeller);
       return;
     }
