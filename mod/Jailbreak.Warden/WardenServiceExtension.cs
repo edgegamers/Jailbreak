@@ -22,6 +22,7 @@ public static class WardenServiceExtension {
     serviceCollection
      .AddPluginBehavior<IWardenOpenCommand, WardenOpenCommandsBehavior>();
     serviceCollection.AddPluginBehavior<IWardenIcon, WardenIconBehavior>();
+    serviceCollection.AddPluginBehavior<ISpecialIcon, SpecialIconBehavior>();
     serviceCollection.AddPluginBehavior<CountCommandsBehavior>();
 
 

@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using Gangs.SpecialIconPerk;
 using Gangs.WardenIconPerk;
 using GangsAPI;
 using GangsAPI.Data;
@@ -13,37 +14,37 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.Warden.Global;
 
-public class WardenIconBehavior(ITextSpawner spawner)
-  : GenericIconBehavior(spawner, Color.Blue), IWardenIcon {
+public class SpecialIconBehavior(ITextSpawner spawner)
+  : GenericIconBehavior(spawner, Color.Blue), ISpecialIcon {
   override protected async Task<string> getIcon(PlayerWrapper player) {
     var playerStats = API.Gangs?.Services.GetService<IPlayerStatManager>();
     var gangStats   = API.Gangs?.Services.GetService<IGangStatManager>();
     var players     = API.Gangs?.Services.GetService<IPlayerManager>();
 
-    if (playerStats == null) return WardenIcon.DEFAULT.GetIcon();
+    if (playerStats == null) return SpecialIcon.DEFAULT.GetIcon();
 
     var (success, icon) =
-      await playerStats.GetForPlayer<WardenIcon>(player,
-        WardenIconPerk.STAT_ID);
+      await playerStats.GetForPlayer<SpecialIcon>(player,
+        SpecialIconPerk.STAT_ID);
 
-    if (!success) icon = WardenIcon.DEFAULT;
+    if (!success) icon = SpecialIcon.DEFAULT;
 
-    if (icon != WardenIcon.RANDOM || gangStats == null || players == null)
+    if (icon != SpecialIcon.RANDOM || gangStats == null || players == null)
       return icon.GetIcon();
 
     var gangPlayer = await players.GetPlayer(player.Steam);
-    if (gangPlayer?.GangId == null) return WardenIcon.DEFAULT.GetIcon();
+    if (gangPlayer?.GangId == null) return SpecialIcon.DEFAULT.GetIcon();
     var (_, available) =
-      await gangStats.GetForGang<WardenIcon>(gangPlayer.GangId.Value,
-        WardenIconPerk.STAT_ID);
+      await gangStats.GetForGang<SpecialIcon>(gangPlayer.GangId.Value,
+        SpecialIconPerk.STAT_ID);
     return available.PickRandom();
   }
 
-  public void AssignWardenIcon(CCSPlayerController warden) {
-    AssignIcon(warden);
+  public void AssignSpecialIcon(CCSPlayerController player) {
+    AssignIcon(player);
   }
 
-  public void RemoveWardenIcon(CCSPlayerController warden) {
-    RemoveIcon(warden);
+  public void RemoveSpecialIcon(CCSPlayerController player) {
+    RemoveIcon(player);
   }
 }

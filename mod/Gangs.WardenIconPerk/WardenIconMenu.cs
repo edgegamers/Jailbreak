@@ -49,7 +49,7 @@ public class WardenIconMenu(IServiceProvider provider, WardenIcon data,
     var name = item.ToString().ToTitleCase();
     if (item == 0)
       return Task.FromResult(
-        $" {ChatColors.DarkBlue}Gang Perks: {ChatColors.LightBlue}Warden Icon\n{new WardenIconPerk(Provider).Description}");
+        $" {ChatColors.DarkBlue}Gang Perks: {ChatColors.LightBlue}Warden Icon\n{ChatColors.Grey}{new WardenIconPerk(Provider).Description}");
     if (item == equipped)
       return Task.FromResult(
         $"{index} {ChatColors.LightBlue}{item.GetIcon()} {ChatColors.White}{item.ToString().ToTitleCase()} {ChatColors.Green}({ChatColors.Lime}Equipped{ChatColors.Green})");

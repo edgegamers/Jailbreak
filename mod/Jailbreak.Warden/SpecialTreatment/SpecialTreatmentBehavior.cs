@@ -18,14 +18,11 @@ public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
   private readonly IPlayerState<SpecialTreatmentState> sts =
     factory.Round<SpecialTreatmentState>();
 
-  private readonly ITextSpawner? text = provider.GetService<ITextSpawner>();
+  private readonly ISpecialIcon? iconer = provider.GetService<ISpecialIcon>();
 
   public bool IsSpecialTreatment(CCSPlayerController player) {
     return sts.Get(player).HasSpecialTreatment;
   }
-
-  private readonly IEnumerable<CPointWorldText>?[] stHats =
-    new IEnumerable<CPointWorldText>?[65];
 
   public void Grant(CCSPlayerController player) {
     //  Player is already granted ST
@@ -41,11 +38,7 @@ public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
     notifications.Granted.ToChat(player).ToCenter(player);
     notifications.GrantedTo(player).ToAllChat();
 
-    var hat =
-      text?.CreateTextHat(new TextSetting { msg = "S", color = Color.Green },
-        player);
-
-    if (hat != null) stHats[player.Index] = hat;
+    iconer?.AssignSpecialIcon(player);
   }
 
   public void Revoke(CCSPlayerController player) {
@@ -60,12 +53,7 @@ public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
     notifications.Revoked.ToChat(player).ToCenter(player);
     notifications.RevokedFrom(player).ToAllChat();
 
-    if (stHats[player.Index] == null) return;
-    foreach (var hat in stHats[player.Index]!)
-      if (hat.IsValid)
-        hat.Remove();
-
-    stHats[player.Index] = null;
+    iconer?.RemoveSpecialIcon(player);
   }
 
   private void setSpecialColor(CCSPlayerController player, bool hasSt) {
