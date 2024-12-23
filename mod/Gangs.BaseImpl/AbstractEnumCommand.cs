@@ -61,7 +61,6 @@ public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
 
   public async Task<CommandResult> Execute(PlayerWrapper? executor,
     CommandInfoWrapper info) {
-    Server.NextFrame(() => Server.PrintToChatAll($"Execute called for {Name}"));
     if (executor == null) return CommandResult.PLAYER_ONLY;
 
     var player = await players.GetPlayer(executor.Steam)
@@ -80,7 +79,14 @@ public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
 
     if (!success) data = def;
 
-    var (_, equipped) = await playerStats.GetForPlayer<T>(player.Steam, statId);
+    T equipped;
+    if (isOnlyGang) {
+      var (_, tmp) = await gangStats.GetForGang<T>(player.GangId.Value, statId);
+      equipped     = tmp;
+    } else {
+      var (_, tmp) = await playerStats.GetForPlayer<T>(player.Steam, statId);
+      equipped     = tmp;
+    }
 
     if (info.Args.Length == 1) {
       openMenu(executor, data, equipped);
