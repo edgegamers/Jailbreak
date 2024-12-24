@@ -13,9 +13,14 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jailbreak.Warden.SpecialTreatment;
 
 public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
-  IRebelService rebel, IWardenSTLocale notifications, IServiceProvider provider)
+  IWardenSTLocale notifications, IServiceProvider provider)
   : IPluginBehavior, ISpecialTreatmentService {
   private readonly ISpecialIcon? iconer = provider.GetService<ISpecialIcon>();
+  private IRebelService rebel = null!;
+
+  public void Start(BasePlugin basePlugin, bool hotreload) {
+    rebel = provider.GetRequiredService<IRebelService>();
+  }
 
   private readonly IPlayerState<SpecialTreatmentState> sts =
     factory.Round<SpecialTreatmentState>();
