@@ -319,7 +319,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       var wardenSteam = player.SteamID;
       var toDecrement = PlayerUtil.FromTeam(CsTeam.CounterTerrorist)
        .Where(p => p.IsReal() && !p.IsBot)
-       .Select(p => new PlayerWrapper(p));
+       .Select(p => new PlayerWrapper(p))
+       .ToList();
       var eco                = API.Gangs.Services.GetService<IEcoManager>();
       var shouldGrantCredits = LastRequestManager.shouldGrantCredits();
       Task.Run(async () => {
