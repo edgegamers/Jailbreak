@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Attributes.Registration;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public.Behaviors;
@@ -12,15 +13,28 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jailbreak.Warden.SpecialTreatment;
 
 public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
-  IRebelService rebel, IWardenSTLocale notifications, IServiceProvider provider)
+  IWardenSTLocale notifications, IServiceProvider provider)
   : IPluginBehavior, ISpecialTreatmentService {
   private readonly ISpecialIcon? iconer = provider.GetService<ISpecialIcon>();
+  private IRebelService rebel = null!;
+
+  public void Start(BasePlugin basePlugin, bool hotreload) {
+    rebel = provider.GetRequiredService<IRebelService>();
+  }
 
   private readonly IPlayerState<SpecialTreatmentState> sts =
     factory.Round<SpecialTreatmentState>();
 
   public bool IsSpecialTreatment(CCSPlayerController player) {
     return sts.Get(player).HasSpecialTreatment;
+  }
+
+  [GameEventHandler]
+  public HookResult OnDeath(EventPlayerDeath ev, GameEventInfo info) {
+    if (ev.Userid == null || !ev.Userid.IsValid) return HookResult.Continue;
+    Revoke(ev.Userid, false);
+
+    return HookResult.Continue;
   }
 
   public void Grant(CCSPlayerController player) {
@@ -40,7 +54,7 @@ public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
     iconer?.AssignSpecialIcon(player);
   }
 
-  public void Revoke(CCSPlayerController player) {
+  public void Revoke(CCSPlayerController player, bool print) {
     //  Player is already revoked
     if (!IsSpecialTreatment(player)) return;
 
@@ -49,8 +63,10 @@ public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
     setSpecialColor(player, false);
     player.ColorScreen(Color.FromArgb(16, 0, 255, 0), 0f, 1.5f);
 
-    notifications.Revoked.ToChat(player).ToCenter(player);
-    notifications.RevokedFrom(player).ToAllChat();
+    if (print) {
+      notifications.Revoked.ToChat(player).ToCenter(player);
+      notifications.RevokedFrom(player).ToAllChat();
+    }
 
     iconer?.RemoveSpecialIcon(player);
   }

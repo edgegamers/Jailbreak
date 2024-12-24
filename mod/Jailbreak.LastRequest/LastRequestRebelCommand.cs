@@ -37,7 +37,7 @@ public class LastRequestRebelCommand(ILastRequestManager lastRequestManager,
       return;
     }
 
-    lastRequestRebelManager.MarkLRRebelling(rebeller);
+    lastRequestRebelManager.StartLRRebelling(rebeller);
   }
 
   [GameEventHandler]

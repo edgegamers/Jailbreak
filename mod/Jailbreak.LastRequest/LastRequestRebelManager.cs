@@ -36,17 +36,15 @@ public class LastRequestRebelManager(IRebelService rebelService,
 
   public HashSet<int> PlayersLRRebelling { get; } = [];
 
-  public void MarkLRRebelling(CCSPlayerController player) {
+  public void StartLRRebelling(CCSPlayerController player) {
     MenuManager.CloseActiveMenu(player);
 
-    var playerPawn = player.PlayerPawn.Value;
-    var calculated = CalculateHealth();
-    if (playerPawn != null && calculated < playerPawn.Health) {
-      if (playerPawn.Health > CV_MAX_T_HEALTH.Value)
-        player.SetHealth(CV_MAX_T_HEALTH.Value);
-    } else { player.SetHealth(calculated); }
+    var calculatedHealth = CalculateHealth();
+    var playerPawn      = player.PlayerPawn.Value;
+    var updatedHealth = Math.Min(CV_MAX_T_HEALTH.Value, Math.Max(calculatedHealth, playerPawn?.Health ?? 0));
 
-    messages.LastRequestRebel(player, player.Health).ToAllChat();
+    player.SetHealth(updatedHealth);
+    messages.LastRequestRebel(player, updatedHealth).ToAllChat();
     AddLRRebelling(player.Slot);
     rebelService.MarkRebel(player);
     player.RemoveWeapons();
