@@ -11,12 +11,13 @@ using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rebel;
+using Jailbreak.Public.Mod.Warden;
 using MStatsShared;
 
 namespace Jailbreak.Rebel;
 
-public class RebelManager(IRebelLocale notifs, IRichLogService logs)
-  : IPluginBehavior, IRebelService {
+public class RebelManager(IRebelLocale notifs, IRichLogService logs,
+  ISpecialTreatmentService stService) : IPluginBehavior, IRebelService {
   [Obsolete("No longer used, use FakeConvar")]
   public static readonly int MAX_REBEL_TIME = 45;
 
@@ -63,6 +64,8 @@ public class RebelManager(IRebelLocale notifs, IRichLogService logs)
     if (!enabled) return false;
     if (!rebelTimes.ContainsKey(player))
       logs.Append(logs.Player(player), "is now a rebel.");
+
+    stService.SetSpecialTreatment(player, false);
 
     var pos = player.Pawn.Value?.AbsOrigin;
     if (pos != null)
