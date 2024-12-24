@@ -65,7 +65,7 @@ public class RebelManager(IRebelLocale notifs, IRichLogService logs,
     if (!rebelTimes.ContainsKey(player))
       logs.Append(logs.Player(player), "is now a rebel.");
 
-    stService.SetSpecialTreatment(player, false);
+    stService.Revoke(player, false);
 
     var pos = player.Pawn.Value?.AbsOrigin;
     if (pos != null)
