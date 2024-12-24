@@ -38,7 +38,7 @@ public class WardenOpenCommandsBehavior(IWardenService warden,
   [ConsoleCommand("css_o", "Opens the cell doors")]
   public void Command_Open(CCSPlayerController? executor, CommandInfo info) {
     if (executor != null
-      && !AdminManager.PlayerHasPermissions(executor, "@css/cheat")) {
+      && !AdminManager.PlayerHasPermissions(executor, "@css/cheats")) {
       if (!warden.IsWarden(executor)) {
         msg.NotWarden.ToChat(executor);
         return;
