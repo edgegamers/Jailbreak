@@ -21,7 +21,7 @@ public class SpecialIconPerk(IServiceProvider provider)
   public override string StatId => STAT_ID;
   public override string Name => "ST Icon";
 
-  public override string? Description
+  public override string Description
     => "Change the icon that appears above your head as ST";
 
   public override SpecialIcon Value { get; set; } = SpecialIcon.DEFAULT;

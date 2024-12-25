@@ -1,8 +1,4 @@
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Entities;
-using CounterStrikeSharp.API.Modules.Memory;
-using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
-using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;

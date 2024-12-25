@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Drawing;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Cvars;
@@ -120,6 +121,9 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
       return;
     }
 
+    var color = owner.Team == CsTeam.CounterTerrorist ? Color.Blue : Color.Red;
+    weaponEntity.SetColor(color);
+
     droppedWeaponSlots.Add((int)weaponEntity.Index);
   }
 
@@ -139,17 +143,17 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
     var method = hook.GetParam<AcquireMethod>(2);
     if (method != AcquireMethod.PickUp) return HookResult.Continue;
+    var weapon = Utilities.GetEntityFromIndex<CCSWeaponBase>(data.Slot);
 
-    if (droppedWeaponSlots.Contains(data.Slot)) {
-      player.PrintToChat(
-        "That gun was dropped during an LR, you can't pick it up.");
+    if (weapon == null || !weapon.IsValid) return HookResult.Continue;
+
+    if (droppedWeaponSlots.Contains((int)weapon.Index))
       return HookResult.Handled;
-    }
 
     var lr = ((ILastRequestManager)this).GetActiveLR(player);
     if (lr == null) return HookResult.Continue;
 
-    player.PrintToChat("You can't pick up weapons during an LR.");
+    if (lr.State == LRState.PENDING) return HookResult.Continue;
     return HookResult.Handled;
   }
 

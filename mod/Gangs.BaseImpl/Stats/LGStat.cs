@@ -4,7 +4,7 @@ public class LGStat : BaseStat<LGData> {
   public const string STAT_ID = "jb_lg_stat";
   public override string StatId => STAT_ID;
   public override string Name => "LGs";
-  public override string? Description => "LGs reached";
+  public override string Description => "LGs reached";
   public override LGData? Value { get; set; }
 }
 

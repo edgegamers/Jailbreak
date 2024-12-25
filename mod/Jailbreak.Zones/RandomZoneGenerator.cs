@@ -102,7 +102,8 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory,
 
       var map = Server.MapName;
       zone.Id = nearestPoint.Id;
-      Server.NextFrameAsync(async () => {
+      // Server.NextFrameAsync(async () => {
+      Task.Run(async () => {
         await zoneManager.DeleteZone(zone.Id, map);
         await zoneManager.PushZoneWithID(zone, ZoneType.SPAWN_AUTO, map);
       });
@@ -112,7 +113,8 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory,
 
     var spawn = factory.CreateZone([pos]);
     autoSpawnPoints.Add(spawn);
-    Server.NextFrameAsync(async () => {
+    // Server.NextFrameAsync(async () => {
+    Task.Run(async () => {
       await zoneManager.PushZone(spawn, ZoneType.SPAWN_AUTO, currentMap!);
     });
   }

@@ -11,7 +11,7 @@ public interface IZoneManager : IPluginBehavior {
   Task DeleteZone(int zoneId) {
     Server.NextFrame(() => {
       var map = Server.MapName;
-      Server.NextFrameAsync(async () => { await DeleteZone(zoneId, map); });
+      Task.Run(async () => { await DeleteZone(zoneId, map); });
     });
     return Task.CompletedTask;
   }

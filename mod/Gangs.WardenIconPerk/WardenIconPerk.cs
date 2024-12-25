@@ -24,7 +24,7 @@ public class WardenIconPerk(IServiceProvider provider)
   public override string StatId => STAT_ID;
   public override string Name => "Warden Icon";
 
-  public override string? Description => DESC;
+  public override string Description => DESC;
 
   public override WardenIcon Value { get; set; } = WardenIcon.DEFAULT;
 
