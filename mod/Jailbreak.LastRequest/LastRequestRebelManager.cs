@@ -39,9 +39,15 @@ public class LastRequestRebelManager(IRebelService rebelService,
   public void StartLRRebelling(CCSPlayerController player) {
     MenuManager.CloseActiveMenu(player);
 
+    var updatedHealth   = 0;
     var calculatedHealth = CalculateHealth();
     var playerPawn      = player.PlayerPawn.Value;
-    var updatedHealth = Math.Min(CV_MAX_T_HEALTH.Value, Math.Max(calculatedHealth, playerPawn?.Health ?? 0));
+    if (playerPawn != null && calculatedHealth < playerPawn.Health) {
+      if (playerPawn.Health > CV_MAX_T_HEALTH.Value)
+        updatedHealth = CV_MAX_T_HEALTH.Value;
+    } else {
+      updatedHealth = calculatedHealth;
+    }
 
     player.SetHealth(updatedHealth);
     messages.LastRequestRebel(player, updatedHealth).ToAllChat();
