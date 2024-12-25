@@ -3,6 +3,8 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
+using CounterStrikeSharp.API.Modules.Memory;
+using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
 using Gangs.BaseImpl.Extensions;
@@ -56,6 +58,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
   private ILastRequestFactory? factory;
   public bool IsLREnabledForRound { get; set; } = true;
+  private List<int> droppedWeaponSlots = new();
 
   public bool ShouldBlockDamage(CCSPlayerController player,
     CCSPlayerController? attacker, EventPlayerHurt @event) {
@@ -94,6 +97,60 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
     var stats = API.Gangs.Services.GetService<IStatManager>();
     stats?.Stats.Add(new LRStat());
+
+    basePlugin.RegisterListener<Listeners.OnEntityParentChanged>(OnDrop);
+    VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Hook(OnCanAcquire,
+      HookMode.Pre);
+  }
+
+  private void OnDrop(CEntityInstance entity, CEntityInstance newparent) {
+    if (!entity.IsValid || !IsLREnabled) return;
+
+    if (!Tag.WEAPONS.Contains(entity.DesignerName)) return;
+
+    var weaponEntity =
+      Utilities.GetEntityFromIndex<CCSWeaponBase>((int)entity.Index);
+    if (weaponEntity == null || !weaponEntity.IsValid) return;
+
+    var owner = weaponEntity.PrevOwner.Get()?.OriginalController.Get();
+    if (owner == null || !owner.IsValid) return;
+
+    if (newparent.IsValid) {
+      // Player picked up a weapon
+      return;
+    }
+
+    droppedWeaponSlots.Add((int)weaponEntity.Index);
+  }
+
+  void IDisposable.Dispose() {
+    VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Unhook(OnCanAcquire,
+      HookMode.Pre);
+  }
+
+  private HookResult OnCanAcquire(DynamicHook hook) {
+    if (!IsLREnabled) return HookResult.Continue;
+    var data = VirtualFunctions.GetCSWeaponDataFromKey.Invoke(-1,
+      hook.GetParam<CEconItemView>(1).ItemDefinitionIndex.ToString());
+    var player = hook.GetParam<CCSPlayer_ItemServices>(0)
+     .Pawn.Value.Controller.Value?.As<CCSPlayerController>();
+
+    if (player == null || !player.IsValid) return HookResult.Continue;
+
+    var method = hook.GetParam<AcquireMethod>(2);
+    if (method != AcquireMethod.PickUp) return HookResult.Continue;
+
+    if (droppedWeaponSlots.Contains(data.Slot)) {
+      player.PrintToChat(
+        "That gun was dropped during an LR, you can't pick it up.");
+      return HookResult.Handled;
+    }
+
+    var lr = ((ILastRequestManager)this).GetActiveLR(player);
+    if (lr == null) return HookResult.Continue;
+
+    player.PrintToChat("You can't pick up weapons during an LR.");
+    return HookResult.Handled;
   }
 
   public bool IsLREnabled { get; set; }
@@ -403,6 +460,8 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
     foreach (var lr in ActiveLRs.ToList())
       EndLastRequest(lr, LRResult.TIMED_OUT);
+
+    droppedWeaponSlots.Clear();
 
     IsLREnabled = false;
     return HookResult.Continue;
