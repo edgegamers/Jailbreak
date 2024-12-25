@@ -21,7 +21,7 @@ public class WardenPaintColorPerk(IServiceProvider provider)
 
   public override string StatId => STAT_ID;
   public override string Name => "Paint Color";
-  public override string? Description => DESC;
+  public override string Description => DESC;
 
   public override Task<int?> GetCost(IGangPlayer player) {
     return Task.FromResult<int?>(null);

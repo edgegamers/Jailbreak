@@ -24,7 +24,7 @@ public class CellsPerk(IServiceProvider provider) : BasePerk<int>(provider) {
   public override string StatId => STAT_ID;
   public override string Name => "Hide in Cells";
 
-  public override string? Description
+  public override string Description
     => "# of gang members that can hide in cells without being detected";
 
   public override int Value { get; set; }

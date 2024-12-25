@@ -24,7 +24,7 @@ public class LRColorPerk(IServiceProvider provider)
   public override string StatId => STAT_ID;
   public override string Name => "LR Colors";
 
-  public override string? Description => DESC;
+  public override string Description => DESC;
 
   public override LRColor Value { get; set; } = LRColor.DEFAULT;
 

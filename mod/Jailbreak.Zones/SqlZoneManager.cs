@@ -180,7 +180,7 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
   }
 
   private void OnMapStart(string mapname) {
-    Server.NextFrameAsync(async () => {
+    Task.Run(async () => {
       await createTable();
       await LoadZones(mapname);
     });

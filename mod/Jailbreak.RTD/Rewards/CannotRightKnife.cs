@@ -6,8 +6,6 @@ namespace Jailbreak.RTD.Rewards;
 
 public class CannotRightKnife(BasePlugin plugin)
   : AbstractOnTickReward(plugin) {
-  private readonly HashSet<int> blockedPlayerIDs = [];
-
   public override string Name => "Cannot Right-Knife";
 
   public override string Description
