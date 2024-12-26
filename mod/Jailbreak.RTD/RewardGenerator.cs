@@ -16,7 +16,7 @@ namespace Jailbreak.RTD;
 public class RewardGenerator(IC4Service bomb, IWardenSelectionService warden,
   IRTDLocale locale, IServiceProvider provider)
   : IPluginBehavior, IRewardGenerator {
-  private const float PROB_LOTTERY = 1 / 3000f;
+  private const float PROB_LOTTERY = 1 / 5000f;
   private const float PROB_EXTREMELY_LOW = 1 / 800f;
   private const float PROB_VERY_LOW = 1 / 100f;
   private const float PROB_LOW = 1 / 20f;
@@ -43,11 +43,11 @@ public class RewardGenerator(IC4Service bomb, IWardenSelectionService warden,
       (new WeaponReward("weapon_decoy"), PROB_OFTEN),
       (new HPReward(110), PROB_OFTEN), (new ArmorReward(15), PROB_OFTEN),
       (new CreditReward(-10, locale), PROB_VERY_OFTEN),
+      (new CreditReward(5, locale), PROB_MEDIUM),
 
       // Medium
-      (new CreditReward(1, locale), PROB_MEDIUM),
-      (new CreditReward(2, locale), PROB_MEDIUM),
-      (new CreditReward(3, locale), PROB_MEDIUM),
+      (new CreditReward(10, locale), PROB_MEDIUM),
+      (new CreditReward(25, locale), PROB_MEDIUM),
       (new WeaponReward("weapon_flashbang"), PROB_MEDIUM),
       (new WeaponReward("weapon_hegrenade"), PROB_MEDIUM),
       (new WeaponReward("weapon_smokegrenade"), PROB_MEDIUM),
@@ -57,7 +57,6 @@ public class RewardGenerator(IC4Service bomb, IWardenSelectionService warden,
       (new ArmorReward(150), PROB_MEDIUM),
       (new GuaranteedWardenReward(warden), PROB_MEDIUM),
       (new WeaponReward("weapon_g3sg1", CsTeam.CounterTerrorist), PROB_MEDIUM),
-      (new CreditReward(5, locale), PROB_MEDIUM),
 
       // Low
       (new ChatSpyReward(basePlugin), PROB_LOW),
@@ -66,11 +65,11 @@ public class RewardGenerator(IC4Service bomb, IWardenSelectionService warden,
       (new CannotUseReward(basePlugin, WeaponType.GRENADE), PROB_LOW),
       (new CannotScope(basePlugin), PROB_LOW),
       (new CannotRightKnife(basePlugin), PROB_LOW),
-      (new TransparentReward(), PROB_LOW),
       (new AmmoWeaponReward("weapon_glock", 2, 0), PROB_LOW),
       (new AmmoWeaponReward("weapon_negev", 0, 5), PROB_LOW),
       (new CannotUseReward(basePlugin, WeaponType.SNIPERS), PROB_LOW),
       (new CannotUseReward(basePlugin, WeaponType.HEAVY), PROB_LOW),
+      (new TransparentReward(), PROB_LOW / 2),
       (new CreditReward(50, locale), PROB_LOW), (new HPReward(1), PROB_LOW / 2),
 
       // Very low

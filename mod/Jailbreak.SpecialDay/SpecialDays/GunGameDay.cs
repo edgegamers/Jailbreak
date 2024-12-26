@@ -1,5 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Memory;
+using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Extensions;
@@ -147,7 +149,6 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
       RoundUtil.SetTimeRemaining(Math.Min(RoundUtil.GetTimeRemaining(), 30));
 
       Plugin.DeregisterEventHandler<EventPlayerDeath>(OnDeath, HookMode.Pre);
-      Plugin.RemoveListener<Listeners.OnTick>(OnTick);
       return HookResult.Continue;
     }
 
@@ -185,14 +186,17 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     return result;
   }
 
-  override protected void OnTick() {
-    foreach (var player in PlayerUtil.GetAlive()) {
-      var weapons = allowedWeapons(player);
-      disableWeapon(player, weapons);
-    }
-  }
+  override protected HookResult OnCanAcquire(DynamicHook hook) {
+    var player = hook.GetParam<CCSPlayer_ItemServices>(0)
+     .Pawn.Value.Controller.Value?.As<CCSPlayerController>();
+    var data = VirtualFunctions.GetCSWeaponDataFromKey.Invoke(-1,
+      hook.GetParam<CEconItemView>(1).ItemDefinitionIndex.ToString());
 
-  private ISet<string> allowedWeapons(CCSPlayerController player) {
+    if (player == null || !player.IsValid) return HookResult.Continue;
+
+    var method = hook.GetParam<AcquireMethod>(2);
+    if (method != AcquireMethod.PickUp) return HookResult.Continue;
+
     var progress = progressions.TryGetValue(player.Slot, out var index) ?
       index :
       0;
@@ -206,8 +210,35 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     if (Tag.PISTOLS.Contains(weapon))
       allowed = allowed.Union(Tag.PISTOLS).ToHashSet();
 
-    return allowed.Union(Tag.UTILITY).ToHashSet();
+    if (allowed.Contains(data.Name)) return HookResult.Continue;
+
+    hook.SetReturn(AcquireResult.NotAllowedByMode);
+    return HookResult.Handled;
   }
+
+  // override protected void OnTick() {
+  //   foreach (var player in PlayerUtil.GetAlive()) {
+  //     var weapons = allowedWeapons(player);
+  //     disableWeapon(player, weapons);
+  //   }
+  // }
+
+  // private ISet<string> allowedWeapons(CCSPlayerController player) {
+  //   var progress = progressions.TryGetValue(player.Slot, out var index) ?
+  //     index :
+  //     0;
+  //
+  //   var weapon  = weaponProgression[progress];
+  //   var allowed = new HashSet<string> { weapon, "weapon_knife" };
+  //
+  //   if (Tag.RIFLES.Contains(weapon))
+  //     allowed = allowed.Union(Tag.RIFLES).ToHashSet();
+  //
+  //   if (Tag.PISTOLS.Contains(weapon))
+  //     allowed = allowed.Union(Tag.PISTOLS).ToHashSet();
+  //
+  //   return allowed.Union(Tag.UTILITY).ToHashSet();
+  // }
 
   private void disableWeapon(CCSPlayerController player,
     ICollection<string> allowed) {

@@ -145,22 +145,10 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
     foreach (var ct in PlayerUtil.FromTeam(HiderTeam.Value)) ct.SetSpeed(1);
   }
 
-  override protected void OnTick() {
-    var lr = Provider.GetService<ILastRequestManager>();
-    if (lr == null) {
-      base.OnTick();
-      return;
-    }
-
-    if (lr.IsLREnabled) return;
-    base.OnTick();
-  }
-
   public class HnsSettings : SpecialDaySettings {
     private readonly ISet<string>? cachedGuardWeapons, cachedPrisonerWeapons;
 
     public HnsSettings() {
-      AllowLastRequests = true;
       TTeleport         = TeleportType.ARMORY;
       CtTeleport        = TeleportType.ARMORY;
 
@@ -187,6 +175,10 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
       return player.Team == CsTeam.Terrorist ?
         cachedPrisonerWeapons :
         cachedGuardWeapons;
+    }
+
+    public override float FreezeTime(CCSPlayerController player) {
+      return player.Team == CsTeam.CounterTerrorist ? 3 : 8;
     }
   }
 }

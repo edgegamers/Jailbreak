@@ -71,7 +71,7 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
   public void Command_AutoRTD(CCSPlayerController? executor, CommandInfo info) {
     if (executor == null) return;
 
-    if (!RTDCommand.CV_RTD_ENABLED.Value) {
+    if (RTDCommand.CV_RTD_ENABLED.Value == -1) {
       rtdLocale.RollingDisabled().ToChat(executor);
       return;
     }
