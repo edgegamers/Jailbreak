@@ -127,9 +127,9 @@ public class BulletForBullet(BasePlugin plugin, IServiceProvider provider,
   }
 
   public override bool PreventEquip(CCSPlayerController player,
-    CCSWeaponBase weapon) {
+    CCSWeaponBaseVData weapon) {
     if (State == LRState.PENDING) return false;
     if (player != Prisoner && player != Guard) return false;
-    return weapon.DesignerName != "weapon_knife";
+    return !weapon.Name.Contains("knife") && !weapon.Name.Contains("bayonet");
   }
 }

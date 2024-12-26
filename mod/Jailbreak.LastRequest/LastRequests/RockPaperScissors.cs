@@ -101,7 +101,7 @@ public class RockPaperScissors : AbstractLastRequest {
   }
 
   public override bool PreventEquip(CCSPlayerController player,
-    CCSWeaponBase weapon) {
+    CCSWeaponBaseVData weapon) {
     return false;
   }
 }

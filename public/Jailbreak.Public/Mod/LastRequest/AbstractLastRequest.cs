@@ -16,7 +16,7 @@ public abstract class AbstractLastRequest(BasePlugin plugin,
   public LRState State { get; protected set; }
 
   public virtual bool PreventEquip(CCSPlayerController player,
-    CCSWeaponBase weapon) {
+    CCSWeaponBaseVData weapon) {
     if (State == LRState.PENDING) return false;
     return player == Prisoner || player == Guard;
   }

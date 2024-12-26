@@ -229,13 +229,27 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
   }
 
   public override bool PreventEquip(CCSPlayerController player,
-    CCSWeaponBase weapon) {
+    CCSWeaponBaseVData weapon) {
+    if (weapon.Name != "weapon_deagle") return false;
     if (player.Slot != Prisoner.Slot && player.Slot != Guard.Slot) {
-      return weapon.Index == prisonerWeapon?.Index
-        || weapon.Index == guardWeapon?.Index;
+      var guardGunDist = guardWeapon == null ?
+        float.MaxValue :
+        guardWeapon.AbsOrigin!.DistanceSquared(
+          Guard.PlayerPawn.Value!.AbsOrigin!);
+
+      var prisonerGunDist = prisonerWeapon == null ?
+        float.MaxValue :
+        prisonerWeapon.AbsOrigin!.DistanceSquared(Prisoner.PlayerPawn.Value!
+         .AbsOrigin!);
+
+      var dist = Math.Min(guardGunDist, prisonerGunDist);
+      return dist < 16500;
     }
 
     if (State == LRState.PENDING) return false;
-    return bothThrewTick is null or < 0;
+    if (bothThrewTick is null or < 0) return true;
+
+    var time = Server.TickCount - bothThrewTick.Value;
+    return time < 64 * 5;
   }
 }

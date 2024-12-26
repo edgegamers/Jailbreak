@@ -272,12 +272,11 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
     var method = hook.GetParam<AcquireMethod>(2);
     if (method != AcquireMethod.PickUp) return HookResult.Continue;
-    var weapon = Utilities.GetEntityFromIndex<CCSWeaponBase>(data.Slot);
 
-    if (weapon == null || !weapon.IsValid) return HookResult.Continue;
-
-    if (ActiveLRs.Any(lr => lr.PreventEquip(player, weapon)))
+    if (ActiveLRs.Any(lr => lr.PreventEquip(player, data))) {
+      hook.SetReturn(AcquireResult.NotAllowedByMode);
       return HookResult.Handled;
+    }
 
     return HookResult.Continue;
   }
