@@ -36,6 +36,7 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
   private Timer? guardGunTimer, prisonerGunTimer;
   private bool guardTossed, prisonerTossed;
   public override LRType Type => LRType.GUN_TOSS;
+  private CCSWeaponBase? prisonerWeapon, guardWeapon;
 
   public void OnWeaponDrop(CCSPlayerController player, CCSWeaponBase weapon) {
     if (State != LRState.ACTIVE) return;
@@ -46,10 +47,13 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
       _    => bothThrewTick
     };
 
-    if (player == Prisoner)
+    if (player == Prisoner) {
       prisonerTossed = true;
-    else
+      prisonerWeapon = weapon;
+    } else {
       guardTossed = true;
+      guardWeapon = weapon;
+    }
 
     if (Guard.Slot == Prisoner.Slot) bothThrewTick = Server.TickCount;
 
@@ -204,7 +208,11 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
 
   public override bool PreventEquip(CCSPlayerController player,
     CCSWeaponBase weapon) {
-    if (player != Prisoner && player != Guard) return false;
+    if (player.Slot != Prisoner.Slot && player.Slot != Guard.Slot) {
+      return weapon.Index == prisonerWeapon?.Index
+        || weapon.Index == guardWeapon?.Index;
+    }
+
     if (State == LRState.PENDING) return false;
     return bothThrewTick is null or < 0;
   }
