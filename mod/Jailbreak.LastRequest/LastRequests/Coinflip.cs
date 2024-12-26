@@ -86,4 +86,9 @@ public class Coinflip : AbstractLastRequest {
     else
       Prisoner.Pawn.Value?.CommitSuicide(false, true);
   }
+
+  public override bool PreventEquip(CCSPlayerController player,
+    CCSWeaponBase weapon) {
+    return false;
+  }
 }

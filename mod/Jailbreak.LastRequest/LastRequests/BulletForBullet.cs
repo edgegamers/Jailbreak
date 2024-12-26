@@ -12,7 +12,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
-public class BulletForBullet : TeleportingRequest {
+public class BulletForBullet(BasePlugin plugin, IServiceProvider provider,
+  CCSPlayerController prisoner, CCSPlayerController guard, bool magForMag)
+  : TeleportingRequest(plugin,
+    provider.GetRequiredService<ILastRequestManager>(), prisoner, guard) {
   private const string weaponName = "weapon_deagle";
 
   public static readonly FakeConVar<bool> KILL_BY_HEALTH = new(
@@ -20,20 +23,13 @@ public class BulletForBullet : TeleportingRequest {
     "If true, the player with the lowest health will die after 60 seconds.",
     true);
 
-  private readonly ChatMenu chatMenu;
-  private readonly bool magForMag;
-  private readonly ILRB4BLocale msg;
+  private readonly ChatMenu chatMenu =
+    new(magForMag ? "Mag for Mag" : "Shot for Shot");
+
+  private readonly ILRB4BLocale msg =
+    provider.GetRequiredService<ILRB4BLocale>();
+
   private int? whosShot, magSize;
-
-  public BulletForBullet(BasePlugin plugin, IServiceProvider provider,
-    CCSPlayerController prisoner, CCSPlayerController guard,
-    bool magForMag) : base(plugin,
-    provider.GetRequiredService<ILastRequestManager>(), prisoner, guard) {
-    this.magForMag = magForMag;
-    chatMenu       = new ChatMenu(magForMag ? "Mag for Mag" : "Shot for Shot");
-
-    msg = provider.GetRequiredService<ILRB4BLocale>();
-  }
 
   public override LRType Type
     => magForMag ? LRType.MAG_FOR_MAG : LRType.SHOT_FOR_SHOT;
@@ -120,16 +116,21 @@ public class BulletForBullet : TeleportingRequest {
     var bullets = player.GetWeaponBase(weaponName)?.Clip1 ?? 1;
     if (bullets > 1) return HookResult.Continue;
 
-    Server.NextFrame(() => {
-      var opponent = player.Slot == Prisoner.Slot ? Guard : Prisoner;
-      whosShot = opponent.Slot;
-      opponent.GetWeaponBase(weaponName)?.SetAmmo(magSize.Value, 0);
-    });
+    var opponent = player.Slot == Prisoner.Slot ? Guard : Prisoner;
+    whosShot = opponent.Slot;
+    opponent.GetWeaponBase(weaponName)?.SetAmmo(magSize.Value, 0);
     return HookResult.Continue;
   }
 
   public override void OnEnd(LRResult result) {
     Plugin.DeregisterEventHandler<EventBulletImpact>(OnPlayerShoot);
     State = LRState.COMPLETED;
+  }
+
+  public override bool PreventEquip(CCSPlayerController player,
+    CCSWeaponBase weapon) {
+    if (State == LRState.PENDING) return false;
+    if (player != Prisoner && player != Guard) return false;
+    return weapon.DesignerName != "weapon_knife";
   }
 }

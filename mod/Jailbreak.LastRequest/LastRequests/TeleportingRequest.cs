@@ -20,9 +20,4 @@ public abstract class TeleportingRequest(BasePlugin plugin,
     Plugin.AddTimer(1, () => { Guard.UnFreeze(); });
     Plugin.AddTimer(2, () => { Prisoner.UnFreeze(); });
   }
-
-  public virtual bool PreventEquip(CCSPlayerController player, CCSWeaponBase weapon) {
-    if (State == LRState.PENDING) return false;
-    return player == Prisoner || player == Guard;
-  }
 }

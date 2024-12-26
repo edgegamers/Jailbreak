@@ -1,11 +1,12 @@
 using CounterStrikeSharp.API.Core;
 using Jailbreak.Public.Mod.LastRequest.Enums;
+using Jailbreak.Public.Mod.Weapon;
 
 namespace Jailbreak.Public.Mod.LastRequest;
 
 public abstract class AbstractLastRequest(BasePlugin plugin,
   ILastRequestManager manager, CCSPlayerController prisoner,
-  CCSPlayerController guard) {
+  CCSPlayerController guard) : IEquipBlocker {
   protected readonly ILastRequestManager Manager = manager;
   protected readonly BasePlugin Plugin = plugin;
   public CCSPlayerController Prisoner { get; protected set; } = prisoner;
@@ -23,11 +24,9 @@ public abstract class AbstractLastRequest(BasePlugin plugin,
   public abstract void Execute();
   public abstract void OnEnd(LRResult result);
 
-  // public bool PreventShoot(CCSPlayerController player, CBasePlayerWeapon weapon) {
-  //   return false;
-  // }
-  //
-  // public bool PreventPickup(CCSPlayerController player, CCSWeaponBase weapon) {
-  //   return false;
-  // }
+  public virtual bool PreventEquip(CCSPlayerController player,
+    CCSWeaponBase weapon) {
+    if (State == LRState.PENDING) return false;
+    return player == Prisoner || player == Guard;
+  }
 }

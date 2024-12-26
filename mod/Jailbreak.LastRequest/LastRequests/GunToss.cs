@@ -79,8 +79,11 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
   }
 
   private void onGround(CCSPlayerController player) {
-    Server.PrintToChatAll("OnGround");
-    if (bothThrewTick > 0) return;
+    if (bothThrewTick > 0) {
+      Plugin.RemoveListener<Listeners.OnTick>(OnTick);
+      return;
+    }
+
     if (player.Slot == Prisoner.Slot && prisonerTossed) return;
     if (player.Slot == Guard.Slot && guardTossed) return;
     var lines = player.Slot == Prisoner.Slot ? prisonerLines : guardLines;

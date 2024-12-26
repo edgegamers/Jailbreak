@@ -52,6 +52,9 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
     Prisoner.Pawn.Value?.Teleport(startLocation);
     Guard.Pawn.Value?.Teleport(startLocation);
 
+    if (Guard.Pawn.Value != null) Guard.Pawn.Value.TakesDamage       = false;
+    if (Prisoner.Pawn.Value != null) Prisoner.Pawn.Value.TakesDamage = false;
+
     Guard.Freeze();
     Prisoner.Freeze();
 
@@ -97,6 +100,8 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
 
   public override void OnEnd(LRResult result) {
     State = LRState.COMPLETED;
+    if (Prisoner.Pawn.Value != null) Prisoner.Pawn.Value.TakesDamage = true;
+    if (Guard.Pawn.Value != null) Guard.Pawn.Value.TakesDamage       = true;
     switch (result) {
       case LRResult.GUARD_WIN:
         Prisoner.Pawn.Value?.CommitSuicide(false, true);
