@@ -276,9 +276,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
     if (weapon == null || !weapon.IsValid) return HookResult.Continue;
 
-    if (ActiveLRs.Where(s => s is IEquipBlocker)
-     .Cast<IEquipBlocker>()
-     .Any(lr => lr.PreventEquip(player, weapon)))
+    if (ActiveLRs.Any(lr => lr.PreventEquip(player, weapon)))
       return HookResult.Handled;
 
     return HookResult.Continue;
@@ -460,7 +458,6 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     foreach (var lr in ActiveLRs.ToList())
       EndLastRequest(lr, LRResult.TIMED_OUT);
 
-    IsLREnabled = false;
     return HookResult.Continue;
   }
 

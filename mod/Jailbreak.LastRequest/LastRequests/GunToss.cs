@@ -39,6 +39,7 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
   private CCSWeaponBase? prisonerWeapon, guardWeapon;
 
   public void OnWeaponDrop(CCSPlayerController player, CCSWeaponBase weapon) {
+    if (bothThrewTick > 0) return;
     if (State != LRState.ACTIVE) return;
 
     bothThrewTick = bothThrewTick switch {
@@ -127,12 +128,33 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
   public override void OnEnd(LRResult result) {
     State = LRState.COMPLETED;
     Plugin.RemoveListener<Listeners.OnTick>(OnTick);
+
+    guardGroundTimer?.Kill();
+    prisonerGroundTimer?.Kill();
+    guardGunTimer?.Kill();
+    prisonerGunTimer?.Kill();
+
+    guardGroundTimer    = null;
+    prisonerGroundTimer = null;
+    guardGunTimer       = null;
+    prisonerGunTimer    = null;
+
+    guardLines.ForEach(l => l.Remove());
+    guardLines.Clear();
+    prisonerLines.ForEach(l => l.Remove());
+    prisonerLines.Clear();
   }
 
   private void followPlayer(CCSPlayerController player) {
     var     lines    = player == Prisoner ? prisonerLines : guardLines;
     Vector? previous = null;
     var timer = Plugin.AddTimer(0.1f, () => {
+      if (State != LRState.ACTIVE) {
+        lines.ForEach(l => l.Remove());
+        lines.Clear();
+        return;
+      }
+
       Debug.Assert(player.PlayerPawn.Value != null,
         "player.PlayerPawn.Value != null");
       if ((player.PlayerPawn.Value.Flags & (uint)PlayerFlags.FL_ONGROUND)
