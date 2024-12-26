@@ -26,6 +26,7 @@ using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 using Jailbreak.Public.Mod.Rainbow;
 using Jailbreak.Public.Mod.Rebel;
+using Jailbreak.Public.Mod.Weapon;
 using Jailbreak.Public.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
@@ -59,7 +60,6 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
   private ILastRequestFactory? factory;
   public bool IsLREnabledForRound { get; set; } = true;
-  private List<int> droppedWeaponSlots = new();
 
   public bool ShouldBlockDamage(CCSPlayerController player,
     CCSPlayerController? attacker, EventPlayerHurt @event) {
@@ -91,6 +91,11 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     return true;
   }
 
+  public bool IsLREnabled { get; set; }
+
+  public IList<AbstractLastRequest> ActiveLRs { get; } =
+    new List<AbstractLastRequest>();
+
   public void Start(BasePlugin basePlugin) {
     factory = provider.GetRequiredService<ILastRequestFactory>();
 
@@ -104,63 +109,10 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
       HookMode.Pre);
   }
 
-  private void OnDrop(CEntityInstance entity, CEntityInstance newparent) {
-    if (!entity.IsValid || !IsLREnabled) return;
-
-    if (!Tag.WEAPONS.Contains(entity.DesignerName)) return;
-
-    var weaponEntity =
-      Utilities.GetEntityFromIndex<CCSWeaponBase>((int)entity.Index);
-    if (weaponEntity == null || !weaponEntity.IsValid) return;
-
-    var owner = weaponEntity.PrevOwner.Get()?.OriginalController.Get();
-    if (owner == null || !owner.IsValid) return;
-
-    if (newparent.IsValid) {
-      // Player picked up a weapon
-      return;
-    }
-
-    var color = owner.Team == CsTeam.CounterTerrorist ? Color.Blue : Color.Red;
-    weaponEntity.SetColor(color);
-
-    droppedWeaponSlots.Add((int)weaponEntity.Index);
-  }
-
-  void IDisposable.Dispose() {
+  public void Dispose() {
     VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Unhook(OnCanAcquire,
       HookMode.Pre);
   }
-
-  private HookResult OnCanAcquire(DynamicHook hook) {
-    if (!IsLREnabled) return HookResult.Continue;
-    var data = VirtualFunctions.GetCSWeaponDataFromKey.Invoke(-1,
-      hook.GetParam<CEconItemView>(1).ItemDefinitionIndex.ToString());
-    var player = hook.GetParam<CCSPlayer_ItemServices>(0)
-     .Pawn.Value.Controller.Value?.As<CCSPlayerController>();
-
-    if (player == null || !player.IsValid) return HookResult.Continue;
-
-    var method = hook.GetParam<AcquireMethod>(2);
-    if (method != AcquireMethod.PickUp) return HookResult.Continue;
-    var weapon = Utilities.GetEntityFromIndex<CCSWeaponBase>(data.Slot);
-
-    if (weapon == null || !weapon.IsValid) return HookResult.Continue;
-
-    if (droppedWeaponSlots.Contains((int)weapon.Index))
-      return HookResult.Handled;
-
-    var lr = ((ILastRequestManager)this).GetActiveLR(player);
-    if (lr == null) return HookResult.Continue;
-
-    if (lr.State == LRState.PENDING) return HookResult.Continue;
-    return HookResult.Handled;
-  }
-
-  public bool IsLREnabled { get; set; }
-
-  public IList<AbstractLastRequest> ActiveLRs { get; } =
-    new List<AbstractLastRequest>();
 
   public void DisableLR() { IsLREnabled = false; }
 
@@ -287,6 +239,46 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     lr.OnEnd(result);
     ActiveLRs.Remove(lr);
     return true;
+  }
+
+  private void OnDrop(CEntityInstance entity, CEntityInstance newparent) {
+    if (!entity.IsValid) return;
+    if (!Tag.WEAPONS.Contains(entity.DesignerName)
+      && !Tag.UTILITY.Contains(entity.DesignerName))
+      return;
+
+    var weapon = Utilities.GetEntityFromIndex<CCSWeaponBase>((int)entity.Index);
+    var owner  = weapon?.PrevOwner.Get()?.OriginalController.Get();
+
+    if (owner == null || weapon == null || !weapon.IsValid) return;
+    if (newparent.IsValid) return;
+
+    var color = owner.Team == CsTeam.CounterTerrorist ? Color.Blue : Color.Red;
+    weapon.SetColor(color);
+
+    var lr = ((ILastRequestManager)this).GetActiveLR(owner);
+    if (lr is not IDropListener listener) return;
+    listener.OnWeaponDrop(owner, weapon);
+  }
+
+  private HookResult OnCanAcquire(DynamicHook hook) {
+    if (ActiveLRs.Count == 0) return HookResult.Continue;
+    var player = hook.GetParam<CCSPlayer_ItemServices>(0)
+     .Pawn.Value.Controller.Value?.As<CCSPlayerController>();
+    var data = VirtualFunctions.GetCSWeaponDataFromKey.Invoke(-1,
+      hook.GetParam<CEconItemView>(1).ItemDefinitionIndex.ToString());
+
+    if (player == null || !player.IsValid) return HookResult.Continue;
+
+    var method = hook.GetParam<AcquireMethod>(2);
+    if (method != AcquireMethod.PickUp) return HookResult.Continue;
+
+    if (ActiveLRs.Any(lr => lr.PreventEquip(player, data))) {
+      hook.SetReturn(AcquireResult.NotAllowedByMode);
+      return HookResult.Handled;
+    }
+
+    return HookResult.Continue;
   }
 
   private async Task colorForLR(PlayerWrapper a, PlayerWrapper b) {
@@ -465,9 +457,6 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     foreach (var lr in ActiveLRs.ToList())
       EndLastRequest(lr, LRResult.TIMED_OUT);
 
-    droppedWeaponSlots.Clear();
-
-    IsLREnabled = false;
     return HookResult.Continue;
   }
 

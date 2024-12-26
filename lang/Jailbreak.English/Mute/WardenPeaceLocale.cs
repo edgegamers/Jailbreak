@@ -39,41 +39,30 @@ public class WardenPeaceLocale : IWardenPeaceLocale,
   }
 
   public IView UnmutedGuards
-    => new SimpleView {
-      { PREFIX, $"{ChatColors.Blue}Guards {ChatColors.Grey}were unmuted." }
-    };
+    => new SimpleView { PREFIX, CsTeam.CounterTerrorist, "were unmuted." };
 
   public IView UnmutedPrisoners
-    => new SimpleView {
-      {
-        PREFIX, $"{ChatColors.LightRed}Prisoners {ChatColors.Grey}were unmuted."
-      }
-    };
+    => new SimpleView { PREFIX, CsTeam.Terrorist, "Prisoners were unmuted." };
 
   public IView MuteReminder
-    => new SimpleView {
-      { PREFIX, ChatColors.Red + "You are currently muted." }
-    };
+    => new SimpleView { PREFIX, ChatColors.Red + "You are currently muted." };
 
   public IView PeaceReminder
     => new SimpleView {
-      {
-        PREFIX,
-        $"Peace is currently active. {ChatColors.Red}You should only be talking if absolutely necessary!"
-      }
+      PREFIX,
+      $"Peace is currently active. {ChatColors.Red}You should only be talking if absolutely necessary!"
     };
 
   public IView DeadReminder
     => new SimpleView {
-      { PREFIX, $"{ChatColors.Red}You are dead and cannot speak." }
+      PREFIX, $"{ChatColors.Red}You are dead and cannot speak."
     };
 
   public IView AdminDeadReminder
     => new SimpleView {
-      {
-        PREFIX, "You are dead.",
-        $"{ChatColors.Red}You should only be talking if absolutely necessary!"
-      }
+      PREFIX,
+      "You are dead.",
+      $"{ChatColors.Red}You should only be talking if absolutely necessary!"
     };
 
   public IView PeaceActive

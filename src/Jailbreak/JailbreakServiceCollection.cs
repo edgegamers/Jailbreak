@@ -61,6 +61,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
      .AddSingleton<IWardenCmdChickenLocale, WardenCmdChickenLocale>();
     serviceCollection
      .AddSingleton<IWardenCmdSoccerLocale, WardenCmdSoccerLocale>();
+    serviceCollection.AddSingleton<ILRGunTossLocale, GunTossLocale>();
 
     //	Do we want to make this scoped?
     //	Not sure how this will behave with multiple rounds and whatnot.

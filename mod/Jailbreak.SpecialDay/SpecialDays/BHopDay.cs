@@ -13,7 +13,7 @@ public class BHopDay(BasePlugin plugin, IServiceProvider provider)
   public override SpecialDaySettings Settings => new BHopSettings();
 
   public ISDInstanceLocale Locale
-    => new TeamDayLocale("Bunny Hop Day",
+    => new TeamDayLocale("Bunny Hop",
       "Auto-Bunny hopping is on, otherwise normal day!");
 
   public override void Setup() {
@@ -27,6 +27,7 @@ public class BHopDay(BasePlugin plugin, IServiceProvider provider)
       AllowLastRequests = true;
       AllowRebels       = true;
       OpenCells         = false;
+      RespawnPlayers    = false;
 
       ConVarValues["sv_enablebunnyhopping"] = true;
       ConVarValues["sv_autobunnyhopping"]   = true;

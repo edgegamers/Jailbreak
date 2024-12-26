@@ -30,7 +30,7 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
     "If true, the LG will be forced lower health if calculated");
 
   public static readonly FakeConVar<double> CV_GUARD_HEALTH_RATIO = new(
-    "css_jb_lg_ct_hp_ratio", "Ratio of CT : T Health", 0.6,
+    "css_jb_lg_ct_hp_ratio", "Ratio of CT : T Health", 0.8,
     ConVarFlags.FCVAR_NONE, new RangeValidator<double>(0.00001, 10));
 
   public static readonly FakeConVar<int> CV_LG_BASE_ROUND_TIME =
