@@ -132,9 +132,10 @@ public static class PlayerExtensions {
     // TODO: Don't always override to allow other plugins to show legs.
     if (color.A == 255)
       color = Color.FromArgb(pawn.Render.A, color.R, color.G, color.B);
-    pawn.RenderMode = RenderMode_t.kRenderTransColor;
-    pawn.Render     = color;
-    Utilities.SetStateChanged(pawn, "CBaseModelEntity", "m_clrRender");
+    // pawn.RenderMode = RenderMode_t.kRenderTransColor;
+    // pawn.Render     = color;
+    // Utilities.SetStateChanged(pawn, "CBaseModelEntity", "m_clrRender");
+    player.PlayerPawn.Value.SetColor(color);
   }
 
   public static Color? GetColor(this CCSPlayerController player) {

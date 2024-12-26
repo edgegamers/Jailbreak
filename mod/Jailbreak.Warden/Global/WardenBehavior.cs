@@ -152,7 +152,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
     if (API.Actain != null) {
       var steam = Warden.SteamID;
-      Server.NextFrameAsync(async () => {
+      // Server.NextFrameAsync(async () => {
+      Task.Run(async () => {
         oldTag      = await API.Actain.getTagService().GetTag(steam);
         oldTagColor = await API.Actain.getTagService().GetTagColor(steam);
         await Server.NextFrameAsync(() => {

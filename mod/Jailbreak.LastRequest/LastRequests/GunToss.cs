@@ -1,4 +1,5 @@
 using CounterStrikeSharp.API.Core;
+using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 
@@ -16,6 +17,11 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
     Guard.RemoveWeapons();
 
     Plugin.AddTimer(3, Execute);
+    Plugin.AddTimer(5, () => {
+      if (State != LRState.ACTIVE) return;
+      Guard.SetHealth(100);
+      Guard.SetArmor(100);
+    });
   }
 
   public override void Execute() {
@@ -23,6 +29,12 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
     Guard.GiveNamedItem("weapon_knife");
     Prisoner.GiveNamedItem("weapon_deagle");
     Guard.GiveNamedItem("weapon_deagle");
+
+    Guard.SetHealth(250);
+    Guard.SetArmor(500);
+
+    Prisoner.GetWeaponBase("weapon_deagle").SetAmmo(2, 7);
+
     State = LRState.ACTIVE;
   }
 

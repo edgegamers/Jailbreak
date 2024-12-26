@@ -9,6 +9,8 @@ public class KnifeFight(BasePlugin plugin, IServiceProvider provider,
   public override LRType Type => LRType.KNIFE_FIGHT;
 
   public override void Execute() {
+    Prisoner.RemoveWeapons();
+    Guard.RemoveWeapons();
     Prisoner.GiveNamedItem("weapon_knife");
     Guard.GiveNamedItem("weapon_knife");
     State = LRState.ACTIVE;

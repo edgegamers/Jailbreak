@@ -4,7 +4,7 @@ public class LRStat : BaseStat<LRData> {
   public const string STAT_ID = "jb_lr_stat";
   public override string StatId => STAT_ID;
   public override string Name => "LRs";
-  public override string? Description => "LRs reached";
+  public override string Description => "LRs reached";
   public override LRData? Value { get; set; }
 }
 
