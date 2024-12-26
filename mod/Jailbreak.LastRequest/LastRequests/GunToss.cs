@@ -11,15 +11,19 @@ using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 using Jailbreak.Public.Mod.Weapon;
+using Microsoft.Extensions.DependencyInjection;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
 public class GunToss(BasePlugin plugin, ILastRequestManager manager,
-  ILRGunTossLocale locale, CCSPlayerController prisoner,
+  IServiceProvider provider, CCSPlayerController prisoner,
   CCSPlayerController guard)
   : TeleportingRequest(plugin, manager, prisoner, guard), IDropListener {
   public override LRType Type => LRType.GUN_TOSS;
+
+  private readonly ILRGunTossLocale locale =
+    provider.GetRequiredService<ILRGunTossLocale>();
 
   public override void Setup() {
     base.Setup();
@@ -77,8 +81,7 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
         return;
       }
 
-      if (lastPos != null && lastPos.DistanceSquared(weapon.AbsOrigin) == 0
-        && Server.TickCount - startTime > 10) {
+      if (lastPos != null && lastPos.DistanceSquared(weapon.AbsOrigin) == 0) {
         if (player == Prisoner)
           prisonerTimer?.Kill();
         else
