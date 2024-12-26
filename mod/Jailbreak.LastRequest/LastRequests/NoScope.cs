@@ -74,7 +74,7 @@ public class NoScope(BasePlugin plugin, IServiceProvider provider,
     winner.GiveNamedItem("weapon_knife");
     winner.GiveNamedItem("weapon_ak47");
   }
-  
+
   public override bool PreventEquip(CCSPlayerController player,
     CCSWeaponBase weapon) {
     if (State == LRState.PENDING) return false;

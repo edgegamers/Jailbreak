@@ -16,25 +16,18 @@ public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
   IWardenSTLocale notifications, IServiceProvider provider)
   : IPluginBehavior, ISpecialTreatmentService {
   private readonly ISpecialIcon? iconer = provider.GetService<ISpecialIcon>();
+
+  private readonly IPlayerState<SpecialTreatmentState> sts =
+    factory.Round<SpecialTreatmentState>();
+
   private IRebelService rebel = null!;
 
   public void Start(BasePlugin basePlugin, bool hotreload) {
     rebel = provider.GetRequiredService<IRebelService>();
   }
 
-  private readonly IPlayerState<SpecialTreatmentState> sts =
-    factory.Round<SpecialTreatmentState>();
-
   public bool IsSpecialTreatment(CCSPlayerController player) {
     return sts.Get(player).HasSpecialTreatment;
-  }
-
-  [GameEventHandler]
-  public HookResult OnDeath(EventPlayerDeath ev, GameEventInfo info) {
-    if (ev.Userid == null || !ev.Userid.IsValid) return HookResult.Continue;
-    Revoke(ev.Userid, false);
-
-    return HookResult.Continue;
   }
 
   public void Grant(CCSPlayerController player) {
@@ -69,6 +62,14 @@ public class SpecialTreatmentBehavior(IPlayerStateFactory factory,
     }
 
     iconer?.RemoveSpecialIcon(player);
+  }
+
+  [GameEventHandler]
+  public HookResult OnDeath(EventPlayerDeath ev, GameEventInfo info) {
+    if (ev.Userid == null || !ev.Userid.IsValid) return HookResult.Continue;
+    Revoke(ev.Userid, false);
+
+    return HookResult.Continue;
   }
 
   private void setSpecialColor(CCSPlayerController player, bool hasSt) {

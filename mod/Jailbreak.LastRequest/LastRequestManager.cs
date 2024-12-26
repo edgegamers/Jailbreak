@@ -60,10 +60,6 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
   private ILastRequestFactory? factory;
   public bool IsLREnabledForRound { get; set; } = true;
-  public bool IsLREnabled { get; set; }
-
-  public IList<AbstractLastRequest> ActiveLRs { get; } =
-    new List<AbstractLastRequest>();
 
   public bool ShouldBlockDamage(CCSPlayerController player,
     CCSPlayerController? attacker, EventPlayerHurt @event) {
@@ -95,6 +91,11 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     return true;
   }
 
+  public bool IsLREnabled { get; set; }
+
+  public IList<AbstractLastRequest> ActiveLRs { get; } =
+    new List<AbstractLastRequest>();
+
   public void Start(BasePlugin basePlugin) {
     factory = provider.GetRequiredService<ILastRequestFactory>();
 
@@ -111,26 +112,6 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   public void Dispose() {
     VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Unhook(OnCanAcquire,
       HookMode.Pre);
-  }
-
-  private void OnDrop(CEntityInstance entity, CEntityInstance newparent) {
-    if (!entity.IsValid) return;
-    if (!Tag.WEAPONS.Contains(entity.DesignerName)
-      && !Tag.UTILITY.Contains(entity.DesignerName))
-      return;
-
-    var weapon = Utilities.GetEntityFromIndex<CCSWeaponBase>((int)entity.Index);
-    var owner  = weapon?.PrevOwner.Get()?.OriginalController.Get();
-
-    if (owner == null || weapon == null || !weapon.IsValid) return;
-    if (newparent.IsValid) return;
-
-    var color = owner.Team == CsTeam.CounterTerrorist ? Color.Blue : Color.Red;
-    weapon.SetColor(color);
-
-    var lr = ((ILastRequestManager)this).GetActiveLR(owner);
-    if (lr is not IDropListener listener) return;
-    listener.OnWeaponDrop(owner, weapon);
   }
 
   public void DisableLR() { IsLREnabled = false; }
@@ -258,6 +239,26 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     lr.OnEnd(result);
     ActiveLRs.Remove(lr);
     return true;
+  }
+
+  private void OnDrop(CEntityInstance entity, CEntityInstance newparent) {
+    if (!entity.IsValid) return;
+    if (!Tag.WEAPONS.Contains(entity.DesignerName)
+      && !Tag.UTILITY.Contains(entity.DesignerName))
+      return;
+
+    var weapon = Utilities.GetEntityFromIndex<CCSWeaponBase>((int)entity.Index);
+    var owner  = weapon?.PrevOwner.Get()?.OriginalController.Get();
+
+    if (owner == null || weapon == null || !weapon.IsValid) return;
+    if (newparent.IsValid) return;
+
+    var color = owner.Team == CsTeam.CounterTerrorist ? Color.Blue : Color.Red;
+    weapon.SetColor(color);
+
+    var lr = ((ILastRequestManager)this).GetActiveLR(owner);
+    if (lr is not IDropListener listener) return;
+    listener.OnWeaponDrop(owner, weapon);
   }
 
   private HookResult OnCanAcquire(DynamicHook hook) {

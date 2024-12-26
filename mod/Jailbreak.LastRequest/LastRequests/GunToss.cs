@@ -20,22 +20,53 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
   IServiceProvider provider, CCSPlayerController prisoner,
   CCSPlayerController guard)
   : TeleportingRequest(plugin, manager, prisoner, guard), IDropListener {
-  public override LRType Type => LRType.GUN_TOSS;
+  private readonly List<BeamLine> guardLines = [], prisonerLines = [];
 
   private readonly ILRGunTossLocale locale =
     provider.GetRequiredService<ILRGunTossLocale>();
 
-  private Timer? guardGunTimer, prisonerGunTimer;
-  private Timer? guardGroundTimer, prisonerGroundTimer;
-  private bool guardTossed, prisonerTossed;
-
-  private readonly List<BeamLine> guardLines = [], prisonerLines = [];
-
   /// <summary>
-  /// Null if no one has thrown a gun yet, negative if only one has thrown a gun,
-  /// Positive if both have thrown a gun.
+  ///   Null if no one has thrown a gun yet, negative if only one has thrown a gun,
+  ///   Positive if both have thrown a gun.
   /// </summary>
   private int? bothThrewTick;
+
+  private Timer? guardGroundTimer, prisonerGroundTimer;
+
+  private Timer? guardGunTimer, prisonerGunTimer;
+  private bool guardTossed, prisonerTossed;
+  public override LRType Type => LRType.GUN_TOSS;
+
+  public void OnWeaponDrop(CCSPlayerController player, CCSWeaponBase weapon) {
+    if (State != LRState.ACTIVE) return;
+
+    bothThrewTick = bothThrewTick switch {
+      null => -Server.TickCount,
+      < 0  => Server.TickCount,
+      _    => bothThrewTick
+    };
+
+    if (player == Prisoner)
+      prisonerTossed = true;
+    else
+      guardTossed = true;
+
+    if (Guard.Slot == Prisoner.Slot) bothThrewTick = Server.TickCount;
+
+    followWeapon(player, weapon);
+
+    if (player == Prisoner)
+      prisonerGroundTimer?.Kill();
+    else
+      guardGroundTimer?.Kill();
+
+    if (player != Guard) return;
+    if (Guard.PlayerPawn.Value != null)
+      Plugin.AddTimer(3, () => {
+        if (State != LRState.ACTIVE) return;
+        Guard.PlayerPawn.Value.TakesDamage = true;
+      });
+  }
 
   public override void Setup() {
     base.Setup();
@@ -65,17 +96,15 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
   private void OnTick() {
     if (bothThrewTick > 0) return;
     if (Guard is { IsValid: true, PlayerPawn.IsValid: true }
-      && Guard.PlayerPawn.Value != null) {
+      && Guard.PlayerPawn.Value != null)
       if ((Guard.PlayerPawn.Value.Flags & (uint)PlayerFlags.FL_ONGROUND) != 0)
         onGround(Guard);
-    }
 
     if (Prisoner is { IsValid: true, PlayerPawn.IsValid: true }
-      && Prisoner.PlayerPawn.Value != null) {
+      && Prisoner.PlayerPawn.Value != null)
       if ((Prisoner.PlayerPawn.Value.Flags & (uint)PlayerFlags.FL_ONGROUND)
         != 0)
         onGround(Prisoner);
-    }
   }
 
   private void onGround(CCSPlayerController player) {
@@ -94,38 +123,6 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
   public override void OnEnd(LRResult result) {
     State = LRState.COMPLETED;
     Plugin.RemoveListener<Listeners.OnTick>(OnTick);
-  }
-
-  public void OnWeaponDrop(CCSPlayerController player, CCSWeaponBase weapon) {
-    if (State != LRState.ACTIVE) return;
-
-    bothThrewTick = bothThrewTick switch {
-      null => -Server.TickCount,
-      < 0  => Server.TickCount,
-      _    => bothThrewTick
-    };
-
-    if (player == Prisoner)
-      prisonerTossed = true;
-    else
-      guardTossed = true;
-
-    if (Guard.Slot == Prisoner.Slot) bothThrewTick = Server.TickCount;
-
-    followWeapon(player, weapon);
-
-    if (player == Prisoner)
-      prisonerGroundTimer?.Kill();
-    else
-      guardGroundTimer?.Kill();
-
-    if (player != Guard) return;
-    if (Guard.PlayerPawn.Value != null) {
-      Plugin.AddTimer(3, () => {
-        if (State != LRState.ACTIVE) return;
-        Guard.PlayerPawn.Value.TakesDamage = true;
-      });
-    }
   }
 
   private void followPlayer(CCSPlayerController player) {

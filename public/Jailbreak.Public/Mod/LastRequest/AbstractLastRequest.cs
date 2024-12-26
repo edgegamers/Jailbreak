@@ -15,6 +15,12 @@ public abstract class AbstractLastRequest(BasePlugin plugin,
 
   public LRState State { get; protected set; }
 
+  public virtual bool PreventEquip(CCSPlayerController player,
+    CCSWeaponBase weapon) {
+    if (State == LRState.PENDING) return false;
+    return player == Prisoner || player == Guard;
+  }
+
   public void PrintToParticipants(string message) {
     Prisoner.PrintToChat(message);
     Guard.PrintToChat(message);
@@ -23,10 +29,4 @@ public abstract class AbstractLastRequest(BasePlugin plugin,
   public abstract void Setup();
   public abstract void Execute();
   public abstract void OnEnd(LRResult result);
-
-  public virtual bool PreventEquip(CCSPlayerController player,
-    CCSWeaponBase weapon) {
-    if (State == LRState.PENDING) return false;
-    return player == Prisoner || player == Guard;
-  }
 }

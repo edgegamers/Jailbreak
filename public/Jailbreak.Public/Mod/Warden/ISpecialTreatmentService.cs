@@ -30,6 +30,6 @@ public interface ISpecialTreatmentService {
   ///   Does nothing if not ST.
   /// </summary>
   /// <param name="player"></param>
-  ///  <param name="print">Whether to print a message to the player</param>
+  /// <param name="print">Whether to print a message to the player</param>
   public void Revoke(CCSPlayerController player, bool print);
 }
