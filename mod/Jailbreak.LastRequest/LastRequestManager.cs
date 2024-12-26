@@ -62,7 +62,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   public bool IsLREnabledForRound { get; set; } = true;
 
   public bool ShouldBlockDamage(CCSPlayerController player,
-    CCSPlayerController? attacker, EventPlayerHurt @event) {
+    CCSPlayerController? attacker) {
     if (!IsLREnabled) return false;
 
     if (attacker == null || !attacker.IsReal()) return false;
@@ -105,12 +105,17 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     stats?.Stats.Add(new LRStat());
 
     basePlugin.RegisterListener<Listeners.OnEntityParentChanged>(OnDrop);
+    VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage,
+      HookMode.Pre);
     VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Hook(OnCanAcquire,
       HookMode.Pre);
   }
 
   public void Dispose() {
     VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Unhook(OnCanAcquire,
+      HookMode.Pre);
+
+    VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(OnTakeDamage,
       HookMode.Pre);
   }
 
@@ -446,10 +451,21 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     return Utilities.GetPlayers().Count >= CV_MIN_PLAYERS_FOR_CREDITS.Value;
   }
 
-  [GameEventHandler(HookMode.Pre)]
-  public HookResult OnTakeDamage(EventPlayerHurt @event, GameEventInfo info) {
-    IDamageBlocker damageBlockerHandler = this;
-    return damageBlockerHandler.BlockUserDamage(@event, info);
+  private HookResult OnTakeDamage(DynamicHook hook) {
+    var info       = hook.GetParam<CTakeDamageInfo>(1);
+    var playerPawn = hook.GetParam<CCSPlayerPawn>(0);
+
+    var player = playerPawn.Controller.Value?.As<CCSPlayerController>();
+    if (player == null || !player.IsValid) return HookResult.Continue;
+
+    var attackerPawn = info.Attacker;
+    var attacker     = attackerPawn.Value?.As<CCSPlayerController>();
+
+    if (attacker == null || !attacker.IsValid) return HookResult.Continue;
+
+    return ((IDamageBlocker)this).ShouldBlockDamage(player, attacker) ?
+      HookResult.Handled :
+      HookResult.Continue;
   }
 
   [GameEventHandler]

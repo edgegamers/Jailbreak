@@ -1,6 +1,8 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
+using CounterStrikeSharp.API.Modules.Memory;
+using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
@@ -256,8 +258,10 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   /// </summary>
   public virtual void Execute() {
     EnableDamage();
-    if (Settings.RestrictWeapons)
-      Plugin.RegisterListener<Listeners.OnTick>(OnTick);
+    if (Settings.RestrictWeapons) {
+      VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Hook(OnCanAcquire,
+        HookMode.Pre);
+    }
   }
 
   virtual protected HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
@@ -268,7 +272,8 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     }
 
     if (Settings.RestrictWeapons)
-      Plugin.RemoveListener<Listeners.OnTick>(OnTick);
+      VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Unhook(
+        OnCanAcquire, HookMode.Pre);
 
     previousConvarValues.Clear();
 
@@ -276,26 +281,26 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
     return HookResult.Continue;
   }
 
-  virtual protected void OnTick() {
-    foreach (var player in PlayerUtil.GetAlive()) {
-      var weapons = Settings.AllowedWeapons(player);
-      if (weapons == null) continue;
-      disableWeapon(player, weapons);
-    }
-  }
+  virtual protected HookResult OnCanAcquire(DynamicHook hook) {
+    var player = hook.GetParam<CCSPlayer_ItemServices>(0)
+     .Pawn.Value.Controller.Value?.As<CCSPlayerController>();
+    var data = VirtualFunctions.GetCSWeaponDataFromKey.Invoke(-1,
+      hook.GetParam<CEconItemView>(1).ItemDefinitionIndex.ToString());
 
-  private void disableWeapon(CCSPlayerController player,
-    ICollection<string> allowed) {
-    if (!player.IsReal()) return;
-    var pawn = player.PlayerPawn.Value;
-    if (pawn == null || !pawn.IsValid) return;
-    var weaponServices = pawn.WeaponServices;
-    if (weaponServices == null) return;
-    var activeWeapon = weaponServices.ActiveWeapon.Value;
-    if (activeWeapon == null || !activeWeapon.IsValid) return;
-    if (allowed.Contains(activeWeapon.DesignerName)) return;
-    activeWeapon.NextSecondaryAttackTick = Server.TickCount + 500;
-    activeWeapon.NextPrimaryAttackTick   = Server.TickCount + 500;
+    if (player == null || !player.IsValid) return HookResult.Continue;
+
+    var method = hook.GetParam<AcquireMethod>(2);
+    if (method != AcquireMethod.PickUp) return HookResult.Continue;
+
+    var allowed = Settings.AllowedWeapons(player);
+    if (allowed == null) return HookResult.Continue;
+    if (allowed.Contains(data.Name)
+      || allowed.Contains("weapon_knife") && data.Name.Contains("knife")
+      || data.Name.Contains("bayonet"))
+      return HookResult.Continue;
+
+    hook.SetReturn(AcquireResult.NotAllowedByMode);
+    return HookResult.Handled;
   }
 
   protected void DisableDamage() {

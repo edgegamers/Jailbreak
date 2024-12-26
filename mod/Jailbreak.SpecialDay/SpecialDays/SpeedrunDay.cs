@@ -3,6 +3,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
+using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
@@ -122,10 +123,10 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     generics = Provider.GetRequiredService<IGenericCmdLocale>();
 
     foreach (var player in Utilities.GetPlayers()
-     .Where(p => p is {
-        PawnIsAlive: false, Team: CsTeam.Terrorist or CsTeam.CounterTerrorist
-      }))
+     .Where(p => p is { Team: CsTeam.Terrorist or CsTeam.CounterTerrorist })) {
       player.Respawn();
+      player.SwitchTeam(CsTeam.Terrorist);
+    }
 
     speedrunner = getRunner();
 
@@ -707,8 +708,9 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       foreach (var weapon in CV_WIN_WEAPONS.Value.Split(','))
         winner.GiveNamedItem(weapon);
 
+      VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Unhook(
+        OnCanAcquire, HookMode.Pre);
       Plugin.RemoveListener<Listeners.OnTick>(checkFinishers);
-      Plugin.RemoveListener<Listeners.OnTick>(OnTick);
       RoundUtil.SetTimeRemaining(Math.Min(timeToSet, CV_WIN_TIME_MAX.Value));
       Server.ExecuteCommand("mp_ignore_round_win_conditions 0");
       return;
@@ -828,7 +830,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       TTeleport = TeleportType.RANDOM_STACKED;
       StripToKnife = true;
       ConVarValues["mp_ignore_round_win_conditions"] = true;
-      if (new Random().Next(5) == 0) WithAutoBhop();
+      if (new Random().Next(3) == 0) WithAutoBhop();
       WithFriendlyFire();
     }
 

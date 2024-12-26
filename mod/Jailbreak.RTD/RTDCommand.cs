@@ -1,8 +1,10 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
+using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.RTD;
@@ -14,8 +16,9 @@ namespace Jailbreak.RTD;
 
 public class RTDCommand(IRTDRewarder rewarder, IRewardGenerator generator,
   IRTDLocale locale, IGenericCmdLocale generic) : IPluginBehavior {
-  public static readonly FakeConVar<bool> CV_RTD_ENABLED =
-    new("css_jb_rtd_enabled", "Whether to allow dice rolling", true);
+  public static readonly FakeConVar<int> CV_RTD_ENABLED =
+    new("css_jb_rtd_minplayers",
+      "Minimum amount of players to enable rolling the dice", 3);
 
   private bool inBetweenRounds;
 
@@ -31,15 +34,18 @@ public class RTDCommand(IRTDRewarder rewarder, IRewardGenerator generator,
       return;
     }
 
-    if (!bypass && !CV_RTD_ENABLED.Value) {
-      locale.RollingDisabled().ToChat(executor);
-      return;
-    }
+    var count = Utilities.GetPlayers().Count(p => p.Team > CsTeam.Spectator);
 
-    if (!bypass && !inBetweenRounds && !RoundUtil.IsWarmup()
-      && executor.PawnIsAlive) {
-      locale.CannotRollYet().ToChat(executor);
-      return;
+    if (!bypass) {
+      if (count < CV_RTD_ENABLED.Value) {
+        locale.RollingDisabled().ToChat(executor);
+        return;
+      }
+
+      if (!inBetweenRounds && !RoundUtil.IsWarmup() && executor.PawnIsAlive) {
+        locale.CannotRollYet().ToChat(executor);
+        return;
+      }
     }
 
     var reward = generator.GenerateReward(executor);

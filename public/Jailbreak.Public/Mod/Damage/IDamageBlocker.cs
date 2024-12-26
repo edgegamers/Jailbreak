@@ -8,23 +8,12 @@ namespace Jailbreak.Public.Mod.Damage;
 ///   taking damage.
 /// </summary>
 public interface IDamageBlocker {
-  HookResult BlockUserDamage(EventPlayerHurt @event, GameEventInfo _) {
-    var player   = @event.Userid;
-    var attacker = @event.Attacker;
-    if (player == null || !player.IsReal()) return HookResult.Continue;
-
-    if (!ShouldBlockDamage(player, attacker, @event))
-      return HookResult.Continue;
-    if (player.PlayerPawn.IsValid) {
-      var playerPawn = player.PlayerPawn.Value!;
-      playerPawn.Health = playerPawn.LastHealth;
-    }
-
-    @event.DmgArmor  = 0;
-    @event.DmgHealth = 0;
-    return HookResult.Stop;
+  [Obsolete("Do not use the EventPlayerHurt overload.")]
+  bool ShouldBlockDamage(CCSPlayerController victim,
+    CCSPlayerController? attacker, EventPlayerHurt @event) {
+    return ShouldBlockDamage(victim, attacker);
   }
 
   bool ShouldBlockDamage(CCSPlayerController victim,
-    CCSPlayerController? attacker, EventPlayerHurt @event);
+    CCSPlayerController? attacker);
 }

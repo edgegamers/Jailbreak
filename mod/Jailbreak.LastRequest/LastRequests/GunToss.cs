@@ -58,19 +58,21 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
 
     if (Guard.Slot == Prisoner.Slot) bothThrewTick = Server.TickCount;
 
+    if (bothThrewTick > 0) {
+      Plugin.AddTimer(5, () => {
+        if (State != LRState.ACTIVE) return;
+        if (Guard.PlayerPawn.Value != null)
+          Guard.PlayerPawn.Value.TakesDamage = true;
+        Prisoner.GetWeaponBase("weapon_deagle").SetAmmo(7, 35);
+      });
+    }
+
     followWeapon(player, weapon);
 
     if (player == Prisoner)
       prisonerGroundTimer?.Kill();
     else
       guardGroundTimer?.Kill();
-
-    if (player != Guard) return;
-    if (Guard.PlayerPawn.Value != null)
-      Plugin.AddTimer(3, () => {
-        if (State != LRState.ACTIVE) return;
-        Guard.PlayerPawn.Value.TakesDamage = true;
-      });
   }
 
   public override void Setup() {
@@ -89,7 +91,7 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
     Guard.GiveNamedItem("weapon_knife");
     Prisoner.GiveNamedItem("weapon_deagle");
     Guard.GiveNamedItem("weapon_deagle");
-    Prisoner.GetWeaponBase("weapon_deagle").SetAmmo(2, 0);
+    Prisoner.GetWeaponBase("weapon_deagle").SetAmmo(7, 0);
 
     State = LRState.ACTIVE;
     followPlayer(Prisoner);
@@ -243,7 +245,7 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
          .AbsOrigin!);
 
       var dist = Math.Min(guardGunDist, prisonerGunDist);
-      return dist < 16500;
+      return dist > 16500;
     }
 
     if (State == LRState.PENDING) return false;
