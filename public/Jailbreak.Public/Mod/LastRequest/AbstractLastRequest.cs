@@ -22,4 +22,12 @@ public abstract class AbstractLastRequest(BasePlugin plugin,
   public abstract void Setup();
   public abstract void Execute();
   public abstract void OnEnd(LRResult result);
+
+  // public bool PreventShoot(CCSPlayerController player, CBasePlayerWeapon weapon) {
+  //   return false;
+  // }
+  //
+  // public bool PreventPickup(CCSPlayerController player, CCSWeaponBase weapon) {
+  //   return false;
+  // }
 }

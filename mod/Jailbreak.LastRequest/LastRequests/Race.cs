@@ -26,20 +26,9 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
     base.Setup();
 
     Prisoner.RemoveWeapons();
-
     Guard.RemoveWeapons();
-    Plugin.AddTimer(1, () => {
-      if (State != LRState.PENDING) return;
-      Guard.GiveNamedItem("weapon_knife");
-    });
-
-    Plugin.AddTimer(3, () => {
-      if (State != LRState.PENDING) return;
-      Prisoner.GiveNamedItem("weapon_knife");
-    });
 
     messages.EndRaceInstruction.ToChat(Prisoner);
-
     messages.RaceStartingMessage(Prisoner).ToChat(Guard);
 
     startLocation = Prisoner.Pawn.Value?.AbsOrigin?.Clone();
@@ -48,12 +37,11 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
     start = new BeamCircle(Plugin, startLocation, 20, 16);
     start.SetColor(Color.Aqua);
     start.Draw();
+    State = LRState.ACTIVE;
   }
 
   // Called when the prisoner types !endrace
   public override void Execute() {
-    State = LRState.ACTIVE;
-
     endLocation = Prisoner.Pawn.Value?.AbsOrigin?.Clone();
 
     if (endLocation == null) return;
