@@ -7,7 +7,7 @@ namespace Jailbreak.English.LastRequest;
 public class GunTossLocale : LastRequestLocale, ILRGunTossLocale {
   public IView PlayerThrewGunDistance(CCSPlayerController player, float dist) {
     return new SimpleView {
-      { PREFIX, player, "threw their gun ", dist, " units." }
+      { PREFIX, player, "threw their gun", dist, "units." }
     };
   }
 }
