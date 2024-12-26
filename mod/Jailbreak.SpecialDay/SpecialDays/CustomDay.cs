@@ -15,7 +15,8 @@ public class CustomDay(BasePlugin plugin, IServiceProvider provider)
       StripToKnife      = false,
       AllowLastRequests = true,
       AllowRebels       = true,
-      OpenCells         = false
+      OpenCells         = false,
+      RespawnPlayers    = false
     };
 
   public ISDInstanceLocale Locale

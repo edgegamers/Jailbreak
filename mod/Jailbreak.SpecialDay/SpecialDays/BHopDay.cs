@@ -27,6 +27,7 @@ public class BHopDay(BasePlugin plugin, IServiceProvider provider)
       AllowLastRequests = true;
       AllowRebels       = true;
       OpenCells         = false;
+      RespawnPlayers    = false;
 
       ConVarValues["sv_enablebunnyhopping"] = true;
       ConVarValues["sv_autobunnyhopping"]   = true;
