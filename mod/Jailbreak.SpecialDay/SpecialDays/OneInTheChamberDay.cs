@@ -1,6 +1,8 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
+using CounterStrikeSharp.API.Modules.Memory;
+using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.SpecialDay;
@@ -37,9 +39,15 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
     Timers[15] += () => Locale.BeginsIn(5).ToAllChat();
     Timers[20] += Execute;
     base.Setup();
-    Plugin.RegisterEventHandler<EventItemPickup>(OnPickup);
     Plugin.RegisterEventHandler<EventPlayerHurt>(OnPlayerDamage);
     Plugin.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
+
+    VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Hook(OnCanAcquire,
+      HookMode.Pre);
+  }
+
+  private HookResult OnCanAcquire(DynamicHook arg) {
+    return started ? HookResult.Handled : HookResult.Continue;
   }
 
   public override void Execute() {
@@ -57,15 +65,6 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     started = true;
-  }
-
-  protected HookResult OnPickup(EventItemPickup @event, GameEventInfo info) {
-    if (!started) return HookResult.Continue;
-
-    var player = @event.Userid;
-    if (player == null || !player.IsValid) return HookResult.Continue;
-    player.RemoveWeapons();
-    return HookResult.Continue;
   }
 
   private HookResult
@@ -89,7 +88,6 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
     OnEnd(EventRoundEnd @event, GameEventInfo info) {
     Plugin.DeregisterEventHandler<EventPlayerHurt>(OnPlayerDamage);
     Plugin.DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
-    Plugin.DeregisterEventHandler<EventItemPickup>(OnPickup);
     return base.OnEnd(@event, info);
   }
 

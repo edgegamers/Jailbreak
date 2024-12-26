@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Drawing;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Cvars;
@@ -103,9 +104,12 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     stats?.Stats.Add(new LRStat());
 
     basePlugin.RegisterListener<Listeners.OnEntityParentChanged>(OnDrop);
-    VirtualFunctions.CCSPlayer_WeaponServices_CanUseFunc.Hook(OnCanUse,
-      HookMode.Pre);
     VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Hook(OnCanAcquire,
+      HookMode.Pre);
+  }
+
+  public void Dispose() {
+    VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Unhook(OnCanAcquire,
       HookMode.Pre);
   }
 
@@ -120,6 +124,9 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
     if (owner == null || weapon == null || !weapon.IsValid) return;
     if (newparent.IsValid) return;
+
+    var color = owner.Team == CsTeam.CounterTerrorist ? Color.Blue : Color.Red;
+    weapon.SetColor(color);
 
     var lr = ((ILastRequestManager)this).GetActiveLR(owner);
     if (lr is not IDropListener listener) return;
@@ -251,21 +258,6 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     lr.OnEnd(result);
     ActiveLRs.Remove(lr);
     return true;
-  }
-
-  private HookResult OnCanUse(DynamicHook hook) {
-    if (ActiveLRs.Count == 0) return HookResult.Continue;
-    var player = hook.GetParam<CCSPlayer_WeaponServices>(0)
-     .Pawn.Value.Controller.Value?.As<CCSPlayerController>();
-    var weapon = hook.GetParam<CBasePlayerWeapon>(1);
-
-    if (player == null || !player.IsValid) return HookResult.Continue;
-    var lr = ((ILastRequestManager)this).GetActiveLR(player);
-    if (lr is not IUseBlocker blocker) return HookResult.Continue;
-
-    return blocker.PreventUse(player, weapon) ?
-      HookResult.Handled :
-      HookResult.Continue;
   }
 
   private HookResult OnCanAcquire(DynamicHook hook) {
