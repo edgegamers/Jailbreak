@@ -701,6 +701,9 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
       if (CV_WINNER_DAMAGEABLE.Value) EnableDamage(winner);
 
+      VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Unhook(
+        OnCanAcquire, HookMode.Pre);
+
       foreach (var weapon in CV_LOSERS_WEAPONS.Value.Split(','))
         foreach (var loser in losers)
           loser.GiveNamedItem(weapon);
@@ -708,8 +711,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       foreach (var weapon in CV_WIN_WEAPONS.Value.Split(','))
         winner.GiveNamedItem(weapon);
 
-      VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Unhook(
-        OnCanAcquire, HookMode.Pre);
       Plugin.RemoveListener<Listeners.OnTick>(checkFinishers);
       RoundUtil.SetTimeRemaining(Math.Min(timeToSet, CV_WIN_TIME_MAX.Value));
       Server.ExecuteCommand("mp_ignore_round_win_conditions 0");

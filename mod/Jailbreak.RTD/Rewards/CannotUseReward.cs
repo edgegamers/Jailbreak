@@ -29,10 +29,7 @@ public class CannotUseReward : IRTDReward {
   }
 
   private HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
-    VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Unhook(OnCanAcquire,
-      HookMode.Pre);
     blockedIDs.Clear();
-    plugin.DeregisterEventHandler<EventRoundEnd>(OnRoundEnd);
     return HookResult.Continue;
   }
 

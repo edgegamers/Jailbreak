@@ -256,12 +256,15 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     var owner  = weapon?.PrevOwner.Get()?.OriginalController.Get();
 
     if (owner == null || weapon == null || !weapon.IsValid) return;
+
+    var lr = ((ILastRequestManager)this).GetActiveLR(owner);
+    if (lr == null) return;
+
     if (newparent.IsValid) return;
 
     var color = owner.Team == CsTeam.CounterTerrorist ? Color.Blue : Color.Red;
     weapon.SetColor(color);
 
-    var lr = ((ILastRequestManager)this).GetActiveLR(owner);
     if (lr is not IDropListener listener) return;
     listener.OnWeaponDrop(owner, weapon);
   }

@@ -109,5 +109,11 @@ public class NoScopeDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     public override float FreezeTime(CCSPlayerController player) { return 1; }
+
+    public override ISet<string>? AllowedWeapons(CCSPlayerController player) {
+      return CV_WEAPON_WHITELIST.Value.Length == 0 ?
+        null :
+        CV_WEAPON_WHITELIST.Value.Split(",").ToHashSet();
+    }
   }
 }

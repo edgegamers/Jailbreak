@@ -2,6 +2,20 @@
 
 public static class Tag {
   /// <summary>
+  /// Items that can backstab
+  /// </summary>
+  public static readonly IReadOnlySet<string> KNIVES = new HashSet<string>([
+    "weapon_knife", "weapon_knife_bayonet", "weapon_knife_butterfly",
+    "weapon_knife_canis", "weapon_knife_cord", "weapon_knife_css",
+    "weapon_knife_falchion", "weapon_knife_flip", "weapon_knife_gut",
+    "weapon_knife_gypsy_jackknife", "weapon_knife_karambit",
+    "weapon_knife_m9_bayonet", "weapon_knife_push", "weapon_knife_skeleton",
+    "weapon_knife_stiletto", "weapon_knife_survival_bowie",
+    "weapon_knife_tactical", "weapon_knife_talon", "weapon_knife_ursus",
+    "weapon_bayonet"
+  ]);
+
+  /// <summary>
   ///   Items that are thrown and exist in the grenade slot
   /// </summary>
   public static readonly IReadOnlySet<string> GRENADES = new HashSet<string>([
@@ -17,7 +31,7 @@ public static class Tag {
       "weapon_healthshot", "item_assaultsuit", "item_kevlar",
       "weapon_diversion",
       "weapon_breachcharge", "weapon_bumpmine", "weapon_c4", "weapon_tablet",
-      "weapon_taser", "weapon_shield", "weapon_snowball", "weapon_knife"
+      "weapon_taser", "weapon_shield", "weapon_snowball",
     ]).Union(GRENADES)
    .ToHashSet();
 
@@ -58,5 +72,5 @@ public static class Tag {
    .ToHashSet();
 
   public static readonly IReadOnlySet<string> WEAPONS =
-    GUNS.Union(["weapon_knife"]).ToHashSet();
+    GUNS.Union(KNIVES).ToHashSet();
 }

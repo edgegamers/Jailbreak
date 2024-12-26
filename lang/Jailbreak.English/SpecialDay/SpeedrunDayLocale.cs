@@ -8,7 +8,7 @@ namespace Jailbreak.English.SpecialDay;
 public class SpeedrunDayLocale() : SoloDayLocale("Speedrunners",
     $"Follow the {ChatColors.Blue}blue{ChatColors.Default} player!",
     "They will run to a spot on the map.",
-    $"Each round, the {ChatColors.Red}slowest players{ChatColors.Default} to reach the target will be eliminated."),
+    $"Each round, the {ChatColors.Red}slowest players{ChatColors.Grey} to reach the target will be eliminated."),
   ISpeedDayLocale {
   public IView RoundEnded
     => new SimpleView {

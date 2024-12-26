@@ -216,44 +216,6 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     return HookResult.Handled;
   }
 
-  // override protected void OnTick() {
-  //   foreach (var player in PlayerUtil.GetAlive()) {
-  //     var weapons = allowedWeapons(player);
-  //     disableWeapon(player, weapons);
-  //   }
-  // }
-
-  // private ISet<string> allowedWeapons(CCSPlayerController player) {
-  //   var progress = progressions.TryGetValue(player.Slot, out var index) ?
-  //     index :
-  //     0;
-  //
-  //   var weapon  = weaponProgression[progress];
-  //   var allowed = new HashSet<string> { weapon, "weapon_knife" };
-  //
-  //   if (Tag.RIFLES.Contains(weapon))
-  //     allowed = allowed.Union(Tag.RIFLES).ToHashSet();
-  //
-  //   if (Tag.PISTOLS.Contains(weapon))
-  //     allowed = allowed.Union(Tag.PISTOLS).ToHashSet();
-  //
-  //   return allowed.Union(Tag.UTILITY).ToHashSet();
-  // }
-
-  private void disableWeapon(CCSPlayerController player,
-    ICollection<string> allowed) {
-    if (!player.IsReal()) return;
-    var pawn = player.PlayerPawn.Value;
-    if (pawn == null || !pawn.IsValid) return;
-    var weaponServices = pawn.WeaponServices;
-    if (weaponServices == null) return;
-    var activeWeapon = weaponServices.ActiveWeapon.Value;
-    if (activeWeapon == null || !activeWeapon.IsValid) return;
-    if (allowed.Contains(activeWeapon.DesignerName)) return;
-    activeWeapon.NextSecondaryAttackTick = Server.TickCount + 500;
-    activeWeapon.NextPrimaryAttackTick   = Server.TickCount + 500;
-  }
-
   public class GunGameSettings : SpecialDaySettings {
     public GunGameSettings() {
       CtTeleport                              = TeleportType.RANDOM;
@@ -261,7 +223,6 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
       FreezePlayers                           = false;
       ConVarValues["mp_respawn_immunitytime"] = 5.0f;
       ConVarValues["mp_death_drop_gun"]       = 0;
-      RestrictWeapons                         = true;
       WithFriendlyFire();
       WithRespawns();
     }

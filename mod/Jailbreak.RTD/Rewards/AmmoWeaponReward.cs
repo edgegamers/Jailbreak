@@ -9,7 +9,9 @@ public class AmmoWeaponReward : WeaponReward {
   private readonly int primary, secondary;
 
   public override string Name
-    => $"{weapon.GetFriendlyWeaponName()} ({primary}/{secondary})";
+    => primary + secondary == 0 ?
+      $"Toy {weapon.GetFriendlyWeaponName()}" :
+      $"{weapon.GetFriendlyWeaponName()} ({primary}/{secondary})";
 
   public AmmoWeaponReward(string weapon, int primary, int secondary,
     CsTeam requiredTeam = CsTeam.Terrorist) : base(weapon, requiredTeam) {

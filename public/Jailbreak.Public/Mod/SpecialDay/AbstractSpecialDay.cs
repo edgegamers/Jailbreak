@@ -258,10 +258,8 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
   /// </summary>
   public virtual void Execute() {
     EnableDamage();
-    if (Settings.RestrictWeapons) {
-      VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Hook(OnCanAcquire,
-        HookMode.Pre);
-    }
+    VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Hook(OnCanAcquire,
+      HookMode.Pre);
   }
 
   virtual protected HookResult OnEnd(EventRoundEnd @event, GameEventInfo info) {
@@ -271,9 +269,8 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
       SetConvarValue(cv, entry.Value);
     }
 
-    if (Settings.RestrictWeapons)
-      VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Unhook(
-        OnCanAcquire, HookMode.Pre);
+    VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Unhook(OnCanAcquire,
+      HookMode.Pre);
 
     previousConvarValues.Clear();
 

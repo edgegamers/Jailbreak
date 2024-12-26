@@ -53,9 +53,7 @@ public class SpecialDaySettings {
   public bool OpenCells = true;
   public bool RespawnPlayers = true;
 
-  /// <summary>
-  ///   Used to avoid registring a costly OnTick listener if false
-  /// </summary>
+  [Obsolete("No longer used", true)]
   public bool RestrictWeapons = false;
 
   /// <summary>

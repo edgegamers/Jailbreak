@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
+using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.SpecialDay;
@@ -25,7 +26,6 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
     "Additional (non-ammo restricted) weapons to give for the day",
     "weapon_knife", ConVarFlags.FCVAR_NONE, new ItemValidator());
 
-  private bool started;
   public override SDType Type => SDType.OITC;
 
   public override SpecialDaySettings Settings => new OitcSettings();
@@ -41,17 +41,9 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
     base.Setup();
     Plugin.RegisterEventHandler<EventPlayerHurt>(OnPlayerDamage);
     Plugin.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
-
-    VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Hook(OnCanAcquire,
-      HookMode.Pre);
-  }
-
-  private HookResult OnCanAcquire(DynamicHook arg) {
-    return started ? HookResult.Handled : HookResult.Continue;
   }
 
   public override void Execute() {
-    base.Execute();
     Locale.BeginsIn(0).ToAllChat();
 
     foreach (var player in PlayerUtil.GetAlive()) {
@@ -64,7 +56,7 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
       }
     }
 
-    started = true;
+    base.Execute();
   }
 
   private HookResult
