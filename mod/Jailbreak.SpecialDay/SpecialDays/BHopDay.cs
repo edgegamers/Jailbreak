@@ -13,7 +13,7 @@ public class BHopDay(BasePlugin plugin, IServiceProvider provider)
   public override SpecialDaySettings Settings => new BHopSettings();
 
   public ISDInstanceLocale Locale
-    => new TeamDayLocale("Bunny Hop Day",
+    => new TeamDayLocale("Bunny Hop",
       "Auto-Bunny hopping is on, otherwise normal day!");
 
   public override void Setup() {

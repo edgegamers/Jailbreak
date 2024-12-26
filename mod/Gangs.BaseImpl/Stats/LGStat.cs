@@ -1,3 +1,5 @@
+using CounterStrikeSharp.API.Modules.Utils;
+
 namespace Gangs.BaseImpl.Stats;
 
 public class LGStat : BaseStat<LGData> {
@@ -13,6 +15,7 @@ public class LGData {
   public int TLgs { get; set; }
 
   public override string ToString() {
-    return $"CT/T Last Guards: {CtLgs}/{TLgs}";
+    return
+      $"{ChatColors.Blue}CT{ChatColors.Grey}/{ChatColors.Red}T {ChatColors.BlueGrey}Last Guards: {ChatColors.Blue}{CtLgs}{ChatColors.White}/{ChatColors.Red}{TLgs}";
   }
 }

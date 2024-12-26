@@ -7,6 +7,7 @@ using Jailbreak.LastRequest;
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.LastGuard;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.Rebel;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,7 +15,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jailbreak.Rebel;
 
 public class RebelListener(IRebelService rebelService,
-  ILastRequestManager lastRequestManager) : IPluginBehavior {
+  ILastRequestManager lastRequestManager, ILastGuardService lastGuard)
+  : IPluginBehavior {
   private readonly Dictionary<int, int> weaponScores = [];
 
   [GameEventHandler]
@@ -71,7 +73,7 @@ public class RebelListener(IRebelService rebelService,
 
     var wrapper = new PlayerWrapper(attacker);
     if (!weaponScores.TryGetValue(player.Slot, out var weaponScore))
-      weaponScore = 5;
+      weaponScore = lastGuard.IsLastGuardActive ? 2 : 5;
 
     Task.Run(async ()
       => await eco.Grant(wrapper, weaponScore, true, "Rebel Kill"));
