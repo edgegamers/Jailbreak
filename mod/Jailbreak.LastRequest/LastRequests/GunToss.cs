@@ -1,8 +1,11 @@
 using System.Diagnostics;
+using System.Drawing;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
+using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.LastRequest;
@@ -13,7 +16,8 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 namespace Jailbreak.LastRequest.LastRequests;
 
 public class GunToss(BasePlugin plugin, ILastRequestManager manager,
-  CCSPlayerController prisoner, CCSPlayerController guard)
+  ILRGunTossLocale locale, CCSPlayerController prisoner,
+  CCSPlayerController guard)
   : TeleportingRequest(plugin, manager, prisoner, guard), IDropListener {
   public override LRType Type => LRType.GUN_TOSS;
 
@@ -61,9 +65,9 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
     Vector? lastPos = null;
     Debug.Assert(player.PlayerPawn.Value != null,
       "player.PlayerPawn.Value != null");
-    Server.PrintToChatAll($"Weapon is at {weapon.AbsOrigin}");
-    Vector? firstPos  = weapon.AbsOrigin ?? player.PlayerPawn.Value.AbsOrigin;
-    var     startTime = Server.TickCount;
+    var firstPos =
+      (weapon.AbsOrigin ?? player.PlayerPawn.Value.AbsOrigin)!.Clone();
+    var startTime = Server.TickCount;
     var timer = Plugin.AddTimer(0.1f, () => {
       if (weapon.AbsOrigin == null || !weapon.IsValid) {
         if (player == Prisoner)
@@ -73,29 +77,26 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
         return;
       }
 
-      if (weapon.AbsOrigin == null) return;
-      Server.PrintToChatAll(
-        $"Weapon is at {weapon.AbsOrigin}, distance to previous: {lastPos?.Distance(weapon.AbsOrigin):F}");
-
-      if (weapon.AbsOrigin == null) return;
       if (lastPos != null && lastPos.DistanceSquared(weapon.AbsOrigin) == 0
         && Server.TickCount - startTime > 10) {
         if (player == Prisoner)
           prisonerTimer?.Kill();
         else
           guardTimer?.Kill();
-        if (firstPos == null) return;
-        Server.PrintToChatAll(
-          $"{player.PlayerName} threw their weapon {lastPos.Distance(firstPos):F2} units!");
+
+        locale.PlayerThrewGunDistance(player, lastPos.Distance(firstPos))
+         .ToAllChat();
         return;
       }
 
       if (lastPos != null) {
         var line = new BeamLine(Plugin, lastPos, weapon.AbsOrigin);
+        line.SetColor(player == Prisoner ? Color.Red : Color.Blue);
+        line.SetWidth(0.5f);
         line.Draw(15f);
       }
 
-      lastPos = weapon.AbsOrigin;
+      lastPos = weapon.AbsOrigin.Clone();
     }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
 
     if (player == Prisoner)
