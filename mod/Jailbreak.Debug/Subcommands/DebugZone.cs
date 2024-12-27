@@ -13,10 +13,11 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
   private readonly IDictionary<ulong, ITypedZoneCreator> creators =
     new Dictionary<ulong, ITypedZoneCreator>();
 
-  private readonly IZoneFactory? factory = services.GetService<IZoneFactory>();
+  private readonly IZoneFactory factory =
+    services.GetRequiredService<IZoneFactory>();
 
-  private readonly IZoneManager? zoneManager =
-    services.GetService<IZoneManager>();
+  private readonly IZoneManager zoneManager =
+    services.GetRequiredService<IZoneManager>();
 
   public override void OnCommand(CCSPlayerController? executor,
     WrappedInfo info) {
@@ -24,11 +25,6 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
     if (executor.PlayerPawn.Value?.AbsOrigin == null) {
       info.ReplyToCommand(
         "Unable to find your position. Please try again later.");
-      return;
-    }
-
-    if (factory == null || zoneManager == null) {
-      info.ReplyToCommand("Zone factory or manager not found");
       return;
     }
 
@@ -90,17 +86,15 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
         }
 
         if (zoneCount == 0) {
-          if (specifiedType.HasValue)
-            info.ReplyToCommand($"No {specifiedType} zones found");
-          else
-            info.ReplyToCommand("No zones found");
+          info.ReplyToCommand(specifiedType.HasValue ?
+            $"No {specifiedType} zones found" :
+            "No zones found");
           return;
         }
 
-        if (specifiedType.HasValue)
-          info.ReplyToCommand($"Showing {zoneCount} {specifiedType} zones");
-        else
-          info.ReplyToCommand($"Showing {zoneCount} zones");
+        info.ReplyToCommand(specifiedType.HasValue ?
+          $"Showing {zoneCount} {specifiedType} zones" :
+          $"Showing {zoneCount} zones");
         return;
       case "remove":
       case "delete":
@@ -130,7 +124,6 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
         return;
       case "reload":
       case "refresh":
-        // Server.NextFrameAsync(async () => {
         Task.Run(async () => {
           await zoneManager.LoadZones(Server.MapName);
           var count = (await zoneManager.GetAllZones()).SelectMany(e => e.Value)
@@ -186,11 +179,10 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
          .GetAwaiter()
          .GetResult();
 
-        var toRemove = new List<IZone>();
-        foreach (var spawn in spawns)
-          if (doNotTeleport.Any(d
-            => d.IsInsideZone(spawn.CalculateCenterPoint())))
-            toRemove.Add(spawn);
+        var toRemove = spawns.Where(spawn
+            => doNotTeleport.Any(
+              d => d.IsInsideZone(spawn.CalculateCenterPoint())))
+         .ToList();
 
         info.ReplyToCommand("Removing " + toRemove.Count
           + " auto-generated zones");

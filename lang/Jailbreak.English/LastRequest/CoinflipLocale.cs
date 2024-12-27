@@ -9,8 +9,8 @@ public class CoinflipLocale : LastRequestLocale, ILRCFLocale {
   public IView FailedToChooseInTime(bool choice) {
     return new SimpleView {
       PREFIX,
-      "You failed to choose in time, defaulting to" + ChatColors.Green,
-      choice ? "Heads" : "Tails"
+      "You failed to choose in time, defaulting to",
+      $"{ChatColors.Green} {(choice ? "Heads" : "Tails")}{ChatColors.Grey}."
     };
   }
 
@@ -18,17 +18,16 @@ public class CoinflipLocale : LastRequestLocale, ILRCFLocale {
     return new SimpleView {
       PREFIX,
       guard,
-      "chose" + ChatColors.Green,
-      choice ? "Heads" : "Tails",
-      ChatColors.Default + ", flipping..."
+      "chose",
+      $" {ChatColors.Green}{(choice ? "Heads" : "Tails")}{ChatColors.Grey}, flipping..."
     };
   }
 
   public IView CoinLandsOn(bool heads) {
     return new SimpleView {
       PREFIX,
-      "The coin landed on" + ChatColors.Green,
-      heads ? "Heads" : "Tails" + ChatColors.White + "."
+      "The coin landed on",
+      $" {ChatColors.Green}{(heads ? "Heads" : "Tails")}{ChatColors.Grey}."
     };
   }
 }

@@ -39,6 +39,8 @@ public class Jailbreak : BasePlugin {
       manifest.AddResource("soundevents/soundevents_jb.vsndevts");
       manifest.AddResource("sounds/explosion.vsnd");
       manifest.AddResource("sounds/jihad.vsnd");
+      manifest.AddResource(
+        "models/props/de_dust/hr_dust/dust_soccerball/dust_soccer_ball001.vmdl");
     });
 
     //  Load Managers
