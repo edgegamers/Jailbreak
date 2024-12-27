@@ -64,6 +64,10 @@ public class CannotUseReward : IRTDReward {
   public bool GrantReward(CCSPlayerController player) {
     if (player.UserId == null) return false;
     blockedIDs.Add(player.UserId.Value);
+
+    if (blockedWeapons.Any(w => w.Contains("knife") || w.Contains("bayonet")))
+      player.RemoveWeapons();
+
     return true;
   }
 }
