@@ -1,4 +1,4 @@
-using CounterStrikeSharp.API;
+﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
@@ -38,46 +38,33 @@ public class LastRequestRebelManager(IRebelService rebelService,
 
   public void StartLRRebelling(CCSPlayerController player) {
     MenuManager.CloseActiveMenu(player);
-    var finalRebelHealth = DetermineFinalRebelHealth(player);
-    messages.LastRequestRebel(player, finalRebelHealth).ToAllChat();
+    var hp = getHealthForPlayer(player);
+    messages.LastRequestRebel(player, hp).ToAllChat();
     rebelService.MarkRebel(player);
-    AddLRRebelling(player.Slot);
-    player.SetHealth(finalRebelHealth);
+
+    ((ILastRequestRebelManager)this).AddLRRebelling(player.Slot);
+
+    player.SetHealth(hp);
     player.RemoveWeapons();
     player.GiveNamedItem(CV_REBEL_WEAPON.Value);
     player.GiveNamedItem("weapon_knife");
   }
 
-  public bool IsInLRRebelling(int playerSlot) {
-    return PlayersLRRebelling.Contains(playerSlot);
-  }
-
-  public void AddLRRebelling(int playerSlot) {
-    PlayersLRRebelling.Add(playerSlot);
-  }
-
-  public void ClearLRRebelling() {
-    PlayersLRRebelling.Clear();
-  }
-
-  public int DetermineFinalRebelHealth(CCSPlayerController player) {
-    var calculatedRebelHealthRatio = CalculateRebelHealthRatio();
+  private int getHealthForPlayer(CCSPlayerController player) {
+    var hpRatio    = getHealthForRatio();
     var playerPawn = player.PlayerPawn.Value;
-    if (playerPawn != null) {
-      if (calculatedRebelHealthRatio <= playerPawn.Health && playerPawn.Health >= CV_MAX_T_HEALTH.Value) {
-        return CV_MAX_T_HEALTH.Value;
-      }
-      if (calculatedRebelHealthRatio <= playerPawn.Health) {
-        return playerPawn.Health;
-      }
-      if (calculatedRebelHealthRatio >= playerPawn.Health) {
-        return calculatedRebelHealthRatio;
-      }
-    }
-    return 101;
+    if (playerPawn == null) return 101;
+
+    // If player's HP is already higher than the ratio, don't lower it
+    hpRatio = Math.Max(hpRatio, playerPawn.Health);
+
+    // Make sure the player's health is within the bounds
+    hpRatio = Math.Min(hpRatio, CV_MAX_T_HEALTH.Value);
+
+    return hpRatio;
   }
 
-  public int CalculateRebelHealthRatio() {
+  private int getHealthForRatio() {
     var aliveCounterTerrorists = Utilities.GetPlayers()
      .Where(plr => plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist })
      .ToList();
