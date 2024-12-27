@@ -1,10 +1,14 @@
+using System.Net.Cache;
+using CounterStrikeSharp.API.Modules.Utils;
+using Microsoft.Extensions.Primitives;
+
 namespace Gangs.BaseImpl.Stats;
 
 public class LRStat : BaseStat<LRData> {
   public const string STAT_ID = "jb_lr_stat";
   public override string StatId => STAT_ID;
   public override string Name => "LRs";
-  public override string? Description => "LRs reached";
+  public override string Description => "LRs reached";
   public override LRData? Value { get; set; }
 }
 
@@ -17,6 +21,8 @@ public class LRData {
   public int TLrsWon { get; set; }
 
   public override string ToString() {
-    return $"CT/T LRs, CT/T LR Wins: {CtLrs}/{TLrs} {CTLrsWon}/{TLrsWon}";
+    return
+      $"{ChatColors.Blue}CT{ChatColors.Grey}/{ChatColors.Red}T {ChatColors.BlueGrey}LRs: {ChatColors.Blue}{CtLrs}{ChatColors.White}/{ChatColors.Red}{TLrs}\n"
+      + $"{ChatColors.Blue}CT{ChatColors.Grey}/{ChatColors.Red}T {ChatColors.BlueGrey}LR Wins: {ChatColors.Blue}{CTLrsWon}{ChatColors.White}/{ChatColors.Red}{TLrsWon}";
   }
 }

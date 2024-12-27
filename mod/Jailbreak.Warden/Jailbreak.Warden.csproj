@@ -13,7 +13,7 @@
         <ProjectReference Include="..\Gangs.SpecialIconPerk\Gangs.SpecialIconPerk.csproj"/>
         <ProjectReference Include="..\Gangs.WardenIconPerk\Gangs.WardenIconPerk.csproj"/>
         <ProjectReference Include="..\Jailbreak.Zones\Jailbreak.Zones.csproj"/>
-        <ProjectReference Include="..\Gangs.WardenPaintColorPerk\Gangs.WardenPaintColorPerk.csproj" />
+        <ProjectReference Include="..\Gangs.WardenPaintColorPerk\Gangs.WardenPaintColorPerk.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

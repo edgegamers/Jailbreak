@@ -46,7 +46,7 @@ public class WardayDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     public override float FreezeTime(CCSPlayerController player) {
-      return player.Team == CsTeam.CounterTerrorist ? 3 : 5;
+      return player.Team == CsTeam.CounterTerrorist ? 3 : 8;
     }
   }
 }

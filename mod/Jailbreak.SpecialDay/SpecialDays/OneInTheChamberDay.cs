@@ -1,6 +1,9 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
+using CounterStrikeSharp.API.Modules.Memory;
+using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
+using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.SpecialDay;
@@ -23,7 +26,6 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
     "Additional (non-ammo restricted) weapons to give for the day",
     "weapon_knife", ConVarFlags.FCVAR_NONE, new ItemValidator());
 
-  private bool started;
   public override SDType Type => SDType.OITC;
 
   public override SpecialDaySettings Settings => new OitcSettings();
@@ -37,13 +39,11 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
     Timers[15] += () => Locale.BeginsIn(5).ToAllChat();
     Timers[20] += Execute;
     base.Setup();
-    Plugin.RegisterEventHandler<EventItemPickup>(OnPickup);
     Plugin.RegisterEventHandler<EventPlayerHurt>(OnPlayerDamage);
     Plugin.RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
   }
 
   public override void Execute() {
-    base.Execute();
     Locale.BeginsIn(0).ToAllChat();
 
     foreach (var player in PlayerUtil.GetAlive()) {
@@ -56,16 +56,7 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
       }
     }
 
-    started = true;
-  }
-
-  protected HookResult OnPickup(EventItemPickup @event, GameEventInfo info) {
-    if (!started) return HookResult.Continue;
-
-    var player = @event.Userid;
-    if (player == null || !player.IsValid) return HookResult.Continue;
-    player.RemoveWeapons();
-    return HookResult.Continue;
+    base.Execute();
   }
 
   private HookResult
@@ -89,7 +80,6 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
     OnEnd(EventRoundEnd @event, GameEventInfo info) {
     Plugin.DeregisterEventHandler<EventPlayerHurt>(OnPlayerDamage);
     Plugin.DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
-    Plugin.DeregisterEventHandler<EventItemPickup>(OnPickup);
     return base.OnEnd(@event, info);
   }
 

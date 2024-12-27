@@ -65,9 +65,9 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
         executor.PrintToChat(
           $"Zone created. Area: {zone.GetArea()} Center: {zone.CalculateCenterPoint()}");
         executor.PrintToChat("Pushing zone...");
-        Server.NextFrameAsync(async () => {
+        Task.Run(async () => {
           await zoneManager.PushZone(zone, creator.Type);
-          Server.NextFrame(() => {
+          await Server.NextFrameAsync(() => {
             executor.PrintToChat($"Successfully created {creator.Type} zone");
             creator.Dispose();
             creators.Remove(executor.SteamID);
@@ -106,9 +106,9 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
       case "delete":
         var toDelete = getUniqueZone(executor, specifiedType);
         if (toDelete == null) return;
-        Server.NextFrameAsync(async () => {
+        Task.Run(async () => {
           await zoneManager.DeleteZone(toDelete.Value.Item1.Id, map);
-          Server.NextFrame(() => {
+          await Server.NextFrameAsync(() => {
             executor.PrintToChat("Deleted zone #" + toDelete.Value.Item1.Id);
           });
         });
@@ -119,22 +119,23 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
         if (innerPair == null) return;
         var innerZone = innerPair.Value.Item1;
         innerZone.AddPoint(position);
-        Server.NextFrameAsync(async () => {
+        Task.Run(async () => {
           await zoneManager.DeleteZone(innerZone.Id, map);
           await zoneManager.PushZoneWithID(innerZone, innerPair.Value.Item2,
             map);
-          Server.NextFrame(() => {
+          await Server.NextFrameAsync(() => {
             info.ReplyToCommand("Added point to zone #" + innerZone.Id);
           });
         });
         return;
       case "reload":
       case "refresh":
-        Server.NextFrameAsync(async () => {
+        // Server.NextFrameAsync(async () => {
+        Task.Run(async () => {
           await zoneManager.LoadZones(Server.MapName);
           var count = (await zoneManager.GetAllZones()).SelectMany(e => e.Value)
            .Count();
-          Server.NextFrame(() => {
+          await Server.NextFrameAsync(() => {
             executor.PrintToChat($"Reloaded {count} zones");
           });
         });
@@ -193,7 +194,7 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
 
         info.ReplyToCommand("Removing " + toRemove.Count
           + " auto-generated zones");
-        Server.NextFrameAsync(async () => {
+        Task.Run(async () => {
           foreach (var z in toRemove) await zoneManager.DeleteZone(z.Id, map);
         });
         return;
@@ -215,13 +216,14 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
          .GetAwaiter()
          .GetResult();
 
-        Server.NextFrameAsync(async () => {
+        // Server.NextFrameAsync(async () => {
+        Task.Run(async () => {
           var copy = zones.ToList();
 
           foreach (var zone in copy)
             await zoneManager.DeleteZone(zone.Id, Server.MapName);
 
-          Server.NextFrame(()
+          await Server.NextFrameAsync(()
             => attemptBeginCreation(executor, specifiedType.Value));
         });
 
@@ -273,8 +275,8 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
     }
   }
 
-  private void
-    attemptBeginCreation(CCSPlayerController executor, ZoneType type) {
+  private void attemptBeginCreation(CCSPlayerController executor,
+    ZoneType type) {
     if (creators.ContainsKey(executor.SteamID)) {
       executor.PrintToChat("You are already creating a zone");
       return;
@@ -285,9 +287,10 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
         var zone =
           factory.CreateZone([executor.PlayerPawn.Value.AbsOrigin!.Clone()]);
         zone.Draw(plugin, type.GetColor(), 1f);
-        Server.NextFrameAsync(async () => {
+        // Server.NextFrameAsync(async () => {
+        Task.Run(async () => {
           await zoneManager.PushZone(zone, type);
-          Server.NextFrame(() => {
+          await Server.NextFrameAsync(() => {
             executor.PrintToChat("Successfully created a single point zone");
           });
         });

@@ -1,8 +1,11 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Drawing;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
+using CounterStrikeSharp.API.Modules.Memory;
+using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
 using Gangs.BaseImpl.Extensions;
@@ -23,6 +26,7 @@ using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 using Jailbreak.Public.Mod.Rainbow;
 using Jailbreak.Public.Mod.Rebel;
+using Jailbreak.Public.Mod.Weapon;
 using Jailbreak.Public.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
@@ -58,7 +62,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   public bool IsLREnabledForRound { get; set; } = true;
 
   public bool ShouldBlockDamage(CCSPlayerController player,
-    CCSPlayerController? attacker, EventPlayerHurt @event) {
+    CCSPlayerController? attacker) {
     if (!IsLREnabled) return false;
 
     if (attacker == null || !attacker.IsReal()) return false;
@@ -87,6 +91,11 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     return true;
   }
 
+  public bool IsLREnabled { get; set; }
+
+  public IList<AbstractLastRequest> ActiveLRs { get; } =
+    new List<AbstractLastRequest>();
+
   public void Start(BasePlugin basePlugin) {
     factory = provider.GetRequiredService<ILastRequestFactory>();
 
@@ -94,12 +103,21 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
     var stats = API.Gangs.Services.GetService<IStatManager>();
     stats?.Stats.Add(new LRStat());
+
+    basePlugin.RegisterListener<Listeners.OnEntityParentChanged>(OnDrop);
+    VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage,
+      HookMode.Pre);
+    VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Hook(OnCanAcquire,
+      HookMode.Pre);
   }
 
-  public bool IsLREnabled { get; set; }
+  public void Dispose() {
+    VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Unhook(OnCanAcquire,
+      HookMode.Pre);
 
-  public IList<AbstractLastRequest> ActiveLRs { get; } =
-    new List<AbstractLastRequest>();
+    VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(OnTakeDamage,
+      HookMode.Pre);
+  }
 
   public void DisableLR() { IsLREnabled = false; }
 
@@ -226,6 +244,49 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     lr.OnEnd(result);
     ActiveLRs.Remove(lr);
     return true;
+  }
+
+  private void OnDrop(CEntityInstance entity, CEntityInstance newparent) {
+    if (!entity.IsValid) return;
+    if (!Tag.WEAPONS.Contains(entity.DesignerName)
+      && !Tag.UTILITY.Contains(entity.DesignerName))
+      return;
+
+    var weapon = Utilities.GetEntityFromIndex<CCSWeaponBase>((int)entity.Index);
+    var owner  = weapon?.PrevOwner.Get()?.OriginalController.Get();
+
+    if (owner == null || weapon == null || !weapon.IsValid) return;
+
+    var lr = ((ILastRequestManager)this).GetActiveLR(owner);
+    if (lr == null) return;
+
+    if (newparent.IsValid) return;
+
+    var color = owner.Team == CsTeam.CounterTerrorist ? Color.Blue : Color.Red;
+    weapon.SetColor(color);
+
+    if (lr is not IDropListener listener) return;
+    listener.OnWeaponDrop(owner, weapon);
+  }
+
+  private HookResult OnCanAcquire(DynamicHook hook) {
+    if (ActiveLRs.Count == 0) return HookResult.Continue;
+    var player = hook.GetParam<CCSPlayer_ItemServices>(0)
+     .Pawn.Value.Controller.Value?.As<CCSPlayerController>();
+    var data = VirtualFunctions.GetCSWeaponDataFromKey.Invoke(-1,
+      hook.GetParam<CEconItemView>(1).ItemDefinitionIndex.ToString());
+
+    if (player == null || !player.IsValid) return HookResult.Continue;
+
+    var method = hook.GetParam<AcquireMethod>(2);
+    if (method != AcquireMethod.PickUp) return HookResult.Continue;
+
+    if (ActiveLRs.Any(lr => lr.PreventEquip(player, data))) {
+      hook.SetReturn(AcquireResult.NotAllowedByMode);
+      return HookResult.Handled;
+    }
+
+    return HookResult.Continue;
   }
 
   private async Task colorForLR(PlayerWrapper a, PlayerWrapper b) {
@@ -393,10 +454,21 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     return Utilities.GetPlayers().Count >= CV_MIN_PLAYERS_FOR_CREDITS.Value;
   }
 
-  [GameEventHandler(HookMode.Pre)]
-  public HookResult OnTakeDamage(EventPlayerHurt @event, GameEventInfo info) {
-    IDamageBlocker damageBlockerHandler = this;
-    return damageBlockerHandler.BlockUserDamage(@event, info);
+  private HookResult OnTakeDamage(DynamicHook hook) {
+    var info       = hook.GetParam<CTakeDamageInfo>(1);
+    var playerPawn = hook.GetParam<CCSPlayerPawn>(0);
+
+    var player = playerPawn.Controller.Value?.As<CCSPlayerController>();
+    if (player == null || !player.IsValid) return HookResult.Continue;
+
+    var attackerPawn = info.Attacker;
+    var attacker     = attackerPawn.Value?.As<CCSPlayerController>();
+
+    if (attacker == null || !attacker.IsValid) return HookResult.Continue;
+
+    return ((IDamageBlocker)this).ShouldBlockDamage(player, attacker) ?
+      HookResult.Handled :
+      HookResult.Continue;
   }
 
   [GameEventHandler]
@@ -404,7 +476,6 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     foreach (var lr in ActiveLRs.ToList())
       EndLastRequest(lr, LRResult.TIMED_OUT);
 
-    IsLREnabled = false;
     return HookResult.Continue;
   }
 

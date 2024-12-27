@@ -9,7 +9,8 @@ public enum WeaponType {
   SHOTGUNS = 1 << 6, // 64
   SMGS = 1 << 7,     // 128
   HEAVY = 1 << 8,    // 256
-  GUNS = 1 << 9      // 512
+  GUNS = 1 << 9,     // 512
+  KNIVES = 1 << 10   // 1024
 }
 
 public static class WeaponTypeExtensions {
@@ -37,6 +38,8 @@ public static class WeaponTypeExtensions {
         return Tag.GRENADES;
       case WeaponType.WEAPON:
         return Tag.WEAPONS;
+      case WeaponType.KNIVES:
+        return Tag.KNIVES;
       default:
         foreach (var t in Enum.GetValues<WeaponType>())
           if (type.HasFlag(t))

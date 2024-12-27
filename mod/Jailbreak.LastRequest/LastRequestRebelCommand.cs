@@ -32,7 +32,8 @@ public class LastRequestRebelCommand(ILastRequestManager lastRequestManager,
       return;
     }
 
-    if (lastRequestManager.IsInLR(rebeller) || lastRequestRebelManager.IsInLRRebelling(rebeller.Slot)) {
+    if (lastRequestManager.IsInLR(rebeller)
+      || lastRequestRebelManager.IsInLRRebelling(rebeller.Slot)) {
       messages.CannotLR("You are already in an LR").ToChat(rebeller);
       return;
     }

@@ -26,7 +26,7 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
   private ICookie? cookie;
 
   public void Start(BasePlugin basePlugin) {
-    Server.NextFrameAsync(async () => {
+    Task.Run(async () => {
       if (API.Actain != null)
         cookie = await API.Actain.getCookieService()
          .RegClientCookie("jb_rtd_auto");
@@ -46,7 +46,7 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
        .Where(player => !rewarder.HasReward(player))) {
         var steam = player.SteamID;
         if (!cachedCookies.ContainsKey(steam))
-          Server.NextFrameAsync(async () => await populateCache(player, steam));
+          Task.Run(async () => await populateCache(player, steam));
 
         if (cachedCookies.TryGetValue(player.SteamID, out var value) && value)
           player.ExecuteClientCommandFromServer("css_rtd");
@@ -71,7 +71,7 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
   public void Command_AutoRTD(CCSPlayerController? executor, CommandInfo info) {
     if (executor == null) return;
 
-    if (!RTDCommand.CV_RTD_ENABLED.Value) {
+    if (RTDCommand.CV_RTD_ENABLED.Value == -1) {
       rtdLocale.RollingDisabled().ToChat(executor);
       return;
     }
@@ -87,7 +87,7 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
     }
 
     var steam = executor.SteamID;
-    Server.NextFrameAsync(async () => {
+    Task.Run(async () => {
       var value  = await cookie.Get(steam);
       var enable = value is not (null or "Y");
       await cookie.Set(steam, enable ? "Y" : "N");

@@ -14,7 +14,7 @@ public static class VectorExtensions {
   /// <param name="vector"></param>
   /// <param name="other"></param>
   /// <returns></returns>
-  public static float Distance(this Vector vector, Vector other) {
+  public static float Distance(this Vector? vector, Vector other) {
     return (float)Math.Sqrt(vector.DistanceSquared(other));
   }
 
@@ -24,7 +24,7 @@ public static class VectorExtensions {
   /// <param name="vector"></param>
   /// <param name="other"></param>
   /// <returns></returns>
-  public static float DistanceSquared(this Vector vector, Vector other) {
+  public static float DistanceSquared(this Vector? vector, Vector other) {
     return MathF.Pow(vector.X - other.X, 2) + MathF.Pow(vector.Y - other.Y, 2)
       + MathF.Pow(vector.Z - other.Z, 2);
   }

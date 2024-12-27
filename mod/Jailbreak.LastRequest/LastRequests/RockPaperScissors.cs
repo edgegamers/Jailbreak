@@ -99,4 +99,9 @@ public class RockPaperScissors : AbstractLastRequest {
 
     msg.Results(Guard, Prisoner, guardChoice, prisonerChoice).ToAllChat();
   }
+
+  public override bool PreventEquip(CCSPlayerController player,
+    CCSWeaponBaseVData weapon) {
+    return false;
+  }
 }

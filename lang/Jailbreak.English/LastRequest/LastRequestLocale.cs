@@ -35,7 +35,7 @@ public class LastRequestLocale : ILRLocale,
   }
 
   public IView LastRequestNotEnabled() {
-    return new SimpleView { { PREFIX, "Last Request is not enabled." } };
+    return new SimpleView { PREFIX, "Last Request is not enabled." };
   }
 
   public IView InvalidLastRequest(string query) {
@@ -132,14 +132,24 @@ public class LastRequestLocale : ILRLocale,
     };
 
   public IView LastRequestRebel(CCSPlayerController player, int tHealth) {
-    return new SimpleView { PREFIX, player, $"{ChatColors.LightRed}has decided to {ChatColors.DarkRed}LR Rebel {ChatColors.LightRed}with", tHealth, $"{ChatColors.LightRed}HP!"};
-  }  
-  
+    return new SimpleView {
+      PREFIX,
+      player,
+      $"{ChatColors.LightRed}has decided to {ChatColors.DarkRed}LR Rebel {ChatColors.LightRed}with",
+      tHealth,
+      $"{ChatColors.LightRed}HP!"
+    };
+  }
+
   public IView LastRequestRebelDisabled() {
-    return new SimpleView { PREFIX, "Rebelling during last request is disabled." };
-  }  
-  
+    return new SimpleView {
+      PREFIX, "Rebelling during last request is disabled."
+    };
+  }
+
   public IView CannotLastRequestRebelCt() {
-    return new SimpleView { PREFIX, "You cannot rebel as a CT during the last request." };
+    return new SimpleView {
+      PREFIX, "You cannot rebel as a CT during the last request."
+    };
   }
 }

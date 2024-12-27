@@ -1,5 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Memory;
+using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Extensions;
@@ -147,7 +149,6 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
       RoundUtil.SetTimeRemaining(Math.Min(RoundUtil.GetTimeRemaining(), 30));
 
       Plugin.DeregisterEventHandler<EventPlayerDeath>(OnDeath, HookMode.Pre);
-      Plugin.RemoveListener<Listeners.OnTick>(OnTick);
       return HookResult.Continue;
     }
 
@@ -185,14 +186,17 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     return result;
   }
 
-  override protected void OnTick() {
-    foreach (var player in PlayerUtil.GetAlive()) {
-      var weapons = allowedWeapons(player);
-      disableWeapon(player, weapons);
-    }
-  }
+  override protected HookResult OnCanAcquire(DynamicHook hook) {
+    var player = hook.GetParam<CCSPlayer_ItemServices>(0)
+     .Pawn.Value.Controller.Value?.As<CCSPlayerController>();
+    var data = VirtualFunctions.GetCSWeaponDataFromKey.Invoke(-1,
+      hook.GetParam<CEconItemView>(1).ItemDefinitionIndex.ToString());
 
-  private ISet<string> allowedWeapons(CCSPlayerController player) {
+    if (player == null || !player.IsValid) return HookResult.Continue;
+
+    var method = hook.GetParam<AcquireMethod>(2);
+    if (method != AcquireMethod.PickUp) return HookResult.Continue;
+
     var progress = progressions.TryGetValue(player.Slot, out var index) ?
       index :
       0;
@@ -206,21 +210,10 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     if (Tag.PISTOLS.Contains(weapon))
       allowed = allowed.Union(Tag.PISTOLS).ToHashSet();
 
-    return allowed.Union(Tag.UTILITY).ToHashSet();
-  }
+    if (allowed.Contains(data.Name)) return HookResult.Continue;
 
-  private void disableWeapon(CCSPlayerController player,
-    ICollection<string> allowed) {
-    if (!player.IsReal()) return;
-    var pawn = player.PlayerPawn.Value;
-    if (pawn == null || !pawn.IsValid) return;
-    var weaponServices = pawn.WeaponServices;
-    if (weaponServices == null) return;
-    var activeWeapon = weaponServices.ActiveWeapon.Value;
-    if (activeWeapon == null || !activeWeapon.IsValid) return;
-    if (allowed.Contains(activeWeapon.DesignerName)) return;
-    activeWeapon.NextSecondaryAttackTick = Server.TickCount + 500;
-    activeWeapon.NextPrimaryAttackTick   = Server.TickCount + 500;
+    hook.SetReturn(AcquireResult.NotAllowedByMode);
+    return HookResult.Handled;
   }
 
   public class GunGameSettings : SpecialDaySettings {
@@ -230,7 +223,6 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
       FreezePlayers                           = false;
       ConVarValues["mp_respawn_immunitytime"] = 5.0f;
       ConVarValues["mp_death_drop_gun"]       = 0;
-      RestrictWeapons                         = true;
       WithFriendlyFire();
       WithRespawns();
     }

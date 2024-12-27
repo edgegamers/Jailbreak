@@ -19,14 +19,13 @@ namespace Jailbreak.Warden.Paint;
 
 public class WardenPaintBehavior(IWardenService wardenService,
   IServiceProvider provider) : IPluginBehavior {
-  private Vector? lastPosition;
-  private BasePlugin? parent;
-
-  private IRainbowColorizer? colorizer =
+  private readonly IRainbowColorizer? colorizer =
     provider.GetService<IRainbowColorizer>();
 
   private WardenPaintColor?[] colors = new WardenPaintColor?[65];
   private bool[] fetched = new bool[65];
+  private Vector? lastPosition;
+  private BasePlugin? parent;
 
   public void Start(BasePlugin basePlugin) {
     parent = basePlugin;

@@ -17,8 +17,9 @@ public class LastRequestFactory(ILastRequestManager manager,
     CCSPlayerController guard, LRType type) {
     return type switch {
       LRType.KNIFE_FIGHT => new KnifeFight(plugin, services, prisoner, guard),
-      LRType.GUN_TOSS    => new GunToss(plugin, manager, prisoner, guard),
-      LRType.NO_SCOPE    => new NoScope(plugin, services, prisoner, guard),
+      LRType.GUN_TOSS =>
+        new GunToss(plugin, manager, services, prisoner, guard),
+      LRType.NO_SCOPE => new NoScope(plugin, services, prisoner, guard),
       LRType.SHOT_FOR_SHOT => new BulletForBullet(plugin, services, prisoner,
         guard, false),
       LRType.ROCK_PAPER_SCISSORS => new RockPaperScissors(plugin, services,
