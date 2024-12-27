@@ -244,10 +244,10 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
 
   public override bool PreventEquip(CCSPlayerController player,
     CCSWeaponBaseVData weapon) {
-    if (weapon.Name != "weapon_deagle") return false;
     if (State != LRState.ACTIVE) return false;
 
     if (player.Slot != Prisoner.Slot && player.Slot != Guard.Slot) {
+      if (weapon.Name != "weapon_deagle") return false;
       var guardGunDist = guardWeapon == null ?
         float.MaxValue :
         guardWeapon.AbsOrigin!.DistanceSquared(
