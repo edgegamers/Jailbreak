@@ -2,7 +2,7 @@
 
 public static class Tag {
   /// <summary>
-  /// Items that can backstab
+  ///   Items that can backstab
   /// </summary>
   public static readonly IReadOnlySet<string> KNIVES = new HashSet<string>([
     "weapon_knife", "weapon_knife_bayonet", "weapon_knife_butterfly",
@@ -31,7 +31,7 @@ public static class Tag {
       "weapon_healthshot", "item_assaultsuit", "item_kevlar",
       "weapon_diversion",
       "weapon_breachcharge", "weapon_bumpmine", "weapon_c4", "weapon_tablet",
-      "weapon_taser", "weapon_shield", "weapon_snowball",
+      "weapon_taser", "weapon_shield", "weapon_snowball"
     ]).Union(GRENADES)
    .ToHashSet();
 

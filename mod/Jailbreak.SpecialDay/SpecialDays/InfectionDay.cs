@@ -133,8 +133,8 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
 
   public class InfectionSettings : SpecialDaySettings {
     public InfectionSettings() {
-      CtTeleport      = TeleportType.ARMORY;
-      TTeleport       = TeleportType.RANDOM;
+      CtTeleport = TeleportType.ARMORY;
+      TTeleport  = TeleportType.RANDOM;
 
       WithRespawns(CsTeam.CounterTerrorist);
     }

@@ -3,13 +3,13 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Menu;
-using Jailbreak.Public.Mod.LastRequest;
-using Jailbreak.Public.Mod.Rebel;
-using Jailbreak.Validator;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.LastRequest;
+using Jailbreak.Public.Mod.Rebel;
+using Jailbreak.Validator;
 
 namespace Jailbreak.LastRequest;
 

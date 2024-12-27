@@ -8,12 +8,10 @@ using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.SpecialDay;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Utils;
 using Jailbreak.Validator;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
@@ -149,8 +147,8 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
     private readonly ISet<string>? cachedGuardWeapons, cachedPrisonerWeapons;
 
     public HnsSettings() {
-      TTeleport         = TeleportType.ARMORY;
-      CtTeleport        = TeleportType.ARMORY;
+      TTeleport  = TeleportType.ARMORY;
+      CtTeleport = TeleportType.ARMORY;
 
       cachedGuardWeapons    = CV_GUARD_WEAPONS.Value.Split(",").ToHashSet();
       cachedPrisonerWeapons = CV_PRISONER_WEAPONS.Value.Split(",").ToHashSet();

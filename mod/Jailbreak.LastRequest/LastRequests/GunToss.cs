@@ -35,8 +35,8 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
 
   private Timer? guardGunTimer, prisonerGunTimer;
   private bool guardTossed, prisonerTossed;
-  public override LRType Type => LRType.GUN_TOSS;
   private CCSWeaponBase? prisonerWeapon, guardWeapon;
+  public override LRType Type => LRType.GUN_TOSS;
 
   public void OnWeaponDrop(CCSPlayerController player, CCSWeaponBase weapon) {
     if (bothThrewTick > 0) return;
@@ -58,14 +58,13 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
 
     if (Guard.Slot == Prisoner.Slot) bothThrewTick = Server.TickCount;
 
-    if (bothThrewTick > 0) {
+    if (bothThrewTick > 0)
       Plugin.AddTimer(5, () => {
         if (State != LRState.ACTIVE) return;
         if (Guard.PlayerPawn.Value != null)
           Guard.PlayerPawn.Value.TakesDamage = true;
         Prisoner.GetWeaponBase("weapon_deagle").SetAmmo(7, 35);
       });
-    }
 
     followWeapon(player, weapon);
 

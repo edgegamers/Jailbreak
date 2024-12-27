@@ -123,9 +123,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     generics = Provider.GetRequiredService<IGenericCmdLocale>();
 
     foreach (var player in Utilities.GetPlayers()
-     .Where(p => p is { Team: CsTeam.Terrorist or CsTeam.CounterTerrorist })) {
+     .Where(p => p is { Team: CsTeam.Terrorist or CsTeam.CounterTerrorist }))
       player.Respawn();
-    }
 
     speedrunner = getRunner();
 

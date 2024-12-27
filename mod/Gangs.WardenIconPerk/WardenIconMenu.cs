@@ -13,6 +13,6 @@ public class WardenIconMenu(IServiceProvider provider, WardenIcon data,
   }
 
   override protected string formatItem(WardenIcon item) {
-    return $"{item.GetIcon()} ({item.ToString().ToTitleCase()}";
+    return $"{item.GetIcon()} ({item.ToString().ToTitleCase()})";
   }
 }
