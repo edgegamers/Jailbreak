@@ -42,7 +42,7 @@ public class WardenPeaceLocale : IWardenPeaceLocale,
     => new SimpleView { PREFIX, CsTeam.CounterTerrorist, "were unmuted." };
 
   public IView UnmutedPrisoners
-    => new SimpleView { PREFIX, CsTeam.Terrorist, "Prisoners were unmuted." };
+    => new SimpleView { PREFIX, CsTeam.Terrorist, "were unmuted." };
 
   public IView MuteReminder
     => new SimpleView { PREFIX, ChatColors.Red + "You are currently muted." };
