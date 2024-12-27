@@ -3,13 +3,13 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Menu;
+using Jailbreak.Public.Mod.LastRequest;
+using Jailbreak.Public.Mod.Rebel;
+using Jailbreak.Validator;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.LastRequest;
-using Jailbreak.Public.Mod.Rebel;
-using Jailbreak.Validator;
 
 namespace Jailbreak.LastRequest;
 
@@ -38,32 +38,33 @@ public class LastRequestRebelManager(IRebelService rebelService,
 
   public void StartLRRebelling(CCSPlayerController player) {
     MenuManager.CloseActiveMenu(player);
-
-    var calculatedHealth = CalculateHealth();
-    var playerPawn       = player.PlayerPawn.Value;
-    var updatedHealth = Math.Min(CV_MAX_T_HEALTH.Value,
-      Math.Max(calculatedHealth, playerPawn?.Health ?? 0));
-
-    player.SetHealth(updatedHealth);
-    messages.LastRequestRebel(player, updatedHealth).ToAllChat();
-    AddLRRebelling(player.Slot);
+    var hp = getHealthForPlayer(player);
+    messages.LastRequestRebel(player, hp).ToAllChat();
     rebelService.MarkRebel(player);
+
+    ((ILastRequestRebelManager)this).AddLRRebelling(player.Slot);
+
+    player.SetHealth(hp);
     player.RemoveWeapons();
     player.GiveNamedItem(CV_REBEL_WEAPON.Value);
     player.GiveNamedItem("weapon_knife");
   }
 
-  public bool IsInLRRebelling(int playerSlot) {
-    return PlayersLRRebelling.Contains(playerSlot);
+  private int getHealthForPlayer(CCSPlayerController player) {
+    var hpRatio    = getHealthForRatio();
+    var playerPawn = player.PlayerPawn.Value;
+    if (playerPawn == null) return 101;
+
+    // If player's HP is already higher than the ratio, don't lower it
+    hpRatio = Math.Max(hpRatio, playerPawn.Health);
+
+    // Make sure the player's health is within the bounds
+    hpRatio = Math.Min(hpRatio, CV_MAX_T_HEALTH.Value);
+
+    return hpRatio;
   }
 
-  public void AddLRRebelling(int playerSlot) {
-    PlayersLRRebelling.Add(playerSlot);
-  }
-
-  public void ClearLRRebelling() { PlayersLRRebelling.Clear(); }
-
-  public int CalculateHealth() {
+  private int getHealthForRatio() {
     var aliveCounterTerrorists = Utilities.GetPlayers()
      .Where(plr => plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist })
      .ToList();
