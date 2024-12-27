@@ -13,7 +13,7 @@ public class LRColorPerk(IServiceProvider provider)
   public const string STAT_ID = "jb_lr_color";
 
   public const string DESC =
-    "Pick the color of you and your partner during your LRs\nConflicting colors are resolved by gang rank";
+    "Pick the color of you and your partner during your LRs\\nConflicting colors are resolved by gang rank";
 
   private readonly IGangStatManager gangStats =
     provider.GetRequiredService<IGangStatManager>();

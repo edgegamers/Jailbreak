@@ -20,7 +20,7 @@ public class LRData {
 
   public override string ToString() {
     return
-      $"{ChatColors.Blue}CT{ChatColors.Grey}/{ChatColors.Red}T {ChatColors.BlueGrey}LRs: {ChatColors.Blue}{CtLrs}{ChatColors.White}/{ChatColors.Red}{TLrs}\n"
+      $"{ChatColors.Blue}CT{ChatColors.Grey}/{ChatColors.Red}T {ChatColors.BlueGrey}LRs: {ChatColors.Blue}{CtLrs}{ChatColors.White}/{ChatColors.Red}{TLrs}\\n"
       + $"{ChatColors.Blue}CT{ChatColors.Grey}/{ChatColors.Red}T {ChatColors.BlueGrey}LR Wins: {ChatColors.Blue}{CTLrsWon}{ChatColors.White}/{ChatColors.Red}{TLrsWon}";
   }
 }

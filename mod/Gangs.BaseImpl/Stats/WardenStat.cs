@@ -19,14 +19,14 @@ public class WardenData {
 
   public override string ToString() {
     var result =
-      $"{ChatColors.BlueGrey}Times Wardened: {ChatColors.Yellow}{TimesWardened}\n";
+      $"{ChatColors.BlueGrey}Times Wardened: {ChatColors.Yellow}{TimesWardened}\\n";
 
     result +=
-      $"{ChatColors.BlueGrey}Warden {ChatColors.LightBlue}Deaths{ChatColors.BlueGrey}: {ChatColors.Yellow}{WardenDeaths}\n";
+      $"{ChatColors.BlueGrey}Warden {ChatColors.LightBlue}Deaths{ChatColors.BlueGrey}: {ChatColors.Yellow}{WardenDeaths}\\n";
     result +=
-      $"{ChatColors.BlueGrey}Wardens {ChatColors.LightRed}Killed{ChatColors.BlueGrey}: {ChatColors.Yellow}{WardensKilled}\n";
+      $"{ChatColors.BlueGrey}Wardens {ChatColors.LightRed}Killed{ChatColors.BlueGrey}: {ChatColors.Yellow}{WardensKilled}\\n";
     result +=
-      $"{ChatColors.BlueGrey}Guard {ChatColors.LightRed}Deaths{ChatColors.BlueGrey} as Warden: {ChatColors.Yellow}{GuardDeathsAsWarden}\n";
+      $"{ChatColors.BlueGrey}Guard {ChatColors.LightRed}Deaths{ChatColors.BlueGrey} as Warden: {ChatColors.Yellow}{GuardDeathsAsWarden}\\n";
     result +=
       $"{ChatColors.BlueGrey}Warden {ChatColors.LightRed}Deaths{ChatColors.BlueGrey} as Guard: {ChatColors.Yellow}{WardenDeathsAsGuard}";
     return result;
