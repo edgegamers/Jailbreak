@@ -29,7 +29,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
   public static readonly FakeConVar<int> CV_INITIAL_SPEEDRUN_TIME =
     new("css_jb_speedrun_initial_time",
-      "Duration in seconds to grant the speedrunner", 30);
+      "Duration in seconds to grant the speedrunner", 20);
 
   public static readonly FakeConVar<int> CV_FIRST_ROUND_FREEZE =
     new("css_jb_speedrun_first_round_freeze",
@@ -125,7 +125,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     foreach (var player in Utilities.GetPlayers()
      .Where(p => p is { Team: CsTeam.Terrorist or CsTeam.CounterTerrorist })) {
       player.Respawn();
-      player.SwitchTeam(CsTeam.Terrorist);
     }
 
     speedrunner = getRunner();
@@ -667,7 +666,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
     if (aliveCount <= CV_MAX_PLAYERS_TO_FINISH.Value) {
       if (finishTimestampList.Count == 0) {
-        generics.Error("No slowest times found").ToAllChat();
+        panic("No slowest times found");
         return;
       }
 
@@ -785,13 +784,12 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     return players switch {
       <= 3  => 1,
       <= 4  => 2,
-      <= 6  => 2,
-      <= 8  => 3,
-      <= 12 => 3,
-      <= 20 => 6,
-      <= 35 => 8,
-      <= 40 => 10,
-      <= 64 => 12,
+      <= 8  => 4,
+      <= 12 => 5,
+      <= 20 => 10,
+      <= 35 => 12,
+      <= 40 => 15,
+      <= 64 => 30,
       _     => players / 5
     };
   }
