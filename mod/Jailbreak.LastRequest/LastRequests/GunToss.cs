@@ -91,9 +91,9 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
     Guard.GiveNamedItem("weapon_knife");
     Prisoner.GiveNamedItem("weapon_deagle");
     Guard.GiveNamedItem("weapon_deagle");
-    Prisoner.GetWeaponBase("weapon_deagle").SetAmmo(7, 0);
+    Prisoner.GetWeaponBase("weapon_deagle").SetAmmo(2, 0);
 
-    State = LRState.ACTIVE;
+    Server.NextFrame(() => State = LRState.ACTIVE);
     followPlayer(Prisoner);
     if (Guard.Slot != Prisoner.Slot) followPlayer(Guard);
 
@@ -115,7 +115,7 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
   }
 
   private void onGround(CCSPlayerController player) {
-    if (bothThrewTick > 0) {
+    if (bothThrewTick > 0 || State != LRState.ACTIVE) {
       Plugin.RemoveListener<Listeners.OnTick>(OnTick);
       return;
     }
@@ -154,6 +154,11 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
       if (State != LRState.ACTIVE) {
         lines.ForEach(l => l.Remove());
         lines.Clear();
+
+        prisonerGroundTimer?.Kill();
+        guardGroundTimer?.Kill();
+        prisonerGroundTimer = null;
+        guardGroundTimer    = null;
         return;
       }
 
@@ -181,7 +186,7 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
       previous = position.Clone();
     }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
 
-    if (player == Prisoner)
+    if (player.Slot == Prisoner.Slot)
       prisonerGroundTimer = timer;
     else
       guardGroundTimer = timer;
@@ -194,18 +199,25 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
       "player.PlayerPawn.Value != null");
     var timer = Plugin.AddTimer(0.1f, () => {
       if (weapon.AbsOrigin == null || !weapon.IsValid) {
-        if (player == Prisoner)
+        if (player.Slot == Prisoner.Slot) {
           prisonerGunTimer?.Kill();
-        else
+          prisonerWeapon = null;
+        } else {
           guardGunTimer?.Kill();
+          guardWeapon = null;
+        }
+
         return;
       }
 
       if (lastPos != null && lastPos.DistanceSquared(weapon.AbsOrigin) == 0) {
-        if (player.Slot == Prisoner.Slot)
+        if (player.Slot == Prisoner.Slot) {
           prisonerGunTimer?.Kill();
-        else
+          prisonerGunTimer = null;
+        } else {
           guardGunTimer?.Kill();
+          guardGunTimer = null;
+        }
 
         var firstPos = lines[0].Position;
         locale.PlayerThrewGunDistance(player, lastPos.Distance(firstPos))
@@ -224,7 +236,7 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
       lastPos = weapon.AbsOrigin.Clone();
     }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
 
-    if (player == Prisoner)
+    if (player.Slot == Prisoner.Slot)
       prisonerGunTimer = timer;
     else
       guardGunTimer = timer;
@@ -233,6 +245,8 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
   public override bool PreventEquip(CCSPlayerController player,
     CCSWeaponBaseVData weapon) {
     if (weapon.Name != "weapon_deagle") return false;
+    if (State != LRState.ACTIVE) return false;
+
     if (player.Slot != Prisoner.Slot && player.Slot != Guard.Slot) {
       var guardGunDist = guardWeapon == null ?
         float.MaxValue :
@@ -245,12 +259,10 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
          .AbsOrigin!);
 
       var dist = Math.Min(guardGunDist, prisonerGunDist);
-      return dist > 16500;
+      return dist < 16500;
     }
 
-    if (State == LRState.PENDING) return false;
     if (bothThrewTick is null or < 0) return true;
-
     var time = Server.TickCount - bothThrewTick.Value;
     return time < 64 * 5;
   }

@@ -494,11 +494,9 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     if (player == null || !player.IsReal() || RoundUtil.IsWarmup())
       return HookResult.Continue;
 
-    if (IsLREnabled) {
-      // Handle active LRs
-      var activeLr = ((ILastRequestManager)this).GetActiveLR(player);
-      if (activeLr == null || activeLr.State == LRState.COMPLETED)
-        return HookResult.Continue;
+    // Handle active LRs
+    var activeLr = ((ILastRequestManager)this).GetActiveLR(player);
+    if (activeLr != null && activeLr.State != LRState.COMPLETED) {
       var isPrisoner = activeLr.Prisoner.Slot == player.Slot;
       EndLastRequest(activeLr,
         isPrisoner ? LRResult.GUARD_WIN : LRResult.PRISONER_WIN);
