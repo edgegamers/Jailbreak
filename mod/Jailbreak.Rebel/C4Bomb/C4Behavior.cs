@@ -18,6 +18,7 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rebel;
 using Microsoft.Extensions.DependencyInjection;
 using MStatsShared;
+using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.Rebel.C4Bomb;
 
@@ -40,8 +41,9 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
       new RangeValidator<float>(0, 10000));
 
   private readonly Dictionary<CC4, C4Metadata> bombs = new();
-
   private readonly Dictionary<ulong, string> cachedBombIcons = new();
+
+  private Timer? bombTimer;
 
   // EmitSound(CBaseEntity* pEnt, const char* sSoundName, int nPitch, float flVolume, float flDelay)
   private readonly MemoryFunctionVoid<CBaseEntity, string, int, float, float>
@@ -56,6 +58,8 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
   private BasePlugin? plugin;
 
   public void ClearActiveC4s() {
+    bombTimer?.Kill();
+    bombTimer = null;
     bombs.Clear();
     deathToKiller.Clear();
   }
@@ -82,8 +86,7 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
 
     rebelService.MarkRebel(player);
 
-    Server.RunOnTick(Server.TickCount + (int)(64 * delay),
-      () => detonate(player, bombEntity));
+    bombTimer = plugin.AddTimer(delay, () => detonate(player, bombEntity));
   }
 
   public void TryGiveC4ToRandomTerrorist() {
