@@ -37,7 +37,8 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
     start = new BeamCircle(Plugin, startLocation, 20, 16);
     start.SetColor(Color.Aqua);
     start.Draw();
-    State = LRState.ACTIVE;
+
+    if (Guard.Pawn.Value != null) Guard.Pawn.Value.TakesDamage = false;
   }
 
   // Called when the prisoner types !endrace
@@ -52,7 +53,6 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
     Prisoner.Pawn.Value?.Teleport(startLocation);
     Guard.Pawn.Value?.Teleport(startLocation);
 
-    if (Guard.Pawn.Value != null) Guard.Pawn.Value.TakesDamage       = false;
     if (Prisoner.Pawn.Value != null) Prisoner.Pawn.Value.TakesDamage = false;
 
     Guard.Freeze();
