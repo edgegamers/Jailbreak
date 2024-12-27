@@ -125,7 +125,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     foreach (var player in Utilities.GetPlayers()
      .Where(p => p is { Team: CsTeam.Terrorist or CsTeam.CounterTerrorist })) {
       player.Respawn();
-      player.SwitchTeam(CsTeam.Terrorist);
     }
 
     speedrunner = getRunner();
@@ -667,7 +666,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
     if (aliveCount <= CV_MAX_PLAYERS_TO_FINISH.Value) {
       if (finishTimestampList.Count == 0) {
-        generics.Error("No slowest times found").ToAllChat();
+        panic("No slowest times found");
         return;
       }
 
