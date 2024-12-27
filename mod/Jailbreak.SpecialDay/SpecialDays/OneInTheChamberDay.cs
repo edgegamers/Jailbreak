@@ -93,9 +93,7 @@ public class OneInTheChamberDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     public override ISet<string> AllowedWeapons(CCSPlayerController player) {
-      return new HashSet<string> {
-        CV_WEAPON.Value, CV_ADDITIONAL_WEAPON.Value
-      };
+      return new HashSet<string>();
     }
   }
 }
