@@ -112,7 +112,9 @@ public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
 
       if (gangChat != null)
         await gangChat.SendGangChat(player, gang,
-          localizer.Get(MSG.PERK_PURCHASED, $"{title} ({formatItem(val)})"));
+          localizer.Get(MSG.PERK_PURCHASED,
+            player.Name ?? player.Steam.ToString(),
+            $"{title} ({formatItem(val)})"));
       return CommandResult.SUCCESS;
     }
 
