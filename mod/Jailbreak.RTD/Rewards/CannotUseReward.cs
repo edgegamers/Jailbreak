@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
@@ -10,6 +9,7 @@ using Jailbreak.Public.Mod.RTD;
 namespace Jailbreak.RTD.Rewards;
 
 public class CannotUseReward : IRTDReward {
+  private readonly HashSet<int> blockedIDs = [];
   private readonly ImmutableHashSet<string> blockedWeapons;
   private readonly BasePlugin plugin;
 
@@ -26,6 +26,23 @@ public class CannotUseReward : IRTDReward {
     VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Hook(OnCanAcquire,
       HookMode.Pre);
     plugin.RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
+  }
+
+  public string NameShort { get; }
+
+  public string Name => $"Cannot Use {NameShort}";
+
+  public string Description
+    => $"You will not be able to use {NameShort} next round.";
+
+  public bool GrantReward(CCSPlayerController player) {
+    if (player.UserId == null) return false;
+    blockedIDs.Add(player.UserId.Value);
+
+    if (blockedWeapons.Any(w => w.Contains("knife") || w.Contains("bayonet")))
+      player.RemoveWeapons();
+
+    return true;
   }
 
   private HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
@@ -51,23 +68,5 @@ public class CannotUseReward : IRTDReward {
 
     hook.SetReturn(AcquireResult.NotAllowedByMode);
     return HookResult.Handled;
-  }
-
-  public string Name => $"Cannot Use {NameShort}";
-  public string NameShort { get; }
-
-  public string Description
-    => $"You will not be able to use {NameShort} next round.";
-
-  private readonly HashSet<int> blockedIDs = [];
-
-  public bool GrantReward(CCSPlayerController player) {
-    if (player.UserId == null) return false;
-    blockedIDs.Add(player.UserId.Value);
-
-    if (blockedWeapons.Any(w => w.Contains("knife") || w.Contains("bayonet")))
-      player.RemoveWeapons();
-
-    return true;
   }
 }

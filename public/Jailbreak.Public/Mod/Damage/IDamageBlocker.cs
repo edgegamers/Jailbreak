@@ -1,5 +1,4 @@
 using CounterStrikeSharp.API.Core;
-using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.Public.Mod.Damage;
 

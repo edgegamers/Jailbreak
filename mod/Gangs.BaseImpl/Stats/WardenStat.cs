@@ -1,5 +1,4 @@
 using CounterStrikeSharp.API.Modules.Utils;
-using Microsoft.Extensions.Primitives;
 
 namespace Gangs.BaseImpl.Stats;
 
