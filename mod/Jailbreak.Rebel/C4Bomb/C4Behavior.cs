@@ -137,6 +137,7 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
 
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
+    roundStart = Server.TickCount;
     ClearActiveC4s();
     refreshBombIcons();
 
