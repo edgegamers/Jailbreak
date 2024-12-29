@@ -1,7 +1,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
-using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Menu;
@@ -12,7 +11,6 @@ using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Mod.Warden;
-using Jailbreak.Public.Utils;
 using Jailbreak.SpecialDay.SpecialDays;
 
 namespace Jailbreak.SpecialDay;

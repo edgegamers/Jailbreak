@@ -9,7 +9,6 @@ using Gangs.SpecialDayColorPerk;
 using GangsAPI.Data;
 using GangsAPI.Services.Gang;
 using GangsAPI.Services.Player;
-using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.SpecialDay;
 using Jailbreak.Formatting.Views.Warden;
@@ -29,15 +28,15 @@ namespace Jailbreak.SpecialDay;
 public class SpecialDayManager(ISpecialDayFactory factory,
   IServiceProvider provider, IWardenService warden, IWardenLocale wardenMsg,
   ISDLocale locale) : ISpecialDayManager {
-  private readonly IRainbowColorizer colorizer =
-    provider.GetRequiredService<IRainbowColorizer>();
-
   public static readonly FakeConVar<int> CV_MAX_ELAPSED_TIME = new(
     "css_jb_sd_max_elapsed_time",
     "Max time elapsed in a round to be able to call a special day", 30);
 
   public static readonly FakeConVar<int> CV_ROUNDS_BETWEEN_SD = new(
     "css_jb_sd_round_cooldown", "Rounds between special days", 5);
+
+  private readonly IRainbowColorizer colorizer =
+    provider.GetRequiredService<IRainbowColorizer>();
 
   public bool IsSDRunning { get; set; }
   public AbstractSpecialDay? CurrentSD { get; private set; }
@@ -50,16 +49,14 @@ public class SpecialDayManager(ISpecialDayFactory factory,
       if (IsSDRunning) {
         if (CurrentSD is ISpecialDayMessageProvider messaged)
           return locale.SpecialDayRunning(messaged.Locale.Name).ToString();
-        else
-          return locale.SpecialDayRunning(CurrentSD?.Type.ToString()
-              ?? "Unknown")
-           .ToString();
+        return locale.SpecialDayRunning(CurrentSD?.Type.ToString() ?? "Unknown")
+         .ToString();
       }
 
       var roundsToNext = RoundsSinceLastSD - CV_ROUNDS_BETWEEN_SD.Value;
       if (roundsToNext < 0)
         return locale.SpecialDayCooldown(Math.Abs(roundsToNext)).ToString();
-      
+
       if (RoundUtil.GetTimeElapsed() > CV_MAX_ELAPSED_TIME.Value)
         return locale.TooLateForSpecialDay(CV_MAX_ELAPSED_TIME.Value)
          .ToString();

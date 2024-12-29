@@ -10,9 +10,9 @@ public interface ISpecialDayManager : IPluginBehavior {
   public int RoundsSinceLastSD { get; }
 
   /// <summary>
-  /// Function to check if the player can start the specified special day,
-  /// returns a string explanation if the player cannot start the special day.
-  /// Returns null if the player can start the special day.
+  ///   Function to check if the player can start the specified special day,
+  ///   returns a string explanation if the player cannot start the special day.
+  ///   Returns null if the player can start the special day.
   /// </summary>
   /// <param name="type"></param>
   /// <param name="player"></param>
