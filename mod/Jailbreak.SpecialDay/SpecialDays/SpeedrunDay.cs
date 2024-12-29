@@ -781,9 +781,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
   private int getEliminations(int players) {
     return players switch {
-      <= 3  => 1,
-      <= 4  => 2,
-      <= 8  => 4,
+      <= 4  => 1,
+      <= 8  => 3,
       <= 12 => 5,
       <= 20 => 10,
       <= 35 => 12,

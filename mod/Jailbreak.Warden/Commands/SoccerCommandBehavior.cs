@@ -16,19 +16,11 @@ public class SoccerCommandBehavior(IWardenService warden,
     new("css_jb_max_soccers",
       "The maximum number of soccer balls that the warden can spawn", 3);
 
-  private int soccers;
-
-  public void Start(BasePlugin basePlugin) {
-    basePlugin.RegisterListener<Listeners.OnServerPrecacheResources>(manifest
-      => {
-      manifest.AddResource(
-        "models/props/de_dust/hr_dust/dust_soccerball/dust_soccer_ball001.vmdl");
-    });
-  }
+  private int soccerBalls;
 
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
-    soccers = 0;
+    soccerBalls = 0;
     return HookResult.Continue;
   }
 
@@ -42,7 +34,7 @@ public class SoccerCommandBehavior(IWardenService warden,
       return;
     }
 
-    if (soccers >= CV_MAX_SOCCERS.Value) {
+    if (soccerBalls >= CV_MAX_SOCCERS.Value) {
       locale.TooManySoccers.ToChat(player);
       return;
     }
@@ -66,6 +58,6 @@ public class SoccerCommandBehavior(IWardenService warden,
     ball.Teleport(loc);
     locale.SoccerSpawned.ToAllChat();
     ball.DispatchSpawn();
-    soccers++;
+    soccerBalls++;
   }
 }

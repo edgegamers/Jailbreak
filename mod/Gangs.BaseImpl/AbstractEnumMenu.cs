@@ -48,7 +48,7 @@ public abstract class AbstractEnumMenu<T>(IServiceProvider provider, T data,
     T item) {
     if (item.Equals((T)(object)0))
       return Task.FromResult(
-        $" {ChatColors.DarkBlue}Gang Perks: {ChatColors.LightBlue}{title}\n {ChatColors.Grey}{desc}");
+        $" {ChatColors.DarkBlue}Gang Perks: {ChatColors.LightBlue}{title}\\n {ChatColors.Grey}{desc}");
 
     if (item.Equals(equipped))
       return Task.FromResult(

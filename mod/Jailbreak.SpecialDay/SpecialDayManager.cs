@@ -1,6 +1,8 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Admin;
+using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Utils;
 using Gangs.BaseImpl.Extensions;
 using Gangs.SpecialDayColorPerk;
@@ -8,11 +10,14 @@ using GangsAPI.Data;
 using GangsAPI.Services.Gang;
 using GangsAPI.Services.Player;
 using Jailbreak.Formatting.Extensions;
+using Jailbreak.Formatting.Views.SpecialDay;
+using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rainbow;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
+using Jailbreak.Public.Mod.Warden;
 using Jailbreak.Public.Utils;
 using Jailbreak.SpecialDay.SpecialDays;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,13 +26,48 @@ using MStatsShared;
 namespace Jailbreak.SpecialDay;
 
 public class SpecialDayManager(ISpecialDayFactory factory,
-  IServiceProvider provider) : ISpecialDayManager {
+  IServiceProvider provider, IWardenService warden, IWardenLocale wardenMsg,
+  ISDLocale locale) : ISpecialDayManager {
+  public static readonly FakeConVar<int> CV_MAX_ELAPSED_TIME = new(
+    "css_jb_sd_max_elapsed_time",
+    "Max time elapsed in a round to be able to call a special day", 30);
+
+  public static readonly FakeConVar<int> CV_ROUNDS_BETWEEN_SD = new(
+    "css_jb_sd_round_cooldown", "Rounds between special days", 5);
+
   private readonly IRainbowColorizer colorizer =
     provider.GetRequiredService<IRainbowColorizer>();
 
   public bool IsSDRunning { get; set; }
   public AbstractSpecialDay? CurrentSD { get; private set; }
   public int RoundsSinceLastSD { get; set; }
+
+  public string? CanStartSpecialDay(SDType type, CCSPlayerController? player) {
+    if (!AdminManager.PlayerHasPermissions(player, "@css/rcon")) {
+      if (!warden.IsWarden(player) || RoundUtil.IsWarmup())
+        return wardenMsg.NotWarden.ToString();
+      if (IsSDRunning) {
+        if (CurrentSD is ISpecialDayMessageProvider messaged)
+          return locale.SpecialDayRunning(messaged.Locale.Name).ToString();
+        return locale.SpecialDayRunning(CurrentSD?.Type.ToString() ?? "Unknown")
+         .ToString();
+      }
+
+      var roundsToNext = RoundsSinceLastSD - CV_ROUNDS_BETWEEN_SD.Value;
+      if (roundsToNext < 0)
+        return locale.SpecialDayCooldown(Math.Abs(roundsToNext)).ToString();
+
+      if (RoundUtil.GetTimeElapsed() > CV_MAX_ELAPSED_TIME.Value)
+        return locale.TooLateForSpecialDay(CV_MAX_ELAPSED_TIME.Value)
+         .ToString();
+    }
+
+    var denyReason = type.CanCall(player);
+    return denyReason != null
+      && !AdminManager.PlayerHasPermissions(player, "@css/root") ?
+        locale.CannotCallDay(denyReason).ToString() :
+        null;
+  }
 
   public bool InitiateSpecialDay(SDType type) {
     API.Stats?.PushStat(new ServerStat("JB_SPECIALDAY", type.ToString()));

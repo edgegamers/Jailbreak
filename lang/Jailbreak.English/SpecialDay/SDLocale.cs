@@ -48,4 +48,10 @@ public class SDLocale : ISDLocale, ILanguage<Formatting.Languages.English> {
       "second" + (maxTime == 1 ? "" : "s") + " of round start."
     };
   }
+
+  public IView CannotCallDay(string reason) {
+    return new SimpleView {
+      PREFIX, "You cannot call this special day:", ChatColors.Red + reason
+    };
+  }
 }

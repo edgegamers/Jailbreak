@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using CounterStrikeSharp.API.Modules.Utils;
 using GangsAPI;
 using GangsAPI.Data;
 using GangsAPI.Data.Command;
@@ -120,7 +121,7 @@ public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
 
     await playerStats.SetForPlayer(executor, statId, val);
     executor.PrintToChat(
-      $"{localizer.Get(MSG.PREFIX)}Set your {title} to {formatItem(val)}.");
+      $"{localizer.Get(MSG.PREFIX)}Set your {ChatColors.BlueGrey}{title} to {ChatColors.LightBlue}{formatItem(val)}.");
     return CommandResult.SUCCESS;
   }
 

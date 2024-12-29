@@ -52,7 +52,7 @@ public class BasicPerkMenu(IServiceProvider provider, IPerk perk)
       $" {ChatColors.DarkBlue}Gang Perk: {ChatColors.Blue}{perk.Name}";
     var items = new List<string>();
     if (perk.Description != null)
-      title += $"\n {ChatColors.LightBlue}{perk.Description}";
+      title += $"\\n {ChatColors.LightBlue}{perk.Description}";
     items.Add(title);
     if (cost != null) {
       var color = await economy.CanAfford(player, cost.Value) ?

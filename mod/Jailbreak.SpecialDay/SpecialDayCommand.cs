@@ -1,31 +1,22 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
-using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Menu;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.SpecialDay;
-using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
-using Jailbreak.Public.Mod.Warden;
-using Jailbreak.Public.Utils;
 using Jailbreak.SpecialDay.SpecialDays;
 
 namespace Jailbreak.SpecialDay;
 
-public class SpecialDayCommand(IWardenService warden,
-  ISpecialDayFactory factory, IWardenLocale wardenMsg, ISDLocale sdMsg,
+public class SpecialDayCommand(ISpecialDayFactory factory, ISDLocale sdMsg,
   ISpecialDayManager sd) : IPluginBehavior {
   public static readonly FakeConVar<int> CV_ROUNDS_BETWEEN_SD = new(
-    "css_jb_sd_round_cooldown", "Rounds between special days", 4);
-
-  public static readonly FakeConVar<int> CV_MAX_ELAPSED_TIME = new(
-    "css_jb_sd_max_elapsed_time",
-    "Max time elapsed in a round to be able to call a special day", 30);
+    "css_jb_sd_round_cooldown", "Rounds between special days", 5);
 
   private SpecialDayMenuSelector menuSelector = null!;
   private BasePlugin plugin = null!;
@@ -52,36 +43,6 @@ public class SpecialDayCommand(IWardenService warden,
       return;
     }
 
-    if (executor != null
-      && !AdminManager.PlayerHasPermissions(executor, "@css/rcon")) {
-      if (!warden.IsWarden(executor) || RoundUtil.IsWarmup()) {
-        wardenMsg.NotWarden.ToChat(executor);
-        return;
-      }
-
-      if (sd.IsSDRunning) {
-        // SD is already running
-        if (sd.CurrentSD is ISpecialDayMessageProvider messaged)
-          sdMsg.SpecialDayRunning(messaged.Locale.Name).ToChat(executor);
-        else
-          sdMsg.SpecialDayRunning(sd.CurrentSD?.Type.ToString() ?? "Unknown")
-           .ToChat(executor);
-
-        return;
-      }
-
-      var roundsToNext = sd.RoundsSinceLastSD - CV_ROUNDS_BETWEEN_SD.Value;
-      if (roundsToNext < 0) {
-        sdMsg.SpecialDayCooldown(Math.Abs(roundsToNext)).ToChat(executor);
-        return;
-      }
-
-      if (RoundUtil.GetTimeElapsed() > CV_MAX_ELAPSED_TIME.Value) {
-        sdMsg.TooLateForSpecialDay(CV_MAX_ELAPSED_TIME.Value);
-        return;
-      }
-    }
-
     if (info.ArgCount == 1) {
       if (executor == null) {
         Server.PrintToConsole("css_sd [SD]");
@@ -97,6 +58,12 @@ public class SpecialDayCommand(IWardenService warden,
     if (type == null) {
       if (executor != null)
         sdMsg.InvalidSpecialDay(info.GetArg(1)).ToChat(executor);
+      return;
+    }
+
+    var canStart = sd.CanStartSpecialDay(type.Value, executor);
+    if (canStart != null) {
+      if (executor != null) executor.PrintToChat(canStart);
       return;
     }
 

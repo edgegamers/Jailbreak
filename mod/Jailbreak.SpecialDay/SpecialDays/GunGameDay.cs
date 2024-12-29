@@ -118,11 +118,12 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
     var attacker = @event.Attacker;
     info.DontBroadcast = true;
     if (player == null || !player.IsValid) return HookResult.Continue;
-    int playerIndex;
-    if (!progressions.TryGetValue(player.Slot, out playerIndex))
+    if (!progressions.TryGetValue(player.Slot, out var playerIndex))
       playerIndex = 0;
     if (attacker == null || !attacker.IsValid) return HookResult.Continue;
     if (attacker.Slot == player.Slot) return HookResult.Continue;
+
+    @event.FireEventToClient(attacker);
 
     var attackerProgress =
       progressions.TryGetValue(attacker.Slot, out var attackerIndex) ?
