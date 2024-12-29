@@ -17,7 +17,7 @@ public interface ISpecialDayManager : IPluginBehavior {
   /// <param name="type"></param>
   /// <param name="player"></param>
   /// <returns></returns>
-  string? CanStartSpecialDay(SDType type, CCSPlayerController? player);
+  bool CanStartSpecialDay(SDType type, CCSPlayerController? player, bool print = true);
 
   bool InitiateSpecialDay(SDType type);
 }

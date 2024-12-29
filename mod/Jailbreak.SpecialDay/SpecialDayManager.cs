@@ -42,32 +42,49 @@ public class SpecialDayManager(ISpecialDayFactory factory,
   public AbstractSpecialDay? CurrentSD { get; private set; }
   public int RoundsSinceLastSD { get; set; }
 
-  public string? CanStartSpecialDay(SDType type, CCSPlayerController? player) {
+  public bool CanStartSpecialDay(SDType type, CCSPlayerController? player,
+    bool print = true) {
     var warden = provider.GetRequiredService<IWardenService>();
     if (!AdminManager.PlayerHasPermissions(player, "@css/rcon")) {
-      if (!warden.IsWarden(player) || RoundUtil.IsWarmup())
-        return wardenMsg.NotWarden.ToString();
+      if (!warden.IsWarden(player) || RoundUtil.IsWarmup()) {
+        if (print) wardenMsg.NotWarden.ToChat(player);
+        return false;
+      }
+
       if (IsSDRunning) {
-        if (CurrentSD is ISpecialDayMessageProvider messaged)
-          return locale.SpecialDayRunning(messaged.Locale.Name).ToString();
-        return locale.SpecialDayRunning(CurrentSD?.Type.ToString() ?? "Unknown")
-         .ToString();
+        if (CurrentSD is ISpecialDayMessageProvider messaged) {
+          if (print)
+            locale.SpecialDayRunning(messaged.Locale.Name).ToChat(player);
+          return false;
+        }
+
+        if (print)
+          locale.SpecialDayRunning(CurrentSD?.Type.ToString() ?? "Unknown")
+           .ToChat(player);
+        return false;
       }
 
       var roundsToNext = RoundsSinceLastSD - CV_ROUNDS_BETWEEN_SD.Value;
-      if (roundsToNext < 0)
-        return locale.SpecialDayCooldown(Math.Abs(roundsToNext)).ToString();
+      if (roundsToNext < 0) {
+        if (print)
+          locale.SpecialDayCooldown(Math.Abs(roundsToNext)).ToChat(player);
+        return false;
+      }
 
-      if (RoundUtil.GetTimeElapsed() > CV_MAX_ELAPSED_TIME.Value)
-        return locale.TooLateForSpecialDay(CV_MAX_ELAPSED_TIME.Value)
-         .ToString();
+      if (RoundUtil.GetTimeElapsed() > CV_MAX_ELAPSED_TIME.Value) {
+        if (print)
+          locale.TooLateForSpecialDay(CV_MAX_ELAPSED_TIME.Value).ToChat(player);
+        return false;
+      }
     }
 
     var denyReason = type.CanCall(player);
-    return denyReason != null
-      && !AdminManager.PlayerHasPermissions(player, "@css/root") ?
-        locale.CannotCallDay(denyReason).ToString() :
-        null;
+
+    if (denyReason == null
+      || AdminManager.PlayerHasPermissions(player, "@css/root"))
+      return true;
+    if (print) locale.CannotCallDay(denyReason).ToChat(player);
+    return false;
   }
 
   public bool InitiateSpecialDay(SDType type) {

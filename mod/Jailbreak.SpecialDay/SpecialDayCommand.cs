@@ -62,11 +62,7 @@ public class SpecialDayCommand(ISpecialDayFactory factory, ISDLocale sdMsg,
     }
 
     var canStart = sd.CanStartSpecialDay(type.Value, executor);
-    if (canStart != null) {
-      if (executor != null) executor.PrintToChat(canStart);
-      return;
-    }
-
+    if (!canStart) return;
     sd.InitiateSpecialDay(type.Value);
   }
 }
