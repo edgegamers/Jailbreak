@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Collections.Concurrent;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
@@ -17,7 +18,7 @@ namespace Jailbreak.RTD;
 
 public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
   IRTDLocale rtdLocale, IGenericCmdLocale generic) : IPluginBehavior {
-  private static readonly Dictionary<ulong, bool> cachedCookies = new();
+  private static readonly ConcurrentDictionary<ulong, bool> cachedCookies = new();
 
   public static readonly FakeConVar<string> CV_AUTORTD_FLAG =
     new("css_autortd_flag", "Permission flag required to enable auto-RTD",
