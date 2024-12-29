@@ -93,6 +93,7 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
 
     Server.RunOnTick(Server.TickCount + 16, () => State = LRState.ACTIVE);
     followPlayer(Prisoner);
+
     if (Guard.Slot != Prisoner.Slot) followPlayer(Guard);
 
     Plugin.RegisterListener<Listeners.OnTick>(OnTick);
@@ -113,7 +114,8 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
   }
 
   private void onGround(CCSPlayerController player) {
-    if (bothThrewTick > 0 || State != LRState.ACTIVE) {
+    if (bothThrewTick > 0
+      || State != LRState.PENDING && State != LRState.ACTIVE) {
       Plugin.RemoveListener<Listeners.OnTick>(OnTick);
       return;
     }
@@ -149,7 +151,7 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
     var     lines    = player == Prisoner ? prisonerLines : guardLines;
     Vector? previous = null;
     var timer = Plugin.AddTimer(0.1f, () => {
-      if (State != LRState.ACTIVE) {
+      if (State != LRState.ACTIVE && State != LRState.PENDING) {
         lines.ForEach(l => l.Remove());
         lines.Clear();
 
