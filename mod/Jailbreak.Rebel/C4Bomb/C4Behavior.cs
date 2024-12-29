@@ -44,6 +44,8 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
   private readonly Dictionary<CC4, C4Metadata> bombs = new();
   private readonly Dictionary<ulong, string> cachedBombIcons = new();
 
+  private int roundStart = 0;
+
   // EmitSound(CBaseEntity* pEnt, const char* sSoundName, int nPitch, float flVolume, float flDelay)
   private readonly MemoryFunctionVoid<CBaseEntity, string, int, float, float>
     // ReSharper disable once InconsistentNaming
@@ -51,16 +53,11 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
       "48 B8 ? ? ? ? ? ? ? ? 55 48 89 E5 41 55 41 54 49 89 FC 53 48 89 F3"); // LINUX ONLY.
 
   private readonly Dictionary<int, int> deathToKiller = new();
-
-  private Timer? bombTimer;
-
   private bool giveNextRound = true;
 
   private BasePlugin? plugin;
 
   public void ClearActiveC4s() {
-    bombTimer?.Kill();
-    bombTimer = null;
     bombs.Clear();
     deathToKiller.Clear();
   }
@@ -87,7 +84,8 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
 
     rebelService.MarkRebel(player);
 
-    bombTimer = plugin.AddTimer(delay, () => detonate(player, bombEntity));
+    Server.RunOnTick(Server.TickCount + (int)(64 * delay),
+      () => detonate(player, bombEntity));
   }
 
   public void TryGiveC4ToRandomTerrorist() {
@@ -237,6 +235,8 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
       bombs.Remove(bomb);
       return;
     }
+
+    if (Server.TickCount - roundStart < CV_C4_DELAY.Value * 64) return;
 
     tryEmitSound(player, "jb.jihadExplosion", 1, 1f, 0f);
     var particleSystemEntity =
