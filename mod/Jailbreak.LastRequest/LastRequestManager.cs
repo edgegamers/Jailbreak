@@ -472,6 +472,22 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   }
 
   [GameEventHandler]
+  public HookResult OnTakeDamage(EventPlayerHurt ev, GameEventInfo info) {
+    var player   = ev.Userid;
+    var attacker = ev.Attacker;
+    if (player == null || !player.IsReal()) return HookResult.Continue;
+    if (!ShouldBlockDamage(player, attacker)) return HookResult.Continue;
+    if (player.PlayerPawn.IsValid) {
+      var playerPawn = player.PlayerPawn.Value!;
+      playerPawn.Health = playerPawn.LastHealth;
+    }
+
+    info.DontBroadcast = false;
+    ev.DmgArmor        = ev.DmgHealth = 0;
+    return HookResult.Handled;
+  }
+
+  [GameEventHandler]
   public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
     foreach (var lr in ActiveLRs.ToList())
       EndLastRequest(lr, LRResult.TIMED_OUT);
