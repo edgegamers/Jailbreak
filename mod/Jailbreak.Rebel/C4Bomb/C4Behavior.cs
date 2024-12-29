@@ -24,7 +24,7 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 namespace Jailbreak.Rebel.C4Bomb;
 
 public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
-  ILastRequestManager lrs) : IPluginBehavior, IC4Service {
+  IServiceProvider provider) : IPluginBehavior, IC4Service {
   public static readonly FakeConVar<bool> CV_GIVE_BOMB = new("css_jb_c4_give",
     "Whether to give a random prisoner a bomb at the beginning of the round.",
     true);
@@ -251,6 +251,7 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
 
     var killed = 0;
     /* Calculate damage here, only applies to alive CTs. */
+    var lrs = provider.GetRequiredService<ILastRequestManager>();
     foreach (var ct in Utilities.GetPlayers()
      .Where(p => p is { Team: CsTeam.CounterTerrorist, PawnIsAlive: true })) {
       var lr = lrs.GetActiveLR(ct);
