@@ -15,6 +15,7 @@ using Jailbreak.Formatting.Views;
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.Rebel;
 using Microsoft.Extensions.DependencyInjection;
 using MStatsShared;
@@ -22,8 +23,8 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.Rebel.C4Bomb;
 
-public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
-  : IPluginBehavior, IC4Service {
+public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
+  ILastRequestManager lrs) : IPluginBehavior, IC4Service {
   public static readonly FakeConVar<bool> CV_GIVE_BOMB = new("css_jb_c4_give",
     "Whether to give a random prisoner a bomb at the beginning of the round.",
     true);
@@ -252,6 +253,12 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
     /* Calculate damage here, only applies to alive CTs. */
     foreach (var ct in Utilities.GetPlayers()
      .Where(p => p is { Team: CsTeam.CounterTerrorist, PawnIsAlive: true })) {
+      var lr = lrs.GetActiveLR(ct);
+      if (lr != null) {
+        var otherLr = lrs.GetActiveLR(player);
+        if (otherLr == null || otherLr != lr) continue;
+      }
+
       var distanceFromBomb =
         ct.PlayerPawn.Value!.AbsOrigin!.Distance(player.PlayerPawn.Value
          .AbsOrigin!);
