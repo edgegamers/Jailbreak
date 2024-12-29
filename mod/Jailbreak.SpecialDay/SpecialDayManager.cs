@@ -26,8 +26,8 @@ using MStatsShared;
 namespace Jailbreak.SpecialDay;
 
 public class SpecialDayManager(ISpecialDayFactory factory,
-  IServiceProvider provider, IWardenService warden, IWardenLocale wardenMsg,
-  ISDLocale locale) : ISpecialDayManager {
+  IServiceProvider provider, IWardenLocale wardenMsg, ISDLocale locale)
+  : ISpecialDayManager {
   public static readonly FakeConVar<int> CV_MAX_ELAPSED_TIME = new(
     "css_jb_sd_max_elapsed_time",
     "Max time elapsed in a round to be able to call a special day", 30);
@@ -43,6 +43,7 @@ public class SpecialDayManager(ISpecialDayFactory factory,
   public int RoundsSinceLastSD { get; set; }
 
   public string? CanStartSpecialDay(SDType type, CCSPlayerController? player) {
+    var warden = provider.GetRequiredService<IWardenService>();
     if (!AdminManager.PlayerHasPermissions(player, "@css/rcon")) {
       if (!warden.IsWarden(player) || RoundUtil.IsWarmup())
         return wardenMsg.NotWarden.ToString();
