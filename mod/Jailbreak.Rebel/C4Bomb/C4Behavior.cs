@@ -232,7 +232,6 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService)
 
   private void detonate(CCSPlayerController player, CC4 bomb) {
     if (!player.IsValid || !player.IsReal() || !player.PawnIsAlive) {
-      bombs.TryGetValue(bomb, out _);
       if (bomb.IsValid) bomb.Remove();
       bombs.Remove(bomb);
       return;

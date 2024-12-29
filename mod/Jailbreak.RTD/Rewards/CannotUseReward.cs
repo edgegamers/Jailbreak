@@ -11,7 +11,6 @@ namespace Jailbreak.RTD.Rewards;
 public class CannotUseReward : IRTDReward {
   private readonly HashSet<int> blockedIDs = [];
   private readonly ImmutableHashSet<string> blockedWeapons;
-  private readonly BasePlugin plugin;
 
   public CannotUseReward(BasePlugin plugin, WeaponType blocked) : this(plugin,
     blocked.GetItems().ToArray()) {
@@ -19,7 +18,6 @@ public class CannotUseReward : IRTDReward {
   }
 
   public CannotUseReward(BasePlugin plugin, params string[] weapons) {
-    this.plugin    = plugin;
     blockedWeapons = weapons.ToImmutableHashSet();
     NameShort = string.Join(", ",
       blockedWeapons.Select(s => s.GetFriendlyWeaponName()));

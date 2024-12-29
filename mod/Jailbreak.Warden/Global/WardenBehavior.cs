@@ -393,7 +393,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
     if (API.Actain != null) {
       var steam = player.SteamID;
-      Server.NextFrameAsync(async () => {
+      Task.Run(async () => {
         if ("[WARDEN]" != await API.Actain.getTagService().GetTag(steam))
           return;
         Server.NextFrame(() => {

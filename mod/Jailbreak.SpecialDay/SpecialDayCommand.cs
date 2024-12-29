@@ -6,17 +6,14 @@ using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Menu;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.SpecialDay;
-using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
-using Jailbreak.Public.Mod.Warden;
 using Jailbreak.SpecialDay.SpecialDays;
 
 namespace Jailbreak.SpecialDay;
 
-public class SpecialDayCommand(IWardenService warden,
-  ISpecialDayFactory factory, IWardenLocale wardenMsg, ISDLocale sdMsg,
+public class SpecialDayCommand(ISpecialDayFactory factory, ISDLocale sdMsg,
   ISpecialDayManager sd) : IPluginBehavior {
   public static readonly FakeConVar<int> CV_ROUNDS_BETWEEN_SD = new(
     "css_jb_sd_round_cooldown", "Rounds between special days", 5);
