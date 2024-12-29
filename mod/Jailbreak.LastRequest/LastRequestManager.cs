@@ -472,7 +472,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   }
 
   [GameEventHandler]
-  public HookResult OnTakeDamage(EventPlayerHurt ev, GameEventInfo _) {
+  public HookResult OnTakeDamage(EventPlayerHurt ev, GameEventInfo info) {
     var player   = ev.Userid;
     var attacker = ev.Attacker;
     if (player == null || !player.IsReal()) return HookResult.Continue;
@@ -482,7 +482,8 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
       playerPawn.Health = playerPawn.LastHealth;
     }
 
-    ev.DmgArmor = ev.DmgHealth = 0;
+    info.DontBroadcast = false;
+    ev.DmgArmor        = ev.DmgHealth = 0;
     return HookResult.Handled;
   }
 
