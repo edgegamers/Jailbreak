@@ -131,8 +131,13 @@ public static class ViewExtensions {
   }
 
   public static IView ToChat(this IView view,
-    params CCSPlayerController[] players) {
-    foreach (var player in players) view.ToPlayerChat(player);
+    params CCSPlayerController?[] players) {
+    foreach (var player in players) {
+      if (player == null)
+        view.ToServerConsole();
+      else
+        view.ToPlayerChat(player);
+    }
 
     return view;
   }
