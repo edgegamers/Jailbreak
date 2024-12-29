@@ -251,14 +251,14 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
 
     var killed = 0;
     /* Calculate damage here, only applies to alive CTs. */
-    // var lrs = provider.GetRequiredService<ILastRequestManager>();
+    var lrs = provider.GetRequiredService<ILastRequestManager>();
     foreach (var ct in Utilities.GetPlayers()
      .Where(p => p is { Team: CsTeam.CounterTerrorist, PawnIsAlive: true })) {
-      // var lr = lrs.GetActiveLR(ct);
-      // if (lr != null) {
-      //   var otherLr = lrs.GetActiveLR(player);
-      //   if (otherLr == null || otherLr != lr) continue;
-      // }
+      var lr = lrs.GetActiveLR(ct);
+      if (lr != null) {
+        var otherLr = lrs.GetActiveLR(player);
+        if (otherLr == null || otherLr != lr) continue;
+      }
 
       var distanceFromBomb =
         ct.PlayerPawn.Value!.AbsOrigin!.Distance(player.PlayerPawn.Value
