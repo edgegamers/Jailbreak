@@ -120,7 +120,7 @@ public class SDColorCommand(IServiceProvider provider) : ICommand {
     }
 
     data.Equipped = color;
-    await gangStats.SetForGang(gang, BombPerk.STAT_ID, data);
+    await gangStats.SetForGang(gang, SDColorPerk.STAT_ID, data);
 
     if (gangChat == null) return CommandResult.SUCCESS;
 
