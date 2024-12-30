@@ -76,8 +76,12 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
   public override void Setup() {
     base.Setup();
 
-    Guard.SetHealth(500);
-    Guard.SetArmor(500);
+    Server.NextFrame(() => {
+      if (!guard.IsValid) return;
+      Guard.SetHealth(500);
+      Guard.SetArmor(500);
+    });
+    
     Prisoner.RemoveWeapons();
     Guard.RemoveWeapons();
 
