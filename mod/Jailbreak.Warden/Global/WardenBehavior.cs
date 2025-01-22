@@ -425,8 +425,6 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
         $"play sounds/{CV_WARDEN_SOUND_KILLED.Value}");
     }
 
-    locale.BecomeNextWarden.ToAllChat();
-
     unblueTimer
     ?.Kill(); // If the warden dies withing 3 seconds of becoming warden, we need to cancel the unblue timer
     markPrisonersBlue();

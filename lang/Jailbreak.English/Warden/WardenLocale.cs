@@ -33,8 +33,14 @@ public class WardenLocale : IWardenLocale,
 
   public IView WardenDied
     => new SimpleView {
-      PREFIX,
-      $"The warden {ChatColors.Red}died{ChatColors.Grey}. CTs must pursue {ChatColors.BlueGrey}!warden{ChatColors.Grey}."
+      {
+        PREFIX,
+        $"The warden {ChatColors.Red}died{ChatColors.Grey}. It is a freeday!"
+      },
+      SimpleView.NEWLINE, {
+        PREFIX,
+        $"CTs must pursue {ChatColors.BlueGrey}!warden{ChatColors.Grey}."
+      }
     };
 
   public IView BecomeNextWarden

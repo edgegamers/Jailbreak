@@ -58,13 +58,6 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
 
     if (Guard.Slot == Prisoner.Slot) bothThrewTick = Server.TickCount;
 
-    if (bothThrewTick > 0)
-      Plugin.AddTimer(4, () => {
-        if (State != LRState.ACTIVE) return;
-        Guard.SetHealth(100);
-        Guard.SetArmor(0);
-      });
-
     followWeapon(player, weapon);
 
     if (player == Prisoner)
@@ -76,12 +69,6 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
   public override void Setup() {
     base.Setup();
 
-    Server.NextFrame(() => {
-      if (!guard.IsValid) return;
-      Guard.SetHealth(500);
-      Guard.SetArmor(500);
-    });
-    
     Prisoner.RemoveWeapons();
     Guard.RemoveWeapons();
 
@@ -93,7 +80,7 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
     Guard.GiveNamedItem("weapon_knife");
     Prisoner.GiveNamedItem("weapon_deagle");
     Guard.GiveNamedItem("weapon_deagle");
-    Prisoner.GetWeaponBase("weapon_deagle").SetAmmo(2, 7);
+    Prisoner.GetWeaponBase("weapon_deagle").SetAmmo(0, 7);
 
     Server.RunOnTick(Server.TickCount + 16, () => State = LRState.ACTIVE);
     followPlayer(Prisoner);
