@@ -69,6 +69,11 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
   }
 
   private void tick() {
+    if (!Prisoner.IsValid || !Guard.IsValid) {
+      Manager.EndLastRequest(this, LRResult.INTERRUPTED);
+      return;
+    }
+
     if (Prisoner.AbsOrigin == null || Guard.AbsOrigin == null) return;
     var requiredDistance       = getRequiredDistance();
     var requiredDistanceSqured = MathF.Pow(requiredDistance, 2);
