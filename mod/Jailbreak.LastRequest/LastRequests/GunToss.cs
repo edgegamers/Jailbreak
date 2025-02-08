@@ -189,6 +189,18 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
     Debug.Assert(player.PlayerPawn.Value != null,
       "player.PlayerPawn.Value != null");
     var timer = Plugin.AddTimer(0.1f, () => {
+      if (!player.IsValid || !Prisoner.IsValid) {
+        if (player.Slot == Prisoner.Slot) {
+          prisonerGunTimer?.Kill();
+          prisonerWeapon = null;
+        } else {
+          guardGunTimer?.Kill();
+          guardWeapon = null;
+        }
+
+        return;
+      }
+
       if (weapon.AbsOrigin == null || !weapon.IsValid) {
         if (player.Slot == Prisoner.Slot) {
           prisonerGunTimer?.Kill();
