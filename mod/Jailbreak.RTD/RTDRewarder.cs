@@ -36,7 +36,7 @@ public class RTDRewarder(IRichLogService logs) : IRTDRewarder, IPluginBehavior {
     if (reward == null) return HookResult.Continue;
     if (!reward.CanGrantReward(player)) return HookResult.Continue;
 
-    Server.RunOnTick(Server.TickCount + 20, () => {
+    Server.RunOnTick(Server.TickCount + 2, () => {
       if (!player.IsValid) return;
       if (reward.Name != "Nothing")
         logs.Append("Granted", reward.Name, "to", logs.Player(player));
