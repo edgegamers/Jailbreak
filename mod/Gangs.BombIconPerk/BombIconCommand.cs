@@ -60,10 +60,8 @@ public class BombIconCommand(IServiceProvider provider) : ICommand {
     var gang = await gangs.GetGang(player.GangId.Value)
       ?? throw new GangNotFoundException(player.GangId.Value);
 
-    var (success, data) =
-      await gangStats.GetForGang<BombPerkData>(gang, BombPerk.STAT_ID);
-
-    if (!success || data == null) data = new BombPerkData();
+    var data = await gangStats.GetForGang<BombPerkData>(gang, BombPerk.STAT_ID)
+      ?? new BombPerkData();
 
     if (info.ArgCount == 1) {
       var menu = new BombIconMenu(provider, data);

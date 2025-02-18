@@ -31,11 +31,7 @@ public class CellsPerk(IServiceProvider provider) : BasePerk<int>(provider) {
 
   public override async Task<int?> GetCost(IGangPlayer player) {
     if (player.GangId == null || player.GangRank == null) return null;
-    var (success, cells) =
-      await gangStats.GetForGang<int>(player.GangId.Value, StatId);
-
-    if (!success) cells = 0;
-
+    var cells = await gangStats.GetForGang<int>(player.GangId.Value, StatId);
     return getCostFor(cells + 1);
   }
 
@@ -47,9 +43,7 @@ public class CellsPerk(IServiceProvider provider) : BasePerk<int>(provider) {
 
   public override async Task OnPurchase(IGangPlayer player) {
     if (player.GangId == null || player.GangRank == null) return;
-    var (success, cells) =
-      await gangStats.GetForGang<int>(player.GangId.Value, StatId);
-    if (!success) cells = 1;
+    var cells = await gangStats.GetForGang<int>(player.GangId.Value, StatId);
     cells++;
     await gangStats.SetForGang(player.GangId.Value, StatId, cells);
 

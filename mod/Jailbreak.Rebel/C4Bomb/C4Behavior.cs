@@ -175,11 +175,11 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
           continue;
         }
 
-        var (success, data) =
+        var data =
           await gangStats.GetForGang<BombPerkData>(gangPlayer.GangId.Value,
             BombPerk.STAT_ID);
 
-        if (!success || data == null || data.Equipped == 0)
+        if (data == null || data.Equipped == 0)
           cachedGangBombIcons[gangPlayer.GangId.Value] = "";
         else
           cachedGangBombIcons[gangPlayer.GangId.Value] =

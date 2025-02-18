@@ -170,10 +170,9 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       var stats   = API.Gangs.Services.GetService<IPlayerStatManager>();
       if (stats != null)
         Task.Run(async () => {
-          var (success, stat) =
-            await stats.GetForPlayer<WardenData>(wrapper, WardenStat.STAT_ID);
-
-          if (!success || stat == null) stat = new WardenData();
+          var stat =
+            await stats.GetForPlayer<WardenData>(wrapper, WardenStat.STAT_ID)
+            ?? new WardenData();
 
           stat.TimesWardened++;
           await stats.SetForPlayer(wrapper, WardenStat.STAT_ID, stat);
@@ -298,9 +297,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
     if (stats == null) return;
 
-    var (success, stat) =
-      await stats.GetForPlayer<WardenData>(player, WardenStat.STAT_ID);
-    if (!success || stat == null) stat = new WardenData();
+    var stat = await stats.GetForPlayer<WardenData>(player, WardenStat.STAT_ID)
+      ?? new WardenData();
     stat.WardenDeaths++;
 
     await stats.SetForPlayer(player, WardenStat.STAT_ID, stat);
@@ -356,10 +354,9 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
     if (stats == null) return;
     await Task.Run(async () => {
-      var (success, stat) =
-        await stats.GetForPlayer<WardenData>(attacker, WardenStat.STAT_ID);
-
-      if (!success || stat == null) stat = new WardenData();
+      var stat =
+        await stats.GetForPlayer<WardenData>(attacker, WardenStat.STAT_ID)
+        ?? new WardenData();
 
       stat.WardensKilled++;
       await stats.SetForPlayer(attacker, WardenStat.STAT_ID, stat);
@@ -371,10 +368,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
     if (stats == null) return;
 
-    var (success, stat) =
-      await stats.GetForPlayer<WardenData>(player, WardenStat.STAT_ID);
-
-    if (!success || stat == null) stat = new WardenData();
+    var stat = await stats.GetForPlayer<WardenData>(player, WardenStat.STAT_ID)
+      ?? new WardenData();
 
     if (isWarden)
       // The warden let a guard die
@@ -595,9 +590,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
         var gangId     = gangPlayer?.GangId;
         if (gangId == null) continue;
 
-        var (success, cells) =
+        var cells =
           await gangStats.GetForGang<int>(gangId.Value, CellsPerk.STAT_ID);
-        if (!success) cells = 0;
 
         gangMembers.TryGetValue(gangId.Value, out var count);
         gangMembers[gangId.Value] = ++count;

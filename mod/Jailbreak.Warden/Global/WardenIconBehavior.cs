@@ -28,17 +28,15 @@ public class WardenIconBehavior(ITextSpawner spawner)
 
     if (playerStats == null) return WardenIcon.DEFAULT.GetIcon();
 
-    var (success, icon) =
+    var icon =
       await playerStats.GetForPlayer<WardenIcon>(player,
         WardenIconPerk.STAT_ID);
-
-    if (!success) icon = WardenIcon.DEFAULT;
 
     if (gangStats == null || players == null) return icon.GetIcon();
 
     var gangPlayer = await players.GetPlayer(player.Steam);
     if (gangPlayer?.GangId == null) return WardenIcon.DEFAULT.GetIcon();
-    var (_, available) =
+    var available =
       await gangStats.GetForGang<WardenIcon>(gangPlayer.GangId.Value,
         WardenIconPerk.STAT_ID);
 

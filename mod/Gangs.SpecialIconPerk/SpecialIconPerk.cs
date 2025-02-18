@@ -36,10 +36,9 @@ public class SpecialIconPerk(IServiceProvider provider)
 
   public override async Task<IMenu?> GetMenu(IGangPlayer player) {
     Debug.Assert(player.GangId != null, "player.GangId != null");
-    var (success, data) =
+    var data =
       await gangStats.GetForGang<SpecialIcon>(player.GangId.Value, STAT_ID);
-    if (!success) data = SpecialIcon.DEFAULT;
-    var (_, equipped) =
+    var equipped =
       await playerStats.GetForPlayer<SpecialIcon>(player.Steam, STAT_ID);
     return new SpecialIconMenu(Provider, data, equipped);
   }

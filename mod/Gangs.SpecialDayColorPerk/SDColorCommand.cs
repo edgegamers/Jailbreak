@@ -63,10 +63,9 @@ public class SDColorCommand(IServiceProvider provider) : ICommand {
     var gang = await gangs.GetGang(player.GangId.Value)
       ?? throw new GangNotFoundException(player.GangId.Value);
 
-    var (success, data) =
-      await gangStats.GetForGang<SDColorData>(gang, SDColorPerk.STAT_ID);
-
-    if (!success || data == null) data = new SDColorData();
+    var data =
+      await gangStats.GetForGang<SDColorData>(gang, SDColorPerk.STAT_ID)
+      ?? new SDColorData();
 
     if (info.ArgCount == 1) {
       var menu = new SDColorMenu(provider, data);

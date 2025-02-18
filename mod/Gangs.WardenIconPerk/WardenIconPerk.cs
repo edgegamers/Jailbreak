@@ -38,10 +38,9 @@ public class WardenIconPerk(IServiceProvider provider)
 
   public override async Task<IMenu?> GetMenu(IGangPlayer player) {
     Debug.Assert(player.GangId != null, "player.GangId != null");
-    var (success, data) =
+    var data =
       await gangStats.GetForGang<WardenIcon>(player.GangId.Value, STAT_ID);
-    if (!success) data = WardenIcon.DEFAULT;
-    var (_, equipped) =
+    var equipped =
       await playerStats.GetForPlayer<WardenIcon>(player.Steam, STAT_ID);
     return new WardenIconMenu(Provider, data, equipped);
   }

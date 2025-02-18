@@ -35,10 +35,9 @@ public class BombPerk(IServiceProvider provider)
   public override async Task<IMenu?> GetMenu(IGangPlayer player) {
     Debug.Assert(player.GangId != null, "player.GangId != null");
 
-    var (success, data) =
-      await gangStats.GetForGang<BombPerkData>(player.GangId.Value, STAT_ID);
-
-    if (!success || data == null) data = new BombPerkData();
+    var data =
+      await gangStats.GetForGang<BombPerkData>(player.GangId.Value, STAT_ID)
+      ?? new BombPerkData();
 
     return new BombIconMenu(Provider, data);
   }

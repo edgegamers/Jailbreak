@@ -28,17 +28,15 @@ public class SpecialIconBehavior(ITextSpawner spawner)
 
     if (playerStats == null) return SpecialIcon.DEFAULT.GetIcon();
 
-    var (success, icon) =
+    var icon =
       await playerStats.GetForPlayer<SpecialIcon>(player,
         SpecialIconPerk.STAT_ID);
-
-    if (!success) icon = SpecialIcon.DEFAULT;
 
     if (gangStats == null || players == null) return icon.GetIcon();
 
     var gangPlayer = await players.GetPlayer(player.Steam);
     if (gangPlayer?.GangId == null) return SpecialIcon.DEFAULT.GetIcon();
-    var (_, available) =
+    var available =
       await gangStats.GetForGang<SpecialIcon>(gangPlayer.GangId.Value,
         SpecialIconPerk.STAT_ID);
 
