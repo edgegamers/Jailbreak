@@ -106,7 +106,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
   private BasePlugin parent = null!;
   private PreWardenStats? preWardenStats;
-  private Timer? unblueTimer, openCellsTimer;
+  private Timer? unblueTimer, openCellsTimer, passFreedayTimer;
 
   public void Start(BasePlugin basePlugin) {
     parent = basePlugin;
@@ -187,6 +187,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     logs.Append(logs.Player(Warden), "is now the warden.");
 
     unblueTimer = parent.AddTimer(3, unmarkPrisonersBlue);
+    passFreedayTimer?.Kill(); // If a warden is assigned, cancel the 10s freeday timer on pass
     mute.PeaceMute(firstWarden ?
       MuteReason.INITIAL_WARDEN :
       MuteReason.WARDEN_TAKEN);
@@ -238,6 +239,12 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     mute.UnPeaceMute();
 
     HasWarden = false;
+    
+    if (isPass) { // If passing, start the timer to announce freeday
+      passFreedayTimer = parent.AddTimer(10, () => {
+        locale.NowFreeday.ToAllChat();
+      });
+    }
 
     if (Warden != null && Warden.Pawn.Value != null) {
       Warden.Clan = "";
