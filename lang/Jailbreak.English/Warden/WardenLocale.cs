@@ -16,6 +16,9 @@ public class WardenLocale : IWardenLocale,
       Plain = false, Panorama = false, Chat = true
     };
 
+  public static readonly FormatObject COMMAND_STANDS =
+    new HiddenFormatObject($"The previous command stands for 10 seconds.");
+
   public IView PickingShortly
     => new SimpleView {
       PREFIX,
@@ -27,9 +30,15 @@ public class WardenLocale : IWardenLocale,
       PREFIX,
       $"No one in queue. Next guard to {ChatColors.BlueGrey}!warden{ChatColors.Grey} will become warden."
     };
+  
+  public IView NowFreeday
+    => new SimpleView {
+      PREFIX,
+      $"It is now a freeday! CTs must pursue {ChatColors.BlueGrey}!warden{ChatColors.Grey}."
+    };
 
   public IView WardenLeft
-    => new SimpleView { PREFIX, "The warden left the game." };
+    => new SimpleView { PREFIX, "The warden left the game.", COMMAND_STANDS };
 
   public IView WardenDied
     => new SimpleView {
@@ -41,12 +50,6 @@ public class WardenLocale : IWardenLocale,
         PREFIX,
         $"CTs must pursue {ChatColors.BlueGrey}!warden{ChatColors.Grey}."
       }
-    };
-
-  public IView PassCommandStays
-    => new SimpleView {
-      PREFIX,
-      "Previous orders remain until new orders are given. It will become a freeday in 10 seconds."
     };
 
   public IView BecomeNextWarden
@@ -77,11 +80,11 @@ public class WardenLocale : IWardenLocale,
     };
 
   public IView PassWarden(CCSPlayerController player) {
-    return new SimpleView { PREFIX, player, "resigned from warden." };
+    return new SimpleView { PREFIX, player, "resigned from warden.", COMMAND_STANDS };
   }
 
   public IView FireWarden(CCSPlayerController player) {
-    return new SimpleView { PREFIX, player, "was fired from warden." };
+    return new SimpleView { PREFIX, player, "was fired from warden.", COMMAND_STANDS };
   }
 
   public IView
@@ -91,7 +94,8 @@ public class WardenLocale : IWardenLocale,
       admin,
       "fired",
       player,
-      "from warden."
+      "from warden.",
+      COMMAND_STANDS
     };
   }
 

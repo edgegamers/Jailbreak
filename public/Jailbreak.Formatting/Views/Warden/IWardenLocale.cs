@@ -8,9 +8,9 @@ namespace Jailbreak.Formatting.Views.Warden;
 public interface IWardenLocale {
   public IView PickingShortly { get; }
   public IView NoWardens { get; }
+  public IView NowFreeday { get; }
   public IView WardenLeft { get; }
   public IView WardenDied { get; }
-  public IView PassCommandStays { get; }
   public IView BecomeNextWarden { get; }
   public IView JoinRaffle { get; }
   public IView LeaveRaffle { get; }

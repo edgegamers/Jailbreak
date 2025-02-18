@@ -42,7 +42,6 @@ public class WardenCommandsBehavior(IWardenLocale locale,
       clients.ExecuteClientCommand(
         $"play sounds/{WardenBehavior.CV_WARDEN_SOUND_PASSED.Value}");
 
-    locale.PassCommandStays.ToAllChat();
     locale.BecomeNextWarden.ToAllChat();
 
     if (!warden.TryRemoveWarden(true))
@@ -76,7 +75,6 @@ public class WardenCommandsBehavior(IWardenLocale locale,
         $"play sounds/{WardenBehavior.CV_WARDEN_SOUND_PASSED.Value}");
     }
 
-    locale.PassCommandStays.ToAllChat();
     locale.BecomeNextWarden.ToAllChat();
 
     lastPassCommand[warden.Warden] = DateTime.Now;
