@@ -35,11 +35,10 @@ public class WardenPaintColorPerk(IServiceProvider provider)
 
   public override async Task<IMenu?> GetMenu(IGangPlayer player) {
     Debug.Assert(player.GangId != null, "player.GangId != null");
-    var (success, data) =
+    var data =
       await gangStats.GetForGang<WardenPaintColor>(player.GangId.Value,
         STAT_ID);
-    if (!success) data = WardenPaintColor.DEFAULT;
-    var (_, equipped) =
+    var equipped =
       await playerStats.GetForPlayer<WardenPaintColor>(player.Steam, STAT_ID);
     return new WardenPaintColorMenu(Provider, data, equipped);
   }

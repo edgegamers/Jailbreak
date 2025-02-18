@@ -114,9 +114,9 @@ public class SpecialDayManager(ISpecialDayFactory factory,
         var gangPlayer = await players.GetPlayer(wrapper.Steam);
         if (gangPlayer?.GangId == null) return;
         var gangId = gangPlayer.GangId.Value;
-        var (success, data) =
+        var data =
           await gangStats.GetForGang<SDColorData>(gangId, SDColorPerk.STAT_ID);
-        if (!success || data == null) continue;
+        if (data == null) continue;
 
         var col = data.Equipped.GetColor() ?? data.Unlocked.PickRandom();
 

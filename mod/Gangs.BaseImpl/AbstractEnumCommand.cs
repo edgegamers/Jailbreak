@@ -68,17 +68,11 @@ public abstract class AbstractEnumCommand<T>(IServiceProvider provider,
     var gang = await gangs.GetGang(player.GangId.Value)
       ?? throw new GangNotFoundException(player.GangId.Value);
 
-    var (success, data) =
-      await gangStats.GetForGang<T>(player.GangId.Value, statId);
-
-    if (!success) data = def;
-
-    T equipped;
-    var (_, tmp) = await playerStats.GetForPlayer<T>(player.Steam, statId);
-    equipped     = tmp;
+    var data = await gangStats.GetForGang<T>(player.GangId.Value, statId);
+    var tmp  = await playerStats.GetForPlayer<T>(player.Steam, statId);
 
     if (info.Args.Length == 1) {
-      openMenu(executor, data, equipped);
+      openMenu(executor, data, tmp);
       return CommandResult.SUCCESS;
     }
 

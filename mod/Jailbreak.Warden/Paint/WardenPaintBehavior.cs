@@ -105,11 +105,8 @@ public class WardenPaintBehavior(IWardenService wardenService,
       || gangStats == null)
       return WardenPaintColor.DEFAULT;
 
-    var (success, playerColors) =
-      await playerStats.GetForPlayer<WardenPaintColor>(player.Steam,
-        WardenPaintColorPerk.WardenPaintColorPerk.STAT_ID);
-
-    if (!success) return WardenPaintColor.DEFAULT;
+    var playerColors = await playerStats.GetForPlayer<WardenPaintColor>(
+      player.Steam, WardenPaintColorPerk.WardenPaintColorPerk.STAT_ID);
 
     var gangPlayer = await players.GetPlayer(player.Steam);
 
@@ -118,7 +115,7 @@ public class WardenPaintBehavior(IWardenService wardenService,
     var gang = await gangs.GetGang(gangPlayer.GangId.Value);
     if (gang == null) return WardenPaintColor.DEFAULT;
 
-    var (_, available) = await gangStats.GetForGang<WardenPaintColor>(gang,
+    var available = await gangStats.GetForGang<WardenPaintColor>(gang,
       WardenPaintColorPerk.WardenPaintColorPerk.STAT_ID);
 
     if (playerColors == WardenPaintColor.RANDOM)

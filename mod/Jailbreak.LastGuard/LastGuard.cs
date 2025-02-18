@@ -86,9 +86,9 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
        .ToList();
       Task.Run(async () => {
         foreach (var wrapper in players) {
-          var (success, stat) =
-            await gangStats.GetForPlayer<LGData>(wrapper, LGStat.STAT_ID);
-          if (!success || stat == null) stat = new LGData();
+          var stat =
+            await gangStats.GetForPlayer<LGData>(wrapper, LGStat.STAT_ID)
+            ?? new LGData();
           if (wrapper.Team == CsTeam.CounterTerrorist)
             stat.CtLgs++;
           else

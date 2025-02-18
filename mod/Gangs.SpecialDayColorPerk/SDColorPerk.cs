@@ -30,9 +30,9 @@ public class SDColorPerk(IServiceProvider provider)
 
   public override async Task<IMenu?> GetMenu(IGangPlayer player) {
     Debug.Assert(player.GangId != null, "player.GangId != null");
-    var (success, data) =
-      await gangStats.GetForGang<SDColorData>(player.GangId.Value, STAT_ID);
-    if (!success || data == null) data = new SDColorData();
+    var data =
+      await gangStats.GetForGang<SDColorData>(player.GangId.Value, STAT_ID)
+      ?? new SDColorData();
     return new SDColorMenu(Provider, data);
   }
 

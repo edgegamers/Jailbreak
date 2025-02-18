@@ -55,6 +55,9 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     new("css_jb_min_players_for_credits",
       "Minimum number of players to start giving credits out", 5);
 
+  public static readonly FakeConVar<int> CV_MAX_TIME_FOR_LR =
+    new("css_jb_max_time_for_lr", "Maximum round time during LR", 60);
+
   private readonly IRainbowColorizer rainbowColorizer =
     provider.GetRequiredService<IRainbowColorizer>();
 
@@ -153,9 +156,9 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
         var playerStatMgr = API.Gangs.Services.GetService<IPlayerStatManager>();
         if (playerStatMgr != null)
           Task.Run(async () => {
-            var (success, stat) =
-              await playerStatMgr.GetForPlayer<LRData>(wrapper, LRStat.STAT_ID);
-            if (stat == null || !success) stat = new LRData();
+            var stat =
+              await playerStatMgr.GetForPlayer<LRData>(wrapper, LRStat.STAT_ID)
+              ?? new LRData();
             if (wrapper.Team == CsTeam.Terrorist)
               stat.TLrs++;
             else
@@ -220,7 +223,8 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     rainbowColorizer.StopRainbow(lr.Prisoner);
     rainbowColorizer.StopRainbow(lr.Guard);
     if (result is LRResult.GUARD_WIN or LRResult.PRISONER_WIN) {
-      RoundUtil.AddTimeRemaining(CV_LR_BONUS_TIME.Value);
+      // RoundUtil.AddTimeRemaining(CV_LR_BONUS_TIME.Value);
+      addRoundTimeCapped(CV_LR_BONUS_TIME.Value, CV_MAX_TIME_FOR_LR.Value);
       messages.LastRequestDecided(lr, result).ToAllChat();
 
       var wrapper =
@@ -297,46 +301,29 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     if (playerStats == null || localizer == null || gangs == null
       || gangStats == null)
       return;
-    var (aSuccess, aData) =
-      await playerStats.GetForPlayer<LRColor>(a, LRColorPerk.STAT_ID);
-    var (bSuccess, bData) =
-      await playerStats.GetForPlayer<LRColor>(b, LRColorPerk.STAT_ID);
-
-    if (!aSuccess) aData = LRColor.DEFAULT;
-    if (!bSuccess) bData = LRColor.DEFAULT;
+    var aData = await playerStats.GetForPlayer<LRColor>(a, LRColorPerk.STAT_ID);
+    var bData = await playerStats.GetForPlayer<LRColor>(b, LRColorPerk.STAT_ID);
 
     LRColor?       toApply = null;
     PlayerWrapper? higher  = null;
-    if (aSuccess && bSuccess) {
-      higher  = await getHigherPlayer(a, b);
-      toApply = higher.Steam == a.Steam ? aData : bData;
-    } else if (aSuccess) {
-      toApply = aData;
-      higher  = a;
-    } else if (bSuccess) {
-      toApply = bData;
-      higher  = b;
-    }
-
-    if (toApply == null || higher == null) return;
+    higher = await getHigherPlayer(a, b);
+    if (toApply == null) return;
     if (a.Player == null || b.Player == null) return;
 
     var higherGang = await gangs.GetGang(higher.Steam);
     if (higherGang == null) return;
 
-    var (gangSuccess, gData) =
+    var gData =
       await gangStats.GetForGang<LRColor>(higherGang, LRColorPerk.STAT_ID);
 
-    if (!gangSuccess) return;
     if ((gData & toApply.Value) == 0) return;
 
     var color = toApply.Value.GetColor();
 
     if (color == null) { // Player picked random, but we need to pick
       // the random from their GANG's colors
-      var (success, gangData) =
+      var gangData =
         await playerStats.GetForPlayer<LRColor>(higher, LRColorPerk.STAT_ID);
-      if (!success) return;
       color = gangData.PickRandomColor();
     }
 
@@ -443,9 +430,8 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   private async Task<LRData?> getStat(PlayerWrapper player) {
     var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
     if (stats == null) return null;
-    var (success, data) =
-      await stats.GetForPlayer<LRData>(player, LRStat.STAT_ID);
-    if (!success || data == null) data = new LRData();
+    var data = await stats.GetForPlayer<LRData>(player, LRStat.STAT_ID)
+      ?? new LRData();
     return data;
   }
 
@@ -573,5 +559,11 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     if (!player.IsReal()) return false;
     if (!player.PawnIsAlive) return false;
     return player.Team == CsTeam.Terrorist;
+  }
+
+  private void addRoundTimeCapped(int time, int max) {
+    var timeleft                    = RoundUtil.GetTimeRemaining();
+    if (timeleft + time > max) time = max - timeleft;
+    RoundUtil.AddTimeRemaining(time);
   }
 }
