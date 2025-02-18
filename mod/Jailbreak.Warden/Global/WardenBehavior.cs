@@ -653,6 +653,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
       player.ExecuteClientCommand(
         $"play sounds/{CV_WARDEN_SOUND_PASSED.Value}");
 
+    locale.PassCommandStays.ToAllChat();
     locale.BecomeNextWarden.ToAllChat();
     return HookResult.Continue;
   }

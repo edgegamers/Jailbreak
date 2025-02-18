@@ -10,6 +10,7 @@ public interface IWardenLocale {
   public IView NoWardens { get; }
   public IView WardenLeft { get; }
   public IView WardenDied { get; }
+  public IView PassCommandStays { get; }
   public IView BecomeNextWarden { get; }
   public IView JoinRaffle { get; }
   public IView LeaveRaffle { get; }

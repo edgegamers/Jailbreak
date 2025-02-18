@@ -43,6 +43,12 @@ public class WardenLocale : IWardenLocale,
       }
     };
 
+  public IView PassCommandStays
+    => new SimpleView {
+      PREFIX,
+      "Previous orders remain until new orders are given. It will become a freeday in 10 seconds."
+    };
+
   public IView BecomeNextWarden
     => new SimpleView {
       PREFIX,
