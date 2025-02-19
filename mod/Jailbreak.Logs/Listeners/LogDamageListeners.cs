@@ -36,13 +36,7 @@ public class LogDamageListeners : IPluginBehavior {
       logs.Append("The world hurt", logs.Player(player),
         $"for {health} damage");
     } else {
-      if (attacker == null) {
-        logs.Append(logs.Player(player), "was hurt by an unknown source",
-          $"for {health} damage");
-        return HookResult.Continue;
-      }
-
-      logs.Append(logs.Player(attacker), "hurt", logs.Player(player),
+      logs.Append(logs.Player(attacker!), "hurt", logs.Player(player),
         $"for {health} damage");
     }
 
@@ -60,11 +54,7 @@ public class LogDamageListeners : IPluginBehavior {
     if (isWorld) {
       logs.Append("The world killed", logs.Player(player));
     } else {
-      if (attacker == null) {
-        logs.Append(logs.Player(player), "was killed by an unknown source");
-        return HookResult.Continue;
-      }
-      logs.Append(logs.Player(attacker), "killed", logs.Player(player));
+      logs.Append(logs.Player(attacker!), "killed", logs.Player(player));
     }
     
     return HookResult.Continue;
