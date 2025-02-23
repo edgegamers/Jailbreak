@@ -42,7 +42,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
   public static readonly FakeConVar<int> CV_LR_BONUS_TIME =
     new("css_jb_lr_time_per_lr",
-      "Additional round time to add per LR completion", 30);
+      "Additional round time to add per LR completion", 20);
 
   public static readonly FakeConVar<int> CV_LR_GUARD_TIME =
     new("css_jb_lr_time_per_guard", "Additional round time to add per guard");
