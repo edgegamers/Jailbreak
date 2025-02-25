@@ -48,7 +48,7 @@ public class BeamLine(BasePlugin plugin, Vector position, Vector end)
 
   public override void Remove() {
     KillTimer?.Kill();
-    if (beam != null && beam.IsValid) beam?.Remove();
+    if (beam != null && beam.IsValid) beam.AcceptInput("Kill");
     beam = null;
   }
 

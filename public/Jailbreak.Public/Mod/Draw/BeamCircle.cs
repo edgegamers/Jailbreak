@@ -9,15 +9,17 @@ namespace Jailbreak.Public.Mod.Draw;
 public class BeamCircle : BeamedShape {
   private readonly BeamLine?[] lines;
   private Vector[] offsets;
-  private float radius;
+  public float Radius { get; private set; }
 
   public BeamCircle(BasePlugin plugin, Vector position, float radius,
     int resolution) : base(plugin, position, resolution) {
-    this.radius = radius;
-    lines       = new BeamLine[resolution];
+    Radius = radius;
+    lines  = new BeamLine[resolution];
 
     offsets = generateOffsets();
   }
+
+  public float Width => 1.5f;
 
   private float degToRadian(float d) { return (float)(d * (Math.PI / 180)); }
 
@@ -25,8 +27,8 @@ public class BeamCircle : BeamedShape {
     var newOffsets = new Vector[lines.Length];
     var angle      = 360f / lines.Length;
     for (var i = 0; i < lines.Length; i++) {
-      var x = radius * MathF.Cos(degToRadian(angle * i));
-      var y = radius * MathF.Sin(degToRadian(angle * i));
+      var x = Radius * MathF.Cos(degToRadian(angle * i));
+      var y = Radius * MathF.Sin(degToRadian(angle * i));
       newOffsets[i] = new Vector(x, y, 0);
     }
 
@@ -40,6 +42,7 @@ public class BeamCircle : BeamedShape {
       var end   = Position + offsets[(i + 1) % offsets.Length];
       if (line == null) {
         line = new BeamLine(Plugin, start, end);
+        line.SetWidth(Width);
         line.SetColor(Color);
         line.Draw();
         lines[i] = line;
@@ -51,7 +54,7 @@ public class BeamCircle : BeamedShape {
   }
 
   public void SetRadius(float _radius) {
-    radius  = _radius;
+    Radius  = _radius;
     offsets = generateOffsets();
   }
 }

@@ -4,16 +4,17 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\public\Jailbreak.Formatting\Jailbreak.Formatting.csproj"/>
-        <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj"/>
-        <ProjectReference Include="..\Gangs.CellsPerk\Gangs.CellsPerk.csproj"/>
-        <ProjectReference Include="..\Gangs.SpecialIconPerk\Gangs.SpecialIconPerk.csproj"/>
-        <ProjectReference Include="..\Gangs.WardenIconPerk\Gangs.WardenIconPerk.csproj"/>
-        <ProjectReference Include="..\Jailbreak.Zones\Jailbreak.Zones.csproj"/>
-        <ProjectReference Include="..\Gangs.WardenPaintColorPerk\Gangs.WardenPaintColorPerk.csproj"/>
+        <ProjectReference Include="..\..\public\Jailbreak.Formatting\Jailbreak.Formatting.csproj" />
+        <ProjectReference Include="..\..\public\Jailbreak.Public\Jailbreak.Public.csproj" />
+        <ProjectReference Include="..\Gangs.CellsPerk\Gangs.CellsPerk.csproj" />
+        <ProjectReference Include="..\Gangs.SpecialIconPerk\Gangs.SpecialIconPerk.csproj" />
+        <ProjectReference Include="..\Gangs.WardenIconPerk\Gangs.WardenIconPerk.csproj" />
+        <ProjectReference Include="..\Jailbreak.Zones\Jailbreak.Zones.csproj" />
+        <ProjectReference Include="..\Gangs.WardenPaintColorPerk\Gangs.WardenPaintColorPerk.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -26,6 +27,10 @@
         <Reference Include="MStatsShared">
             <HintPath>..\..\public\Jailbreak.Public\Mixin\MStatsShared.dll</HintPath>
         </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="CS2ScreenMenuAPI" Version="2.6.0" />
     </ItemGroup>
 
 </Project>
