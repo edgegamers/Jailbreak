@@ -30,7 +30,7 @@ public class WardenLocale : IWardenLocale,
       PREFIX,
       $"No one in queue. Next guard to {ChatColors.BlueGrey}!warden{ChatColors.Grey} will become warden."
     };
-  
+
   public IView NowFreeday
     => new SimpleView {
       PREFIX,
@@ -80,11 +80,15 @@ public class WardenLocale : IWardenLocale,
     };
 
   public IView PassWarden(CCSPlayerController player) {
-    return new SimpleView { PREFIX, player, "resigned from warden.", COMMAND_STANDS };
+    return new SimpleView {
+      PREFIX, player, "resigned from warden.", COMMAND_STANDS
+    };
   }
 
   public IView FireWarden(CCSPlayerController player) {
-    return new SimpleView { PREFIX, player, "was fired from warden.", COMMAND_STANDS };
+    return new SimpleView {
+      PREFIX, player, "was fired from warden.", COMMAND_STANDS
+    };
   }
 
   public IView
@@ -102,7 +106,7 @@ public class WardenLocale : IWardenLocale,
   public IView NewWarden(CCSPlayerController player) {
     return new SimpleView { PREFIX, player, "is now the warden." };
   }
-
+  
   public IView CurrentWarden(CCSPlayerController? player) {
     return player is not null ?
       new SimpleView { PREFIX, "The warden is", player, "." } :
@@ -115,6 +119,18 @@ public class WardenLocale : IWardenLocale,
   public IView FireCommandSuccess(CCSPlayerController player) {
     return new SimpleView {
       PREFIX, player, "was fired and is no longer the warden."
+    };
+  }
+
+  public IView MarkerPlaced(string marker) {
+    return new SimpleView {
+      PREFIX, $"{marker}{ChatColors.Grey} marker placed."
+    };
+  }
+
+  public IView MarkerRemoved(string marker) {
+    return new SimpleView {
+      PREFIX, $"{marker}{ChatColors.Grey} marker removed."
     };
   }
 }

@@ -47,4 +47,8 @@ public interface IWardenLocale {
 
   public IView FireWarden(CCSPlayerController player,
     CCSPlayerController admin);
+
+  public IView MarkerPlaced(string marker);
+
+  public IView MarkerRemoved(string marker);
 }
