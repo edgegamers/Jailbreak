@@ -114,7 +114,6 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
     if (warden.Warden == null || !warden.Warden.IsReal()) return;
     if ((warden.Warden.Buttons & PlayerButtons.Attack2) == 0) {
       if (activelyPlacing && !removedMarker) {
-        SetBinds(warden.Warden);
         MenuAPI.CloseActiveMenu(warden.Warden);
         MenuAPI.OpenMenu(plugin, warden.Warden, menu);
       }
