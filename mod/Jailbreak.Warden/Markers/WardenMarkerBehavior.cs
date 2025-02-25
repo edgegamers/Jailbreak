@@ -1,3 +1,4 @@
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
@@ -8,6 +9,7 @@ using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.Warden;
+using Jailbreak.Warden.Paint;
 using MStatsShared;
 
 namespace Jailbreak.Warden.Markers;
@@ -24,20 +26,54 @@ public class WardenMarkerBehavior(IWardenService warden)
     "css_jb_warden_resize_time", "Milliseconds to wait for resizing marker",
     800);
 
-  // private Vector? MarkerPosition;
-
-  private BeamCircle? marker;
+  private BeamCircle marker = null!;
   private long placementTime;
 
   public Vector? MarkerPosition { get; private set; }
-
   public float radius { get; private set; }
-  // private float radius;
+  private bool activelyPlacing;
 
   public void Start(BasePlugin basePlugin) {
     marker = new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value,
       (int)Math.PI * 15);
     basePlugin.AddCommandListener("player_ping", CommandListener_PlayerPing);
+
+    basePlugin.RegisterListener<Listeners.OnTick>(OnTick);
+  }
+
+  private void OnTick() {
+    if (!warden.HasWarden) return;
+
+    if (warden.Warden == null || !warden.Warden.IsReal()) return;
+    if ((warden.Warden.Buttons & PlayerButtons.Attack2) == 0) {
+      activelyPlacing = false;
+      return;
+    }
+
+    var position = RayTrace.FindRayTraceIntersection(warden.Warden);
+    if (MarkerPosition == null || !activelyPlacing) {
+      if (position == null) return;
+      marker.SetRadius(CV_MIN_RADIUS.Value);
+      marker.Move(position);
+      marker.Update();
+      MarkerPosition  = position;
+      activelyPlacing = true;
+      placementTime   = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+      API.Stats?.PushStat(new ServerStat("JB_MARKER",
+        $"{position.X:F2} {position.Y:F2} {position.Z:F2}"));
+      return;
+    }
+
+    if (position == null) {
+      marker.Remove();
+      return;
+    }
+
+    var distance = MarkerPosition.Distance(position);
+    distance = Math.Clamp(distance, CV_MIN_RADIUS.Value, CV_MAX_RADIUS.Value);
+
+    marker.SetRadius(distance);
+    marker.Update();
   }
 
   [GameEventHandler]
