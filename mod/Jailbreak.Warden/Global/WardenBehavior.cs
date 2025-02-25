@@ -70,7 +70,7 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
   public static readonly FakeConVar<bool> CV_WARDEN_AUTO_SNITCH =
     new("css_jb_warden_auto_snitch",
       "True to broadcast how many prisoners were in cells when they auto-open",
-      true);
+      false);
 
   public static readonly FakeConVar<int> CV_WARDEN_HEALTH =
     new("css_jb_warden_hp", "HP for the warden", 125, ConVarFlags.FCVAR_NONE,
@@ -187,7 +187,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     logs.Append(logs.Player(Warden), "is now the warden.");
 
     unblueTimer = parent.AddTimer(3, unmarkPrisonersBlue);
-    passFreedayTimer?.Kill(); // If a warden is assigned, cancel the 10s freeday timer on pass
+    passFreedayTimer
+    ?.Kill(); // If a warden is assigned, cancel the 10s freeday timer on pass
     mute.PeaceMute(firstWarden ?
       MuteReason.INITIAL_WARDEN :
       MuteReason.WARDEN_TAKEN);
@@ -239,11 +240,10 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     mute.UnPeaceMute();
 
     HasWarden = false;
-    
+
     if (isPass) { // If passing, start the timer to announce freeday
-      passFreedayTimer = parent.AddTimer(10, () => {
-        locale.NowFreeday.ToAllChat();
-      });
+      passFreedayTimer =
+        parent.AddTimer(10, () => { locale.NowFreeday.ToAllChat(); });
     }
 
     if (Warden != null && Warden.Pawn.Value != null) {

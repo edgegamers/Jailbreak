@@ -26,7 +26,7 @@ public class GangsInit : IPluginBehavior {
 
     _ = new BombIconBootstrap(services);
     _ = new SDColorBootstrap(services);
-    _ = new CellsPerkBootstrap(services);
+    // _ = new CellsPerkBootstrap(services);
     _ = new LRColorBootstrap(services);
     _ = new WardenIconBootstrap(services);
     _ = new SpecialIconBootstrap(services);
