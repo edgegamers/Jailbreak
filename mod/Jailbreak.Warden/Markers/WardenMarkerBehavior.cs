@@ -46,7 +46,7 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
 
   public Vector? MarkerPosition { get; private set; }
   public float radius { get; private set; }
-  private bool activelyPlacing;
+  private bool activelyPlacing, removedMarker;
 
   private ScreenMenu menu = null!;
   private BasePlugin plugin = null!;
@@ -74,7 +74,7 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
     menu = new ScreenMenu("Markers", basePlugin) {
       PostSelectAction = PostSelectAction.Close,
       MenuType         = MenuType.KeyPress,
-      PositionX        = -7.5f
+      PositionX        = -8.5f
     };
 
     menu.AddOption("Red", (_, _) => placeMarker(0));
@@ -95,10 +95,17 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
     tmpMarker.SetRadius(1);
     tmpMarker.Move(MarkerPosition);
     tmpMarker.Update();
-    tmpMarker.Remove();
 
     MarkerPosition = null;
     locale.MarkerPlaced(markerNames[index]).ToAllChat();
+  }
+
+  [GameEventHandler]
+  public HookResult OnSpawn(EventPlayerSpawn spawn, GameEventInfo info) {
+    if (spawn.Userid == null || !spawn.Userid.IsValid)
+      return HookResult.Continue;
+    SetBinds(spawn.Userid);
+    return HookResult.Continue;
   }
 
   private void OnTick() {
@@ -106,15 +113,21 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
 
     if (warden.Warden == null || !warden.Warden.IsReal()) return;
     if ((warden.Warden.Buttons & PlayerButtons.Attack2) == 0) {
-      if (activelyPlacing) {
-        SetBinds(warden.Warden);
+      if (activelyPlacing && !removedMarker) {
         MenuAPI.CloseActiveMenu(warden.Warden);
         MenuAPI.OpenMenu(plugin, warden.Warden, menu);
       }
 
       activelyPlacing = false;
+      removedMarker   = false;
       return;
     }
+
+    var weapon = warden.Warden.Pawn.Value?.WeaponServices?.ActiveWeapon.Value
+    ?.DesignerName;
+    if (weapon != null && Tag.SNIPERS.Contains(weapon)
+      || weapon == "weapon_sg556")
+      return;
 
     var position = RayTrace.FindRayTraceIntersection(warden.Warden);
     if (position == null) return;
@@ -127,10 +140,13 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
           marker.SetRadius(0);
           marker.Update();
           locale.MarkerRemoved(markerNames[i]).ToAllChat();
+          removedMarker = true;
           return;
         }
       }
     }
+
+    if (removedMarker) return;
 
     if (MarkerPosition == null || !activelyPlacing) {
       tmpMarker.SetRadius(CV_MIN_RADIUS.Value);
