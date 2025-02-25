@@ -27,12 +27,12 @@ public class LastRequestRebelManager(IRebelService rebelService,
     ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 1000));
 
   public static readonly FakeConVar<double> CV_T_HEALTH_RATIO = new(
-    "css_jb_rebel_t_hp_ratio", "Ratio of T : CT Health", 0.5,
+    "css_jb_rebel_t_hp_ratio", "Ratio of T : CT Health", 0.7,
     ConVarFlags.FCVAR_NONE, new RangeValidator<double>(0.00001, 10));
 
   public static readonly FakeConVar<int> CV_MAX_T_HEALTH =
     new("css_jb_rebel_t_max_hp", "Max HP that the rebeller can have otherwise",
-      125, ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 1000));
+      800, ConVarFlags.FCVAR_NONE, new RangeValidator<int>(1, 1000));
 
   public HashSet<int> PlayersLRRebelling { get; } = [];
 
