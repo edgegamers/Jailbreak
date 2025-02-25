@@ -37,7 +37,7 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
   private BeamCircle[] markers = [];
   private BeamCircle tmpMarker = null!;
 
-  private string[] markerNames = [
+  private readonly string[] markerNames = [
     ChatColors.Red + "Red", ChatColors.Green + "Green",
     ChatColors.Blue + "Blue", ChatColors.Purple + "Purple"
   ];
@@ -119,13 +119,16 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
     var position = RayTrace.FindRayTraceIntersection(warden.Warden);
     if (position == null) return;
 
-    for (var i = 0; i < markers.Length; i++) {
-      var marker = markers[i];
-      var dist   = marker.Position.Distance(position);
-      if (dist < marker.Radius) {
-        marker.Remove();
-        locale.MarkerRemoved(markerNames[i]).ToAllChat();
-        return;
+    if (!activelyPlacing) {
+      for (var i = 0; i < markers.Length; i++) {
+        var marker = markers[i];
+        var dist   = marker.Position.DistanceSquared(position);
+        if (dist < MathF.Pow(marker.Radius, 2)) {
+          marker.SetRadius(0);
+          marker.Update();
+          locale.MarkerRemoved(markerNames[i]).ToAllChat();
+          return;
+        }
       }
     }
 
@@ -138,11 +141,6 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
       placementTime   = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
       API.Stats?.PushStat(new ServerStat("JB_MARKER",
         $"{position.X:F2} {position.Y:F2} {position.Z:F2}"));
-      return;
-    }
-
-    if (position == null) {
-      tmpMarker.Remove();
       return;
     }
 
