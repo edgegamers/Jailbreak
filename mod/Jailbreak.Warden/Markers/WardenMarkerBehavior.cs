@@ -55,12 +55,12 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
   public void Start(BasePlugin basePlugin) {
     plugin = basePlugin;
     tmpMarker = new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value,
-      20);
+      10);
     markers = [
-      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 20),
-      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 20),
-      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 20),
-      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 20)
+      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 10),
+      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 10),
+      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 10),
+      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 10)
     ];
 
     markers[0].SetColor(Color.Red);
@@ -80,7 +80,7 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
     menu.AddOption("Purple", (_, _) => placeMarker(3));
 
     basePlugin.AddCommandListener("player_ping", CommandListener_PlayerPing);
-    basePlugin.RegisterListener<Listeners.OnTick>(OnTick);
+    basePlugin.AddTimer(0.1f, OnTick, TimerFlags.REPEAT);
   }
 
   private void placeMarker(int index) {
