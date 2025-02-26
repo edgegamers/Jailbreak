@@ -80,7 +80,7 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
     menu.AddOption("Purple", (_, _) => placeMarker(3));
 
     basePlugin.AddCommandListener("player_ping", CommandListener_PlayerPing);
-    basePlugin.AddTimer(0.1f, OnTick, TimerFlags.REPEAT);
+    // basePlugin.AddTimer(0.1f, OnTick, TimerFlags.REPEAT);
   }
 
   private void placeMarker(int index) {
