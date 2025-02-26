@@ -57,6 +57,4 @@ public class BeamCircle : BeamedShape {
     Radius  = _radius;
     offsets = generateOffsets();
   }
-
-  public override void Update() { Draw(); }
 }

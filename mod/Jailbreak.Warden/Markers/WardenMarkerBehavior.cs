@@ -55,12 +55,12 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
   public void Start(BasePlugin basePlugin) {
     plugin = basePlugin;
     tmpMarker = new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value,
-      15);
+      10);
     markers = [
-      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 15),
-      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 15),
-      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 15),
-      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 15)
+      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 10),
+      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 10),
+      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 10),
+      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 10)
     ];
 
     markers[0].SetColor(Color.Red);
