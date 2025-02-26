@@ -5,6 +5,7 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Menu;
+using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using CS2ScreenMenuAPI;
 using CS2ScreenMenuAPI.Enums;
@@ -54,16 +55,12 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
   public void Start(BasePlugin basePlugin) {
     plugin = basePlugin;
     tmpMarker = new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value,
-      (int)Math.PI * 15);
+      15);
     markers = [
-      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value,
-        (int)Math.PI * 15),
-      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value,
-        (int)Math.PI * 15),
-      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value,
-        (int)Math.PI * 15),
-      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value,
-        (int)Math.PI * 15)
+      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 15),
+      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 15),
+      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 15),
+      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 15)
     ];
 
     markers[0].SetColor(Color.Red);
@@ -83,7 +80,7 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
     menu.AddOption("Purple", (_, _) => placeMarker(3));
 
     basePlugin.AddCommandListener("player_ping", CommandListener_PlayerPing);
-    basePlugin.RegisterListener<Listeners.OnTick>(OnTick);
+    basePlugin.AddTimer(0.1f, OnTick, TimerFlags.REPEAT);
   }
 
   private void placeMarker(int index) {
@@ -115,7 +112,7 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
     if ((warden.Warden.Buttons & PlayerButtons.Attack2) == 0) {
       if (activelyPlacing && !removedMarker) {
         MenuAPI.CloseActiveMenu(warden.Warden);
-        MenuAPI.OpenMenu(plugin, warden.Warden, menu);
+        Server.NextFrame(() => MenuAPI.OpenMenu(plugin, warden.Warden, menu));
       }
 
       activelyPlacing = false;
@@ -136,13 +133,12 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
       for (var i = 0; i < markers.Length; i++) {
         var marker = markers[i];
         var dist   = marker.Position.DistanceSquared(position);
-        if (dist < MathF.Pow(marker.Radius, 2)) {
-          marker.SetRadius(0);
-          marker.Update();
-          locale.MarkerRemoved(markerNames[i]).ToAllChat();
-          removedMarker = true;
-          return;
-        }
+        if (!(dist < MathF.Pow(marker.Radius, 2))) continue;
+        marker.SetRadius(0);
+        marker.Update();
+        locale.MarkerRemoved(markerNames[i]).ToAllChat();
+        removedMarker = true;
+        return;
       }
     }
 
@@ -157,6 +153,7 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
       placementTime   = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
       API.Stats?.PushStat(new ServerStat("JB_MARKER",
         $"{position.X:F2} {position.Y:F2} {position.Z:F2}"));
+      radius = CV_MIN_RADIUS.Value;
       return;
     }
 
@@ -210,7 +207,6 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
     CommandInfo info) {
     return warden.IsWarden(player) ? HookResult.Continue : HookResult.Handled;
   }
-
 
   public static void SetBinds(CCSPlayerController player) {
     for (var i = 0; i < 10; i++)
