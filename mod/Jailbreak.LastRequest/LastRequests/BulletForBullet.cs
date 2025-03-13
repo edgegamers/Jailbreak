@@ -34,7 +34,7 @@ public class BulletForBullet(BasePlugin plugin, IServiceProvider provider,
     => magForMag ? LRType.MAG_FOR_MAG : LRType.SHOT_FOR_SHOT;
 
   public override void Setup() {
-    Plugin.RegisterEventHandler<EventBulletImpact>(OnPlayerShoot);
+    Plugin.RegisterEventHandler<EventWeaponFire>(OnWeaponFire);
 
     Prisoner.RemoveWeapons();
     Guard.RemoveWeapons();
@@ -95,7 +95,7 @@ public class BulletForBullet(BasePlugin plugin, IServiceProvider provider,
     }, TimerFlags.STOP_ON_MAPCHANGE);
   }
 
-  private HookResult OnPlayerShoot(EventBulletImpact @event,
+  private HookResult OnWeaponFire(EventWeaponFire @event,
     GameEventInfo info) {
     if (State != LRState.ACTIVE) return HookResult.Continue;
 
@@ -122,7 +122,7 @@ public class BulletForBullet(BasePlugin plugin, IServiceProvider provider,
   }
 
   public override void OnEnd(LRResult result) {
-    Plugin.DeregisterEventHandler<EventBulletImpact>(OnPlayerShoot);
+    Plugin.DeregisterEventHandler<EventWeaponFire>(OnWeaponFire);
     State = LRState.COMPLETED;
   }
 
