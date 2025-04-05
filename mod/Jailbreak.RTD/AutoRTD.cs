@@ -116,11 +116,7 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
       var enable = value is not (null or "Y");
       
       // Debugging enable value
-      if (enable != null) {
-        rtdLocale.DebugPrintMessage($"Enable was: {enable}!").ToChat(executor);
-      } else {
-        rtdLocale.DebugPrintMessage($"Enable was: null!").ToChat(executor);
-      }
+      rtdLocale.DebugPrintMessage($"Enable was: {enable}!").ToChat(executor);
       
       await cookie.Set(steam, enable ? "Y" : "N");
       await Server.NextFrameAsync(() => {
