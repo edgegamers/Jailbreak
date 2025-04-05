@@ -73,19 +73,32 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
   public void Command_AutoRTD(CCSPlayerController? executor, CommandInfo info) {
     if (executor == null) return;
 
-    if (RTDCommand.CV_RTD_ENABLED.Value == -1) {
-      rtdLocale.RollingDisabled().ToChat(executor);
-      return;
-    }
-
     rtdLocale.DebugPrintMessage($"You are bypassing permission checks. Do NOT let this go into release. Remove the commented lines.").ToChat(executor);
+    // if (RTDCommand.CV_RTD_ENABLED.Value == -1) {
+    //   rtdLocale.RollingDisabled().ToChat(executor);
+    //   return;
+    // }
+
     // if (!AdminManager.PlayerHasPermissions(executor, CV_AUTORTD_FLAG.Value)) {
     //   generic.NoPermissionMessage(CV_AUTORTD_FLAG.Value).ToChat(executor);
     //   return;
     // }
 
     if (cookie == null) {
-      locale.TogglingNotEnabled.ToChat(executor);
+      //locale.TogglingNotEnabled.ToChat(executor);
+      rtdLocale.DebugPrintMessage($"Cookie was null. Trying to get again...").ToChat(executor);
+      
+      // try again to get cookie
+      Task.Run(async () => {
+        if (API.Actain != null)
+          cookie = await API.Actain.getCookieService()
+           .RegClientCookie("jb_rtd_auto");
+      });
+
+      if (cookie == null) {
+        rtdLocale.DebugPrintMessage($"Failed again to get cookie.").ToChat(executor);
+      }
+      
       return;
     }
 
