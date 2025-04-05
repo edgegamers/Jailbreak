@@ -5,7 +5,6 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
-using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.RTD;
