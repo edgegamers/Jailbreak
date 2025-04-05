@@ -57,4 +57,13 @@ public class RTDLocale : IRTDLocale, ILanguage<Formatting.Languages.English> {
       " credits!"
     };
   }
+  
+  /// <summary>
+  /// Debug prints a message to chat. For testing purposes ONLY.
+  /// </summary>
+  /// <param name="message">Message to print to chat.</param>
+  /// <returns></returns>
+  public IView DebugPrintMessage(string message) {
+    return new SimpleView { PREFIX, message };
+  }
 }
