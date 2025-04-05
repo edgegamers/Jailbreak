@@ -78,10 +78,11 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
       return;
     }
 
-    if (!AdminManager.PlayerHasPermissions(executor, CV_AUTORTD_FLAG.Value)) {
-      generic.NoPermissionMessage(CV_AUTORTD_FLAG.Value).ToChat(executor);
-      return;
-    }
+    rtdLocale.DebugPrintMessage($"You are bypassing permission checks. Do NOT let this go into release. Remove the commented lines.").ToChat(executor);
+    // if (!AdminManager.PlayerHasPermissions(executor, CV_AUTORTD_FLAG.Value)) {
+    //   generic.NoPermissionMessage(CV_AUTORTD_FLAG.Value).ToChat(executor);
+    //   return;
+    // }
 
     if (cookie == null) {
       locale.TogglingNotEnabled.ToChat(executor);
