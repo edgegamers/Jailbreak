@@ -10,4 +10,6 @@ public interface IRTDLocale {
   public IView CannotRollYet();
   public IView RollingDisabled();
   public IView JackpotReward(CCSPlayerController winner, int credits);
+  
+  public IView DebugPrintMessage(string message);
 }

@@ -5,6 +5,7 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
+using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.RTD;
@@ -90,7 +91,23 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
     var steam = executor.SteamID;
     Task.Run(async () => {
       var value  = await cookie.Get(steam);
+      
+      // Debugging value return from cookie.Get
+      if (value != null) {
+        rtdLocale.DebugPrintMessage($"Value was: {value}!").ToChat(executor);
+      } else {
+        rtdLocale.DebugPrintMessage($"Value was: null!").ToChat(executor);
+      }
+      
       var enable = value is not (null or "Y");
+      
+      // Debugging enable value
+      if (enable != null) {
+        rtdLocale.DebugPrintMessage($"Enable was: {enable}!").ToChat(executor);
+      } else {
+        rtdLocale.DebugPrintMessage($"Enable was: null!").ToChat(executor);
+      }
+      
       await cookie.Set(steam, enable ? "Y" : "N");
       await Server.NextFrameAsync(() => {
         if (!executor.IsValid) return;
