@@ -72,43 +72,25 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
   public void Command_AutoRTD(CCSPlayerController? executor, CommandInfo info) {
     if (executor == null) return;
 
-    // if (RTDCommand.CV_RTD_ENABLED.Value == -1) {
-    //   rtdLocale.RollingDisabled().ToChat(executor);
-    //   return;
-    // }
+    if (RTDCommand.CV_RTD_ENABLED.Value == -1) {
+      rtdLocale.RollingDisabled().ToChat(executor);
+      return;
+    }
 
-    rtdLocale.DebugPrintMessage($"You are bypassing permission checks. Do NOT let this go into release. Remove the commented lines.").ToChat(executor);
-    // if (!AdminManager.PlayerHasPermissions(executor, CV_AUTORTD_FLAG.Value)) {
-    //   generic.NoPermissionMessage(CV_AUTORTD_FLAG.Value).ToChat(executor);
-    //   return;
-    // }
+    if (!AdminManager.PlayerHasPermissions(executor, CV_AUTORTD_FLAG.Value)) {
+      generic.NoPermissionMessage(CV_AUTORTD_FLAG.Value).ToChat(executor);
+      return;
+    }
 
     if (cookie == null) {
       locale.TogglingNotEnabled.ToChat(executor);
-      rtdLocale.DebugPrintMessage($"Cookie was null. Early returning.").ToChat(executor);
       return;
     }
 
     var steam = executor.SteamID;
     Task.Run(async () => {
       var value  = await cookie.Get(steam);
-      
-      //var enable = value is not (null or "Y");
-      bool enable;
-
-      if (value != null) {
-        if (value != "Y") {
-          rtdLocale.DebugPrintMessage($"Value was not Y").ToChat(executor);
-          enable = true;
-        } else {
-          rtdLocale.DebugPrintMessage($"Value was Y").ToChat(executor);
-          enable = false;
-        }
-      } else {
-        rtdLocale.DebugPrintMessage($"Value was null").ToChat(executor);
-        enable = false;
-      }
-
+      var enable = value is not (null or "Y");
       await cookie.Set(steam, enable ? "Y" : "N");
       await Server.NextFrameAsync(() => {
         if (!executor.IsValid) return;
