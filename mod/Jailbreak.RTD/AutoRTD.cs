@@ -24,14 +24,21 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
     new("css_autortd_flag", "Permission flag required to enable auto-RTD",
       "@ego/dssilver");
 
+  private BasePlugin plugin = null!;
   private ICookie? cookie;
 
   public void Start(BasePlugin basePlugin) {
-    Task.Run(async () => {
-      if (API.Actain != null)
-        cookie = await API.Actain.getCookieService()
-         .RegClientCookie("jb_rtd_auto");
-    });
+    plugin = basePlugin;
+    
+    TryLoadCookie();
+    basePlugin.RegisterListener<Listeners.OnMapStart>(OnMapStart);
+  }
+
+  private void OnMapStart(string mapname) {
+    // Attempt to load the cookie OnMapStart if it fails to load on plugin start
+    // This can happen if the MAUL plugin is loaded *after* this plugin
+    if (cookie == null) TryLoadCookie();
+    else plugin.RemoveListener<Listeners.OnMapStart>(OnMapStart);
   }
 
   [GameEventHandler]
@@ -55,17 +62,6 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
     });
 
     return HookResult.Continue;
-  }
-
-  private async Task populateCache(CCSPlayerController player, ulong steam) {
-    if (cookie == null) return;
-    var val = await cookie.Get(steam);
-    cachedCookies[steam] = val is null or "Y";
-    if (!cachedCookies[steam]) return;
-    await Server.NextFrameAsync(() => {
-      if (!player.IsValid) return;
-      player.ExecuteClientCommandFromServer("css_rtd");
-    });
   }
 
   [ConsoleCommand("css_autortd")]
@@ -97,6 +93,25 @@ public class AutoRTD(IRTDRewarder rewarder, IAutoRTDLocale locale,
         locale.AutoRTDToggled(enable).ToChat(executor);
         cachedCookies[steam] = enable;
       });
+    });
+  }
+
+  private void TryLoadCookie() {
+    Task.Run(async () => {
+      if (API.Actain != null)
+        cookie = await API.Actain.getCookieService()
+         .RegClientCookie("jb_rtd_auto");
+    });
+  }
+
+  private async Task populateCache(CCSPlayerController player, ulong steam) {
+    if (cookie == null) return;
+    var val = await cookie.Get(steam);
+    cachedCookies[steam] = val is null or "Y";
+    if (!cachedCookies[steam]) return;
+    await Server.NextFrameAsync(() => {
+      if (!player.IsValid) return;
+      player.ExecuteClientCommandFromServer("css_rtd");
     });
   }
 }
