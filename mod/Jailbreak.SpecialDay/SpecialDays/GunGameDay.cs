@@ -138,6 +138,9 @@ public class GunGameDay(BasePlugin plugin, IServiceProvider provider)
         p.RemoveWeapons();
       }
 
+      VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Unhook(
+        OnCanAcquire, HookMode.Pre);
+
       attacker.SetSpeed(2f);
       attacker.RemoveWeapons();
       attacker.GiveNamedItem("weapon_negev");
