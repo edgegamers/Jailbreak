@@ -43,7 +43,7 @@ public static class SDTypeExtensions {
   public static string?
     CanCall(this SDType type, CCSPlayerController? executor) {
     return type switch {
-      SDType.SPEEDRUN =>
+      SDType.HNS or SDType.SPEEDRUN =>
         AdminManager.PlayerHasPermissions(executor, "@ego/dssilver") ?
           null :
           $"You must be a {ChatColors.Green}Silver Supporter {ChatColors.Default}({ChatColors.LightBlue}https://edgm.rs/donate{ChatColors.Default}){ChatColors.Grey} to start this day.",
