@@ -17,7 +17,7 @@ public class SpecialDayFactory(IServiceProvider provider) : ISpecialDayFactory {
       SDType.FFA       => new FFADay(plugin, provider),
       SDType.GUNGAME   => new GunGameDay(plugin, provider),
       SDType.HNS       => new HideAndSeekDay(plugin, provider),
-      SDType.INFECTION => new InfectionDay(plugin, provider),
+      // SDType.INFECTION => new InfectionDay(plugin, provider),
       SDType.NOSCOPE   => new NoScopeDay(plugin, provider),
       SDType.OITC      => new OneInTheChamberDay(plugin, provider),
       SDType.SPEEDRUN  => new SpeedrunDay(plugin, provider),

@@ -783,11 +783,11 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     return players switch {
       <= 4  => 1,
       <= 8  => 3,
-      <= 12 => 5,
-      <= 20 => 10,
-      <= 35 => 12,
-      <= 40 => 15,
-      <= 64 => 30,
+      <= 12 => 4,
+      <= 20 => 5,
+      <= 35 => 8,
+      <= 40 => 10,
+      <= 64 => 15,
       _     => players / 5
     };
   }
