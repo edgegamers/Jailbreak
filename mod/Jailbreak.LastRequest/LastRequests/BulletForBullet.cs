@@ -95,8 +95,7 @@ public class BulletForBullet(BasePlugin plugin, IServiceProvider provider,
     }, TimerFlags.STOP_ON_MAPCHANGE);
   }
 
-  private HookResult OnWeaponFire(EventWeaponFire @event,
-    GameEventInfo info) {
+  private HookResult OnWeaponFire(EventWeaponFire @event, GameEventInfo info) {
     if (State != LRState.ACTIVE) return HookResult.Continue;
 
     var player = @event.Userid;
@@ -124,6 +123,15 @@ public class BulletForBullet(BasePlugin plugin, IServiceProvider provider,
   public override void OnEnd(LRResult result) {
     Plugin.DeregisterEventHandler<EventWeaponFire>(OnWeaponFire);
     State = LRState.COMPLETED;
+
+    switch (result) {
+      case LRResult.GUARD_WIN when Guard.IsValid:
+        Guard.GiveNamedItem("weapon_knife");
+        break;
+      case LRResult.PRISONER_WIN when Prisoner.IsValid:
+        Prisoner.GiveNamedItem("weapon_knife");
+        break;
+    }
   }
 
   public override bool PreventEquip(CCSPlayerController player,
