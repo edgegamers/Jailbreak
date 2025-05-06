@@ -15,7 +15,7 @@ namespace Jailbreak.SpecialDay.SpecialDays;
 public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
   : AbstractArmoryRestrictedDay(plugin, provider, CsTeam.CounterTerrorist),
     ISpecialDayMessageProvider {
-  private readonly ICollection<int> swappedPrisoners = new HashSet<int>();
+  private readonly ICollection< CCSPlayerController> swappedPrisoners = new HashSet<CCSPlayerController>();
 
   public override SDType Type => SDType.INFECTION;
 
@@ -74,7 +74,7 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
       target.PlayerPawn.Value!.AbsOrigin!.Clone() :
       pos;
 
-    swappedPrisoners.Add(player.Slot);
+    swappedPrisoners.Add(player);
     if (!player.IsValid) return HookResult.Continue;
 
     msg.YouWereInfectedMessage(
@@ -107,7 +107,7 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
     var hp = Settings.InitialHealth(player);
     if (hp != -1) Plugin.AddTimer(0.1f, () => { player.SetHealth(hp); });
 
-    var color = swappedPrisoners.Contains(player.Slot) ?
+    var color = swappedPrisoners.Contains(player) ?
       Color.DarkOliveGreen :
       Color.ForestGreen;
     player.SetColor(color);
@@ -121,8 +121,7 @@ public class InfectionDay(BasePlugin plugin, IServiceProvider provider)
     Plugin.DeregisterEventHandler<EventPlayerSpawn>(onRespawn);
 
     Plugin.AddTimer(0.5f, () => {
-      foreach (var index in swappedPrisoners) {
-        var player = Utilities.GetPlayerFromSlot(index);
+      foreach (var player in swappedPrisoners) {
         if (player == null || !player.IsValid) continue;
         player.SwitchTeam(CsTeam.Terrorist);
       }
