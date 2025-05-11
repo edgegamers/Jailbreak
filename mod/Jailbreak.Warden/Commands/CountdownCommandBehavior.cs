@@ -15,7 +15,6 @@ using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Objects;
 
-
 public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
   IWardenLocale wardenLocale, IGenericCmdLocale generics) : IPluginBehavior {
   
@@ -69,7 +68,8 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     Server.RunOnTick(Server.TickCount + (64 * countdownDuration), () => PrintGoToPlayers());
   }
 
-  // TODO dont do this
+  // Is this okay?
+  // Feels like bad encapsulation
   private static readonly FormatObject PREFIX =
     new HiddenFormatObject($" {ChatColors.Red}Countdown>") {
       Plain = false, Panorama = false, Chat = true
@@ -86,7 +86,7 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
   private void PrintGoToPlayers() {
     new SimpleView { PREFIX, "GO! GO! GO!" }.ToAllChat();
   }
-  // above is bad to TODO message 
+  //
   
   // Attempt to enact a period of peace for players to focus on the countdown
   private bool EnactPeace(CCSPlayerController? executor) {
