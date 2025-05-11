@@ -31,8 +31,7 @@ public class DebugCommand(IServiceProvider serviceProvider) : IPluginBehavior {
     commands.Add("color", new DebugColor(serviceProvider));
   }
 
-  //[RequiresPermissions("@css/root")]
-  [RequiresPermissions("@css/generic")]
+  [RequiresPermissions("@css/root")]
   [ConsoleCommand("css_debug", "Debug command for Jailbreak.")]
   public void Command_Debug(CCSPlayerController? executor, CommandInfo info) {
     if (executor == null) return;
