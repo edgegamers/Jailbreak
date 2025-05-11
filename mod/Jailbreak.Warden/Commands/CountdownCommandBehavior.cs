@@ -61,7 +61,7 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     StartCountDown(countdownDuration);
     
     // Create callbacks each second to send a chat message 
-    int i = countdownDuration;
+    int i = countdownDuration - 1;
     while (i > -1) {
       int current = i; // lambda capture
       if (i == 0) {
