@@ -52,12 +52,14 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
 
       if (countdownDuration <= 0) {
         generics.InvalidParameter(command.GetArg(1), "number greater than 0");
+        return;
       }
     }
 
     if (countdownDuration < CV_WARDEN_MIN_COUNTDOWN.Value) {
       generics.InvalidParameter(command.GetArg(1), 
         $"number greater than or equal to {CV_WARDEN_MIN_COUNTDOWN.Value}");
+      return;
     }
     
     if (countdownDuration > CV_WARDEN_MAX_COUNTDOWN.Value) {
@@ -75,7 +77,7 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     // Inform players of countdown
     StartCountDown(countdownDuration);
     
-    // Create callbacks each second to send a chat message 
+    // Create callbacks each second to notify players of countdown time remaining / completion of countdown
     for (int i = countdownDuration; i > 0; --i) {
       int current = i; // lambda capture
       Server.RunOnTick(Server.TickCount + (64 * (countdownDuration - current)), 
@@ -113,7 +115,6 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
       // Server console or a high-admin is invoking the peace period, bypass cooldown
       mute.PeaceMute(fromWarden ? MuteReason.WARDEN_INVOKED : MuteReason.ADMIN);
       lastCountdown = DateTime.Now;
-      return true;
     }
 
     if (!warden.IsWarden(executor)
