@@ -115,12 +115,15 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
       // Server console or a high-admin is invoking the peace period, bypass cooldown
       mute.PeaceMute(fromWarden ? MuteReason.WARDEN_INVOKED : MuteReason.ADMIN);
       lastCountdown = DateTime.Now;
+      return true;
     }
 
     if (!warden.IsWarden(executor)
       && !AdminManager.PlayerHasPermissions(executor, "@css/chat")) {
       wardenLocale.NotWarden.ToChat(executor);
+      mute.PeaceMute(fromWarden ? MuteReason.WARDEN_INVOKED : MuteReason.ADMIN);
       lastCountdown = DateTime.Now;
+      return true;
     }
 
     if (DateTime.Now - lastCountdown < TimeSpan.FromSeconds(60)) {
