@@ -66,7 +66,7 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
       int current = i; // lambda capture
       if (i == 0) {
         // Countdown finished callback
-        Server.RunOnTick(Server.TickCount + (64 * i), () => PrintGoToPlayers());
+        Server.RunOnTick(Server.TickCount + (64 * countdownDuration), () => PrintGoToPlayers());
       } else {
         // Countdown decrement callback
         Server.RunOnTick(Server.TickCount + (64 * i), () => PrintCountdownToPlayers(current));
