@@ -57,25 +57,32 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
 
     if (!success) return;
     
+    // Inform players of countdown
+    StartCountDown();
+    
     // Create callbacks each second to send a chat message 
-    int i = 0;
-    while (i <= countdownDuration) {
-      if (i == countdownDuration) {
+    int i = countdownDuration;
+    while (i > -1) {
+      if (i == 0) {
         // Countdown finished callback
         Server.RunOnTick(Server.TickCount + (64 * i), () => PrintGoToPlayers());
       } else {
         // Countdown decrement callback
         Server.RunOnTick(Server.TickCount + (64 * i), () => PrintCountdownToPlayers(i));
       }
-      ++i;
+      --i;
     }
   }
 
   // TODO dont do this
   private static readonly FormatObject PREFIX =
-    new HiddenFormatObject($" {ChatColors.DarkBlue}Voice>") {
+    new HiddenFormatObject($" {ChatColors.Red}Countdown>") {
       Plain = false, Panorama = false, Chat = true
     };
+
+  private void StartCountDown() {
+    new SimpleView { PREFIX, "A countdown has begun!" }.ToAllChat();
+  }
   
   private void PrintCountdownToPlayers(int seconds) {
     new SimpleView { PREFIX, "Countdown: " + seconds }.ToAllChat();
