@@ -20,11 +20,15 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
   
   public static readonly FakeConVar<int> CV_WARDEN_MAX_COUNTDOWN =
     new("css_jb_warden_countdown_max",
-      "The maximum duration for a warden invoked countdown", 15);
+      "The maximum duration for a countdown", 15);
+  
+  public static readonly FakeConVar<int> CV_WARDEN_MIN_COUNTDOWN =
+    new("css_jb_warden_countdown_min",
+      "The minimum duration for a countdown", 3);
   
   public static readonly FakeConVar<int> CV_WARDEN_DEFAULT_COUNTDOWN =
     new("css_jb_warden_countdown_default",
-      "The default duration for a warden invoked countdown", 5);
+      "The default duration for a countdown", 5);
 
   private DateTime lastCountdown = DateTime.MinValue;
   private int countdownDuration;
@@ -33,23 +37,35 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     "Invokes a countdown "
     + "that will display in chat and notify Ts when to go (for a game or to follow a command) "
     + "If no duration is provided it will default to 5 seconds. "
-    + "Maximum duration of 15 seconds.")]
+    + "Maximum duration of 15 seconds. Minimum duration of 3 seconds.")]
 
   public void Command_Countdown(CCSPlayerController? executor, CommandInfo command) {
     // Set duration of countdown
     countdownDuration = CV_WARDEN_DEFAULT_COUNTDOWN.Value;
+    
+    // Ensure countdown duration is within acceptable range
     if (command.ArgCount == 2) {
       if (!int.TryParse(command.GetArg(1), out countdownDuration)) {
         generics.InvalidParameter(command.GetArg(1), "number");
         return;
       }
+
+      if (countdownDuration <= 0) {
+        generics.InvalidParameter(command.GetArg(1), "number greater than 0");
+      }
     }
 
-    // Check if value is within acceptable range
+    if (countdownDuration < CV_WARDEN_MIN_COUNTDOWN.Value) {
+      generics.InvalidParameter(command.GetArg(1), 
+        $"number greater than or equal to {CV_WARDEN_MIN_COUNTDOWN.Value}");
+    }
+    
     if (countdownDuration > CV_WARDEN_MAX_COUNTDOWN.Value) {
-      generics.InvalidParameter(command.GetArg(1), $"number greater than {CV_WARDEN_MAX_COUNTDOWN.Value}");
+      generics.InvalidParameter(command.GetArg(1), 
+        $"number less than or equal to {CV_WARDEN_MAX_COUNTDOWN.Value}");
       return;
     }
+    //
     
     // Attempt to enact peace
     bool success = EnactPeace(executor);
