@@ -61,18 +61,12 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     StartCountDown(countdownDuration);
     
     // Create callbacks each second to send a chat message 
-    int i = countdownDuration - 1;
-    while (i > -1) {
+    for (int i = countdownDuration; i > 0; --i) {
       int current = i; // lambda capture
-      if (i == 0) {
-        // Countdown finished callback
-        Server.RunOnTick(Server.TickCount + (64 * countdownDuration), () => PrintGoToPlayers());
-      } else {
-        // Countdown decrement callback
-        Server.RunOnTick(Server.TickCount + (64 * i), () => PrintCountdownToPlayers(current));
-      }
-      --i;
+      Server.RunOnTick(Server.TickCount + (64 * (countdownDuration - current)), 
+        () => PrintCountdownToPlayers(current));
     }
+    Server.RunOnTick(Server.TickCount + (64 * countdownDuration), () => PrintGoToPlayers());
   }
 
   // TODO dont do this
@@ -82,7 +76,7 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     };
 
   private void StartCountDown(int duration) {
-    new SimpleView { PREFIX, $"A {duration} countdown has begun!" }.ToAllChat();
+    new SimpleView { PREFIX, $"A {duration} second countdown has begun!" }.ToAllChat();
   }
   
   private void PrintCountdownToPlayers(int seconds) {
