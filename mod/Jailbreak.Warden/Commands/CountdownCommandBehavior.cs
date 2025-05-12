@@ -78,6 +78,12 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     // Inform players of countdown
     StartCountDown(countdownDuration);
     
+    // Set acceptable audio levels for sounds
+    var players = Utilities.GetPlayers();
+    foreach (var player in players) {
+      player.ExecuteClientCommand("snd_toolvolume 0.3");
+    }
+    
     // Create callbacks each second to notify players of countdown time remaining / completion of countdown
     for (int i = countdownDuration; i > 0; --i) {
       int current = i; // lambda capture
@@ -85,6 +91,13 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
         () => PrintCountdownToPlayers(executor, current));
     }
     Server.RunOnTick(Server.TickCount + (64 * countdownDuration), () => PrintGoToPlayers(executor));
+    
+    // Reset acceptable audio levels for sounds
+    Server.RunOnTick(Server.TickCount + (64 * (countdownDuration + 3) ), () => {
+      foreach (var player in players) {
+        player.ExecuteClientCommand("snd_toolvolume 1");
+      }
+    });
   }
 
   // Is this okay?
@@ -103,9 +116,7 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     
     var players = Utilities.GetPlayers();
     foreach (var player in players) {
-      player.ExecuteClientCommand("snd_toolvolume 0.3");
       player.ExecuteClientCommand("play \\sounds\\weapons\\clipempty_pistol.vsnd_c");
-      player.ExecuteClientCommand("snd_toolvolume 1");
     }
   }
 
@@ -114,9 +125,7 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     
     var players = Utilities.GetPlayers();
     foreach (var player in players) {
-      player.ExecuteClientCommand("snd_toolvolume 0.3");
       player.ExecuteClientCommand("play \\sounds\\vo\\agents\\balkan\\radio_letsgo01.vsnd_c");
-      player.ExecuteClientCommand("snd_toolvolume 1");
     }
   }
   //
