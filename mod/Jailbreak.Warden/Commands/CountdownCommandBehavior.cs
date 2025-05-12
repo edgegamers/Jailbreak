@@ -3,6 +3,10 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Entities;
+using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.Warden;
@@ -11,7 +15,6 @@ using Jailbreak.Public.Mod.Mute;
 using Jailbreak.Public.Mod.Warden;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
-using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Objects;
@@ -84,6 +87,8 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     // Inform players of countdown
     StartCountDown(countdownDuration);
     
+    tryEmitSound(executor, "Player.FootstepLeft", 1, 1, 0f);
+    
     // Create callbacks each second to notify players of countdown time remaining / completion of countdown
     for (int i = countdownDuration; i > 0; --i) {
       int current = i; // lambda capture
@@ -106,10 +111,12 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
   
   private void PrintCountdownToPlayers(CCSPlayerController? executor, int seconds) {
     if (executor == null) return;
+
+    var sound = new CSound(5);
     
     new SimpleView { PREFIX, "Countdown: " + seconds }.ToAllChat();
     
-    tryEmitSound(executor, "blip1", 1, 1, 0f);
+    tryEmitSound(executor, "buttons.blip1", 1, 1, 0f);
     
     // var players = Utilities.GetPlayers();
     // foreach (var player in players) {
@@ -122,7 +129,7 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     
     new SimpleView { PREFIX, "GO! GO! GO!" }.ToAllChat();
     
-    tryEmitSound(executor, "sounds\\vo\\agents\\balkan\\radio_letsgo01.vsnd_c", 1, 1, 0f);
+    tryEmitSound(executor, "Player.FootstepLeft", 1, 1, 0f);
     
     // var players = Utilities.GetPlayers();
     // foreach (var player in players) {
