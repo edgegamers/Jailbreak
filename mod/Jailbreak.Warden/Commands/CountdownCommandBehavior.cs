@@ -34,12 +34,6 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
   private DateTime lastCountdown = DateTime.MinValue;
   private int countdownDuration;
   
-  // EmitSound(CBaseEntity* pEnt, const char* sSoundName, int nPitch, float flVolume, float flDelay)
-  private readonly MemoryFunctionVoid<CBaseEntity, string, int, float, float>
-    // ReSharper disable once InconsistentNaming
-    CBaseEntity_EmitSoundParamsLinux = new(
-      "48 B8 ? ? ? ? ? ? ? ? 55 48 89 E5 41 55 41 54 49 89 FC 53 48 89 F3"); // LINUX ONLY.
-  
   [ConsoleCommand("css_countdown",
     "Invokes a countdown "
     + "that will display in chat and notify Ts when to go (for a game or to follow a command) "
@@ -107,23 +101,23 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
   private void PrintCountdownToPlayers(CCSPlayerController? executor, int seconds) {
     new SimpleView { PREFIX, "Countdown: " + seconds }.ToAllChat();
     
-    tryEmitSound(executor, "clipempty_pistol.vsnd_c", 1, 0.5f, 0f);
-    
-    // var players = Utilities.GetPlayers();
-    // foreach (var player in players) {
-    //   player.ExecuteClientCommand("play \\sounds\\weapons\\clipempty_pistol.vsnd_c");
-    // }
+    var players = Utilities.GetPlayers();
+    foreach (var player in players) {
+      player.ExecuteClientCommand("snd_toolvolume 0.3");
+      player.ExecuteClientCommand("play \\sounds\\weapons\\clipempty_pistol.vsnd_c");
+      player.ExecuteClientCommand("snd_toolvolume 1");
+    }
   }
 
   private void PrintGoToPlayers(CCSPlayerController? executor) {
     new SimpleView { PREFIX, "GO! GO! GO!" }.ToAllChat();
-
-    tryEmitSound(executor, "radio_letsgo01.vsnd_c", 1, 0.5f, 0f);
     
-    // var players = Utilities.GetPlayers();
-    // foreach (var player in players) {
-    //   player.ExecuteClientCommand("play \\sounds\\vo\\agents\\balkan\\radio_letsgo01.vsnd_c");
-    // }
+    var players = Utilities.GetPlayers();
+    foreach (var player in players) {
+      player.ExecuteClientCommand("snd_toolvolume 0.3");
+      player.ExecuteClientCommand("play \\sounds\\vo\\agents\\balkan\\radio_letsgo01.vsnd_c");
+      player.ExecuteClientCommand("snd_toolvolume 1");
+    }
   }
   //
   
@@ -156,11 +150,5 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     mute.PeaceMute(fromWarden ? MuteReason.WARDEN_INVOKED : MuteReason.ADMIN);
     lastCountdown = DateTime.Now;
     return true;
-  }
-  
-  private void tryEmitSound(CBaseEntity entity, string soundEventName,
-    int pitch, float volume, float delay) {
-    CBaseEntity_EmitSoundParamsLinux.Invoke(entity, soundEventName, pitch,
-      volume, delay);
   }
 }
