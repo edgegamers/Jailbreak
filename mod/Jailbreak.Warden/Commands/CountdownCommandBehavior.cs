@@ -99,6 +99,11 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
   
   private void PrintCountdownToPlayers(int seconds) {
     new SimpleView { PREFIX, "Countdown: " + seconds }.ToAllChat();
+    
+    var players = Utilities.GetPlayers();
+    foreach (var player in players) {
+      player.ExecuteClientCommand("play \\sounds\\weapons\\clipempty_pistol.vsnd_c");
+    }
   }
 
   private void PrintGoToPlayers() {
