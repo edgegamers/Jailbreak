@@ -87,7 +87,7 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     // Inform players of countdown
     StartCountDown(countdownDuration);
     
-    tryEmitSound(executor, "Player.FootstepLeft", 1, 1, 0f);
+    tryEmitSound(executor, "Ambiance.LightBuzz", 1, 1, 0f);
     
     // Create callbacks each second to notify players of countdown time remaining / completion of countdown
     for (int i = countdownDuration; i > 0; --i) {
@@ -116,7 +116,7 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     
     new SimpleView { PREFIX, "Countdown: " + seconds }.ToAllChat();
     
-    tryEmitSound(executor, "buttons.blip1", 1, 1, 0f);
+    tryEmitSound(executor, "Ambiance.LightBuzz", 1, 1, 0f);
     
     // var players = Utilities.GetPlayers();
     // foreach (var player in players) {
@@ -129,7 +129,7 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     
     new SimpleView { PREFIX, "GO! GO! GO!" }.ToAllChat();
     
-    tryEmitSound(executor, "Player.FootstepLeft", 1, 1, 0f);
+    tryEmitSound(executor, "Ambiance.LightBuzz", 1, 1, 0f);
     
     // var players = Utilities.GetPlayers();
     // foreach (var player in players) {
