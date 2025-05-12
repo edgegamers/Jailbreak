@@ -37,12 +37,6 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
   private DateTime lastCountdown = DateTime.MinValue;
   private int countdownDuration;
   
-  // EmitSound(CBaseEntity* pEnt, const char* sSoundName, int nPitch, float flVolume, float flDelay)
-  private readonly MemoryFunctionVoid<CBaseEntity, string, int, float, float>
-    // ReSharper disable once InconsistentNaming
-    CBaseEntity_EmitSoundParamsLinux = new(
-      "48 B8 ? ? ? ? ? ? ? ? 55 48 89 E5 41 55 41 54 49 89 FC 53 48 89 F3"); // LINUX ONLY.
-  
   [ConsoleCommand("css_countdown",
     "Invokes a countdown "
     + "that will display in chat and notify Ts when to go (for a game or to follow a command) "
@@ -81,21 +75,18 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     
     // Attempt to enact peace
     bool success = EnactPeace(executor);
-
     if (!success) return;
     
     // Inform players of countdown
     StartCountDown(countdownDuration);
     
-    tryEmitSound(executor, "Ambiance.LightBuzz", 1, 1, 0f);
-    
     // Create callbacks each second to notify players of countdown time remaining / completion of countdown
     for (int i = countdownDuration; i > 0; --i) {
       int current = i; // lambda capture
       Server.RunOnTick(Server.TickCount + (64 * (countdownDuration - current)), 
-        () => PrintCountdownToPlayers(executor, current));
+        () => PrintCountdownToPlayers(current));
     }
-    Server.RunOnTick(Server.TickCount + (64 * countdownDuration), () => PrintGoToPlayers(executor));
+    Server.RunOnTick(Server.TickCount + (64 * countdownDuration), () => PrintGoToPlayers());
   }
 
   // Is this okay?
@@ -109,32 +100,22 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     new SimpleView { PREFIX, $"A {duration} second countdown has begun!" }.ToAllChat();
   }
   
-  private void PrintCountdownToPlayers(CCSPlayerController? executor, int seconds) {
-    if (executor == null) return;
-
-    var sound = new CSound(5);
-    
+  private void PrintCountdownToPlayers(int seconds) {
     new SimpleView { PREFIX, "Countdown: " + seconds }.ToAllChat();
     
-    tryEmitSound(executor, "Ambiance.LightBuzz", 1, 1, 0f);
-    
-    // var players = Utilities.GetPlayers();
-    // foreach (var player in players) {
-    //   player.ExecuteClientCommand("play buttons\\blip1");
-    // }
+    var players = Utilities.GetPlayers();
+    foreach (var player in players) {
+      player.ExecuteClientCommand("play buttons\\blip1");
+    }
   }
 
-  private void PrintGoToPlayers(CCSPlayerController? executor) {
-    if (executor == null) return;
-    
+  private void PrintGoToPlayers() {
     new SimpleView { PREFIX, "GO! GO! GO!" }.ToAllChat();
     
-    tryEmitSound(executor, "Ambiance.LightBuzz", 1, 1, 0f);
-    
-    // var players = Utilities.GetPlayers();
-    // foreach (var player in players) {
-    //   player.ExecuteClientCommand("play \\sounds\\vo\\agents\\balkan\\radio_letsgo01.vsnd_c");
-    // }
+    var players = Utilities.GetPlayers();
+    foreach (var player in players) {
+      player.ExecuteClientCommand("play \\sounds\\vo\\agents\\balkan\\radio_letsgo01.vsnd_c");
+    }
   }
   //
   
@@ -167,11 +148,5 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     mute.PeaceMute(fromWarden ? MuteReason.WARDEN_INVOKED : MuteReason.ADMIN);
     lastCountdown = DateTime.Now;
     return true;
-  }
-  
-  private void tryEmitSound(CBaseEntity entity, string soundEventName,
-    int pitch, float volume, float delay) {
-    CBaseEntity_EmitSoundParamsLinux.Invoke(entity, soundEventName, pitch,
-      volume, delay);
   }
 }
