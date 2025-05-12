@@ -107,7 +107,7 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
   private void PrintCountdownToPlayers(CCSPlayerController? executor, int seconds) {
     new SimpleView { PREFIX, "Countdown: " + seconds }.ToAllChat();
     
-    tryEmitSound(executor, "sounds\\weapons\\clipempty_pistol.vsnd_c", 1, 0.5f, 0f);
+    tryEmitSound(executor, "clipempty_pistol.vsnd_c", 1, 0.5f, 0f);
     
     // var players = Utilities.GetPlayers();
     // foreach (var player in players) {
@@ -118,7 +118,7 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
   private void PrintGoToPlayers(CCSPlayerController? executor) {
     new SimpleView { PREFIX, "GO! GO! GO!" }.ToAllChat();
 
-    tryEmitSound(executor, "\\sounds\\vo\\agents\\balkan\\radio_letsgo01.vsnd_c", 1, 0.5f, 0f);
+    tryEmitSound(executor, "radio_letsgo01.vsnd_c", 1, 0.5f, 0f);
     
     // var players = Utilities.GetPlayers();
     // foreach (var player in players) {
