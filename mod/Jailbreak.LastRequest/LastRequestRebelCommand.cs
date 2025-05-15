@@ -64,6 +64,15 @@ public class LastRequestRebelCommand(ILastRequestManager lastRequestManager,
       return;
     }
 
+    if (Utilities.GetPlayers()
+       .Count(p
+          => p.IsReal() && p is { PawnIsAlive: true, Team: CsTeam.Terrorist })
+      > 1) {
+      messages.CannotLR("You must be the last alive to !rebel")
+       .ToChat(rebeller);
+      return;
+    }
+
     if (rebeller.Pawn.Value != null)
       rebellerHealths[rebeller.Slot] = rebeller.Pawn.Value.Health;
     lastRequestRebelManager.StartLRRebelling(rebeller);
