@@ -73,8 +73,8 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     }
     //
     
-    // Attempt to enact peace
-    bool success = EnactPeace(executor);
+    // Check perm and enact peace
+    bool success = PermCheckAndEnactPeace(executor);
     if (!success) return;
     
     // Inform players of countdown
@@ -92,7 +92,7 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
   // Is this okay?
   // Feels like bad encapsulation
   private static readonly FormatObject PREFIX =
-    new HiddenFormatObject($" {ChatColors.Red}Countdown>") {
+    new HiddenFormatObject($" {ChatColors.DarkBlue}Countdown>") {
       Plain = false, Panorama = false, Chat = true
     };
 
@@ -101,7 +101,12 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
   }
   
   private void PrintCountdownToPlayers(int seconds) {
-    new SimpleView { PREFIX, "Countdown: " + seconds }.ToAllChat();
+    if (seconds <= 5) {
+      new SimpleView { PREFIX, seconds.ToString() }.ToAllChat();  
+    }
+    else if (seconds % 5 == 0) {
+      new SimpleView { PREFIX, seconds.ToString() }.ToAllChat();
+    }
     
     // var players = Utilities.GetPlayers();
     // foreach (var player in players) {
@@ -119,8 +124,8 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
   }
   //
   
-  // Attempt to enact a period of peace for players to focus on the countdown
-  private bool EnactPeace(CCSPlayerController? executor) {
+  // Check permissions and attempt to enact a period of peace for players to focus on the countdown
+  private bool PermCheckAndEnactPeace(CCSPlayerController? executor) {
     var fromWarden = executor != null && warden.IsWarden(executor);
 
     if (executor == null
@@ -145,8 +150,11 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
       return false;
     }
 
-    mute.PeaceMute(fromWarden ? MuteReason.WARDEN_INVOKED : MuteReason.ADMIN);
-    lastCountdown = DateTime.Now;
-    return true;
+    if (fromWarden) {
+      mute.PeaceMute(fromWarden ? MuteReason.WARDEN_INVOKED : MuteReason.ADMIN);
+      lastCountdown = DateTime.Now;
+      return true;  
+    } 
+    return false;
   }
 }
