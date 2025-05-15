@@ -67,6 +67,9 @@ public class RebelListener(IRebelService rebelService,
     var attacker = ev.Attacker;
     if (attacker == null || !attacker.IsValid || attacker.IsBot)
       return HookResult.Continue;
+    
+    // Do not give player credits if they suicided
+    if (player.SteamID == attacker.SteamID)  return HookResult.Continue;
 
     var eco = API.Gangs?.Services.GetService<IEcoManager>();
     if (eco == null) return HookResult.Continue;
