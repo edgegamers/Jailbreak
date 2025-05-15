@@ -103,19 +103,19 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
   private void PrintCountdownToPlayers(int seconds) {
     new SimpleView { PREFIX, "Countdown: " + seconds }.ToAllChat();
     
-    var players = Utilities.GetPlayers();
-    foreach (var player in players) {
-      player.ExecuteClientCommand("play buttons\\blip1");
-    }
+    // var players = Utilities.GetPlayers();
+    // foreach (var player in players) {
+    //   player.ExecuteClientCommand("play buttons\\blip1");
+    // }
   }
 
   private void PrintGoToPlayers() {
     new SimpleView { PREFIX, "GO! GO! GO!" }.ToAllChat();
     
-    var players = Utilities.GetPlayers();
-    foreach (var player in players) {
-      player.ExecuteClientCommand("play \\sounds\\vo\\agents\\balkan\\radio_letsgo01.vsnd_c");
-    }
+    // var players = Utilities.GetPlayers();
+    // foreach (var player in players) {
+    //   player.ExecuteClientCommand("play \\sounds\\vo\\agents\\balkan\\radio_letsgo01.vsnd_c");
+    // }
   }
   //
   
