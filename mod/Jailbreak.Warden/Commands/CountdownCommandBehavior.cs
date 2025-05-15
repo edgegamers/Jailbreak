@@ -1,11 +1,9 @@
-﻿using CounterStrikeSharp.API;
+﻿using System;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
@@ -14,7 +12,6 @@ using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.Mute;
 using Jailbreak.Public.Mod.Warden;
 using CounterStrikeSharp.API.Modules.Cvars;
-using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Core;
 using Jailbreak.Formatting.Objects;
@@ -51,11 +48,13 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     if (command.ArgCount == 2) {
       if (!int.TryParse(command.GetArg(1), out countdownDuration)) {
         generics.InvalidParameter(command.GetArg(1), "number");
+        command.ReplyToCommand("Expected a number parameter.");
         return;
       }
 
       if (countdownDuration <= 0) {
         generics.InvalidParameter(command.GetArg(1), "number greater than 0");
+        command.ReplyToCommand("Expected a number greater than 0.");
         return;
       }
     }
@@ -63,12 +62,14 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     if (countdownDuration < CV_WARDEN_MIN_COUNTDOWN.Value) {
       generics.InvalidParameter(command.GetArg(1), 
         $"number greater than or equal to {CV_WARDEN_MIN_COUNTDOWN.Value}");
+      command.ReplyToCommand($"Expected a number greater than or equal to {CV_WARDEN_MIN_COUNTDOWN.Value}");
       return;
     }
     
     if (countdownDuration > CV_WARDEN_MAX_COUNTDOWN.Value) {
       generics.InvalidParameter(command.GetArg(1), 
         $"number less than or equal to {CV_WARDEN_MAX_COUNTDOWN.Value}");
+      command.ReplyToCommand($"Expected a number less than or equal to {CV_WARDEN_MAX_COUNTDOWN.Value}");
       return;
     }
     //
@@ -136,7 +137,6 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
 
     if (!fromWarden
       && AdminManager.PlayerHasPermissions(executor, "@css/chat")) {
-      wardenLocale.NotWarden.ToChat(executor);
       mute.PeaceMute(MuteReason.ADMIN);
       lastCountdown = DateTime.Now;
       return true;
@@ -152,7 +152,9 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
       mute.PeaceMute(fromWarden ? MuteReason.WARDEN_INVOKED : MuteReason.ADMIN);
       lastCountdown = DateTime.Now;
       return true;  
-    } 
+    } else {
+      wardenLocale.NotWarden.ToChat(executor);
+    }
     return false;
   }
 }
