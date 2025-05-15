@@ -80,11 +80,14 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
     // Inform players of countdown
     StartCountDown(countdownDuration);
     
-    // Create callbacks each second to notify players of countdown time remaining / completion of countdown
+    // Create callbacks each second less than 5 or divisible by 5 to notify players of countdown time remaining / completion of countdown
     for (int i = countdownDuration; i > 0; --i) {
       int current = i; // lambda capture
-      Server.RunOnTick(Server.TickCount + (64 * (countdownDuration - current)), 
-        () => PrintCountdownToPlayers(current));
+
+      if (current <= 5 || current % 5 == 0) {
+          Server.RunOnTick(Server.TickCount + (64 * (countdownDuration - current)), 
+            () => PrintCountdownToPlayers(current));  
+      }
     }
     Server.RunOnTick(Server.TickCount + (64 * countdownDuration), () => PrintGoToPlayers());
   }
@@ -101,12 +104,7 @@ public class CountdownCommandBehavior(IWardenService warden, IMuteService mute,
   }
   
   private void PrintCountdownToPlayers(int seconds) {
-    if (seconds <= 5) {
-      new SimpleView { PREFIX, seconds.ToString() }.ToAllChat();  
-    }
-    else if (seconds % 5 == 0) {
-      new SimpleView { PREFIX, seconds.ToString() }.ToAllChat();
-    }
+    new SimpleView { PREFIX, seconds.ToString() }.ToAllChat();  
     
     // var players = Utilities.GetPlayers();
     // foreach (var player in players) {
