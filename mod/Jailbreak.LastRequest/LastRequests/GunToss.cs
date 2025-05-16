@@ -60,7 +60,7 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
     if (bothThrewTick > 0)
       Plugin.AddTimer(5, () => {
         if (State != LRState.ACTIVE) return;
-        Guard.SetHealth(Math.Min(Guard.Health, 100));
+        Guard.SetHealth(Math.Min(Guard.PlayerPawn.Value!.Health, 100));
         Guard.SetArmor(Math.Min(Guard.PawnArmor, 100));
       });
   }
