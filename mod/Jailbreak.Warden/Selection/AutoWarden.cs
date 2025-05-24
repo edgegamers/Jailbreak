@@ -21,12 +21,14 @@ public class AutoWarden(IWardenSelectionService selectionService,
   IWardenLocale locale, IGenericCmdLocale generic) : IPluginBehavior {
   
   private static readonly ConcurrentDictionary<ulong, bool> cachedCookies = new();
-  private readonly HashSet<ulong> moved = [];
-  private bool listenerRegistered;
-
+  private static Dictionary<CCSPlayerController, Vector> ctSpawns = new();
+  
   private static readonly FakeConVar<string> CV_AUTOWARDEN_FLAG =
     new("css_autowarden_flag", "Permission flag required to enable auto-Warden",
       "@ego/dssilver");
+  private static readonly FakeConVar<float> CV_AUTOWARDEN_DELAY_INTERVAL =
+    new("css_autowarden_delay_interval", "The amount of time in seconds to wait after round start to queue users with auto-warden enabled for warden",
+      5f);
   
   private BasePlugin plugin = null!;
   private ICookie? cookie;
@@ -39,10 +41,7 @@ public class AutoWarden(IWardenSelectionService selectionService,
     basePlugin.RegisterEventHandler<EventRoundStart>(OnRoundStart);
   }
   
-  public void Dispose() { 
-    if (listenerRegistered)
-      plugin.DeregisterEventHandler<EventPlayerFootstep>(OnPlayerStep);
-  }
+  public void Dispose() { }
   
   private void OnMapStart(string mapname) {
     // Attempt to load the cookie OnMapStart if it fails to load on plugin start
@@ -52,35 +51,24 @@ public class AutoWarden(IWardenSelectionService selectionService,
   }
 
   private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
-    if (listenerRegistered) return HookResult.Continue;
-    Server.NextFrame(() => {
-      plugin.RegisterEventHandler<EventPlayerFootstep>(OnPlayerStep);
-      listenerRegistered = true;
-      waitForInactiveSelection();
-    });
-    return HookResult.Continue;
-  }
-  
-  private HookResult OnPlayerStep(EventPlayerFootstep @event, GameEventInfo info) {
-    var player = @event.Userid;
-    if (player == null) { return HookResult.Continue; }
-    
-    if (!player.IsReal() || !player.PawnIsAlive || moved.Contains(player.SteamID))
-      return HookResult.Continue;
-
-    if (player.Team != CsTeam.CounterTerrorist)
-      return HookResult.Continue;
-
-    if (!AdminManager.PlayerHasPermissions(player, CV_AUTOWARDEN_FLAG.Value))
-      return HookResult.Continue;
-
-    if (!cachedCookies.TryGetValue(player.SteamID, out var value)) {
-      _ = Task.Run(async () => await populateCache(player, player.SteamID));
-      return HookResult.Continue;
+    foreach (var player in Utilities.GetPlayers()
+     .Where(p => p.Team == CsTeam.CounterTerrorist 
+        && p.IsReal()
+        && p.PawnIsAlive
+        && AdminManager.PlayerHasPermissions(p, CV_AUTOWARDEN_FLAG.Value))) {
+      if (player.AbsOrigin != null) ctSpawns[player] = player.AbsOrigin;
     }
 
-    moved.Add(player.SteamID);
-    selectionService.TryEnter(player);
+    plugin.AddTimer(CV_AUTOWARDEN_DELAY_INTERVAL.Value, () => {
+      foreach (var (player, spawn) in ctSpawns) {
+        if (player.AbsOrigin == spawn) continue;
+        if (!cachedCookies.ContainsKey(player.SteamID))
+          Task.Run(async () => await populateCache(player, player.SteamID));
+
+        if (cachedCookies.TryGetValue(player.SteamID, out var value) && value)
+          selectionService.TryEnter(player);
+      }
+    });
     return HookResult.Continue;
   }
 
@@ -110,17 +98,6 @@ public class AutoWarden(IWardenSelectionService selectionService,
       });
     });
     
-  }
-  
-  private void waitForInactiveSelection() {
-    Server.RunOnTick(Server.TickCount + 5, () => {
-      if (!selectionService.Active && listenerRegistered) {
-        plugin.DeregisterEventHandler<EventPlayerFootstep>(OnPlayerStep);
-        listenerRegistered = false;
-      } else {
-        waitForInactiveSelection();
-      }
-    });
   }
 
   private void TryLoadCookie() {
