@@ -65,8 +65,11 @@ public class AutoWarden(IWardenSelectionService selectionService,
         if (!cachedCookies.ContainsKey(player.SteamID))
           Task.Run(async () => await populateCache(player, player.SteamID));
 
-        if (cachedCookies.TryGetValue(player.SteamID, out var value) && value)
-          selectionService.TryEnter(player);
+        if (!cachedCookies.TryGetValue(player.SteamID, out var value) || !value)
+          continue;
+        if (selectionService.TryEnter(player)) {
+          locale.JoinRaffle.ToChat(player);
+        }
       }
     });
     return HookResult.Continue;
