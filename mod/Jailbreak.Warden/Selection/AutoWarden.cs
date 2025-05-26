@@ -51,22 +51,27 @@ public class AutoWarden(IWardenSelectionService selectionService,
   }
 
   private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
-    foreach (var player in Utilities.GetPlayers()
-     .Where(p => p.Team == CsTeam.CounterTerrorist 
-        && p.IsReal()
-        && p.PawnIsAlive
-        && AdminManager.PlayerHasPermissions(p, CV_AUTOWARDEN_FLAG.Value))) {
-      if (player.AbsOrigin != null) ctSpawns[player] = player.AbsOrigin;
-    }
+    plugin.AddTimer(1f, () => {
+      foreach (var player in Utilities.GetPlayers()
+       .Where(p => p.Team == CsTeam.CounterTerrorist 
+          && p.IsReal()
+          && p.PawnIsAlive
+          && AdminManager.PlayerHasPermissions(p, CV_AUTOWARDEN_FLAG.Value))) {
+        if (player.AbsOrigin != null) ctSpawns[player] = player.AbsOrigin;
+      }
+    });
 
-    plugin.AddTimer(CV_AUTOWARDEN_DELAY_INTERVAL.Value, () => {
+    plugin.AddTimer(CV_AUTOWARDEN_DELAY_INTERVAL.Value-1, () => {
       foreach (var (player, spawn) in ctSpawns) {
         if (player.AbsOrigin == spawn) continue;
         if (!cachedCookies.ContainsKey(player.SteamID))
           Task.Run(async () => await populateCache(player, player.SteamID));
 
-        if (cachedCookies.TryGetValue(player.SteamID, out var value) && value)
-          selectionService.TryEnter(player);
+        if (!cachedCookies.TryGetValue(player.SteamID, out var value) || !value)
+          continue;
+        if (selectionService.TryEnter(player)) {
+          locale.JoinRaffle.ToChat(player);
+        }
       }
     });
     return HookResult.Continue;
