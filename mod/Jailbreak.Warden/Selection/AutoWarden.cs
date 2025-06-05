@@ -38,7 +38,7 @@ public class AutoWarden(IWardenSelectionService selectionService,
     
     TryLoadCookie();
     basePlugin.RegisterListener<Listeners.OnMapStart>(OnMapStart);
-    basePlugin.RegisterEventHandler<EventRoundStart>(OnRoundStart);
+    basePlugin.RegisterEventHandler<EventRoundPoststart>(OnRoundStart);
   }
   
   public void Dispose() { }
@@ -50,7 +50,7 @@ public class AutoWarden(IWardenSelectionService selectionService,
     else plugin.RemoveListener<Listeners.OnMapStart>(OnMapStart);
   }
 
-  private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
+  private HookResult OnRoundStart(EventRoundPoststart @event, GameEventInfo info) {
     plugin.AddTimer(1f, () => {
       foreach (var player in Utilities.GetPlayers()
        .Where(p => p.Team == CsTeam.CounterTerrorist 
