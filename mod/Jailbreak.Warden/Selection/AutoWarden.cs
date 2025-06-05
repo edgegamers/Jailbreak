@@ -21,7 +21,6 @@ public class AutoWarden(IWardenSelectionService selectionService,
   IWardenLocale locale, IGenericCmdLocale generic) : IPluginBehavior {
   
   private static readonly ConcurrentDictionary<ulong, bool> cachedCookies = new();
-  private static Dictionary<CCSPlayerController, Vector> ctSpawns = new();
   
   private static readonly FakeConVar<string> CV_AUTOWARDEN_FLAG =
     new("css_autowarden_flag", "Permission flag required to enable auto-Warden",
@@ -51,30 +50,17 @@ public class AutoWarden(IWardenSelectionService selectionService,
   }
 
   private HookResult OnRoundStart(EventRoundPoststart @event, GameEventInfo info) {
-    ctSpawns.Clear();
-    
-    plugin.AddTimer(2f, () => {
+    plugin.AddTimer(CV_AUTOWARDEN_DELAY_INTERVAL.Value, () => {
       foreach (var player in Utilities.GetPlayers()
        .Where(p => p.Team == CsTeam.CounterTerrorist 
           && p.IsReal()
           && p.PawnIsAlive
           && AdminManager.PlayerHasPermissions(p, CV_AUTOWARDEN_FLAG.Value))) {
-        if (player.PlayerPawn.Value?.AbsOrigin != null) 
-          ctSpawns[player] = player.PlayerPawn.Value.AbsOrigin;
-      }
-    });
-
-    plugin.AddTimer(CV_AUTOWARDEN_DELAY_INTERVAL.Value-1, () => {
-      foreach (var (player, spawn) in ctSpawns) {
-        if ((player.PlayerPawn.Value?.AbsOrigin! - spawn).LengthSqr() < 10.0f) continue; // 3 Units Tolerance
-        if (!cachedCookies.ContainsKey(player.SteamID))
-          Task.Run(async () => await populateCache(player, player.SteamID));
-
-        if (!cachedCookies.TryGetValue(player.SteamID, out var value) || !value)
+        if (player.PlayerPawn.Value == null
+          || !player.PlayerPawn.Value.HasMovedSinceSpawn) 
           continue;
-        if (selectionService.TryEnter(player)) {
-          locale.JoinRaffle.ToChat(player);
-        }
+        selectionService.TryEnter(player);
+        locale.JoinRaffle.ToChat(player);
       }
     });
     return HookResult.Continue;
