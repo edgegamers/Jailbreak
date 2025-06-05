@@ -60,12 +60,11 @@ public class AutoWarden(IWardenSelectionService selectionService,
         if (player.PlayerPawn.Value?.AbsOrigin != null) 
           ctSpawns[player] = player.PlayerPawn.Value.AbsOrigin;
       }
-      Server.ExecuteCommand("echo EventRoundPoststart Called");
     });
 
     plugin.AddTimer(CV_AUTOWARDEN_DELAY_INTERVAL.Value-1, () => {
       foreach (var (player, spawn) in ctSpawns) {
-        if (player.AbsOrigin == spawn) continue;
+        if ((player.AbsOrigin! - spawn).LengthSqr() < 10.0f) continue; // 3 Units Tolerance
         if (!cachedCookies.ContainsKey(player.SteamID))
           Task.Run(async () => await populateCache(player, player.SteamID));
 
