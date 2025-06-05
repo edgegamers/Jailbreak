@@ -60,6 +60,7 @@ public class AutoWarden(IWardenSelectionService selectionService,
         if (player.PlayerPawn.Value?.AbsOrigin != null) 
           ctSpawns[player] = player.PlayerPawn.Value.AbsOrigin;
       }
+      Server.ExecuteCommand("echo EventRoundPoststart Called");
     });
 
     plugin.AddTimer(CV_AUTOWARDEN_DELAY_INTERVAL.Value-1, () => {
