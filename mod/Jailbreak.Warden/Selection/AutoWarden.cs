@@ -57,7 +57,8 @@ public class AutoWarden(IWardenSelectionService selectionService,
           && p.IsReal()
           && p.PawnIsAlive
           && AdminManager.PlayerHasPermissions(p, CV_AUTOWARDEN_FLAG.Value))) {
-        if (player.AbsOrigin != null) ctSpawns[player] = player.AbsOrigin;
+        if (player.PlayerPawn.Value?.AbsOrigin != null) 
+          ctSpawns[player] = player.PlayerPawn.Value.AbsOrigin;
       }
     });
 
