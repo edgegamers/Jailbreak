@@ -51,7 +51,9 @@ public class AutoWarden(IWardenSelectionService selectionService,
   }
 
   private HookResult OnRoundStart(EventRoundPoststart @event, GameEventInfo info) {
-    plugin.AddTimer(1f, () => {
+    ctSpawns.Clear();
+    
+    plugin.AddTimer(2f, () => {
       foreach (var player in Utilities.GetPlayers()
        .Where(p => p.Team == CsTeam.CounterTerrorist 
           && p.IsReal()
@@ -64,7 +66,7 @@ public class AutoWarden(IWardenSelectionService selectionService,
 
     plugin.AddTimer(CV_AUTOWARDEN_DELAY_INTERVAL.Value-1, () => {
       foreach (var (player, spawn) in ctSpawns) {
-        if ((player.AbsOrigin! - spawn).LengthSqr() < 10.0f) continue; // 3 Units Tolerance
+        if ((player.PlayerPawn.Value?.AbsOrigin! - spawn).LengthSqr() < 10.0f) continue; // 3 Units Tolerance
         if (!cachedCookies.ContainsKey(player.SteamID))
           Task.Run(async () => await populateCache(player, player.SteamID));
 
