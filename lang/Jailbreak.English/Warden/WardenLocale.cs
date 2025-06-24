@@ -78,6 +78,11 @@ public class WardenLocale : IWardenLocale,
     => new SimpleView {
       PREFIX, "The fire command failed for some unknown reason..."
     };
+  
+  public IView TogglingNotEnabled
+    => new SimpleView {
+      PREFIX, "Toggling Auto-Warden is not supported on this server."
+    };
 
   public IView PassWarden(CCSPlayerController player) {
     return new SimpleView {
@@ -131,6 +136,15 @@ public class WardenLocale : IWardenLocale,
   public IView MarkerRemoved(string marker) {
     return new SimpleView {
       PREFIX, $"{marker}{ChatColors.Grey} marker removed."
+    };
+  }
+
+  public IView AutoWardenToggled(bool enabled) {
+    return new SimpleView {
+      PREFIX,
+      ChatColors.Grey + "You",
+      enabled ? ChatColors.Green + "enabled" : ChatColors.Red + "disabled",
+      ChatColors.Grey + "Auto-Warden."
     };
   }
 }
