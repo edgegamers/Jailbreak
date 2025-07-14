@@ -826,7 +826,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       CtTeleport = TeleportType.RANDOM_STACKED;
       TTeleport = TeleportType.RANDOM_STACKED;
       StripToKnife = true;
-      OpenCells = true;
       ConVarValues["mp_ignore_round_win_conditions"] = true;
       if (new Random().Next(3) == 0) WithAutoBhop();
       WithFriendlyFire();
