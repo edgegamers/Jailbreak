@@ -10,6 +10,7 @@ public enum SDType {
   FFA,
   GUNGAME,
   GHOST,
+  HE,
   HNS,
   INFECTION,
   NOSCOPE,
