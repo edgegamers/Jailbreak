@@ -19,7 +19,7 @@ public class HEDay(BasePlugin plugin, IServiceProvider provider)
       "Grenades Only—No guns. Fight against everyone else. No Camping!");
 
   public override void Setup() {
-    plugin.RegisterEventHandler<EventGrenadeThrown>(onThrow);
+    Plugin.RegisterEventHandler<EventGrenadeThrown>(onThrow);
     Timers[10] += () => Locale.BeginsIn(10).ToAllChat();
     Timers[15] += () => Locale.BeginsIn(5).ToAllChat();
     Timers[20] += Execute;
