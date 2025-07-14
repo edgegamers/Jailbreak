@@ -10,7 +10,7 @@ using Jailbreak.Public.Utils;
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class HEDay(BasePlugin plugin, IServiceProvider provider)
-  : AbstractSpecialDay(plugin, provider) {
+  : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
   public override SDType Type => SDType.HE;
   public override SpecialDaySettings Settings => new HESettings();
 
