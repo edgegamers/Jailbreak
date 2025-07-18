@@ -38,6 +38,7 @@ public static class SDTypeExtensions {
       "speed" or "speeders" or "speedrunners" or "race" => SDType.SPEEDRUN,
       "tp"                                              => SDType.TELEPORT,
       "he" or "grenade" or "grenades"                   => SDType.HE,
+      "ghost" or "ghosts"                               => SDType.GHOST,
       _                                                 => null
     };
   }
