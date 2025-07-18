@@ -8,6 +8,7 @@ public enum SDType {
   CUSTOM,
   BHOP,
   FFA,
+  FOG,
   GUNGAME,
   GHOST,
   HE,
@@ -39,6 +40,7 @@ public static class SDTypeExtensions {
       "tp"                                              => SDType.TELEPORT,
       "he" or "grenade" or "grenades"                   => SDType.HE,
       "ghost" or "ghosts"                               => SDType.GHOST,
+      "fog"                                             => SDType.FOG,
       _                                                 => null
     };
   }
