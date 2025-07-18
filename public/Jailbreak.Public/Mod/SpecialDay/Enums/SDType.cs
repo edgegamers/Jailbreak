@@ -37,6 +37,7 @@ public static class SDTypeExtensions {
       "zomb" or "zombie"                                => SDType.INFECTION,
       "speed" or "speeders" or "speedrunners" or "race" => SDType.SPEEDRUN,
       "tp"                                              => SDType.TELEPORT,
+      "he" or "grenade" or "grenades"                   => SDType.HE,
       _                                                 => null
     };
   }
