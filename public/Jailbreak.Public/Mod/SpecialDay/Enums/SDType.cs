@@ -8,8 +8,10 @@ public enum SDType {
   CUSTOM,
   BHOP,
   FFA,
+  FOG,
   GUNGAME,
   GHOST,
+  HE,
   HNS,
   INFECTION,
   NOSCOPE,
@@ -36,6 +38,9 @@ public static class SDTypeExtensions {
       "zomb" or "zombie"                                => SDType.INFECTION,
       "speed" or "speeders" or "speedrunners" or "race" => SDType.SPEEDRUN,
       "tp"                                              => SDType.TELEPORT,
+      "he" or "grenade" or "grenades"                   => SDType.HE,
+      "ghost" or "ghosts"                               => SDType.GHOST,
+      "fog"                                             => SDType.FOG,
       _                                                 => null
     };
   }
