@@ -6,6 +6,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Views.SpecialDay;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Utils;
 using Jailbreak.Validator;
@@ -16,12 +17,12 @@ namespace Jailbreak.SpecialDay.SpecialDays;
 public class GhostDay(BasePlugin plugin, IServiceProvider provider)
   : FFADay(plugin, provider), ISpecialDayMessageProvider {
   public static readonly FakeConVar<float> CV_VISIBLE_DURATION = new(
-    "jb_sd_ghost_visible_duration",
+    "css_jb_sd_ghost_visible_duration",
     "Amount of time players spend visible per cycle", 5f,
     ConVarFlags.FCVAR_NONE, new NonZeroRangeValidator<float>(1f, 30f));
   
   public static readonly FakeConVar<float> CV_INVISIBLE_DURATION = new(
-    "jb_sd_ghost_invisible_duration",
+    "css_jb_sd_ghost_invisible_duration",
     "Amount of time players spend invisible per cycle", 5f,
     ConVarFlags.FCVAR_NONE, new NonZeroRangeValidator<float>(1f, 30f));
 
@@ -37,7 +38,7 @@ public class GhostDay(BasePlugin plugin, IServiceProvider provider)
       "Now you see me… now you don’t! Fight through flickering visibility!");
 
   public override void Setup() {
-    Plugin.RegisterListener<Listeners.CheckTransmit>(OnTransmit);
+    Plugin.RegisterListener<Listeners.CheckTransmit>(onTransmit);
     setVisibility(false);
     base.Setup();
   }
@@ -67,14 +68,13 @@ public class GhostDay(BasePlugin plugin, IServiceProvider provider)
     }, TimerFlags.REPEAT);
   }
 
-  private void OnTransmit(CCheckTransmitInfoList infolist) {
+  private void onTransmit(CCheckTransmitInfoList infolist) {
     if (allPlayersVisible) return;
 
     foreach (var (info, viewer) in infolist) {
       if (viewer == null || !viewer.IsValid || !viewer.PawnIsAlive) continue;
-      if (viewer.TeamNum == (byte)CsTeam.Spectator) continue; // skip spec
 
-      foreach (var target in Utilities.GetPlayers()
+      foreach (var target in PlayerUtil.GetAlive()
        .Where(target => 
           target.IsReal() && target.Slot != viewer.Slot)) {
         if (target.Pawn?.Value != null && target.Pawn.IsValid)
@@ -85,7 +85,7 @@ public class GhostDay(BasePlugin plugin, IServiceProvider provider)
   
   override protected HookResult OnEnd(EventRoundEnd ev, GameEventInfo info) {
     ghostTimer?.Kill();
-    Server.ExecuteCommand("mp_footsteps_serverside 1");
+    Plugin.RemoveListener<Listeners.CheckTransmit>(onTransmit);
     return base.OnEnd(ev, info);
   }
 
@@ -95,6 +95,12 @@ public class GhostDay(BasePlugin plugin, IServiceProvider provider)
     if (state) EnableDamage(); else DisableDamage();
     foreach (var player in PlayerUtil.GetAlive()) {
       player.ExecuteClientCommand("play \"sounds/ui/counter_beep.vsnd\"");
+    }
+  }
+
+  public class GhostSettings : SpecialDaySettings {
+    public GhostSettings() {
+      ConVarValues["mp_footsteps_serverside"] = false;
     }
   }
 }
