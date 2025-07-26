@@ -1,4 +1,6 @@
-﻿using CounterStrikeSharp.API.Modules.Utils;
+﻿using System.Numerics;
+using CounterStrikeSharp.API.Core;
+using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
 namespace Jailbreak.Public.Extensions;
 
@@ -49,5 +51,38 @@ public static class VectorExtensions {
   public static float
     HorizontalDistanceSquared(this Vector vector, Vector other) {
     return MathF.Pow(vector.X - other.X, 2) + MathF.Pow(vector.Y - other.Y, 2);
+  }
+
+  /// <summary>
+  ///   Converts a CounterStrikeSharp Vector Into a Vector3 Class
+  /// </summary>
+  /// <param name="vector"></param>
+  /// <returns></returns>
+  public static Vector3 ToVec3(this Vector vector) {
+    return new Vector3(vector.X, vector.Y, vector.Z);
+  }
+
+  /// <summary>
+  ///   Converts the given angle vector (pitch, yaw, roll) into directional unit vectors:
+  ///   forward, right, and up.
+  ///   Useful for translating eye angles or view angles into world-space directions.
+  ///   Wraps the native `AngleVectors` call from the engine.
+  /// </summary>
+  /// <param name="input"></param>
+  /// <param name="forward"></param>
+  /// <param name="right"></param>
+  /// <param name="up"></param>
+  public static void AngleVectors(this Vector3 input, out Vector3 forward,
+    out Vector3 right, out Vector3 up) {
+    Vector3 tmpForward, tmpRight, tmpUp;
+
+    unsafe {
+      NativeAPI.AngleVectors((nint)(&input), (nint)(&tmpForward),
+        (nint)(&tmpRight), (nint)(&tmpUp));
+    }
+
+    forward = tmpForward;
+    right   = tmpRight;
+    up      = tmpUp;
   }
 }
