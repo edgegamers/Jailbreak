@@ -118,11 +118,22 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     return base.OnEnd(ev, info);
   }
 
+  /// <summary>
+  ///   Clears recipients of the Nova bullet pellets to hide it from everyone.
+  ///   Give cleaner shot effect and removes unecessary rendering
+  /// </summary>
   private HookResult fireBulletsUmHook(UserMessage um) {
     um.Recipients.Clear();
     return HookResult.Continue;
   }
 
+  /// <summary>
+  ///   Handles when the grenade touches something.
+  ///   Triggers a rocket jump for its owner if nearby.
+  ///   Uses CHEGrenadeProjectile for built-in AoE, visibility, and raycast-like behavior.
+  ///   This is prefered b/c using a raycast would require custom logic for:
+  ///   -Damage radius simulation, Entity filtering, Visual/audio, feedback Manual hit registration
+  /// </summary>
   private HookResult CBaseEntity_Touch(DynamicHook hook) {
     var projectile = hook.GetParam<CHEGrenadeProjectile>(0);
     if (projectile.DesignerName != "hegrenade_projectile")
@@ -145,6 +156,9 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     return HookResult.Handled;
   }
 
+  /// <summary>
+  ///   Detects Nova shots and spawns a grenade projectile in the direction the player is aiming.
+  /// </summary>
   private HookResult onWeaponFire(EventWeaponFire @event, GameEventInfo info) {
     var controller = @event.Userid;
     if (controller == null) return HookResult.Continue;
@@ -167,6 +181,9 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     return HookResult.Continue;
   }
 
+  /// <summary>
+  ///   Makes knife hits lethal only if the attacker is airborne via rocket jump.
+  /// </summary>
   private HookResult onHurt(EventPlayerHurt @event, GameEventInfo info) {
     var attackerPawn = @event.Attacker?.PlayerPawn.Value;
     var hurtPawn     = @event.Userid?.PlayerPawn.Value;
@@ -183,11 +200,17 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     return HookResult.Continue;
   }
 
+  /// <summary>
+  ///   Continuously removes players from the "jumping" list once they land.
+  /// </summary>
   private void onTick() {
     foreach (var player in jumping.Where(p => p.OnGroundLastTick).ToList())
       jumping.Remove(player);
   }
 
+  /// <summary>
+  ///   Spawns and launches a CHEGrenadeProjectile with explosive properties like radius and damage.
+  /// </summary>
   private void shootBullet(CCSPlayerController controller, Vector3 origin,
     Vector3 velocity, Vector3 angle) {
     var pawn = controller.PlayerPawn.Value;
@@ -214,6 +237,11 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     }
   }
 
+  /// <summary>
+  ///   Calculates and applies rocket jump force based on distance and direction.
+  ///   Combines player velocity with a directional push, scaled by angle and proximity.
+  ///   Adds upward force and modifies Z for vertical boost.
+  /// </summary>
   private void doJump(CCSPlayerPawn pawn, float distance, Vector3 bulletOrigin,
     Vector3 pawnOrigin) {
     if (distance >= CV_MAX_DISTANCE.Value) return;
