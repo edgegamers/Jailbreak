@@ -115,6 +115,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     Plugin.DeregisterEventHandler<EventWeaponFire>(onWeaponFire);
     Plugin.DeregisterEventHandler<EventPlayerHurt>(onHurt, HookMode.Pre);
     Plugin.RemoveListener<Listeners.OnTick>(onTick);
+    jumping.Clear();
     return base.OnEnd(ev, info);
   }
 
