@@ -118,28 +118,28 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     return base.OnEnd(ev, info);
   }
 
-  private static HookResult fireBulletsUmHook(UserMessage um) {
+  private HookResult fireBulletsUmHook(UserMessage um) {
     um.Recipients.Clear();
     return HookResult.Continue;
   }
 
   private HookResult CBaseEntity_Touch(DynamicHook hook) {
-    var decoy = hook.GetParam<CHEGrenadeProjectile>(0);
-    if (decoy.DesignerName != "hegrenade_projectile")
+    var projectile = hook.GetParam<CHEGrenadeProjectile>(0);
+    if (projectile.DesignerName != "hegrenade_projectile")
       return HookResult.Continue;
 
-    var owner = decoy.OwnerEntity.Value?.As<CCSPlayerPawn>();
+    var owner = projectile.OwnerEntity.Value?.As<CCSPlayerPawn>();
     if (owner == null || owner.DesignerName != "player")
       return HookResult.Continue;
 
-    var bulletOrigin = decoy.AbsOrigin;
+    var bulletOrigin = projectile.AbsOrigin;
     var pawnOrigin   = owner.AbsOrigin;
     if (bulletOrigin == null || pawnOrigin == null) return HookResult.Continue;
 
     var eyeOrigin = owner.GetEyeOrigin();
     var distance  = Vector3.Distance(bulletOrigin.Into(), pawnOrigin.Into());
     
-    decoy.DetonateTime = 0f;
+    projectile.DetonateTime = 0f;
     doJump(owner, distance, bulletOrigin.Into(), eyeOrigin);
 
     return HookResult.Handled;
@@ -193,23 +193,23 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     var pawn = controller.PlayerPawn.Value;
     if (pawn == null) return;
 
-    var decoy =
+    var projectile =
       Utilities
        .CreateEntityByName<CHEGrenadeProjectile>("hegrenade_projectile");
-    if (decoy == null) return;
+    if (projectile == null) return;
 
-    decoy.OwnerEntity.Raw = pawn.EntityHandle.Raw;
-    decoy.Damage          = CV_PROJ_DAMAGE.Value;
-    decoy.DmgRadius       = CV_PROJ_DAMAGE_RADIUS.Value;
-    decoy.DispatchSpawn();
-    decoy.AcceptInput("InitializeSpawnFromWorld", pawn, pawn);
-    Schema.SetSchemaValue(decoy.Handle, "CBaseGrenade", "m_hThrower",
+    projectile.OwnerEntity.Raw = pawn.EntityHandle.Raw;
+    projectile.Damage          = CV_PROJ_DAMAGE.Value;
+    projectile.DmgRadius       = CV_PROJ_DAMAGE_RADIUS.Value;
+    projectile.DispatchSpawn();
+    projectile.AcceptInput("InitializeSpawnFromWorld", pawn, pawn);
+    Schema.SetSchemaValue(projectile.Handle, "CBaseGrenade", "m_hThrower",
       pawn.EntityHandle.Raw);
-    decoy.GravityScale = CV_PROJ_GRAVITY.Value;
-    decoy.DetonateTime = 9999f;
+    projectile.GravityScale = CV_PROJ_GRAVITY.Value;
+    projectile.DetonateTime = 9999f;
 
     unsafe {
-      decoy.Teleport(new Vector((nint)(&origin)), new QAngle((nint)(&angle)),
+      projectile.Teleport(new Vector((nint)(&origin)), new QAngle((nint)(&angle)),
         new Vector((nint)(&velocity)));
     }
   }
