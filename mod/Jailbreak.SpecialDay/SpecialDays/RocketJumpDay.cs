@@ -77,9 +77,6 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
   private readonly MemoryFunctionVoid<nint, nint> touch =
     new("55 48 89 E5 41 54 49 89 F4 53 48 8B 87");
 
-  private readonly Dictionary<CHEGrenadeProjectile, CCSPlayerController> shots =
-    new();
-
   private readonly HashSet<CCSPlayerPawn> jumping = [];
 
   public override SDType Type => SDType.ROCKETJUMP;
@@ -107,7 +104,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
   public override void Execute() {
     foreach (var player in PlayerUtil.GetAlive()) {
       player.RemoveWeapons();
-        player.GiveNamedItem("weapon_nova");
+      player.GiveNamedItem("weapon_nova");
     }
     base.Execute();
   }
@@ -141,8 +138,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
 
     var eyeOrigin = owner.GetEyeOrigin();
     var distance  = Vector3.Distance(bulletOrigin.Into(), pawnOrigin.Into());
-
-    shots.Remove(decoy, out _);
+    
     decoy.DetonateTime = 0f;
     doJump(owner, distance, bulletOrigin.Into(), eyeOrigin);
 
@@ -216,8 +212,6 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
       decoy.Teleport(new Vector((nint)(&origin)), new QAngle((nint)(&angle)),
         new Vector((nint)(&velocity)));
     }
-
-    shots[decoy] = controller;
   }
 
   private void doJump(CCSPlayerPawn pawn, float distance, Vector3 bulletOrigin,
