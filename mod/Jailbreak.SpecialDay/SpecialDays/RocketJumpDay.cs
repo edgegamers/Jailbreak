@@ -149,10 +149,10 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     if (bulletOrigin == null || pawnOrigin == null) return HookResult.Continue;
 
     var eyeOrigin = owner.GetEyeOrigin();
-    var distance  = Vector3.Distance(bulletOrigin.Into(), pawnOrigin.Into());
+    var distance  = Vector3.Distance(bulletOrigin.ToVec3(), pawnOrigin.ToVec3());
     
     projectile.DetonateTime = 0f;
-    doJump(owner, distance, bulletOrigin.Into(), eyeOrigin);
+    doJump(owner, distance, bulletOrigin.ToVec3(), eyeOrigin);
 
     return HookResult.Handled;
   }
@@ -174,7 +174,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
 
     var realBulletVelocity = forwardDir * CV_BULLET_SPEED.Value;
     var addedBulletVelocity = CV_PROJ_INHERIT_PLAYER_VELOCITY.Value ?
-      pawn.AbsVelocity.Into() + realBulletVelocity :
+      pawn.AbsVelocity.ToVec3() + realBulletVelocity :
       realBulletVelocity;
     shootBullet(controller, targetPos, addedBulletVelocity,
       new Vector3(pawn.EyeAngles.X, pawn.EyeAngles.Y, pawn.EyeAngles.Z));
@@ -261,7 +261,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
       CV_JUMP_FORCE_BACKWARD.Value;
 
     var velocity      = direction * CV_JUMP_FORCE_MAIN.Value;
-    var totalVelocity = (pawnVelocity.Into() + velocity) * scale;
+    var totalVelocity = (pawnVelocity.ToVec3() + velocity) * scale;
     pawnVelocity.Z  = 0.0f;
     totalVelocity.Z = 0.0f;
 

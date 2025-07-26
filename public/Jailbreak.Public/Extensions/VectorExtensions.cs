@@ -58,7 +58,7 @@ public static class VectorExtensions {
   /// </summary>
   /// <param name="vector"></param>
   /// <returns></returns>
-  public static Vector3 Into(this Vector vector) {
+  public static Vector3 ToVec3(this Vector vector) {
     return new Vector3(vector.X, vector.Y, vector.Z);
   }
 
