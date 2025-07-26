@@ -82,12 +82,13 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
 
   private readonly HashSet<CCSPlayerPawn> jumping = [];
 
-  public override SDType Type => SDType.RJ;
+  public override SDType Type => SDType.ROCKETJUMP;
   public override SpecialDaySettings Settings => new RocketJumpSettings();
 
   public ISDInstanceLocale Locale
     => new SoloDayLocale("Rocket Jump",
-      "Your shotgun is now an RPG that fires grenades — shoot the ground to launch! Mid-air knives hit hard!");
+      "Your shotgun is now an RPG that fires grenades!"
+      + "shoot the ground to launch!" + "Mid-air knives hit hard!");
 
   public override void Setup() {
     Plugin.HookUserMessage(GE_FIRE_BULLETS_ID, fireBulletsUmHook);
