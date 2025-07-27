@@ -96,8 +96,8 @@ public class FogDay(BasePlugin plugin, IServiceProvider provider)
     fog.Exponent     = 0.1f;
     fog.Maxdensity   = 1f;
     fog.Start        = 0;
-    fog.End          = 300;
-    fog.Farz         = 310;
+    fog.End          = targetFogEnd;
+    fog.Farz         = targetFogEnd * 1.04f;
 
     foreach (var field in new[] {
       "colorPrimary", "start", "end", "farz", "maxdensity", "exponent",
