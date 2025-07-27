@@ -94,7 +94,8 @@ public class GhostDay(BasePlugin plugin, IServiceProvider provider)
     Server.ExecuteCommand($"mp_footsteps_serverside {(state ? "1" : "0")}");
     if (state) EnableDamage(); else DisableDamage();
     foreach (var player in PlayerUtil.GetAlive()) {
-      player.ExecuteClientCommand("play \"sounds/ui/counter_beep.vsnd\"");
+      player.ExecuteClientCommand(
+        $"play {(state ? "\"sounds/buttons/bell1.vsnd\"" : "\"sounds/ui/counter_beep.vsnd\"")}");
     }
   }
 
