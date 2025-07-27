@@ -105,10 +105,8 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
   }
 
   public override void Execute() {
-    foreach (var player in PlayerUtil.GetAlive()) {
-      player.RemoveWeapons();
+    foreach (var player in PlayerUtil.GetAlive()) 
       player.GiveNamedItem("weapon_nova");
-    }
     base.Execute();
   }
 
