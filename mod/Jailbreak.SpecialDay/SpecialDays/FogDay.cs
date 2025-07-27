@@ -156,8 +156,15 @@ public class FogDay(BasePlugin plugin, IServiceProvider provider)
 
   override protected HookResult OnEnd(EventRoundEnd @event,
     GameEventInfo info) {
+    setSky(false);
+    setFog(false);
+
+    if (fogController != null) fogController.Remove();
+    if (skyEntity != null) skyEntity.Remove();
+
     Plugin.RemoveListener<Listeners.OnTick>(onTick);
     Plugin.DeregisterEventHandler<EventPlayerDeath>(onDeath);
+
     return base.OnEnd(@event, info);
   }
 
