@@ -33,7 +33,7 @@ public class GhostDay(BasePlugin plugin, IServiceProvider provider)
   private Timer? ghostTimer;
   public override SDType Type => SDType.GHOST;
   
-  public virtual ISDInstanceLocale Locale
+  public override ISDInstanceLocale Locale
     => new SoloDayLocale("Ghost War",
       "Now you see me… now you don’t! Fight through flickering visibility!");
 
