@@ -274,7 +274,7 @@ public abstract class AbstractSpecialDay(BasePlugin plugin,
 
     previousConvarValues.Clear();
 
-    Plugin.DeregisterEventHandler<EventRoundEnd>(OnEnd);
+    Plugin.DeregisterEventHandler<EventRoundEnd>(OnEnd, HookMode.Pre);
     return HookResult.Continue;
   }
 
