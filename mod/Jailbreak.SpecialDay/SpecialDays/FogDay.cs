@@ -43,14 +43,14 @@ public class FogDay(BasePlugin plugin, IServiceProvider provider)
     Timers[35] += () => Msg.BeginsIn(5).ToAllChat();
     Timers[40] += () => {
       Execute();
-      Msg.BeginsIn(0);
+      Msg.BeginsIn(0).ToAllChat();
     };
-    Timers[97] += () => Msg.FogExpandsIn(3);
-    Timers[98] += () => Msg.FogExpandsIn(2);
-    Timers[99] += () => Msg.FogExpandsIn(1);
+    Timers[97] += () => Msg.FogExpandsIn(3).ToAllChat();
+    Timers[98] += () => Msg.FogExpandsIn(2).ToAllChat();
+    Timers[99] += () => Msg.FogExpandsIn(1).ToAllChat();
     Timers[100] += () => {
       setTargetFogDistance(3000, 180);
-      Msg.FogExpandsIn(0);
+      Msg.FogExpandsIn(0).ToAllChat();
     };
 
     base.Setup();

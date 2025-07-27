@@ -96,7 +96,10 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
 
     Timers[10] += () => Locale.BeginsIn(10).ToAllChat();
     Timers[15] += () => Locale.BeginsIn(5).ToAllChat();
-    Timers[20] += Execute;
+    Timers[20] += () => {
+      Execute();
+      Locale.BeginsIn(0).ToAllChat();
+    };
 
     base.Setup();
   }
