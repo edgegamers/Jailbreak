@@ -91,7 +91,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     Plugin.HookUserMessage(GE_FIRE_BULLETS_ID, fireBulletsUmHook);
     touch.Hook(CBaseEntity_Touch, HookMode.Pre);
     Plugin.RegisterEventHandler<EventWeaponFire>(onWeaponFire);
-    Plugin.RegisterEventHandler<EventPlayerHurt>(onHurt, HookMode.Pre);
+    VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(onHurt, HookMode.Pre);
     Plugin.RegisterListener<Listeners.OnTick>(onTick);
 
     Timers[10] += () => Locale.BeginsIn(10).ToAllChat();
@@ -116,7 +116,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     Plugin.UnhookUserMessage(GE_FIRE_BULLETS_ID, fireBulletsUmHook);
     touch.Unhook(CBaseEntity_Touch, HookMode.Pre);
     Plugin.DeregisterEventHandler<EventWeaponFire>(onWeaponFire);
-    Plugin.DeregisterEventHandler<EventPlayerHurt>(onHurt, HookMode.Pre);
+    VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(onHurt, HookMode.Pre);
     Plugin.RemoveListener<Listeners.OnTick>(onTick);
 
     // Delay to avoid mutation during hook execution
@@ -190,20 +190,22 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
 
   /// <summary>
   ///   Makes knife hits lethal only if the attacker is airborne via rocket jump.
+  ///   Nullifies Nova Pellet Damage
+  ///   Passes Grenades Per Usual
   /// </summary>
-  private HookResult onHurt(EventPlayerHurt @event, GameEventInfo info) {
-    var attackerPawn = @event.Attacker?.PlayerPawn.Value;
-    var hurtPawn     = @event.Userid?.PlayerPawn.Value;
+  private HookResult onHurt(DynamicHook hook) {
+    var info       = hook.GetParam<CTakeDamageInfo>(1);
+    var attacker   = info.Attacker.Value?.As<CCSPlayerPawn>();
+    var weaponName = info.Ability.Value?.As<CCSWeaponBase>().VData?.Name;
 
-    if (attackerPawn == null || hurtPawn == null) return HookResult.Continue;
-    if (@event.Weapon.Contains("grenade")) return HookResult.Continue;
+    if (attacker == null || weaponName == null) return HookResult.Continue;
 
-    if (!@event.Weapon.Contains("knife")) return HookResult.Handled;
-    if (!jumping.Contains(attackerPawn)) return HookResult.Continue;
+    if (weaponName.Contains("grenade")) return HookResult.Continue;
 
-    hurtPawn.Health = 1;
-    Utilities.SetStateChanged(hurtPawn, "CBaseEntity", "m_iHealth");
+    if (!weaponName.Contains("knife") && !weaponName.Contains("bayonet"))
+      return HookResult.Handled;
 
+    if (jumping.Contains(attacker)) info.Damage = 200f;
     return HookResult.Continue;
   }
 
