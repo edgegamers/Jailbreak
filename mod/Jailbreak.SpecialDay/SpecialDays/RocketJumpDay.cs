@@ -293,8 +293,8 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
 
       ConVarValues["sv_infinite_ammo"]                 = 1;
       ConVarValues["mp_death_drop_gun"]                = 0;
-      ConVarValues["ff_damage_reduction_grenade_self"] = 0;
-      ConVarValues["sv_falldamage_scale"]              = 0;
+      ConVarValues["ff_damage_reduction_grenade_self"] = 0f;
+      ConVarValues["sv_falldamage_scale"]              = 0f;
     }
     
     public override float FreezeTime(CCSPlayerController player) { return 1; }
