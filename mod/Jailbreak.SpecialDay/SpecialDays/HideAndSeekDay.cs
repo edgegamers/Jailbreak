@@ -16,44 +16,55 @@ using Jailbreak.Validator;
 namespace Jailbreak.SpecialDay.SpecialDays;
 
 public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
-  : AbstractArmoryRestrictedDay(plugin, provider, SeekerTeam!.Value), ISpecialDayMessageProvider {
+  : AbstractArmoryRestrictedDay(plugin, provider), ISpecialDayMessageProvider {
   // Set to -1 to not modify values
   public static readonly FakeConVar<int> CV_PRISONER_PRE_HEALTH = new(
     "jb_sd_hns_hide_hp_t", "Health to give to prisoners during HNS hide time",
-    100, ConVarFlags.FCVAR_NONE, new NonZeroRangeValidator<int>(-1, 1000));
+    300, ConVarFlags.FCVAR_NONE, new NonZeroRangeValidator<int>(-1, 1000));
 
   public static readonly FakeConVar<int> CV_GUARD_PRE_HEALTH =
     new("jb_sd_hns_hide_hp_ct", "Health to give to guards during HNS hide time",
-      999, ConVarFlags.FCVAR_NONE, new RangeValidator<int>(-1, 1000));
+      150, ConVarFlags.FCVAR_NONE, new RangeValidator<int>(-1, 1000));
 
   public static readonly FakeConVar<int> CV_PRISONER_PRE_ARMOR = new(
     "jb_sd_hns_hide_armor_t", "Armor to give to prisoners during HNS hide time",
-    0, ConVarFlags.FCVAR_NONE, new RangeValidator<int>(-1, 1000));
+    200, ConVarFlags.FCVAR_NONE, new RangeValidator<int>(-1, 1000));
 
   public static readonly FakeConVar<int> CV_GUARD_PRE_ARMOR =
     new("jb_sd_hns_hide_armor_ct",
-      "Armor to give to guards during HNS hide time", 100,
+      "Armor to give to guards during HNS hide time", 300,
       ConVarFlags.FCVAR_NONE, new RangeValidator<int>(-1, 1000));
 
   public static readonly FakeConVar<int> CV_PRISONER_POST_HEALTH = new(
     "jb_sd_hns_seek_hp_t", "Health to give to prisoners during HNS seek time",
-    100, ConVarFlags.FCVAR_NONE, new NonZeroRangeValidator<int>(1, 1000));
+    300, ConVarFlags.FCVAR_NONE, new NonZeroRangeValidator<int>(1, 1000));
 
   public static readonly FakeConVar<int> CV_GUARD_POST_HEALTH = new(
-    "jb_sd_hns_seek_hp_ct", "Health to give to guards during HNS seek time", 300,
+    "jb_sd_hns_seek_hp_ct", "Health to give to guards during HNS seek time", 25,
     ConVarFlags.FCVAR_NONE, new NonZeroRangeValidator<int>(1, 1000));
 
   public static readonly FakeConVar<int> CV_PRISONER_POST_ARMOR = new(
     "jb_sd_hns_seek_armor_t", "Armor to give to prisoners during HNS seek time",
-    0, ConVarFlags.FCVAR_NONE, new RangeValidator<int>(-1, 1000));
+    500, ConVarFlags.FCVAR_NONE, new RangeValidator<int>(-1, 1000));
 
   public static readonly FakeConVar<int> CV_GUARD_POST_ARMOR = new(
     "jb_sd_hns_seek_armor_ct", "Armor to give to guards during HNS seek time",
     -1, ConVarFlags.FCVAR_NONE, new RangeValidator<int>(-1, 1000));
 
+  public static readonly FakeConVar<string> CV_GUARD_WEAPONS = new(
+    "jb_sd_hns_weapons_ct",
+    "List of weapons/items CTs may use, empty for no restrictions",
+    string.Join(",", Tag.PISTOLS.Union(Tag.UTILITY)), ConVarFlags.FCVAR_NONE,
+    new ItemValidator(allowMultiple: true));
+
+  public static readonly FakeConVar<string> CV_PRISONER_WEAPONS = new(
+    "jb_sd_hns_weapons_t",
+    "List of weapons/items Ts may use, empty for no restrictions", "",
+    ConVarFlags.FCVAR_NONE, new ItemValidator(allowMultiple: true));
+
   public static readonly FakeConVar<string> CV_SEEKER_TEAM =
     new("jb_sd_hns_seekers", "Team to assign as seekers and restrict to armory",
-      "ct", ConVarFlags.FCVAR_NONE, new TeamValidator(false));
+      "t", ConVarFlags.FCVAR_NONE, new TeamValidator(false));
 
   public static readonly FakeConVar<int> CV_SEEK_TIME =
     new("jb_sd_hns_seektime",
@@ -66,9 +77,9 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
   public override SpecialDaySettings Settings => new HnsSettings();
   public override IView ArmoryReminder => Msg.StayInArmory;
 
-  private static CsTeam? SeekerTeam => TeamUtil.FromString(CV_SEEKER_TEAM.Value);
+  private CsTeam? SeekerTeam => TeamUtil.FromString(CV_SEEKER_TEAM.Value);
 
-  private static CsTeam? HiderTeam
+  private CsTeam? HiderTeam
     => (SeekerTeam ?? CsTeam.Terrorist) == CsTeam.Terrorist ?
       CsTeam.CounterTerrorist :
       CsTeam.Terrorist;
@@ -108,8 +119,7 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
     Timers[CV_SEEK_TIME.Value] += Execute;
 
     base.Setup();
-    DisableDamage();
-    
+
     foreach (var player in PlayerUtil.FromTeam(HiderTeam.Value))
       player.SetSpeed(2f);
   }
@@ -129,17 +139,22 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
       if (hp != -1) player.SetHealth(hp);
       if (armor != -1) player.SetArmor(armor);
     }
-    EnableDamage();
 
     foreach (var ct in PlayerUtil.FromTeam(HiderTeam.Value)) ct.SetSpeed(1);
   }
 
   public class HnsSettings : SpecialDaySettings {
+    private readonly ISet<string>? cachedGuardWeapons, cachedPrisonerWeapons;
 
     public HnsSettings() {
-      TTeleport  = TeleportType.CELL;
+      TTeleport  = TeleportType.ARMORY;
       CtTeleport = TeleportType.ARMORY;
-      OpenCells  = true;
+
+      cachedGuardWeapons    = CV_GUARD_WEAPONS.Value.Split(",").ToHashSet();
+      cachedPrisonerWeapons = CV_PRISONER_WEAPONS.Value.Split(",").ToHashSet();
+
+      if (CV_GUARD_WEAPONS.Value.Length == 0) cachedGuardWeapons       = null;
+      if (CV_PRISONER_WEAPONS.Value.Length == 0) cachedPrisonerWeapons = null;
     }
 
     public override int InitialHealth(CCSPlayerController player) {
@@ -154,8 +169,14 @@ public class HideAndSeekDay(BasePlugin plugin, IServiceProvider provider)
         CV_GUARD_PRE_ARMOR.Value;
     }
 
+    public override ISet<string>? AllowedWeapons(CCSPlayerController player) {
+      return player.Team == CsTeam.Terrorist ?
+        cachedPrisonerWeapons :
+        cachedGuardWeapons;
+    }
+
     public override float FreezeTime(CCSPlayerController player) {
-      return player.Team == CsTeam.Terrorist ? 3 : 8;
+      return player.Team == CsTeam.CounterTerrorist ? 3 : 8;
     }
   }
 }
