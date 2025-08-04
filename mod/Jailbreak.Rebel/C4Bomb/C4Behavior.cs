@@ -47,12 +47,6 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
 
   private int roundStart = 0;
 
-  // EmitSound(CBaseEntity* pEnt, const char* sSoundName, int nPitch, float flVolume, float flDelay)
-  private readonly MemoryFunctionVoid<CBaseEntity, string, int, float, float>
-    // ReSharper disable once InconsistentNaming
-    CBaseEntity_EmitSoundParamsLinux = new(
-      "48 B8 ? ? ? ? ? ? ? ? 55 48 89 E5 41 55 41 54 49 89 FC 53 48 89 F3"); // LINUX ONLY.
-
   private readonly Dictionary<int, int> deathToKiller = new();
   private bool giveNextRound = true;
 
@@ -73,23 +67,16 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
 
   public void StartDetonationAttempt(CCSPlayerController player, float delay,
     CC4 bombEntity) {
-    Server.PrintToChatAll(
-      $"{player.PlayerName} is attempting to detonate a C4 with delay {delay:F2}s");
     if (plugin == null) return;
-    Server.PrintToChatAll("Not null plugin");
     var pos = player.Pawn.Value?.AbsOrigin;
     if (pos != null)
       API.Stats?.PushStat(new ServerStat("JB_BOMB_ATTEMPT",
         $"{pos.X:F2} {pos.Y:F2} {pos.Z:F2}"));
 
-    Server.PrintToChatAll("emitting sound");
-
     bombs[bombEntity].IsDetonating = true;
 
     rebelService.MarkRebel(player);
-    Server.PrintToChatAll($"{player.PlayerName} is trying to detonate a C4!");
 
-    Server.PrintToChatAll("Scheduling detonation");
     Server.RunOnTick(Server.TickCount + (int)(64 * delay),
       () => detonate(player, bombEntity));
     tryEmitSound(player, "jb.jihad", 1);
@@ -241,7 +228,6 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
   }
 
   private void detonate(CCSPlayerController player, CC4 bomb) {
-    Server.PrintToChatAll("detonation started");
     if (!player.IsValid || !player.IsReal() || !player.PawnIsAlive) {
       if (bomb.IsValid) bomb.Remove();
       bombs.Remove(bomb);
