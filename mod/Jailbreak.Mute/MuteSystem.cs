@@ -94,6 +94,15 @@ public class MuteSystem(IServiceProvider provider)
     return HookResult.Continue;
   }
 
+  [GameEventHandler]
+  public HookResult OnDeath(EventPlayerDeath @event, GameEventInfo info) {
+    var player = @event.Userid;
+    if (player == null || !player.IsReal()) return HookResult.Continue;
+
+    mute(player);
+    return HookResult.Continue;
+  }
+
   private void unmuteGuards() {
     foreach (var player in Utilities.GetPlayers()
      .Where(player => player is {

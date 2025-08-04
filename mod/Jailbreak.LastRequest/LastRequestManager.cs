@@ -108,8 +108,8 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     stats?.Stats.Add(new LRStat());
 
     basePlugin.RegisterListener<Listeners.OnEntityParentChanged>(OnDrop);
-    VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage,
-      HookMode.Pre);
+    // VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage,
+    //   HookMode.Pre);
     VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Hook(OnCanAcquire,
       HookMode.Pre);
   }
