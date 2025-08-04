@@ -186,8 +186,11 @@ public static class PlayerExtensions {
     var origin = pawn.AbsOrigin;
     if (origin == null) return Vector3.Zero; 
 
+    //return new Vector3(origin.X, origin.Y,
+      //origin.Z + pawn.CameraServices?.OldPlayerViewOffsetZ ?? 0.0f);
+      
     return new Vector3(origin.X, origin.Y,
-      origin.Z + pawn.CameraServices?.OldPlayerViewOffsetZ ?? 0.0f);
+      origin.Z + 64.09f);
   }
 
   public static void GetEyeForward(this CCSPlayerPawn pawn, float distance,
