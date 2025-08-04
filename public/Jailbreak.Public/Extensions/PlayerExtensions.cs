@@ -1,9 +1,11 @@
 ﻿using System.Drawing;
+using System.Numerics;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.UserMessages;
 using CounterStrikeSharp.API.Modules.Utils;
+using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
 namespace Jailbreak.Public.Extensions;
 
@@ -178,5 +180,23 @@ public static class PlayerExtensions {
     fadeMsg.SetInt("color",
       color.R | color.G << 8 | color.B << 16 | color.A << 24);
     fadeMsg.Send(player);
+  }
+
+  public static Vector3 GetEyeOrigin(this CCSPlayerPawn pawn) {
+    var origin = pawn.AbsOrigin;
+    if (origin == null) return Vector3.Zero; 
+
+    return new Vector3(origin.X, origin.Y,
+      origin.Z + pawn.CameraServices?.OldPlayerViewOffsetZ ?? 0.0f);
+  }
+
+  public static void GetEyeForward(this CCSPlayerPawn pawn, float distance,
+    out Vector3 forward, out Vector3 target) {
+    var angles =
+      new Vector3(pawn.EyeAngles.X, pawn.EyeAngles.Y, pawn.EyeAngles.Z);
+    angles.AngleVectors(out forward, out _, out _);
+
+    var eyeOrigin = pawn.GetEyeOrigin();
+    target = eyeOrigin + forward * distance;
   }
 }
