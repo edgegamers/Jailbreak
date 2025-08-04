@@ -17,6 +17,7 @@ using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.Rebel;
+using Jailbreak.Public.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using MStatsShared;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
@@ -72,20 +73,26 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
 
   public void StartDetonationAttempt(CCSPlayerController player, float delay,
     CC4 bombEntity) {
+    Server.PrintToChatAll(
+      $"{player.PlayerName} is attempting to detonate a C4 with delay {delay:F2}s");
     if (plugin == null) return;
+    Server.PrintToChatAll("Not null plugin");
     var pos = player.Pawn.Value?.AbsOrigin;
     if (pos != null)
       API.Stats?.PushStat(new ServerStat("JB_BOMB_ATTEMPT",
         $"{pos.X:F2} {pos.Y:F2} {pos.Z:F2}"));
 
-    tryEmitSound(player, "jb.jihad", 1, 1f, 0f);
+    Server.PrintToChatAll("emitting sound");
 
     bombs[bombEntity].IsDetonating = true;
 
     rebelService.MarkRebel(player);
+    Server.PrintToChatAll($"{player.PlayerName} is trying to detonate a C4!");
 
+    Server.PrintToChatAll("Scheduling detonation");
     Server.RunOnTick(Server.TickCount + (int)(64 * delay),
       () => detonate(player, bombEntity));
+    tryEmitSound(player, "jb.jihad", 1);
   }
 
   public void TryGiveC4ToRandomTerrorist() {
@@ -111,18 +118,21 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
 
   public void Start(BasePlugin basePlugin) {
     plugin = basePlugin;
-    plugin.RegisterListener<Listeners.OnTick>(playerUseC4ListenerCallback);
+    plugin.RegisterListener<Listeners.OnPlayerButtonsChanged>(
+      playerButtonsChanged);
   }
 
-  private void playerUseC4ListenerCallback() {
+  private void playerButtonsChanged(CCSPlayerController player,
+    PlayerButtons pressed, PlayerButtons released) {
+    if ((pressed & PlayerButtons.Use) == 0) return;
+
     foreach (var (bomb, meta) in bombs) {
-      if (!bomb.IsValid) continue;
-      if (meta.IsDetonating) continue;
+      if (!bomb.IsValid || meta.IsDetonating) continue;
 
       var bombCarrier = bomb.OwnerEntity.Value?.As<CCSPlayerPawn>()
        .Controller.Value?.As<CCSPlayerController>();
       if (bombCarrier == null || !bombCarrier.IsValid
-        || (bombCarrier.Buttons & PlayerButtons.Use) == 0)
+        || bombCarrier.Slot != player.Slot)
         continue;
 
       var activeWeapon = bombCarrier.PlayerPawn.Value?.WeaponServices
@@ -231,6 +241,7 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
   }
 
   private void detonate(CCSPlayerController player, CC4 bomb) {
+    Server.PrintToChatAll("detonation started");
     if (!player.IsValid || !player.IsReal() || !player.PawnIsAlive) {
       if (bomb.IsValid) bomb.Remove();
       bombs.Remove(bomb);
@@ -238,17 +249,6 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
     }
 
     if (Server.TickCount - roundStart < CV_C4_DELAY.Value * 64) return;
-
-    tryEmitSound(player, "jb.jihadExplosion", 1, 1f, 0f);
-    var particleSystemEntity =
-      Utilities.CreateEntityByName<CParticleSystem>("info_particle_system")!;
-    particleSystemEntity.EffectName =
-      "particles/explosions_fx/explosion_c4_500.vpcf";
-    particleSystemEntity.StartActive = true;
-
-    particleSystemEntity.Teleport(player.PlayerPawn.Value!.AbsOrigin!,
-      new QAngle(), new Vector());
-    particleSystemEntity.DispatchSpawn();
 
     var killed = 0;
     /* Calculate damage here, only applies to alive CTs. */
@@ -280,6 +280,10 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
       }
     }
 
+    // If they didn't have the C4 make sure to remove it.
+    player.CommitSuicide(true, true);
+    bombs.Remove(bomb);
+
     if (API.Gangs != null && killed > 0) {
       var eco = API.Gangs.Services.GetService<IEcoManager>();
       if (eco != null) {
@@ -289,17 +293,23 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
       }
     }
 
-    API.Stats?.PushStat(new ServerStat("JB_BOMB_EXPLODED", killed.ToString()));
+    tryEmitSound(player, "jb.jihadExplosion", 1);
+    var particleSystemEntity =
+      Utilities.CreateEntityByName<CParticleSystem>("info_particle_system")!;
+    particleSystemEntity.EffectName =
+      "particles/explosions_fx/explosion_c4_500.vpcf";
+    particleSystemEntity.StartActive = true;
 
-    // If they didn't have the C4 make sure to remove it.
-    player.CommitSuicide(true, true);
-    bombs.Remove(bomb);
+    particleSystemEntity.Teleport(player.PlayerPawn.Value!.AbsOrigin!,
+      new QAngle(), new Vector());
+    particleSystemEntity.DispatchSpawn();
+
+    API.Stats?.PushStat(new ServerStat("JB_BOMB_EXPLODED", killed.ToString()));
   }
 
   private void tryEmitSound(CBaseEntity entity, string soundEventName,
-    int pitch, float volume, float delay) {
-    CBaseEntity_EmitSoundParamsLinux.Invoke(entity, soundEventName, pitch,
-      volume, delay);
+    int pitch) {
+    entity.EmitSound(soundEventName, pitch: pitch);
   }
 
   private class C4Metadata(bool isDetonating) {
