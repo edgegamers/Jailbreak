@@ -62,24 +62,24 @@ public class GhostDay(BasePlugin plugin, IServiceProvider provider)
         setVisibility(shouldBeVisible);
 
       foreach (var player in PlayerUtil.GetAlive()
-       .Where(p => p?.IsValid == true)) 
+       .Where(p => p.IsValid)) 
         player.PrintToCenter($"{(allPlayersVisible 
           ? "Visible" : "Hidden")} for: {timeLeft}s");
     }, TimerFlags.REPEAT);
   }
 
   private void onTransmit(CCheckTransmitInfoList infolist) {
-    if (allPlayersVisible) return;
+    if (!allPlayersVisible) return;
+
+    var players = Utilities.GetPlayers()
+     .Where(p => p is { IsValid: true, PawnIsAlive: true })
+     .ToList();
 
     foreach (var (info, viewer) in infolist) {
-      if (viewer == null || !viewer.IsValid || !viewer.PawnIsAlive) continue;
-
-      foreach (var target in PlayerUtil.GetAlive()
-       .Where(target => 
-          target.IsReal() && target.Slot != viewer.Slot)) {
-        if (target.Pawn?.Value != null && target.Pawn.IsValid)
-          info.TransmitEntities.Remove(target.Pawn.Value);
-      }
+      if (viewer == null || !viewer.IsValid) continue;
+      foreach (var target in players.Where(target => target != viewer))
+        if (target.PlayerPawn.Value != null)
+          info.TransmitEntities.Remove((int)target.PlayerPawn.Value.Index);
     }
   }
   
