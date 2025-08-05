@@ -160,7 +160,6 @@ public class FogDay(BasePlugin plugin, IServiceProvider provider)
     setFog(false);
 
     if (fogController != null) fogController.Remove();
-    if (skyEntity != null) skyEntity.Remove();
 
     Plugin.RemoveListener<Listeners.OnTick>(onTick);
     Plugin.DeregisterEventHandler<EventPlayerDeath>(onDeath);
