@@ -79,7 +79,7 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
 
     Server.RunOnTick(Server.TickCount + (int)(64 * delay),
       () => detonate(player, bombEntity));
-    tryEmitSound(player, "jb.jihad", 1);
+    player.EmitSound("jb.jihad");
   }
 
   public void TryGiveC4ToRandomTerrorist() {
@@ -279,7 +279,7 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
       }
     }
 
-    tryEmitSound(player, "jb.jihadExplosion", 1);
+    player.EmitSound("jb.jihadExplosion");
     var particleSystemEntity =
       Utilities.CreateEntityByName<CParticleSystem>("info_particle_system")!;
     particleSystemEntity.EffectName =
@@ -291,11 +291,6 @@ public class C4Behavior(IC4Locale ic4Locale, IRebelService rebelService,
     particleSystemEntity.DispatchSpawn();
 
     API.Stats?.PushStat(new ServerStat("JB_BOMB_EXPLODED", killed.ToString()));
-  }
-
-  private void tryEmitSound(CBaseEntity entity, string soundEventName,
-    int pitch) {
-    entity.EmitSound(soundEventName, pitch: pitch);
   }
 
   private class C4Metadata(bool isDetonating) {

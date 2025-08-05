@@ -31,6 +31,8 @@ public class FogDay(BasePlugin plugin, IServiceProvider provider)
     Plugin.RegisterListener<Listeners.OnTick>(onTick);
     Plugin.RegisterEventHandler<EventPlayerDeath>(onDeath);
 
+    cacheOriginalSky();
+    
     setFog(true);
     setSky(true);
 
@@ -58,8 +60,6 @@ public class FogDay(BasePlugin plugin, IServiceProvider provider)
 
 
   private unsafe void setSky(bool set) {
-    cacheOriginalSky();
-
     if (skyEntity == null) return;
 
     var mat    = set ? nint.Zero : originalSkyMat;
@@ -160,7 +160,6 @@ public class FogDay(BasePlugin plugin, IServiceProvider provider)
     setFog(false);
 
     if (fogController != null) fogController.Remove();
-    if (skyEntity != null) skyEntity.Remove();
 
     Plugin.RemoveListener<Listeners.OnTick>(onTick);
     Plugin.DeregisterEventHandler<EventPlayerDeath>(onDeath);

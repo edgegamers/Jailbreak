@@ -59,12 +59,12 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     + "True allows for easier rocket jumps at the cost of 'funky' shot paths when trying to shoot a player");
 
   public static readonly FakeConVar<float> CV_PROJ_DAMAGE = new(
-    "css_jb_rj_proj_damage", "The damage caused by projectile explosion", 80f,
+    "css_jb_rj_proj_damage", "The damage caused by projectile explosion", 57f,
     ConVarFlags.FCVAR_NONE, new RangeValidator<float>(1f, 200f));
 
   public static readonly FakeConVar<float> CV_PROJ_DAMAGE_RADIUS = new(
     "css_jb_rj_proj_damage_radius",
-    "The radius of the explosion caused by projectile", 250f,
+    "The radius of the explosion caused by projectile", 225f,
     ConVarFlags.FCVAR_NONE, new RangeValidator<float>(1f, 1000f));
 
   public static readonly FakeConVar<float> CV_PROJ_GRAVITY = new(
@@ -105,8 +105,12 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
   }
 
   public override void Execute() {
-    foreach (var player in PlayerUtil.GetAlive()) 
+    foreach (var player in PlayerUtil.GetAlive()) {
+      player.RemoveWeapons();
+      player.SetArmor(0);
+      player.GiveNamedItem("weapon_knife");
       player.GiveNamedItem("weapon_nova");
+    }
     base.Execute();
   }
 

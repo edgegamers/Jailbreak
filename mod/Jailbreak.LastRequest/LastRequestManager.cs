@@ -64,30 +64,30 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   private ILastRequestFactory? factory;
   public bool IsLREnabledForRound { get; set; } = true;
 
-  public bool ShouldBlockDamage(CCSPlayerController player,
+  public bool ShouldBlockDamage(CCSPlayerController victim,
     CCSPlayerController? attacker) {
     if (!IsLREnabled) return false;
 
     if (attacker == null || !attacker.IsReal()) return false;
 
-    var playerLR   = ((ILastRequestManager)this).GetActiveLR(player);
+    var victimLR   = ((ILastRequestManager)this).GetActiveLR(victim);
     var attackerLR = ((ILastRequestManager)this).GetActiveLR(attacker);
 
-    if (playerLR == null && attackerLR == null)
+    if (victimLR == null && attackerLR == null)
       // Neither of them is in an LR
       return false;
 
-    if (playerLR == null != (attackerLR == null)) {
+    if (victimLR == null != (attackerLR == null)) {
       // One of them is in an LR
       messages.DamageBlockedInsideLastRequest.ToCenter(attacker);
       return true;
     }
 
     // Both of them are in LR, verify they're in same LR
-    if (playerLR == null) return false;
+    if (victimLR == null) return false;
 
-    if (playerLR.Prisoner.Equals(attacker) || playerLR.Guard.Equals(attacker))
-      // Same LR, allow damage
+    if (victimLR.Prisoner.Equals(attacker) || victimLR.Guard.Equals(attacker))
+      // The person attacking is the victim's LR participant, allow damage
       return false;
 
     messages.DamageBlockedNotInSameLR.ToCenter(attacker);
@@ -108,8 +108,8 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     stats?.Stats.Add(new LRStat());
 
     basePlugin.RegisterListener<Listeners.OnEntityParentChanged>(OnDrop);
-    // VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage,
-    //   HookMode.Pre);
+    VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage,
+      HookMode.Pre);
     VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Hook(OnCanAcquire,
       HookMode.Pre);
   }
