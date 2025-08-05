@@ -31,6 +31,12 @@ public class SpecialTreatmentCommandsBehavior(IWardenService warden,
       // TODO: Pop up menu of prisoners to toggle ST for
       return;
 
+    // FIXME: Remove after @aim is fixed in CSS
+    if (command.ArgByIndex(1).ToLower().Contains("@aim")) {
+      command.ReplyToCommand("@aim is currently not supported due to a bug in CSS.");
+      return;
+    }
+
     var targets = command.GetArgTargetResult(1);
     var eligible = targets
      .Where(p => p is { Team: CsTeam.Terrorist, PawnIsAlive: true })
