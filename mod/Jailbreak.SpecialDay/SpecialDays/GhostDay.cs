@@ -74,7 +74,7 @@ public class GhostDay(BasePlugin plugin, IServiceProvider provider)
 
   public override void Setup() {
     CHECK_TRANSMIT.Hook(onTransmit, HookMode.Post);
-    setVisibility(false);
+    Server.NextFrameAsync(() => { setVisibility(false); });
     base.Setup();
   }
 
@@ -145,7 +145,7 @@ public class GhostDay(BasePlugin plugin, IServiceProvider provider)
     }
   }
 
-  public class GhostSettings : SpecialDaySettings {
+  public class GhostSettings : FFASettings {
     public GhostSettings() {
       ConVarValues["mp_footsteps_serverside"] = false;
     }
