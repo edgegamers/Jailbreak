@@ -104,7 +104,7 @@ public class GhostDay(BasePlugin plugin, IServiceProvider provider)
   }
 
   private unsafe HookResult onTransmit(DynamicHook hook) {
-    if (!allPlayersVisible) return HookResult.Continue;
+    if (allPlayersVisible) return HookResult.Continue;
 
     var ppInfoList = (nint*)hook.GetParam<nint>(1);
     var infoCount  = hook.GetParam<int>(2);
