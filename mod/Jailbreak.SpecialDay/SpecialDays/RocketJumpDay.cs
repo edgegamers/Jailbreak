@@ -84,8 +84,8 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
 
   public ISDInstanceLocale Locale
     => new SoloDayLocale("Rocket Jump",
-      "Your shotgun is now an RPG that fires grenades!"
-      + "shoot the ground to launch!" + "Mid-air knives hit hard!");
+      "Your shotgun is now an RPG that fires grenades! "
+      + "Shoot the ground to launch! " + "Mid-air knives Insta-kill!");
 
   public override void Setup() {
     Plugin.HookUserMessage(GE_FIRE_BULLETS_ID, fireBulletsUmHook);
