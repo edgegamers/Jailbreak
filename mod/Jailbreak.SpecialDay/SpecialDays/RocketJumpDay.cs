@@ -59,7 +59,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     + "True allows for easier rocket jumps at the cost of 'funky' shot paths when trying to shoot a player");
 
   public static readonly FakeConVar<float> CV_PROJ_DAMAGE = new(
-    "css_jb_rj_proj_damage", "The damage caused by projectile explosion", 57f,
+    "css_jb_rj_proj_damage", "The damage caused by projectile explosion", 65f,
     ConVarFlags.FCVAR_NONE, new RangeValidator<float>(1f, 200f));
 
   public static readonly FakeConVar<float> CV_PROJ_DAMAGE_RADIUS = new(
