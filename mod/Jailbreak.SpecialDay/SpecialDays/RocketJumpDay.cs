@@ -3,6 +3,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
+using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Timers;
@@ -73,6 +74,8 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     ConVarFlags.FCVAR_NONE, new RangeValidator<float>(0.001f, 2000f));
 
   private const int GE_FIRE_BULLETS_ID = 452;
+
+  private Dictionary<ulong, uint> shotsDictionary;
 
   // Thank you https://github.com/ipsvn/cs2-Rocketjump/tree/master
   private readonly MemoryFunctionVoid<nint, nint> touch =
@@ -176,9 +179,9 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     var weapon = @event.Weapon;
     if (weapon != "weapon_nova") return HookResult.Continue;
 
-    if (controller.PlayerPawn.Value?.WaterLevel > 64.09f)
+    if (controller.PlayerPawn.Value?.WaterLevel >= 2)
       return HookResult.Continue;
-
+    
     var pawn   = controller.PlayerPawn.Value;
     var origin = pawn?.AbsOrigin;
     if (pawn == null || origin == null) return HookResult.Continue;
