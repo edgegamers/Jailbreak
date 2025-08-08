@@ -77,21 +77,16 @@ public class AutoWarden(IWardenSelectionService selectionService,
   [ConsoleCommand("css_autowarden")]
   public void Command_AutoWarden(CCSPlayerController? player, CommandInfo info) {
     if (player == null) return;
-    
     if (!AdminManager.PlayerHasPermissions(player, CV_AUTOWARDEN_FLAG.Value)) {
       generic.NoPermissionMessage(CV_AUTOWARDEN_FLAG.Value).ToChat(player);
       return;
     }
-
-    if (cookie == null) {
-      locale.TogglingNotEnabled.ToChat(player);
-      return;
-    }
+    if (cookie == null) { locale.TogglingNotEnabled.ToChat(player); return; }
 
     var steam = player.SteamID;
     Task.Run(async () => {
-      var value  = await cookie.Get(steam);
-      var enable = value is not (null or "Y");
+      var cur    = await cookie.Get(steam);
+      var enable = cur != "Y";
       await cookie.Set(steam, enable ? "Y" : "N");
       await Server.NextFrameAsync(() => {
         if (!player.IsValid) return;
@@ -109,15 +104,17 @@ public class AutoWarden(IWardenSelectionService selectionService,
          .RegClientCookie("jb_warden_auto");
     });
   }
-  
+
   private async Task populateCache(CCSPlayerController player, ulong steam) {
     if (cookie == null) return;
-    var val = await cookie.Get(steam);
-    CACHED_COOKIES[steam] = val is null or "Y";
-    if (!CACHED_COOKIES[steam]) return;
+    var val     = await cookie.Get(steam);
+    var enabled = val == "Y";
+    CACHED_COOKIES[steam] = enabled;
+    if (!enabled) return;
     await Server.NextFrameAsync(() => {
       if (!player.IsValid) return;
       selectionService.TryEnter(player);
+      locale.JoinRaffle.ToChat(player);
     });
   }
 }
