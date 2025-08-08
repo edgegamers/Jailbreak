@@ -3,7 +3,11 @@
 
 name: Nightlies
 
-on: [push, pull_request]
+on: 
+  push:
+  pull_request:
+  schedule:
+    - cron: '15 0 * * 3' # Every Wednesday at 00:15 UTC
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
