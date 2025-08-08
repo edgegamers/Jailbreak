@@ -5,6 +5,7 @@ using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
+using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.UserMessages;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
@@ -110,14 +111,20 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
       player.SetArmor(0);
       player.GiveNamedItem("weapon_knife");
       player.GiveNamedItem("weapon_nova");
-      Server.NextFrame(() => {
-        var novaData = player.GetWeaponBase("weapon_nova")
-        ?.As<CCSWeaponBase>()
-         .VData;
-        if (novaData != null) novaData.CannotShootUnderwater = false;
-      });
     }
     base.Execute();
+
+    Plugin.AddTimer(1f, () => {
+      foreach (var player in PlayerUtil.GetAlive()) {
+        var novaData = player.GetWeaponBase("weapon_nova")
+         .As<CCSWeaponBase>()
+         .VData;
+        if (novaData != null) {
+          novaData.CannotShootUnderwater = false;
+          Server.PrintToChatAll("attempted disabling");
+        }
+      }
+    }, TimerFlags.STOP_ON_MAPCHANGE);
   }
 
   override protected HookResult OnEnd(EventRoundEnd ev, GameEventInfo info) {
