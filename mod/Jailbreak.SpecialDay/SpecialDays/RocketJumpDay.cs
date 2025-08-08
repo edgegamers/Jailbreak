@@ -119,10 +119,9 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
         var novaData = player.GetWeaponBase("weapon_nova")
          .As<CCSWeaponBase>()
          .VData;
-        if (novaData != null) {
-          novaData.CannotShootUnderwater = false;
-          Server.PrintToChatAll("attempted disabling");
-        }
+        if (novaData == null) continue;
+        novaData.CannotShootUnderwater = true;
+        Server.PrintToChatAll("attempted disabling");
       }
     }, TimerFlags.STOP_ON_MAPCHANGE);
   }
