@@ -20,7 +20,7 @@ namespace Jailbreak.Warden.Selection;
 public class AutoWarden(IWardenSelectionService selectionService,
   IWardenLocale locale, IGenericCmdLocale generic) : IPluginBehavior {
   
-  private static readonly ConcurrentDictionary<ulong, bool> cachedCookies = new();
+  private static readonly ConcurrentDictionary<ulong, bool> CACHED_COOKIES = new();
   
   private static readonly FakeConVar<string> CV_AUTOWARDEN_FLAG =
     new("css_autowarden_flag", "Permission flag required to enable auto-Warden",
@@ -56,8 +56,16 @@ public class AutoWarden(IWardenSelectionService selectionService,
           && p.IsReal()
           && p.PawnIsAlive
           && AdminManager.PlayerHasPermissions(p, CV_AUTOWARDEN_FLAG.Value))) {
+        
         if (player.PlayerPawn.Value == null
           || !player.PlayerPawn.Value.HasMovedSinceSpawn) 
+          continue;
+        
+        var steam = player.SteamID;
+        if (!CACHED_COOKIES.ContainsKey(steam))
+          Task.Run(async () => await populateCache(player, steam));
+
+        if (!CACHED_COOKIES.TryGetValue(steam, out var value) || !value)
           continue;
         selectionService.TryEnter(player);
         locale.JoinRaffle.ToChat(player);
@@ -88,7 +96,7 @@ public class AutoWarden(IWardenSelectionService selectionService,
       await Server.NextFrameAsync(() => {
         if (!player.IsValid) return;
         locale.AutoWardenToggled(enable).ToChat(player);
-        cachedCookies[steam] = enable;
+        CACHED_COOKIES[steam] = enable;
       });
     });
     
@@ -105,8 +113,8 @@ public class AutoWarden(IWardenSelectionService selectionService,
   private async Task populateCache(CCSPlayerController player, ulong steam) {
     if (cookie == null) return;
     var val = await cookie.Get(steam);
-    cachedCookies[steam] = val is null or "Y";
-    if (!cachedCookies[steam]) return;
+    CACHED_COOKIES[steam] = val is null or "Y";
+    if (!CACHED_COOKIES[steam]) return;
     await Server.NextFrameAsync(() => {
       if (!player.IsValid) return;
       selectionService.TryEnter(player);
