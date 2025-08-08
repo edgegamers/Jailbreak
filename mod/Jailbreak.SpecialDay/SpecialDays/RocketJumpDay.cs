@@ -75,13 +75,12 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
 
   private const int GE_FIRE_BULLETS_ID = 452;
 
-  private Dictionary<ulong, uint> shotsDictionary;
-
   // Thank you https://github.com/ipsvn/cs2-Rocketjump/tree/master
   private readonly MemoryFunctionVoid<nint, nint> touch =
     new("55 48 89 E5 41 54 49 89 F4 53 48 8B 87");
 
   private readonly HashSet<CCSPlayerPawn> jumping = [];
+  private Dictionary<ulong, float> nextNova = new();
 
   public override SDType Type => SDType.ROCKETJUMP;
   public override SpecialDaySettings Settings => new RocketJumpSettings();
@@ -179,9 +178,15 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     var weapon = @event.Weapon;
     if (weapon != "weapon_nova") return HookResult.Continue;
 
-    if (controller.PlayerPawn.Value?.WaterLevel >= 2)
-      return HookResult.Continue;
+    var sid = controller.SteamID;
+    var now = Server.CurrentTime;
     
+    if (nextNova.TryGetValue(sid, out var next)
+      && now < next) { return HookResult.Continue; }
+
+    nextNova[sid] = now + 1 / 68.0f;
+    //Nova Rate of fire according to https://counterstrike.fandom.com/wiki/Nova
+
     var pawn   = controller.PlayerPawn.Value;
     var origin = pawn?.AbsOrigin;
     if (pawn == null || origin == null) return HookResult.Continue;
