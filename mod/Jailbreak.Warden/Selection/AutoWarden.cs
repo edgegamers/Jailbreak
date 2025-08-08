@@ -74,6 +74,7 @@ public class AutoWarden(IWardenSelectionService selectionService,
     return HookResult.Continue;
   }
 
+  [ConsoleCommand("css_aw")]
   [ConsoleCommand("css_autowarden")]
   public void Command_AutoWarden(CCSPlayerController? player, CommandInfo info) {
     if (player == null) return;
