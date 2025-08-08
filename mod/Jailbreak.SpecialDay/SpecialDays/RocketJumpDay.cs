@@ -184,7 +184,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     if (nextNova.TryGetValue(sid, out var next)
       && now < next) { return HookResult.Continue; }
 
-    nextNova[sid] = now + 1 / 68.0f;
+    nextNova[sid] = now + 60 / 68.0f;
     //Nova Rate of fire according to https://counterstrike.fandom.com/wiki/Nova
 
     var pawn   = controller.PlayerPawn.Value;
