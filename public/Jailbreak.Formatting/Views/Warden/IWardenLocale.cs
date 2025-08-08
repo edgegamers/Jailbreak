@@ -18,6 +18,8 @@ public interface IWardenLocale {
   public IView FireCommandFailed { get; }
 
   public IView CannotWardenDuringWarmup { get; }
+  
+  public IView TogglingNotEnabled { get;  }
 
   /// <summary>
   ///   Create a view for when the specified player passes warden
@@ -51,4 +53,6 @@ public interface IWardenLocale {
   public IView MarkerPlaced(string marker);
 
   public IView MarkerRemoved(string marker);
+
+  IView AutoWardenToggled(bool enabled);
 }
