@@ -113,17 +113,6 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
       player.GiveNamedItem("weapon_nova");
     }
     base.Execute();
-
-    Plugin.AddTimer(1f, () => {
-      foreach (var player in PlayerUtil.GetAlive()) {
-        var novaData = player.GetWeaponBase("weapon_nova")
-         .As<CCSWeaponBase>()
-         .VData;
-        if (novaData == null) continue;
-        novaData.CannotShootUnderwater = true;
-        Server.PrintToChatAll("attempted disabling");
-      }
-    }, TimerFlags.STOP_ON_MAPCHANGE);
   }
 
   override protected HookResult OnEnd(EventRoundEnd ev, GameEventInfo info) {
@@ -186,6 +175,9 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
 
     var weapon = @event.Weapon;
     if (weapon != "weapon_nova") return HookResult.Continue;
+
+    if (controller.PlayerPawn.Value?.WaterLevel > 64.09f)
+      return HookResult.Continue;
 
     var pawn   = controller.PlayerPawn.Value;
     var origin = pawn?.AbsOrigin;
