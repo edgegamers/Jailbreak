@@ -184,7 +184,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     if (nextNova.TryGetValue(sid, out var next)
       && now < next) { return HookResult.Continue; }
 
-    nextNova[sid] = now + 0.75f;
+    nextNova[sid] = now + 0.82f;
 
     var pawn   = controller.PlayerPawn.Value;
     var origin = pawn?.AbsOrigin;
