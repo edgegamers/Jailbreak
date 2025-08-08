@@ -110,11 +110,12 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
       player.SetArmor(0);
       player.GiveNamedItem("weapon_knife");
       player.GiveNamedItem("weapon_nova");
-      var novaData = player.GetWeaponBase("weapon_nova")?
-       .As<CCSWeaponBase>()
-       .VData;
-      if (novaData == null) continue;
-      novaData.CannotShootUnderwater = false;
+      Server.NextFrame(() => {
+        var novaData = player.GetWeaponBase("weapon_nova")
+        ?.As<CCSWeaponBase>()
+         .VData;
+        if (novaData != null) novaData.CannotShootUnderwater = false;
+      });
     }
     base.Execute();
   }
