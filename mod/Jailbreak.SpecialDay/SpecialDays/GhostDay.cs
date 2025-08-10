@@ -74,7 +74,7 @@ public class GhostDay(BasePlugin plugin, IServiceProvider provider)
 
   public override void Setup() {
     CHECK_TRANSMIT.Hook(onTransmit, HookMode.Post);
-    Server.NextFrameAsync(() => { setVisibility(false); });
+    Server.NextFrameAsync(() => setVisibility(false));
     base.Setup();
   }
 

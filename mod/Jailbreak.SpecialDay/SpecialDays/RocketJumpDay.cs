@@ -180,9 +180,9 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
 
     var sid = controller.SteamID;
     var now = Server.CurrentTime;
-    
-    if (nextNova.TryGetValue(sid, out var next)
-      && now < next) { return HookResult.Continue; }
+
+    if (nextNova.TryGetValue(sid, out var next) && now < next)
+      return HookResult.Continue; 
 
     nextNova[sid] = now + 0.82f;
 
