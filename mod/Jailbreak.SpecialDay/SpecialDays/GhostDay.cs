@@ -1,6 +1,8 @@
+using System.Runtime.InteropServices;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
+using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
@@ -26,20 +28,53 @@ public class GhostDay(BasePlugin plugin, IServiceProvider provider)
     "Amount of time players spend invisible per cycle", 5f,
     ConVarFlags.FCVAR_NONE, new NonZeroRangeValidator<float>(1f, 30f));
 
-  public static float CycleDuration
+  private static readonly
+    MemoryFunctionVoid<nint, nint, int, nint, nint, nint, int, bool>
+    CHECK_TRANSMIT = new(GameData.GetSignature("CheckTransmit"));
+
+  private static readonly int CHECK_TRANSMIT_PLAYER_SLOT_CACHE =
+    GameData.GetOffset("CheckTransmitPlayerSlot");
+
+  private static float CycleDuration
     => CV_VISIBLE_DURATION.Value + CV_INVISIBLE_DURATION.Value;
   private bool allPlayersVisible;
   private float timeElapsed;
   private Timer? ghostTimer;
-  public override SDType Type => SDType.GHOST;
   
+  [StructLayout(LayoutKind.Sequential)]
+  public struct CCheckTransmitInfo
+  {
+    public CFixedBitVecBase m_pTransmitEntity;
+  }
+
+  [StructLayout(LayoutKind.Sequential)]
+  public readonly unsafe struct CFixedBitVecBase
+  {
+    private const int LOG2_BITS_PER_INT = 5;
+    private const int MAX_EDICT_BITS = 14;
+    private const int BITS_PER_INT = 32;
+    private const int MAX_EDICTS = 1 << MAX_EDICT_BITS;
+
+    private readonly uint* m_Ints;
+
+    public void Clear(int bitNum)
+    {
+      if (bitNum is < 0 or >= MAX_EDICTS)
+        return;
+
+      var pInt = m_Ints + (bitNum >> LOG2_BITS_PER_INT);
+      *pInt &= ~(uint)(1 << (bitNum & BITS_PER_INT - 1));
+    }
+  }
+  public override SDType Type => SDType.GHOST;
   public override ISDInstanceLocale Locale
     => new SoloDayLocale("Ghost War",
       "Now you see me… now you don’t! Fight through flickering visibility!");
+  public override SpecialDaySettings Settings => new GhostSettings();
 
   public override void Setup() {
-    Plugin.RegisterListener<Listeners.CheckTransmit>(onTransmit);
-    setVisibility(false);
+    CHECK_TRANSMIT.Hook(onTransmit, HookMode.Post);
+    Server.NextFrameAsync(() => setVisibility(false));
     base.Setup();
   }
 
@@ -68,24 +103,35 @@ public class GhostDay(BasePlugin plugin, IServiceProvider provider)
     }, TimerFlags.REPEAT);
   }
 
-  private void onTransmit(CCheckTransmitInfoList infolist) {
-    if (!allPlayersVisible) return;
+  private unsafe HookResult onTransmit(DynamicHook hook) {
+    if (allPlayersVisible) return HookResult.Continue;
+
+    var ppInfoList = (nint*)hook.GetParam<nint>(1);
+    var infoCount  = hook.GetParam<int>(2);
 
     var players = Utilities.GetPlayers()
      .Where(p => p is { IsValid: true, PawnIsAlive: true })
      .ToList();
 
-    foreach (var (info, viewer) in infolist) {
-      if (viewer == null || !viewer.IsValid) continue;
-      foreach (var target in players.Where(target => target != viewer))
-        if (target.PlayerPawn.Value != null)
-          info.TransmitEntities.Remove((int)target.PlayerPawn.Value.Index);
+    for (var i = 0; i < infoCount; i++) {
+      var pInfo  = ppInfoList[i];
+      var slot   = *(byte*)(pInfo + CHECK_TRANSMIT_PLAYER_SLOT_CACHE);
+      var player = Utilities.GetPlayerFromSlot(slot);
+      if (player == null || !player.IsValid) continue;
+
+      var info = Marshal.PtrToStructure<CCheckTransmitInfo>(pInfo);
+
+      foreach (var target in
+        players.Where(target => target.Index != player.Index)) {
+        info.m_pTransmitEntity.Clear((int)target.PlayerPawn.Value.Index);
+      }
     }
+    return HookResult.Continue;
   }
   
   override protected HookResult OnEnd(EventRoundEnd ev, GameEventInfo info) {
     ghostTimer?.Kill();
-    Plugin.RemoveListener<Listeners.CheckTransmit>(onTransmit);
+    CHECK_TRANSMIT.Unhook(onTransmit, HookMode.Post);
     return base.OnEnd(ev, info);
   }
 
@@ -99,7 +145,7 @@ public class GhostDay(BasePlugin plugin, IServiceProvider provider)
     }
   }
 
-  public class GhostSettings : SpecialDaySettings {
+  public class GhostSettings : FFASettings {
     public GhostSettings() {
       ConVarValues["mp_footsteps_serverside"] = false;
     }

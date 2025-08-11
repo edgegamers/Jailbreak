@@ -3,8 +3,10 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
+using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
+using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.UserMessages;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
@@ -59,7 +61,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     + "True allows for easier rocket jumps at the cost of 'funky' shot paths when trying to shoot a player");
 
   public static readonly FakeConVar<float> CV_PROJ_DAMAGE = new(
-    "css_jb_rj_proj_damage", "The damage caused by projectile explosion", 57f,
+    "css_jb_rj_proj_damage", "The damage caused by projectile explosion", 65f,
     ConVarFlags.FCVAR_NONE, new RangeValidator<float>(1f, 200f));
 
   public static readonly FakeConVar<float> CV_PROJ_DAMAGE_RADIUS = new(
@@ -78,14 +80,15 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     new("55 48 89 E5 41 54 49 89 F4 53 48 8B 87");
 
   private readonly HashSet<CCSPlayerPawn> jumping = [];
+  private Dictionary<ulong, float> nextNova = new();
 
   public override SDType Type => SDType.ROCKETJUMP;
   public override SpecialDaySettings Settings => new RocketJumpSettings();
 
   public ISDInstanceLocale Locale
     => new SoloDayLocale("Rocket Jump",
-      "Your shotgun is now an RPG that fires grenades!"
-      + "shoot the ground to launch!" + "Mid-air knives hit hard!");
+      "Your shotgun is now an RPG that fires grenades! "
+      + "Shoot the ground to launch! " + "Mid-air knives Insta-kill!");
 
   public override void Setup() {
     Plugin.HookUserMessage(GE_FIRE_BULLETS_ID, fireBulletsUmHook);
@@ -174,6 +177,14 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
 
     var weapon = @event.Weapon;
     if (weapon != "weapon_nova") return HookResult.Continue;
+
+    var sid = controller.SteamID;
+    var now = Server.CurrentTime;
+
+    if (nextNova.TryGetValue(sid, out var next) && now < next)
+      return HookResult.Continue; 
+
+    nextNova[sid] = now + 0.82f;
 
     var pawn   = controller.PlayerPawn.Value;
     var origin = pawn?.AbsOrigin;
