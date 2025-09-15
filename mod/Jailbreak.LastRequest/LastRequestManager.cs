@@ -34,7 +34,6 @@ using MStatsShared;
 
 namespace Jailbreak.LastRequest;
 //TODO: Fix Various Server Crashes
-//TODO: Fix CT Immunity
 
 public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   : ILastRequestManager, IDamageBlocker {
