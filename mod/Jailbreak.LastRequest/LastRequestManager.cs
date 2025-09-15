@@ -88,7 +88,8 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     // Both of them are in LR, verify they're in same LR
     if (victimLR == null) return false;
 
-    if (victimLR.Prisoner.Equals(attacker) || victimLR.Guard.Equals(attacker))
+    if (victimLR.Prisoner.SteamID == attacker.SteamID
+        || victimLR.Guard.SteamID == attacker.SteamID)
       // The person attacking is the victim's LR participant, allow damage
       return false;
 
