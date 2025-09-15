@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using WardenPaintColorPerk;
 
 namespace Jailbreak.Warden.Paint;
+//TODO: Fix Paint System
 
 public class WardenPaintBehavior(IWardenService wardenService,
   IServiceProvider provider) : IPluginBehavior {
