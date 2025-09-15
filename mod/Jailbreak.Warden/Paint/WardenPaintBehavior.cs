@@ -20,7 +20,6 @@ using WardenPaintColorPerk;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
 namespace Jailbreak.Warden.Paint;
-//TODO: Fix Paint System
 
 public class WardenPaintBehavior(IWardenService wardenService,
   IServiceProvider provider) : IPluginBehavior {
