@@ -1,8 +1,11 @@
 ﻿using System.Drawing;
+using System.Numerics;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
+using CS2TraceRay.Class;
+using CS2TraceRay.Enum;
 using GangsAPI.Data;
 using GangsAPI.Services.Gang;
 using GangsAPI.Services.Player;
@@ -14,6 +17,7 @@ using Jailbreak.Public.Mod.Rainbow;
 using Jailbreak.Public.Mod.Warden;
 using Microsoft.Extensions.DependencyInjection;
 using WardenPaintColorPerk;
+using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
 namespace Jailbreak.Warden.Paint;
 
@@ -47,8 +51,12 @@ public class WardenPaintBehavior(IWardenService wardenService,
 
     if ((warden.Buttons & PlayerButtons.Use) == 0) return;
 
-    var position = RayTrace.FindRayTraceIntersection(warden);
-    if (position == null) return;
+    var trace =
+      warden.GetGameTraceByEyePosition(TraceMask.MaskSolid, Contents.Solid,
+        warden);
+    if (trace == null) return;
+
+    var position = trace.Value.Position.ToCsVector();
 
     var start = lastPosition ?? position;
     start = start.Clone();

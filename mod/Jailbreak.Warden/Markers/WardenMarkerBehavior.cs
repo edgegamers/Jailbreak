@@ -10,6 +10,8 @@ using CounterStrikeSharp.API.Modules.Utils;
 using CS2ScreenMenuAPI;
 using CS2ScreenMenuAPI.Enums;
 using CS2ScreenMenuAPI.Internal;
+using CS2TraceRay.Class;
+using CS2TraceRay.Enum;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public;
@@ -126,8 +128,12 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
       || weapon == "weapon_sg556")
       return;
 
-    var position = RayTrace.FindRayTraceIntersection(warden.Warden);
-    if (position == null) return;
+    var trace =
+      warden.Warden.GetGameTraceByEyePosition(TraceMask.MaskSolid, Contents.Solid,
+        warden.Warden);
+    if (trace == null) return;
+    
+    var position = trace.Value.Position.ToCsVector();
 
     if (!activelyPlacing) {
       for (var i = 0; i < markers.Length; i++) {

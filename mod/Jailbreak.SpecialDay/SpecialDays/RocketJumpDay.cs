@@ -19,7 +19,6 @@ using Jailbreak.Public.Utils;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
-
 public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
   : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
   public static readonly FakeConVar<float> CV_BULLET_SPEED = new(
@@ -196,7 +195,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
       pawn.AbsVelocity.ToVec3() + realBulletVelocity :
       realBulletVelocity;
     shootBullet(controller, targetPos, addedBulletVelocity,
-      new Vector3(pawn.EyeAngles.X, pawn.EyeAngles.Y, pawn.EyeAngles.Z));
+      new Vector3(origin.X, origin.Y, (float)(origin.Z + 64.09)));
 
     return HookResult.Continue;
   }
