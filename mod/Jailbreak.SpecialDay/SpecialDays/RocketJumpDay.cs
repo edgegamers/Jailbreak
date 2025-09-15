@@ -196,7 +196,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
       pawn.AbsVelocity.ToVec3() + realBulletVelocity :
       realBulletVelocity;
     shootBullet(controller, targetPos, addedBulletVelocity,
-      new Vector3(pawn.EyeAngles.X, pawn.EyeAngles.Y, pawn.EyeAngles.Z));
+      new Vector3(origin.X, origin.Y, (float)(origin.Z + 64.09)));
 
     return HookResult.Continue;
   }
