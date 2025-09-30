@@ -19,7 +19,6 @@ using Jailbreak.Public.Utils;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
-
 public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
   : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
   public static readonly FakeConVar<float> CV_BULLET_SPEED = new(
@@ -196,7 +195,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
       pawn.AbsVelocity.ToVec3() + realBulletVelocity :
       realBulletVelocity;
     shootBullet(controller, targetPos, addedBulletVelocity,
-      new Vector3(pawn.EyeAngles.X, pawn.EyeAngles.Y, pawn.EyeAngles.Z));
+      new Vector3(origin.X, origin.Y, (float)(origin.Z + 64.09)));
 
     return HookResult.Continue;
   }
@@ -253,10 +252,12 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     projectile.GravityScale = CV_PROJ_GRAVITY.Value;
     projectile.DetonateTime = 9999f;
 
-    unsafe {
-      projectile.Teleport(new Vector((nint)(&origin)), new QAngle((nint)(&angle)),
-        new Vector((nint)(&velocity)));
-    }
+    // Set transform BY VALUE (no unsafe pointers)
+    var pos = new Vector(origin.X, origin.Y, origin.Z);
+    var vel = new Vector(velocity.X, velocity.Y, velocity.Z);
+    var ang = new QAngle(angle.X, angle.Y, angle.Z);
+
+    projectile.Teleport(pos, ang, vel);
   }
 
   /// <summary>

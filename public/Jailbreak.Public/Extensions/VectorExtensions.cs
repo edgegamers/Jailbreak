@@ -61,6 +61,15 @@ public static class VectorExtensions {
   public static Vector3 ToVec3(this Vector vector) {
     return new Vector3(vector.X, vector.Y, vector.Z);
   }
+  
+  /// <summary>
+  ///   Converts a Vector3 Into a CounterStrikeSharp Vector Class
+  /// </summary>
+  /// <param name="vec3"></param>
+  /// <returns></returns>
+  public static Vector ToCsVector(this Vector3 vec3) {
+    return new Vector(vec3.X, vec3.Y, vec3.Z);
+  }
 
   /// <summary>
   ///   Converts the given angle vector (pitch, yaw, roll) into directional unit vectors:
