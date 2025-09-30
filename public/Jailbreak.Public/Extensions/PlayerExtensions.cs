@@ -195,8 +195,14 @@ public static class PlayerExtensions {
 
   public static void GetEyeForward(this CCSPlayerPawn pawn, float distance,
     out Vector3 forward, out Vector3 target) {
-    var angles =
-      new Vector3(pawn.EyeAngles.X, pawn.EyeAngles.Y, pawn.EyeAngles.Z);
+    if (pawn.AbsOrigin == null) {
+      forward = default;
+      target  = default;
+      return;
+    }
+
+    var angles = new Vector3(pawn.AbsOrigin.X, pawn.AbsOrigin.Y,
+      pawn.AbsOrigin.Z + 64.09f);
     angles.AngleVectors(out forward, out _, out _);
 
     var eyeOrigin = pawn.GetEyeOrigin();
