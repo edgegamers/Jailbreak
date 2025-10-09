@@ -7,12 +7,6 @@ namespace Jailbreak.Public.Mod.Damage;
 ///   taking damage.
 /// </summary>
 public interface IDamageBlocker {
-  [Obsolete("Do not use the EventPlayerHurt overload.")]
-  bool ShouldBlockDamage(CCSPlayerController victim,
-    CCSPlayerController? attacker, EventPlayerHurt @event) {
-    return ShouldBlockDamage(victim, attacker);
-  }
-
   bool ShouldBlockDamage(CCSPlayerController victim,
     CCSPlayerController? attacker);
 }

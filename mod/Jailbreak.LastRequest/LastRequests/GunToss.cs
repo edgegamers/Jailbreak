@@ -20,11 +20,6 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
   IServiceProvider provider, CCSPlayerController prisoner,
   CCSPlayerController guard)
   : TeleportingRequest(plugin, manager, prisoner, guard), IDropListener {
-  private readonly List<BeamLine> guardLines = [], prisonerLines = [];
-
-  private readonly ILRGunTossLocale locale =
-    provider.GetRequiredService<ILRGunTossLocale>();
-
   /// <summary>
   ///   Null if no one has thrown a gun yet, negative if only one has thrown a gun,
   ///   Positive if both have thrown a gun.
@@ -56,13 +51,6 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
     }
 
     if (prisonerTossed && guardTossed) bothThrewTick = Server.TickCount;
-
-    if (bothThrewTick > 0)
-      Plugin.AddTimer(5, () => {
-        if (State != LRState.ACTIVE) return;
-        Guard.SetHealth(Math.Min(Guard.PlayerPawn.Value!.Health, 100));
-        Guard.SetArmor(Math.Min(Guard.PawnArmor, 100));
-      });
   }
 
   public override void Setup() {
@@ -70,13 +58,6 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
 
     Prisoner.RemoveWeapons();
     Guard.RemoveWeapons();
-
-    Server.NextFrame(() => {
-      if (!Guard.IsValid) return;
-
-      Guard.SetHealth(500);
-      Guard.SetArmor(500);
-    });
 
     Plugin.AddTimer(3, Execute);
   }
@@ -91,14 +72,7 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
     Server.RunOnTick(Server.TickCount + 16, () => State = LRState.ACTIVE);
   }
 
-  public override void OnEnd(LRResult result) {
-    State = LRState.COMPLETED;
-
-    guardLines.ForEach(l => l.Remove());
-    guardLines.Clear();
-    prisonerLines.ForEach(l => l.Remove());
-    prisonerLines.Clear();
-  }
+  public override void OnEnd(LRResult result) { State = LRState.COMPLETED; }
 
   public override bool PreventEquip(CCSPlayerController player,
     CCSWeaponBaseVData weapon) {
