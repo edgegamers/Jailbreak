@@ -51,6 +51,13 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
     }
 
     if (prisonerTossed && guardTossed) bothThrewTick = Server.TickCount;
+    
+    if (bothThrewTick > 0)
+      Plugin.AddTimer(5, () => {
+        if (State != LRState.ACTIVE || !Guard.IsValid || !Guard.Pawn.IsValid) return;
+        Guard.SetHealth(Math.Min(Guard.Pawn.Value!.Health, 100));
+        Guard.SetArmor(Math.Min(Guard.PawnArmor, 100));
+      });
   }
 
   public override void Setup() {
@@ -58,6 +65,13 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
 
     Prisoner.RemoveWeapons();
     Guard.RemoveWeapons();
+    
+    Server.NextFrame(() => {
+      if (!Guard.IsValid) return;
+
+      Guard.SetHealth(500);
+      Guard.SetArmor(500);
+    });
 
     Plugin.AddTimer(3, Execute);
   }
