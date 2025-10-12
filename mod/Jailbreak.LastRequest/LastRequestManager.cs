@@ -88,8 +88,8 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     // Both of them are in LR, verify they're in same LR
     if (victimLR == null) return false;
 
-    if (victimLR.Prisoner.SteamID == attacker.SteamID
-        || victimLR.Guard.SteamID == attacker.SteamID)
+    if (victimLR.Prisoner.Slot == attacker.Slot
+        || victimLR.Guard.Slot == attacker.Slot)
       // The person attacking is the victim's LR participant, allow damage
       return false;
 
@@ -113,9 +113,14 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     basePlugin.RegisterListener<Listeners.OnEntityParentChanged>(OnDrop);
     VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage,
       HookMode.Pre);
+    VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Hook(OnCanAcquire,
+      HookMode.Pre);
   }
 
   public void Dispose() {
+    VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Unhook(OnCanAcquire,
+      HookMode.Pre);
+
     VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(OnTakeDamage,
       HookMode.Pre);
   }
@@ -130,6 +135,8 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   public void EnableLR(CCSPlayerController? died = null) {
     messages.LastRequestEnabled().ToAllChat();
     IsLREnabled = true;
+
+    API.Stats?.PushStat(new ServerStat("JB_LASTREQUEST_ACTIVATED"));
 
     var cts = Utilities.GetPlayers()
      .Count(p => p is { Team: CsTeam.CounterTerrorist, PawnIsAlive: true });
@@ -182,6 +189,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
       foreach (var survivor in survivors) {
         await eco.Grant(survivor, survivor.Team == CsTeam.Terrorist ? 65 : 60,
           reason: "LR Reached");
+        await incrementLRReached(survivor);
       }
     });
   }
@@ -200,6 +208,16 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     prisoner.SetArmor(0);
     guard.SetArmor(0);
 
+    var prisonerWrapper = new PlayerWrapper(prisoner);
+    var guardWrapper    = new PlayerWrapper(guard);
+
+    Task.Run(async () => {
+      await incrementLRStart(prisonerWrapper);
+      await incrementLRStart(guardWrapper);
+
+      await colorForLR(prisonerWrapper, guardWrapper);
+    });
+
     messages.InformLastRequest(lr).ToAllChat();
     return true;
   }
@@ -208,6 +226,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     rainbowColorizer.StopRainbow(lr.Prisoner);
     rainbowColorizer.StopRainbow(lr.Guard);
     if (result is LRResult.GUARD_WIN or LRResult.PRISONER_WIN) {
+      // RoundUtil.AddTimeRemaining(CV_LR_BONUS_TIME.Value);
       addRoundTimeCapped(CV_LR_BONUS_TIME.Value, CV_MAX_TIME_FOR_LR.Value);
       messages.LastRequestDecided(lr, result).ToAllChat();
 
@@ -221,6 +240,9 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
         Task.Run(async () => await eco.Grant(wrapper,
           wrapper.Team == CsTeam.CounterTerrorist ? 35 : 20, reason: "LR Win"));
       }
+
+      if (API.Gangs != null)
+        Task.Run(async () => await incrementLRWin(wrapper));
     }
 
     API.Stats?.PushStat(new ServerStat("JB_LASTREQUEST_RESULT",
@@ -254,20 +276,182 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     listener.OnWeaponDrop(owner, weapon);
   }
 
+  private HookResult OnCanAcquire(DynamicHook hook) {
+    if (ActiveLRs.Count == 0) return HookResult.Continue;
+    var player = hook.GetParam<CCSPlayer_ItemServices>(0)
+     .Pawn.Value.Controller.Value?.As<CCSPlayerController>();
+    var data = VirtualFunctions.GetCSWeaponDataFromKey.Invoke(-1,
+      hook.GetParam<CEconItemView>(1).ItemDefinitionIndex.ToString());
+
+    if (player == null || !player.IsValid) return HookResult.Continue;
+
+    var method = hook.GetParam<AcquireMethod>(2);
+    if (method != AcquireMethod.PickUp) return HookResult.Continue;
+
+    if (ActiveLRs.Any(lr => lr.PreventEquip(player, data))) {
+      hook.SetReturn(AcquireResult.NotAllowedByMode);
+      return HookResult.Handled;
+    }
+
+    return HookResult.Continue;
+  }
+
+  private async Task colorForLR(PlayerWrapper a, PlayerWrapper b) {
+    var playerStats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    var gangStats   = API.Gangs?.Services.GetService<IGangStatManager>();
+    var gangs       = API.Gangs?.Services.GetService<IGangManager>();
+    var localizer   = API.Gangs?.Services.GetService<IStringLocalizer>();
+    if (playerStats == null || localizer == null || gangs == null
+      || gangStats == null)
+      return;
+    var aData = await playerStats.GetForPlayer<LRColor>(a, LRColorPerk.STAT_ID);
+    var bData = await playerStats.GetForPlayer<LRColor>(b, LRColorPerk.STAT_ID);
+
+    LRColor?       toApply = null;
+    PlayerWrapper? higher  = null;
+    higher = await getHigherPlayer(a, b);
+    if (toApply == null) return;
+    if (a.Player == null || b.Player == null) return;
+
+    var higherGang = await gangs.GetGang(higher.Steam);
+    if (higherGang == null) return;
+
+    var gData =
+      await gangStats.GetForGang<LRColor>(higherGang, LRColorPerk.STAT_ID);
+
+    if ((gData & toApply.Value) == 0) return;
+
+    var color = toApply.Value.GetColor();
+
+    if (color == null) { // Player picked random, but we need to pick
+      // the random from their GANG's colors
+      var gangData =
+        await playerStats.GetForPlayer<LRColor>(higher, LRColorPerk.STAT_ID);
+      color = gangData.PickRandomColor();
+    }
+
+    if (color == null) return;
+
+    await Server.NextFrameAsync(() => {
+      if (toApply == LRColor.RAINBOW) {
+        rainbowColorizer.StartRainbow(a.Player);
+        rainbowColorizer.StartRainbow(b.Player);
+        var rmsg = localizer.Get(MSG.PREFIX)
+          + $"Your LR will be {IRainbowColorizer.RAINBOW}.";
+
+        a.Player.PrintToChat(rmsg);
+        b.Player.PrintToChat(rmsg);
+        return;
+      }
+
+      a.Player.SetColor(color.Value);
+      b.Player.SetColor(color.Value);
+
+      var msg = localizer.Get(MSG.PREFIX)
+        + $"Your LR will be {color.GetChatColor()}{color.Value.Name}{ChatColors.Grey}.";
+
+      a.Player.PrintToChat(msg);
+      b.Player.PrintToChat(msg);
+    });
+  }
+
+  private async Task<PlayerWrapper> getHigherPlayer(PlayerWrapper a,
+    PlayerWrapper b) {
+    var leaderboard = API.Gangs?.Services.GetService<ILeaderboard>();
+    var players     = API.Gangs?.Services.GetService<IPlayerManager>();
+    if (leaderboard == null || players == null) return a;
+    var aGangPlayer = await players.GetPlayer(a.Steam);
+    var bGangPlayer = await players.GetPlayer(b.Steam);
+
+    if (aGangPlayer == null && bGangPlayer != null) return b;
+    if (aGangPlayer != null && bGangPlayer == null) return a;
+
+    if (aGangPlayer == null || bGangPlayer == null) return a;
+
+    var aGang = aGangPlayer.GangId;
+    var bGang = bGangPlayer.GangId;
+
+    if (aGang == null && bGang != null) return b;
+    if (aGang != null && bGang == null) return a;
+
+    if (aGang == null || bGang == null) return a;
+    if (aGang == bGang) return a;
+
+    var aRank = await leaderboard.GetPosition(aGang.Value);
+    var bRank = await leaderboard.GetPosition(bGang.Value);
+
+    if (aRank == null && bRank != null) return b;
+    if (aRank != null && bRank == null) return a;
+
+    if (aRank == null || bRank == null) return a;
+
+    return aRank < bRank ? a : b;
+  }
+
+  private async Task incrementLRReached(PlayerWrapper player) {
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats == null) return;
+    var stat = await getStat(player);
+    if (stat == null) return;
+
+    if (player.Team == CsTeam.Terrorist)
+      stat.LRsReachedAsT++;
+    else
+      stat.LRsReachedAsCt++;
+
+    await stats.SetForPlayer(player, LRStat.STAT_ID, stat);
+  }
+
+  private async Task incrementLRStart(PlayerWrapper player) {
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats == null) return;
+    var stat = await getStat(player);
+    if (stat == null) return;
+
+    if (player.Team == CsTeam.Terrorist)
+      stat.TLrs++;
+    else
+      stat.CtLrs++;
+
+    await stats.SetForPlayer(player, LRStat.STAT_ID, stat);
+  }
+
+  private async Task incrementLRWin(PlayerWrapper player) {
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats == null) return;
+    var stat = await getStat(player);
+    if (stat == null) return;
+
+    if (player.Team == CsTeam.Terrorist)
+      stat.TLrsWon++;
+    else
+      stat.CTLrsWon++;
+
+    await stats.SetForPlayer(player, LRStat.STAT_ID, stat);
+  }
+
+  private async Task<LRData?> getStat(PlayerWrapper player) {
+    var stats = API.Gangs?.Services.GetService<IPlayerStatManager>();
+    if (stats == null) return null;
+    var data = await stats.GetForPlayer<LRData>(player, LRStat.STAT_ID)
+      ?? new LRData();
+    return data;
+  }
+
   public static bool shouldGrantCredits() {
     if (API.Gangs == null) return false;
     return Utilities.GetPlayers().Count >= CV_MIN_PLAYERS_FOR_CREDITS.Value;
   }
 
   private HookResult OnTakeDamage(DynamicHook hook) {
-    var info       = hook.GetParam<CTakeDamageInfo>(1);
     var playerPawn = hook.GetParam<CCSPlayerPawn>(0);
+    var info       = hook.GetParam<CTakeDamageInfo>(1);
 
     var player = playerPawn.Controller.Value?.As<CCSPlayerController>();
     if (player == null || !player.IsValid) return HookResult.Continue;
 
-    var attackerPawn = info.Attacker;
-    var attacker     = attackerPawn.Value?.As<CCSPlayerController>();
+    var attackerPawn = info.Attacker.Value?.As<CCSPlayerPawn>();
+    var attacker     = attackerPawn?.As<CCSPlayerController>();
 
     if (attacker == null || !attacker.IsValid) return HookResult.Continue;
 
@@ -277,42 +461,39 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   }
 
   [UsedImplicitly]
-  [GameEventHandler(HookMode.Pre)]
+  [GameEventHandler]
   public HookResult OnTakeDamage(EventPlayerHurt ev, GameEventInfo info) {
     var player   = ev.Userid;
     var attacker = ev.Attacker;
-    if (player == null || player.Pawn.Value == null) return HookResult.Continue;
+    if (player == null || !player.IsReal()) return HookResult.Continue;
     if (!ShouldBlockDamage(player, attacker)) return HookResult.Continue;
+    if (player.PlayerPawn.IsValid) {
+      var playerPawn = player.PlayerPawn.Value!;
+      playerPawn.Health = playerPawn.LastHealth;
+    }
+
     info.DontBroadcast = false;
     ev.DmgArmor        = ev.DmgHealth = 0;
     return HookResult.Handled;
   }
 
-  [UsedImplicitly]
   [GameEventHandler]
   public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
     foreach (var lr in ActiveLRs.ToList())
       EndLastRequest(lr, LRResult.TIMED_OUT);
 
-    IsLREnabled = false;
     return HookResult.Continue;
   }
 
-  [UsedImplicitly]
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info) {
     IsLREnabledForRound = true;
     IsLREnabled         = false;
     foreach (var player in Utilities.GetPlayers())
       MenuManager.CloseActiveMenu(player);
-
-    foreach (var lr in ActiveLRs.ToList())
-      EndLastRequest(lr, LRResult.TIMED_OUT);
-    ActiveLRs.Clear();
     return HookResult.Continue;
   }
 
-  [UsedImplicitly]
   [GameEventHandler]
   public HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info) {
     var player = @event.Userid;
@@ -336,7 +517,6 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     return HookResult.Continue;
   }
 
-  [UsedImplicitly]
   [GameEventHandler]
   public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event,
     GameEventInfo info) {
