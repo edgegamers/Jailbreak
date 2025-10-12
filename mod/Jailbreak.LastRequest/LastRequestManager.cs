@@ -34,7 +34,6 @@ using Microsoft.Extensions.Localization;
 using MStatsShared;
 
 namespace Jailbreak.LastRequest;
-//TODO: Fix Various Server Crashes
 
 public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   : ILastRequestManager, IDamageBlocker {
