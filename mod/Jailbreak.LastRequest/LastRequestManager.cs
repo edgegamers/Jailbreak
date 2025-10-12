@@ -481,6 +481,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     foreach (var lr in ActiveLRs.ToList())
       EndLastRequest(lr, LRResult.TIMED_OUT);
 
+    IsLREnabled = false;
     return HookResult.Continue;
   }
 
@@ -490,6 +491,10 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     IsLREnabled         = false;
     foreach (var player in Utilities.GetPlayers())
       MenuManager.CloseActiveMenu(player);
+
+    foreach (var lr in ActiveLRs.ToList())
+      EndLastRequest(lr, LRResult.TIMED_OUT);
+    ActiveLRs.Clear();
     return HookResult.Continue;
   }
 
