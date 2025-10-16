@@ -468,7 +468,7 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     if (!ShouldBlockDamage(player, attacker)) return HookResult.Continue;
     if (player.PlayerPawn.IsValid) {
       var playerPawn = player.PlayerPawn.Value!;
-      playerPawn.Health = playerPawn.LastHealth;
+      playerPawn.Health += ev.DmgHealth;
     }
 
     info.DontBroadcast = false;
