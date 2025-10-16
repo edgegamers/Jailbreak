@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="CounterStrikeSharp.API" Version="1.0.330" />
+        <PackageReference Include="CounterStrikeSharp.API" Version="1.0.342" />
         <PackageReference Include="JetBrains.Annotations" Version="2024.2.0"/>
         <PackageReference Include="System.Text.Json" Version="8.0.5"/>
         <ProjectReference Include="..\Jailbreak.Tag\Jailbreak.Tag.csproj"/>
