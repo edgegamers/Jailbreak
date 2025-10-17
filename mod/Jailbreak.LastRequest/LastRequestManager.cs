@@ -110,8 +110,8 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     stats?.Stats.Add(new LRStat());
 
     basePlugin.RegisterListener<Listeners.OnEntityParentChanged>(OnDrop);
-    VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage,
-      HookMode.Pre);
+    // VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage,
+    //   HookMode.Pre);
     VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Hook(OnCanAcquire,
       HookMode.Pre);
   }
@@ -120,8 +120,8 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Unhook(OnCanAcquire,
       HookMode.Pre);
 
-    VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(OnTakeDamage,
-      HookMode.Pre);
+    // VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(OnTakeDamage,
+    //   HookMode.Pre);
   }
 
   public void DisableLR() { IsLREnabled = false; }
