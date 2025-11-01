@@ -19,6 +19,7 @@ using Jailbreak.Public.Utils;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
+
 public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
   : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
   public static readonly FakeConVar<float> CV_BULLET_SPEED = new(
@@ -74,9 +75,8 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
 
   private const int GE_FIRE_BULLETS_ID = 452;
 
-  // Thank you https://github.com/ipsvn/cs2-Rocketjump/tree/master
-  private readonly MemoryFunctionVoid<nint, nint> touch =
-    new("55 48 89 E5 41 54 49 89 F4 53 48 8B 87");
+  private readonly MemoryFunctionVoid<CBaseGrenade, CBaseEntity>
+    bounce = new("48 83 BE ? ? ? ? ? 74");
 
   private readonly HashSet<CCSPlayerPawn> jumping = [];
   private Dictionary<ulong, float> nextNova = new();
@@ -91,7 +91,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
 
   public override void Setup() {
     Plugin.HookUserMessage(GE_FIRE_BULLETS_ID, fireBulletsUmHook);
-    touch.Hook(CBaseEntity_Touch, HookMode.Pre);
+    bounce.Hook(CBaseGrenade_Bounce, HookMode.Pre);
     Plugin.RegisterEventHandler<EventWeaponFire>(onWeaponFire);
     VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(onHurt, HookMode.Pre);
     Plugin.RegisterListener<Listeners.OnTick>(onTick);
@@ -113,19 +113,20 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
       player.GiveNamedItem("weapon_knife");
       player.GiveNamedItem("weapon_nova");
     }
+
     base.Execute();
   }
 
   override protected HookResult OnEnd(EventRoundEnd ev, GameEventInfo info) {
     Plugin.UnhookUserMessage(GE_FIRE_BULLETS_ID, fireBulletsUmHook);
-    touch.Unhook(CBaseEntity_Touch, HookMode.Pre);
+    bounce.Unhook(CBaseGrenade_Bounce, HookMode.Pre);
     Plugin.DeregisterEventHandler<EventWeaponFire>(onWeaponFire);
     VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(onHurt, HookMode.Pre);
     Plugin.RemoveListener<Listeners.OnTick>(onTick);
 
     // Delay to avoid mutation during hook execution
     Server.NextFrameAsync(() => { jumping.Clear(); });
-    
+
     return base.OnEnd(ev, info);
   }
 
@@ -145,8 +146,8 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
   ///   This is prefered b/c using a raycast would require custom logic for:
   ///   -Damage radius simulation, Entity filtering, Visual/audio, feedback Manual hit registration
   /// </summary>
-  private HookResult CBaseEntity_Touch(DynamicHook hook) {
-    var projectile = hook.GetParam<CHEGrenadeProjectile>(0);
+  private HookResult CBaseGrenade_Bounce(DynamicHook hook) {
+    var projectile = hook.GetParam<CBaseGrenade>(0);
     if (projectile.DesignerName != "hegrenade_projectile")
       return HookResult.Continue;
 
@@ -159,9 +160,10 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     if (bulletOrigin == null || pawnOrigin == null) return HookResult.Continue;
 
     var eyeOrigin = owner.GetEyeOrigin();
-    var distance  = Vector3.Distance(bulletOrigin.ToVec3(), pawnOrigin.ToVec3());
-    
-    projectile.DetonateTime = 0f;
+    var distance = Vector3.Distance(bulletOrigin.ToVec3(), pawnOrigin.ToVec3());
+
+    projectile.DetonateTime  = 0f;
+    projectile.NextThinkTick = Server.TickCount + 1;
     doJump(owner, distance, bulletOrigin.ToVec3(), eyeOrigin);
 
     return HookResult.Handled;
@@ -181,7 +183,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     var now = Server.CurrentTime;
 
     if (nextNova.TryGetValue(sid, out var next) && now < next)
-      return HookResult.Continue; 
+      return HookResult.Continue;
 
     nextNova[sid] = now + 0.82f;
 
@@ -315,7 +317,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
       ConVarValues["ff_damage_reduction_grenade_self"] = 0f;
       ConVarValues["sv_falldamage_scale"]              = 0f;
     }
-    
+
     public override float FreezeTime(CCSPlayerController player) { return 1; }
   }
 }
