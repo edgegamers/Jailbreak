@@ -140,7 +140,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
   }
 
   /// <summary>
-  ///   Handles when the grenade bounces.
+  ///   Handles when the grenade touches something.
   ///   Triggers a rocket jump for its owner if nearby.
   ///   Uses CHEGrenadeProjectile for built-in AoE, visibility, and raycast-like behavior.
   ///   This is prefered b/c using a raycast would require custom logic for:
