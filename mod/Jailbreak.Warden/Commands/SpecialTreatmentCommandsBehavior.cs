@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -38,16 +39,20 @@ public class SpecialTreatmentCommandsBehavior(IWardenService warden,
 
     // FIXME: Remove after @aim is fixed in CSS
      if (command.ArgByIndex(1).ToLower().Contains("@aim")) {
+       Server.PrintToChatAll("Debug 1");
        var wardenPlayer = warden.Warden;
        if (wardenPlayer == null) return;
        
+       Server.PrintToChatAll("Debug 1");
        var trace = wardenPlayer.GetGameTraceByEyePosition(TraceMask.MaskAll,
-         Contents.Player, wardenPlayer);
+         Contents.TouchAll, wardenPlayer);
        if (trace == null) return;
 
+       Server.PrintToChatAll("Debug 1");
        trace.Value.HitPlayer(out var aimTarget);
        if (!aimTarget.IsReal() || aimTarget == null) return;
        
+       Server.PrintToChatAll(aimTarget.PlayerName);
        eligible.Add(aimTarget);
      }
 
