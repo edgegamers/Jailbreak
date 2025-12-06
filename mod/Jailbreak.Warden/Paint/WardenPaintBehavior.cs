@@ -52,7 +52,7 @@ public class WardenPaintBehavior(IWardenService wardenService,
     if ((warden.Buttons & PlayerButtons.Use) == 0) return;
 
     var trace =
-      warden.GetGameTraceByEyePosition(TraceMask.MaskPlayerSolid, Contents.TouchAll,
+      warden.GetGameTraceByEyePosition(TraceMask.MaskSolid, Contents.TouchAll,
         warden);
     if (trace == null) return;
 
