@@ -2,11 +2,14 @@
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
+using CS2TraceRay.Class;
+using CS2TraceRay.Enum;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
+using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Warden;
 using MStatsShared;
 
@@ -31,16 +34,26 @@ public class SpecialTreatmentCommandsBehavior(IWardenService warden,
       // TODO: Pop up menu of prisoners to toggle ST for
       return;
 
+    List<CCSPlayerController> eligible = [];
+
     // FIXME: Remove after @aim is fixed in CSS
-    // if (command.ArgByIndex(1).ToLower().Contains("@aim")) {
-    //   command.ReplyToCommand("@aim is currently not supported due to a bug in CSS.");
-    //   return;
-    // }
+     if (command.ArgByIndex(1).ToLower().Contains("@aim")) {
+       var wardenPlayer = warden.Warden;
+       if (wardenPlayer == null) return;
+       
+       var trace = wardenPlayer.GetGameTraceByEyePosition(TraceMask.MaskAll,
+         Contents.Player, wardenPlayer);
+       if (trace == null) return;
+
+       trace.Value.HitPlayer(out var aimTarget);
+       if (!aimTarget.IsReal() || aimTarget == null) return;
+       
+       eligible.Add(aimTarget);
+     }
 
     var targets = command.GetArgTargetResult(1);
-    var eligible = targets
-     .Where(p => p is { Team: CsTeam.Terrorist, PawnIsAlive: true })
-     .ToList();
+    eligible.AddRange(targets.Where(p
+      => p is { Team: CsTeam.Terrorist, PawnIsAlive: true }));
 
     if (eligible.Count == 0) {
       generic.PlayerNotFound(command.GetArg(1))
