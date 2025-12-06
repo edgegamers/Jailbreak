@@ -38,24 +38,23 @@ public class SpecialTreatmentCommandsBehavior(IWardenService warden,
     List<CCSPlayerController> eligible = [];
 
     // FIXME: Remove after @aim is fixed in CSS
-    if (command.ArgByIndex(1).ToLower().Contains("@aim")) {
-      Server.PrintToChatAll("Debug 1");
-      var wardenPlayer = warden.Warden;
-      if (wardenPlayer == null) return;
+     if (command.ArgByIndex(1).ToLower().Contains("@aim")) {
+       Server.PrintToChatAll("Debug 1");
+       var wardenPlayer = warden.Warden;
+       if (wardenPlayer == null) return;
+       
+       Server.PrintToChatAll("Debug 1");
+       var trace = wardenPlayer.GetGameTraceByEyePosition(TraceMask.MaskAll,
+         Contents.TouchAll, wardenPlayer);
+       if (trace == null) return;
 
-      Server.PrintToChatAll("Debug 2");
-      var trace = wardenPlayer.GetGameTraceByEyePosition(TraceMask.MaskAll,
-        Contents.Player, wardenPlayer);
-      if (trace == null) return;
-
-      Server.PrintToChatAll("Debug 3");
-      Server.PrintToChatAll(trace.Value.HitPlayer(out var aimTarget)
-       .ToString());
-      if (!aimTarget.IsReal() || aimTarget == null) return;
-
-      Server.PrintToChatAll(aimTarget.PlayerName);
-      eligible.Add(aimTarget);
-    }
+       Server.PrintToChatAll("Debug 1");
+       trace.Value.HitPlayer(out var aimTarget);
+       if (!aimTarget.IsReal() || aimTarget == null) return;
+       
+       Server.PrintToChatAll(aimTarget.PlayerName);
+       eligible.Add(aimTarget);
+     }
 
     var targets = command.GetArgTargetResult(1);
     eligible.AddRange(targets.Where(p
