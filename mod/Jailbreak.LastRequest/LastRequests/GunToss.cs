@@ -30,6 +30,8 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
   private CCSWeaponBase? prisonerWeapon, guardWeapon;
   public override LRType Type => LRType.GUN_TOSS;
 
+  // Disabling 500hp LR Safety Net
+
   public void OnWeaponDrop(CCSPlayerController player, CCSWeaponBase weapon) {
     if (bothThrewTick > 0) return;
     if (State != LRState.ACTIVE || !player.IsValid) return;
@@ -52,12 +54,12 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
 
     if (prisonerTossed && guardTossed) bothThrewTick = Server.TickCount;
     
-    if (bothThrewTick > 0)
-      Plugin.AddTimer(5, () => {
-        if (State != LRState.ACTIVE || !Guard.IsValid || !Guard.Pawn.IsValid) return;
-        Guard.SetHealth(Math.Min(Guard.Pawn.Value!.Health, 100));
-        Guard.SetArmor(Math.Min(Guard.PawnArmor, 100));
-      });
+    // if (bothThrewTick > 0)
+    //   Plugin.AddTimer(5, () => {
+    //     if (State != LRState.ACTIVE || !Guard.IsValid || !Guard.Pawn.IsValid) return;
+    //     Guard.SetHealth(Math.Min(Guard.Pawn.Value!.Health, 100));
+    //     Guard.SetArmor(Math.Min(Guard.PawnArmor, 100));
+    //   });
   }
 
   public override void Setup() {
@@ -66,12 +68,14 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
     Prisoner.RemoveWeapons();
     Guard.RemoveWeapons();
     
-    Server.NextFrame(() => {
-      if (!Guard.IsValid) return;
+    // Disabling 500hp LR Safety Net
 
-      Guard.SetHealth(500);
-      Guard.SetArmor(500);
-    });
+    // Server.NextFrame(() => {
+    //   if (!Guard.IsValid) return;
+
+    //   Guard.SetHealth(500);
+    //   Guard.SetArmor(500);
+    // });
 
     Plugin.AddTimer(3, Execute);
   }
