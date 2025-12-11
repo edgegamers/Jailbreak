@@ -14,24 +14,47 @@ namespace Jailbreak.LastRequest.LastRequests;
 public class BulletForBullet(BasePlugin plugin, IServiceProvider provider,
   CCSPlayerController prisoner, CCSPlayerController guard, bool magForMag)
   : TeleportingRequest(plugin,
-    provider.GetRequiredService<ILastRequestManager>(), prisoner, guard) {
-  private const string weaponName = "weapon_deagle";
-
+    provider.GetRequiredService<ILastRequestManager>(), prisoner, guard),
+    ILastRequestConfig {
+  
   public static readonly FakeConVar<bool> KILL_BY_HEALTH = new(
     "css_jb_lr_b4b_kill_by_health",
     "If true, the player with the lowest health will die after 60 seconds.",
     true);
 
-  private readonly ChatMenu chatMenu =
-    new(magForMag ? "Mag for Mag" : "Shot for Shot");
-
   private readonly ILRB4BLocale msg =
     provider.GetRequiredService<ILRB4BLocale>();
 
+  private string weaponName = "weapon_deagle";
   private int? whosShot, magSize;
 
   public override LRType Type
     => magForMag ? LRType.MAG_FOR_MAG : LRType.SHOT_FOR_SHOT;
+
+  public bool RequiresConfiguration => true;
+
+  public void OpenConfigMenu(CCSPlayerController prisoner,
+    CCSPlayerController guard, Action onComplete) {
+    var menu = new CenterHtmlMenu("Choose Pistol", Plugin);
+    
+    addWeaponOption(menu, "Deagle", "weapon_deagle", onComplete);
+    addWeaponOption(menu, "USP", "weapon_usp_silencer", onComplete);
+    addWeaponOption(menu, "P250", "weapon_p250", onComplete);
+    addWeaponOption(menu, "Five-Seven", "weapon_fiveseven", onComplete);
+    addWeaponOption(menu, "Glock", "weapon_glock", onComplete);
+    addWeaponOption(menu, "Dual Berettas", "weapon_elite", onComplete);
+    
+    MenuManager.OpenCenterHtmlMenu(Plugin, prisoner, menu);
+  }
+
+  private void addWeaponOption(CenterHtmlMenu menu, string displayName, 
+    string weapon, Action onComplete) {
+    menu.AddMenuOption(displayName, (player, option) => {
+      weaponName = weapon;
+      MenuManager.CloseActiveMenu(player);
+      onComplete();
+    });
+  }
 
   public override void Setup() {
     Plugin.RegisterEventHandler<EventWeaponFire>(OnWeaponFire);
@@ -45,7 +68,6 @@ public class BulletForBullet(BasePlugin plugin, IServiceProvider provider,
 
   public override void Execute() {
     State = LRState.PENDING;
-    MenuManager.OpenChatMenu(Prisoner, chatMenu);
 
     Plugin.AddTimer(5, () => {
       if (State != LRState.PENDING) return;
