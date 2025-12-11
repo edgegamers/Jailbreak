@@ -35,7 +35,7 @@ using MStatsShared;
 
 namespace Jailbreak.LastRequest;
 
-public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
+public class  LastRequestManager(ILRLocale messages, IServiceProvider provider)
   : ILastRequestManager, IDamageBlocker {
   public static readonly FakeConVar<int> CV_LR_BASE_TIME =
     new("css_jb_lr_time_base",
@@ -196,11 +196,28 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
   public bool InitiateLastRequest(CCSPlayerController prisoner,
     CCSPlayerController guard, LRType type) {
     var lr = factory!.CreateLastRequest(prisoner, guard, type);
+    
+    // Check if this LR requires configuration
+    if (lr is ILastRequestConfig configurable && configurable.RequiresConfiguration) {
+      configurable.OpenConfigMenu(prisoner, guard, () => {
+        // Once configuration is complete, proceed with setup
+        completeLRInitiation(lr, prisoner, guard);
+      });
+    } else {
+      // No configuration needed, proceed immediately
+      completeLRInitiation(lr, prisoner, guard);
+    }
+
+    return true;
+  }
+
+  private void completeLRInitiation(AbstractLastRequest lr, 
+    CCSPlayerController prisoner, CCSPlayerController guard) {
     lr.Setup();
     ActiveLRs.Add(lr);
 
     API.Stats?.PushStat(new ServerStat("JB_LASTREQUEST",
-      $"{prisoner.SteamID} {type.ToFriendlyString()}"));
+      $"{prisoner.SteamID} {lr.Type.ToFriendlyString()}"));
 
     prisoner.SetHealth(100);
     guard.SetHealth(100);
@@ -218,7 +235,6 @@ public class LastRequestManager(ILRLocale messages, IServiceProvider provider)
     });
 
     messages.InformLastRequest(lr).ToAllChat();
-    return true;
   }
 
   public bool EndLastRequest(AbstractLastRequest lr, LRResult result) {
