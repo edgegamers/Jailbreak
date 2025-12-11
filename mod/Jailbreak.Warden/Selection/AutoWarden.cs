@@ -76,26 +76,33 @@ public class AutoWarden(IWardenSelectionService selectionService,
 
   [ConsoleCommand("css_aw")]
   [ConsoleCommand("css_autowarden")]
-  public void Command_AutoWarden(CCSPlayerController? player, CommandInfo info) {
-    if (player == null) return;
-    if (!AdminManager.PlayerHasPermissions(player, CV_AUTOWARDEN_FLAG.Value)) {
-      generic.NoPermissionMessage(CV_AUTOWARDEN_FLAG.Value).ToChat(player);
+  public void Command_AutoWarden(CCSPlayerController? executor, CommandInfo info) {
+    if (executor == null) return;
+
+    if (!AdminManager.PlayerHasPermissions(executor, CV_AUTOWARDEN_FLAG.Value)) {
+      generic.NoPermissionMessage(CV_AUTOWARDEN_FLAG.Value).ToChat(executor);
       return;
     }
-    if (cookie == null) { locale.TogglingNotEnabled.ToChat(player); return; }
 
-    var steam = player.SteamID;
+    if (cookie == null) {
+      locale.TogglingNotEnabled.ToChat(executor);
+      return;
+    }
+
+    var steam = executor.SteamID;
     Task.Run(async () => {
-      var cur    = await cookie.Get(steam);
-      var enable = cur != "Y";
+      var value = await cookie.Get(steam);
+      // Current state: null or "N" means disabled, "Y" means enabled
+      // We want to toggle, so if currently disabled, enable it, and vice versa
+      var currentlyEnabled = value is "Y";
+      var enable = !currentlyEnabled;  // Toggle the current state
       await cookie.Set(steam, enable ? "Y" : "N");
       await Server.NextFrameAsync(() => {
-        if (!player.IsValid) return;
-        locale.AutoWardenToggled(enable).ToChat(player);
+        if (!executor.IsValid) return;
+        locale.AutoWardenToggled(enable).ToChat(executor);
         CACHED_COOKIES[steam] = enable;
       });
     });
-    
   }
 
   private void TryLoadCookie() {
