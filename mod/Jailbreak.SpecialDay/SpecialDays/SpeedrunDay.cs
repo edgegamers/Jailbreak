@@ -12,6 +12,7 @@ using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.SpecialDay;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Draw;
+using Jailbreak.Public.Mod.Draw.Enums;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Mod.Trail;
@@ -80,6 +81,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     "css_jb_speedrun_finish_at",
     "Number of players required to declare a winner", 2,
     customValidators: new RangeValidator<int>(2, 10));
+  
 
   private readonly Dictionary<int, ActivePlayerTrail<VectorTrailSegment>>
     activeTrails = new();
@@ -99,6 +101,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
   private LinkedList<(int, float)> finishTimestampList = [];
 
+  private IBeamShapeFactory beamShapeFactory = null!;
   private IGenericCmdLocale generics = null!;
   private int round, playersAliveAtStart;
   private Timer? roundEndTimer;
@@ -107,7 +110,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   private CCSPlayerController? speedrunner;
   private Vector? start;
   private Vector? target;
-  private BeamCircle? targetCircle;
+  private BeamedPolylineShape? targetCircle;
   private ISpeedDayLocale Msg => (ISpeedDayLocale)Locale;
 
   private bool IsRoundActive
@@ -121,6 +124,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
   public override void Setup() {
     generics = Provider.GetRequiredService<IGenericCmdLocale>();
+    beamShapeFactory = Provider.GetRequiredService<IBeamShapeFactory>();
 
     foreach (var player in Utilities.GetPlayers()
      .Where(p => p is { Team: CsTeam.Terrorist or CsTeam.CounterTerrorist }))
@@ -224,7 +228,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       panic("Execute: Start is null or too close to speedrunner");
 
     target       = target.Clone();
-    targetCircle = new BeamCircle(Plugin, target!, 10, 8);
+    targetCircle =
+      beamShapeFactory.CreateShape(target!, BeamShapeType.CIRCLE, 10);
     targetCircle.SetColor(Color.Green);
     targetCircle.Draw();
 
