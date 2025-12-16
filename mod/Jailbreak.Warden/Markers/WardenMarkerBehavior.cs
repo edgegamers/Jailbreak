@@ -37,8 +37,8 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
     "css_jb_warden_resize_time", "Milliseconds to wait for resizing marker",
     800);
 
-  private BeamCircle[] markers = [];
-  private BeamCircle tmpMarker = null!;
+  private BeamedPolylineShape[] markers = [];
+  private BeamedPolylineShape tmpMarker = null!;
 
   private readonly string[] markerNames = [
     ChatColors.Red + "Red", ChatColors.Green + "Green",
@@ -55,7 +55,8 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
   private BasePlugin plugin = null!;
 
   public void Start(BasePlugin basePlugin) {
-    plugin = basePlugin;
+    //TODO: Rework This shit but i have finals to study for right now ffs
+    /* plugin = basePlugin;
     tmpMarker = new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value,
       10);
     markers = [
@@ -96,7 +97,7 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
     tmpMarker.Update();
 
     MarkerPosition = null;
-    locale.MarkerPlaced(markerNames[index]).ToAllChat();
+    locale.MarkerPlaced(markerNames[index]).ToAllChat(); */
   }
 
   [GameEventHandler]
