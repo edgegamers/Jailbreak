@@ -37,6 +37,10 @@ public class BeamShapeRegistry : IBeamShapeRegistry {
   }
 
   public IEnumerable<BeamShapeType> GetAllTypes() { return shapes.Keys; }
+  
+  public string GetFriendlyName(BeamShapeType type) {
+    return type.ToFriendlyString();
+  }
 
   private void register(IBeamShapeDefinition definition) {
     shapes[definition.ShapeType] = definition;
