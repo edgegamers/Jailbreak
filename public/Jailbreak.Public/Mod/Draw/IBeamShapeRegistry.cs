@@ -1,4 +1,5 @@
-﻿using Jailbreak.Public.Mod.Draw.Enums;
+﻿using System.Drawing;
+using Jailbreak.Public.Mod.Draw.Enums;
 
 namespace Jailbreak.Public.Mod.Draw;
 
@@ -27,4 +28,10 @@ public interface IBeamShapeRegistry {
   /// </summary>
   /// <returns>An enumerable of all registered shape types.</returns>
   IEnumerable<BeamShapeType> GetAllTypes();
+
+  /// <summary>
+  ///  Get all registered colors.
+  /// </summary>
+  /// <returns></returns>
+  Dictionary<string, Color> GetAllColors();
 }
