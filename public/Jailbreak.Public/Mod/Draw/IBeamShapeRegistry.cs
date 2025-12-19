@@ -27,11 +27,4 @@ public interface IBeamShapeRegistry {
   /// </summary>
   /// <returns>An enumerable of all registered shape types.</returns>
   IEnumerable<BeamShapeType> GetAllTypes();
-
-  /// <summary>
-  ///   Get the friendly name for the given shape type.
-  /// </summary>
-  /// <param name="type"></param>
-  /// <returns></returns>
-  string GetFriendlyName(BeamShapeType type);
 }
