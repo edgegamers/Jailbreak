@@ -14,3 +14,20 @@ public enum BeamShapeType {
   HEART,
   AMONG_US
 }
+
+public static class BeamShapeTypeExtensions {
+  public static string ToFriendlyString(this BeamShapeType shapeType) {
+    return shapeType switch {
+      BeamShapeType.CIRCLE   => "Circle",
+      BeamShapeType.SQUARE   => "Square",
+      BeamShapeType.DIAMOND  => "Diamond",
+      BeamShapeType.STAR     => "Star",
+      BeamShapeType.TRIANGLE => "Triangle",
+      BeamShapeType.PENTAGON => "Pentagon",
+      BeamShapeType.HEXAGON  => "Hexagon",
+      BeamShapeType.HEART    => "Heart",
+      BeamShapeType.AMONG_US => "Among Us",
+      _                      => "Unknown"
+    };
+  }
+}
