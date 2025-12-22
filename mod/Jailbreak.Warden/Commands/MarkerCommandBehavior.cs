@@ -97,6 +97,8 @@ public class MarkerCommandBehavior(IWardenCmdMarkerLocale markerLocale,
       menu.AddMenuOption(color.Key,
         (p, _) => handleMarkerColorSelect(p, color));
     }
+    
+    menu.Open(player);
   }
 
   private void handleMarkerColorSelect(CCSPlayerController player,
