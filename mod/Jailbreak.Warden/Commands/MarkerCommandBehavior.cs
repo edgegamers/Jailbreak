@@ -116,9 +116,12 @@ public class MarkerCommandBehavior(IWardenCmdMarkerLocale markerLocale,
 
   private void tryLoadCookie() {
     Task.Run(async () => {
-      if (API.Actain != null)
+      if (API.Actain != null) {
         typeCookie = await API.Actain.getCookieService()
-         .RegClientCookie("jb_rtd_auto");
+         .RegClientCookie("jb_marker_type");
+        colorCookie = await API.Actain.getCookieService()
+         .RegClientCookie("jb_marker_color");
+      }
     });
   }
 
