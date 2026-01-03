@@ -12,7 +12,8 @@ public enum BeamShapeType {
   PENTAGON,
   HEXAGON,
   HEART,
-  AMONG_US
+  AMONG_US,
+  JELLY_BEAN
 }
 
 public static class BeamShapeTypeExtensions {
@@ -27,6 +28,7 @@ public static class BeamShapeTypeExtensions {
       BeamShapeType.HEXAGON  => "Hexagon",
       BeamShapeType.HEART    => "Heart",
       BeamShapeType.AMONG_US => "Among Us",
+      BeamShapeType.JELLY_BEAN => "Jelly Bean",
       _                      => "Unknown"
     };
   }

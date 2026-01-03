@@ -27,6 +27,7 @@ public class BeamShapeRegistry : IBeamShapeRegistry {
     register(new HexagonShapeDefinition());
     register(new HeartShapeDefinition());
     register(new AmongUsShapeDefinition());
+    register(new JellyBeanShapeDefinition());
     
     register(Color.Red);
     register(Color.Green);
