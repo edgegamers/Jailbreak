@@ -8,6 +8,7 @@ using Jailbreak.Public.Mod.Warden;
 using MAULActainShared.plugin.models;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using Jailbreak.Public.Extensions;
 
 namespace Jailbreak.Warden.Markers;
 
@@ -111,8 +112,12 @@ public class WardenMarkerSettings(IBeamShapeRegistry registry)
     Task.Run(async () => {
       if (API.Actain != null) {
         var svc = API.Actain.getCookieService();
-        typeCookie = await svc.RegClientCookie(TYPE_COOKIE);
+        typeCookie  = await svc.RegClientCookie(TYPE_COOKIE);
         colorCookie = await svc.RegClientCookie(COLOR_COOKIE);
+        
+        foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal())) {
+          _ = populateCache(player.SteamID);
+        }
       }
     });
   }
