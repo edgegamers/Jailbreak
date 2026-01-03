@@ -77,12 +77,33 @@ public class BulletForBullet(BasePlugin plugin, IServiceProvider provider,
       magSize = (magForMag ?
         Prisoner.GetWeaponBase(weaponName)!.VData?.MaxClip1 :
         1) ?? 1;
-      Prisoner.GetWeaponBase(weaponName).SetAmmo(0, 0);
-      Guard.GetWeaponBase(weaponName).SetAmmo(0, 0);
+      
+      var guardWeapon = Guard.GetWeaponBase(weaponName);
+      var prisonerWeapon = Prisoner.GetWeaponBase(weaponName);
+      
+      if (guardWeapon != null) {
+        guardWeapon.SetAmmo(0, 0);
+        guardWeapon.Clip1 = 0;
+        guardWeapon.ReserveAmmo[0] = 0;
+      }
+      
+      if (prisonerWeapon != null) {
+        prisonerWeapon.SetAmmo(0, 0);
+        prisonerWeapon.Clip1 = 0;
+        prisonerWeapon.ReserveAmmo[0] = 0;
+      }
+      
       var shooter = new Random().Next(2) == 0 ? Prisoner : Guard;
       whosShot = shooter.Slot;
       msg.PlayerGoesFirst(shooter).ToChat(Prisoner, Guard);
-      shooter.GetWeaponBase(weaponName).SetAmmo(magSize.Value, 0);
+      
+      var shooterWeapon = shooter.GetWeaponBase(weaponName);
+      if (shooterWeapon != null) {
+        shooterWeapon.SetAmmo(magSize.Value, 0);
+        shooterWeapon.Clip1 = magSize.Value;
+        shooterWeapon.ReserveAmmo[0] = 0;
+      }
+      
       State = LRState.ACTIVE;
     }, TimerFlags.STOP_ON_MAPCHANGE);
 
@@ -138,7 +159,12 @@ public class BulletForBullet(BasePlugin plugin, IServiceProvider provider,
 
     var opponent = player.Slot == Prisoner.Slot ? Guard : Prisoner;
     whosShot = opponent.Slot;
-    opponent.GetWeaponBase(weaponName)?.SetAmmo(magSize.Value, 0);
+    var opponentWeapon = opponent.GetWeaponBase(weaponName);
+    if (opponentWeapon != null) {
+      opponentWeapon.SetAmmo(magSize.Value, 0);
+      opponentWeapon.Clip1 = magSize.Value;
+      opponentWeapon.ReserveAmmo[0] = 0;
+    }
     return HookResult.Continue;
   }
 
