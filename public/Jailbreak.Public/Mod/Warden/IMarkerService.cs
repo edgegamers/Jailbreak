@@ -6,11 +6,11 @@ namespace Jailbreak.Public.Mod.Warden;
 
 public interface IMarkerService {
   Vector? MarkerPosition { get; }
-  float radius { get; }
+  float Radius { get; }
 
   public bool InMarker(Vector pos) {
     if (MarkerPosition == null) return false;
-    var widenedRadius = radius + 32;
+    var widenedRadius = Radius + 32;
     return MarkerPosition.DistanceSquared(pos) <= widenedRadius * widenedRadius;
   }
 

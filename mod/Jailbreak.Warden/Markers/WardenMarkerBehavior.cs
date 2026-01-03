@@ -4,28 +4,21 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
-using CounterStrikeSharp.API.Modules.Menu;
-using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
-using CS2ScreenMenuAPI;
-using CS2ScreenMenuAPI.Enums;
-using CS2ScreenMenuAPI.Internal;
-using CS2TraceRay.Class;
-using CS2TraceRay.Enum;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Draw;
+using Jailbreak.Public.Mod.Draw.Enums;
 using Jailbreak.Public.Mod.Warden;
-using Jailbreak.Warden.Paint;
 using MStatsShared;
-using PostSelectAction = CS2ScreenMenuAPI.Enums.PostSelectAction;
 
 namespace Jailbreak.Warden.Markers;
 
-public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
+public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale,
+  IBeamShapeFactory factory, IWardenMarkerSettings markerSettings)
   : IPluginBehavior, IMarkerService {
   public static readonly FakeConVar<float> CV_MAX_RADIUS = new(
     "css_jb_warden_marker_max_radius", "Maximum radius for warden marker", 360);
@@ -37,185 +30,98 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale)
     "css_jb_warden_resize_time", "Milliseconds to wait for resizing marker",
     800);
 
-  private BeamCircle[] markers = [];
-  private BeamCircle tmpMarker = null!;
-
-  private readonly string[] markerNames = [
-    ChatColors.Red + "Red", ChatColors.Green + "Green",
-    ChatColors.Blue + "Blue", ChatColors.Purple + "Purple"
-  ];
-
-  private long placementTime;
-
+  // placement state
   public Vector? MarkerPosition { get; private set; }
-  public float radius { get; private set; }
-  private bool activelyPlacing, removedMarker;
-
-  private ScreenMenu menu = null!;
-  private BasePlugin plugin = null!;
+  public float Radius { get; private set; }
+  private long placementTime;
+  
+  private BeamedPolylineShape? placedMarker;
 
   public void Start(BasePlugin basePlugin) {
-    plugin = basePlugin;
-    tmpMarker = new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value,
-      10);
-    markers = [
-      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 10),
-      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 10),
-      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 10),
-      new BeamCircle(basePlugin, new Vector(), CV_MIN_RADIUS.Value, 10)
-    ];
-
-    markers[0].SetColor(Color.Red);
-    markers[1].SetColor(Color.Green);
-    markers[2].SetColor(Color.Blue);
-    markers[3].SetColor(Color.Purple);
-
-    menu = new ScreenMenu("Markers", basePlugin) {
-      PostSelectAction = PostSelectAction.Close,
-      MenuType         = MenuType.KeyPress,
-      PositionX        = -8.5f
-    };
-
-    menu.AddOption("Red", (_, _) => placeMarker(0));
-    menu.AddOption("Green", (_, _) => placeMarker(1));
-    menu.AddOption("Blue", (_, _) => placeMarker(2));
-    menu.AddOption("Purple", (_, _) => placeMarker(3));
-
+    Radius = CV_MIN_RADIUS.Value;
     basePlugin.AddCommandListener("player_ping", CommandListener_PlayerPing);
-    // basePlugin.AddTimer(0.1f, OnTick, TimerFlags.REPEAT);
-  }
-
-  private void placeMarker(int index) {
-    if (MarkerPosition == null) return;
-    var marker = markers[index];
-    marker.Move(MarkerPosition);
-    marker.SetRadius(radius);
-    marker.Update();
-    tmpMarker.SetRadius(1);
-    tmpMarker.Move(MarkerPosition);
-    tmpMarker.Update();
-
-    MarkerPosition = null;
-    locale.MarkerPlaced(markerNames[index]).ToAllChat();
   }
 
   [GameEventHandler]
-  public HookResult OnSpawn(EventPlayerSpawn spawn, GameEventInfo info) {
-    if (spawn.Userid == null || !spawn.Userid.IsValid)
-      return HookResult.Continue;
-    SetBinds(spawn.Userid);
-    return HookResult.Continue;
-  }
-
-  private void OnTick() {
-    if (!warden.HasWarden) return;
-
-    if (warden.Warden == null || !warden.Warden.IsReal()) return;
-    if ((warden.Warden.Buttons & PlayerButtons.Attack2) == 0) {
-      if (activelyPlacing && !removedMarker) {
-        MenuAPI.CloseActiveMenu(warden.Warden);
-        Server.NextFrame(() => MenuAPI.OpenMenu(plugin, warden.Warden, menu));
-      }
-
-      activelyPlacing = false;
-      removedMarker   = false;
-      return;
-    }
-
-    var weapon = warden.Warden.Pawn.Value?.WeaponServices?.ActiveWeapon.Value
-    ?.DesignerName;
-    if (weapon != null && Tag.SNIPERS.Contains(weapon)
-      || weapon == "weapon_sg556")
-      return;
-
-    var trace =
-      warden.Warden.GetGameTraceByEyePosition(TraceMask.MaskSolid, Contents.Solid,
-        warden.Warden);
-    if (trace == null) return;
-    
-    var position = trace.Value.Position.ToCsVector();
-
-    if (!activelyPlacing) {
-      for (var i = 0; i < markers.Length; i++) {
-        var marker = markers[i];
-        var dist   = marker.Position.DistanceSquared(position);
-        if (!(dist < MathF.Pow(marker.Radius, 2))) continue;
-        marker.SetRadius(0);
-        marker.Update();
-        locale.MarkerRemoved(markerNames[i]).ToAllChat();
-        removedMarker = true;
-        return;
-      }
-    }
-
-    if (removedMarker) return;
-
-    if (MarkerPosition == null || !activelyPlacing) {
-      tmpMarker.SetRadius(CV_MIN_RADIUS.Value);
-      tmpMarker.Move(position);
-      tmpMarker.Update();
-      MarkerPosition  = position;
-      activelyPlacing = true;
-      placementTime   = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-      API.Stats?.PushStat(new ServerStat("JB_MARKER",
-        $"{position.X:F2} {position.Y:F2} {position.Z:F2}"));
-      radius = CV_MIN_RADIUS.Value;
-      return;
-    }
-
-    var distance = MarkerPosition.Distance(position);
-    distance = Math.Clamp(distance, CV_MIN_RADIUS.Value, CV_MAX_RADIUS.Value);
-
-    radius = distance;
-    tmpMarker.SetRadius(distance);
-    tmpMarker.Update();
-  }
-
-  [GameEventHandler]
-  public HookResult OnPing(EventPlayerPing @event, GameEventInfo info) {
-    var player = @event.Userid;
-
+  public HookResult OnPing(EventPlayerPing ev, GameEventInfo info) {
+    var player = ev.Userid;
     if (!warden.IsWarden(player)) return HookResult.Handled;
-    var vec = new Vector(@event.X, @event.Y, @event.Z);
 
+    var w = warden.Warden;
+    if (w == null || !w.IsReal()) return HookResult.Handled;
+
+    var steam = w.SteamID;
+    
+    // Ensure settings are cached
+    var settings = markerSettings.GetCachedSettings(steam);
+    if (settings == null) {
+      // Cache miss - load in background and use defaults for now
+      Task.Run(async () => await markerSettings.EnsureCachedAsync(steam));
+      settings = new MarkerSettings(BeamShapeType.CIRCLE, Color.White);
+    }
+
+    var ping = new Vector(ev.X, ev.Y, ev.Z);
+    var now  = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+    // If we already have an active marker center, allow resize within window
     if (MarkerPosition != null) {
-      var distance = MarkerPosition.Distance(vec);
-      var timeElapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-        - placementTime;
-      if (timeElapsed < CV_RESIZE_TIME.Value) {
-        if (distance <= CV_MAX_RADIUS.Value * 1.3) {
-          distance = Math.Clamp(distance, CV_MIN_RADIUS.Value,
-            CV_MAX_RADIUS.Value);
-          tmpMarker?.SetRadius(distance);
-          tmpMarker?.Update();
-          radius = distance;
+      var elapsed = now - placementTime;
+
+      if (elapsed < CV_RESIZE_TIME.Value) {
+        var distance = MarkerPosition.Distance(ping);
+    
+        if (!(distance <= CV_MAX_RADIUS.Value * 1.3f))
           return HookResult.Handled;
-        }
-      } else if (distance <= radius) {
-        tmpMarker?.Remove();
+        distance = Math.Clamp(distance, CV_MIN_RADIUS.Value,
+          CV_MAX_RADIUS.Value);
+        Radius = distance;
+
+        ensurePlacedMarker(settings.Value, MarkerPosition);
+        placedMarker!.SetRadius(Radius);
+        placedMarker.Update();
+
         return HookResult.Handled;
       }
-    }
 
-    radius         = CV_MIN_RADIUS.Value;
-    MarkerPosition = vec;
-    placementTime  = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+      // timeout: next ping starts a NEW marker
+      MarkerPosition = null;
+    }
+    
+    MarkerPosition = ping;
+    Radius         = CV_MIN_RADIUS.Value;
+    placementTime  = now;
+
+    ensurePlacedMarker(settings.Value, ping);
+    placedMarker!.Move(ping);
+    placedMarker.SetRadius(Radius);
+    placedMarker.Update();
 
     API.Stats?.PushStat(new ServerStat("JB_MARKER",
-      $"{vec.X:F2} {vec.Y:F2} {vec.Z:F2}"));
-    tmpMarker?.Move(vec);
-    tmpMarker?.SetRadius(radius);
-    tmpMarker?.Update();
+      $"{ping.X:F2} {ping.Y:F2} {ping.Z:F2}"));
+
+    locale.MarkerPlaced().ToChat(w);
     return HookResult.Handled;
   }
 
-  private HookResult CommandListener_PlayerPing(CCSPlayerController? player,
-    CommandInfo info) {
-    return warden.IsWarden(player) ? HookResult.Continue : HookResult.Handled;
+  private void ensurePlacedMarker(MarkerSettings settings, Vector pos) {
+    // recreate if missing OR type changed
+    if (placedMarker == null 
+        || (placedMarker is { } existing 
+            && !isCorrectType(existing, settings.Type))) {
+      placedMarker?.Remove();
+      placedMarker = factory.CreateShape(pos, settings.Type, Radius);
+    }
+
+    placedMarker.SetColor(settings.color);
   }
 
-  public static void SetBinds(CCSPlayerController player) {
-    for (var i = 0; i < 10; i++)
-      player.ExecuteClientCommand($"echo test | bind {i} \"slot{i};css_{i}\"");
+  private bool isCorrectType(BeamedPolylineShape shape, BeamShapeType type) {
+    // Check if the shape matches the type - you may need to adjust this
+    // based on your actual implementation
+    return shape.GetType().Name.Contains(type.ToString());
   }
+
+  private HookResult CommandListener_PlayerPing(CCSPlayerController? player,
+    CommandInfo info)
+    => warden.IsWarden(player) ? HookResult.Continue : HookResult.Handled;
 }

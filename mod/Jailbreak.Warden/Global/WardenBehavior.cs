@@ -43,7 +43,7 @@ public struct PreWardenStats(int armorValue, int health, int maxHealth,
 }
 
 public class WardenBehavior(ILogger<WardenBehavior> logger,
-  IWardenLocale locale, IRichLogService logs,
+  IWardenLocale locale, IWardenMarkerSettings markerSettings, IRichLogService logs,
   ISpecialTreatmentService specialTreatment, IRebelService rebels,
   IMuteService mute, ISpecialDayManager specialDays, IServiceProvider provider)
   : IPluginBehavior, IWardenService {
@@ -180,6 +180,8 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
     }
 
     iconer?.AssignWardenIcon(Warden);
+
+    markerSettings.EnsureCachedAsync(Warden.SteamID);
 
     foreach (var player in Utilities.GetPlayers())
       player.ExecuteClientCommand($"play sounds/{CV_WARDEN_SOUND_NEW.Value}");
