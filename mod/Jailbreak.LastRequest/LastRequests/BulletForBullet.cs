@@ -38,7 +38,6 @@ public class BulletForBullet(BasePlugin plugin, IServiceProvider provider,
     var menu = new CenterHtmlMenu("Choose Pistol", Plugin);
     
     addWeaponOption(menu, "Deagle", "weapon_deagle", onComplete);
-    addWeaponOption(menu, "USP", "weapon_usp_silencer", onComplete);
     addWeaponOption(menu, "P250", "weapon_p250", onComplete);
     addWeaponOption(menu, "Five-Seven", "weapon_fiveseven", onComplete);
     addWeaponOption(menu, "Glock", "weapon_glock", onComplete);

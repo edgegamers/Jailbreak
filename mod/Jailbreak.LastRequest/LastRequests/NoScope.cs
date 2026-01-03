@@ -26,7 +26,7 @@ public class NoScope(BasePlugin plugin, IServiceProvider provider,
 
   public void OpenConfigMenu(CCSPlayerController prisoner,
     CCSPlayerController guard, Action onComplete) {
-    var menu = new CenterHtmlMenu("Choose Pistol", Plugin);
+    var menu = new CenterHtmlMenu("Choose Rifle", Plugin);
 
     addWeaponOption(menu, "Scout", "weapon_ssg08", onComplete);
     addWeaponOption(menu, "AWP", "weapon_awp", onComplete);
@@ -69,8 +69,8 @@ public class NoScope(BasePlugin plugin, IServiceProvider provider,
 
   public override void Execute() {
     PrintToParticipants("Go!");
-    Prisoner.GiveNamedItem("weapon_ssg08");
-    Guard.GiveNamedItem("weapon_ssg08");
+    Prisoner.GiveNamedItem(weaponName);
+    Guard.GiveNamedItem(weaponName);
     State = LRState.ACTIVE;
 
     Plugin.AddTimer(30, () => {
