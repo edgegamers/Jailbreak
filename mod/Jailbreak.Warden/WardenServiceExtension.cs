@@ -35,6 +35,7 @@ public static class WardenServiceExtension {
     serviceCollection.AddPluginBehavior<MarkerCommandBehavior>();
 
     serviceCollection.AddPluginBehavior<IMarkerService, WardenMarkerBehavior>();
+    serviceCollection.AddPluginBehavior<IWardenMarkerSettings, WardenMarkerSettings>();
     serviceCollection.AddPluginBehavior<WardenPaintBehavior>();
   }
 }

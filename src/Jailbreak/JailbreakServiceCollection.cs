@@ -52,6 +52,7 @@ public class JailbreakServiceCollection : IPluginServiceCollection<Jailbreak> {
      .AddSingleton<IWardenCmdCountLocale, WardenCmdCountLocale>();
     serviceCollection.AddSingleton<IWardenCmdOpenLocale, WardenCmdOpenLocale>();
     serviceCollection.AddSingleton<IWardenCmdRollLocale, WardenCmdRollLocale>();
+    serviceCollection.AddSingleton<IWardenCmdMarkerLocale, WardenCmdMarkerLocale>();
     serviceCollection.AddSingleton<IWardenLocale, WardenLocale>();
     serviceCollection.AddSingleton<IWardenPeaceLocale, WardenPeaceLocale>();
     serviceCollection.AddSingleton<IWardenSTLocale, WardenSTLocale>();
