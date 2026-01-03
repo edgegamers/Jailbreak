@@ -6,20 +6,26 @@ using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.LastRequest;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Draw;
+using Jailbreak.Public.Mod.Draw.Enums;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
+using Microsoft.Extensions.DependencyInjection;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.LastRequest.LastRequests;
 
-public class Race(BasePlugin plugin, ILastRequestManager manager,
+public class Race(BasePlugin plugin, IServiceProvider provider,
   CCSPlayerController prisoner, CCSPlayerController guard,
-  ILRRaceLocale messages)
-  : TeleportingRequest(plugin, manager, prisoner, guard) {
+  ILRRaceLocale messages) : TeleportingRequest(plugin,
+  provider.GetRequiredService<ILastRequestManager>(), prisoner, guard) {
   private DateTime raceStart;
   private Timer? raceTimer;
-  private BeamCircle? start, end;
+  private BeamedPolylineShape? start, end;
   private Vector? startLocation, endLocation;
+
+  private IBeamShapeFactory shapeFactory =
+    provider.GetRequiredService<IBeamShapeFactory>();
+
   public override LRType Type => LRType.RACE;
 
   public override void Setup() {
@@ -34,7 +40,8 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
     startLocation = Prisoner.Pawn.Value?.AbsOrigin?.Clone();
 
     if (startLocation == null) return;
-    start = new BeamCircle(Plugin, startLocation, 20, 16);
+    start = shapeFactory.CreateShape(startLocation, BeamShapeType.CIRCLE, 20,
+      16);
     start.SetColor(Color.Aqua);
     start.Draw();
 
@@ -46,7 +53,8 @@ public class Race(BasePlugin plugin, ILastRequestManager manager,
     endLocation = Prisoner.Pawn.Value?.AbsOrigin?.Clone();
 
     if (endLocation == null) return;
-    end = new BeamCircle(Plugin, endLocation, 10, 32);
+    end = shapeFactory.CreateShape(endLocation, BeamShapeType.CIRCLE, 10,
+      32);
     end.SetColor(Color.Red);
     end.Draw();
 

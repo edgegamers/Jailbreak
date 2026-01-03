@@ -127,9 +127,9 @@ public class WardenLocale : IWardenLocale,
     };
   }
 
-  public IView MarkerPlaced(string marker) {
+  public IView MarkerPlaced() {
     return new SimpleView {
-      PREFIX, $"{marker}{ChatColors.Grey} marker placed."
+      PREFIX, "Marker placed."
     };
   }
 
