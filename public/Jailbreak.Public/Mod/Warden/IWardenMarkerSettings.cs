@@ -6,6 +6,8 @@ namespace Jailbreak.Public.Mod.Warden;
 
 public interface IWardenMarkerSettings : IPluginBehavior {
   ValueTask<MarkerSettings> GetForWardenAsync(ulong steamId);
+  Task SetTypeAsync(ulong steamId, BeamShapeType type);
+  Task SetColorAsync(ulong steamId, string colorKey);
   void Invalidate(ulong steamId);
 }
 

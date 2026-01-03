@@ -9,29 +9,23 @@ using CounterStrikeSharp.API.Modules.Menu;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.Warden;
-using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.Draw.Enums;
-using MAULActainShared.plugin.models;
+using Jailbreak.Public.Mod.Warden;
 
 namespace Jailbreak.Warden.Commands;
 
 public class MarkerCommandBehavior(IWardenCmdMarkerLocale markerLocale,
-  IGenericCmdLocale generics, IBeamShapeRegistry registry) : IPluginBehavior {
+  IGenericCmdLocale generics, IBeamShapeRegistry registry,
+  IWardenMarkerSettings markerSettings) : IPluginBehavior {
   public static readonly FakeConVar<string> CV_MARKER_CUSTOMIZATION_FLAG =
     new("css_marker_customization_flag",
       "Permission flag required to customize your maker", "@ego/dssilver");
 
   private BasePlugin plugin = null!;
-  private ICookie? typeCookie;
-  private ICookie? colorCookie;
 
-  public void Start(BasePlugin basePlugin) {
-    plugin = basePlugin;
-    tryLoadCookie();
-    basePlugin.RegisterListener<Listeners.OnMapStart>(OnMapStart);
-  }
+  public void Start(BasePlugin basePlugin) { plugin = basePlugin; }
 
   [ConsoleCommand("css_markertype")]
   [CommandHelper(0, "", CommandUsage.CLIENT_ONLY)]
@@ -42,11 +36,6 @@ public class MarkerCommandBehavior(IWardenCmdMarkerLocale markerLocale,
       CV_MARKER_CUSTOMIZATION_FLAG.Value)) {
       generics.NoPermissionMessage(CV_MARKER_CUSTOMIZATION_FLAG.Value)
        .ToChat(player);
-      return;
-    }
-
-    if (typeCookie == null) {
-      markerLocale.ChangingNotEnabled.ToChat(player);
       return;
     }
 
@@ -61,19 +50,16 @@ public class MarkerCommandBehavior(IWardenCmdMarkerLocale markerLocale,
 
   private void handleMarkerTypeSelect(CCSPlayerController player,
     BeamShapeType type) {
-    if (typeCookie == null) return;
-
     var steam = player.SteamID;
     Task.Run(async () => {
-      var value = type.ToFriendlyString();
-      await typeCookie.Set(steam, value);
+      await markerSettings.SetTypeAsync(steam, type);
       await Server.NextFrameAsync(() => {
         if (!player.IsValid) return;
+        var value = type.ToFriendlyString();
         markerLocale.TypeChanged(value).ToChat(player);
       });
     });
   }
-
 
   [ConsoleCommand("css_markercolor")]
   [CommandHelper(0, "", CommandUsage.CLIENT_ONLY)]
@@ -87,52 +73,24 @@ public class MarkerCommandBehavior(IWardenCmdMarkerLocale markerLocale,
       return;
     }
 
-    if (colorCookie == null) {
-      markerLocale.ChangingNotEnabled.ToChat(player);
-      return;
-    }
-
     var menu = new CenterHtmlMenu("Marker Color", plugin);
     foreach (var color in registry.GetAllColors()) {
       menu.AddMenuOption(color.Key,
         (p, _) => handleMarkerColorSelect(p, color));
     }
-    
+
     menu.Open(player);
   }
 
   private void handleMarkerColorSelect(CCSPlayerController player,
     KeyValuePair<string, Color> color) {
-    if (colorCookie == null) return;
-    
     var steam = player.SteamID;
     Task.Run(async () => {
-      var value = color.Key;
-      await colorCookie.Set(steam, value);
+      await markerSettings.SetColorAsync(steam, color.Key);
       await Server.NextFrameAsync(() => {
         if (!player.IsValid) return;
-        markerLocale.ColorChanged(value).ToChat(player);
+        markerLocale.ColorChanged(color.Key).ToChat(player);
       });
     });
-  }
-
-  private void tryLoadCookie() {
-    Task.Run(async () => {
-      if (API.Actain != null) {
-        typeCookie = await API.Actain.getCookieService()
-         .RegClientCookie("jb_marker_type");
-        colorCookie = await API.Actain.getCookieService()
-         .RegClientCookie("jb_marker_color");
-      }
-    });
-  }
-
-  private void OnMapStart(string mapname) {
-    // Attempt to load the cookie OnMapStart if it fails to load on plugin start
-    // This can happen if the MAUL plugin is loaded *after* this plugin
-    if (typeCookie == null)
-      tryLoadCookie();
-    else
-      plugin.RemoveListener<Listeners.OnMapStart>(OnMapStart);
   }
 }
