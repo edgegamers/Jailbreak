@@ -1,7 +1,9 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Timers;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,13 +11,38 @@ namespace Jailbreak.LastRequest.LastRequests;
 
 public class NoScope(BasePlugin plugin, IServiceProvider provider,
   CCSPlayerController prisoner, CCSPlayerController guard) : WeaponizedRequest(
-  plugin, provider.GetRequiredService<IServiceProvider>(), prisoner, guard) {
+    plugin, provider.GetRequiredService<IServiceProvider>(), prisoner, guard),
+  ILastRequestConfig {
   public override LRType Type => LRType.NO_SCOPE;
+  public bool RequiresConfiguration => true;
+
+  private string weaponName = "weapon_ssg08";
 
   public override void Setup() {
     base.Setup();
 
     Plugin.RegisterListener<Listeners.OnTick>(OnTick);
+  }
+
+  public void OpenConfigMenu(CCSPlayerController prisoner,
+    CCSPlayerController guard, Action onComplete) {
+    var menu = new CenterHtmlMenu("Choose Pistol", Plugin);
+
+    addWeaponOption(menu, "Scout", "weapon_ssg08", onComplete);
+    addWeaponOption(menu, "AWP", "weapon_awp", onComplete);
+    addWeaponOption(menu, "SCAR-20", "weapon_scar20", onComplete);
+    addWeaponOption(menu, "G3SG1", "weapon_g3sg1", onComplete);
+
+    MenuManager.OpenCenterHtmlMenu(Plugin, prisoner, menu);
+  }
+
+  private void addWeaponOption(CenterHtmlMenu menu, string displayName,
+    string weapon, Action onComplete) {
+    menu.AddMenuOption(displayName, (player, option) => {
+      weaponName = weapon;
+      MenuManager.CloseActiveMenu(player);
+      onComplete();
+    });
   }
 
   private void OnTick() {
