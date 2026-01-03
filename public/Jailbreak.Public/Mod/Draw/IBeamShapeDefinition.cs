@@ -8,7 +8,7 @@ namespace Jailbreak.Public.Mod.Draw;
 /// </summary>
 public interface IBeamShapeDefinition {
   /// <summary>
-  ///   The type of bea, shape this definition represents.
+  ///   The type of beam, shape this definition represents.
   /// </summary>
   BeamShapeType ShapeType { get; }
 
@@ -19,7 +19,7 @@ public interface IBeamShapeDefinition {
   IReadOnlyList<(float x, float y)> UnitPoints { get; }
 
   /// <summary>
-  ///   Whether the shape is closed (last point connects back to first).
+  ///   Whether the shape is closed (the last point connects back to the first).
   /// </summary>
   bool IsClosed { get; }
 
