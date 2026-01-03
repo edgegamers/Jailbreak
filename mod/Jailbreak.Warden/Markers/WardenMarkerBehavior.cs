@@ -99,7 +99,7 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale,
     API.Stats?.PushStat(new ServerStat("JB_MARKER",
       $"{ping.X:F2} {ping.Y:F2} {ping.Z:F2}"));
 
-    locale.MarkerPlaced().ToAllChat();
+    locale.MarkerPlaced().ToChat(w);
     return HookResult.Handled;
   }
 

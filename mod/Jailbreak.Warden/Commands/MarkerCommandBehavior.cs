@@ -59,6 +59,7 @@ public class MarkerCommandBehavior(IWardenCmdMarkerLocale markerLocale,
         markerLocale.TypeChanged(value).ToChat(player);
       });
     });
+    MenuManager.CloseActiveMenu(player);
   }
 
   [ConsoleCommand("css_markercolor")]
@@ -92,5 +93,6 @@ public class MarkerCommandBehavior(IWardenCmdMarkerLocale markerLocale,
         markerLocale.ColorChanged(color.Key).ToChat(player);
       });
     });
+    MenuManager.CloseActiveMenu(player);
   }
 }
