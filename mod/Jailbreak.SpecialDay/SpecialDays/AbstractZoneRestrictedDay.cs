@@ -3,10 +3,12 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Formatting.Base;
 using Jailbreak.Formatting.Extensions;
+using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.Zones;
 using Jailbreak.Public.Utils;
 using Jailbreak.Zones;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
 
@@ -30,7 +32,9 @@ public abstract class AbstractZoneRestrictedDay : AbstractSpecialDay {
     base.Setup();
 
     ZoneReminder.ToTeamChat(RestrictedTeam);
-    GetZone().Draw(Plugin, Color.Firebrick, 55);
+    GetZone()
+     .Draw(Plugin, Provider.GetRequiredService<IBeamShapeFactory>(),
+        Color.Firebrick, 55);
 
     foreach (var t in PlayerUtil.FromTeam(RestrictedTeam)) {
       var zoneRestrictor = new ZoneMovementRestrictor(Plugin, t, GetZone(),

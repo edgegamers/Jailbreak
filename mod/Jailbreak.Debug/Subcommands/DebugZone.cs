@@ -1,6 +1,7 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.Zones;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,6 +19,9 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
 
   private readonly IZoneManager zoneManager =
     services.GetRequiredService<IZoneManager>();
+
+  private readonly IBeamShapeFactory shapeFactory =
+    services.GetRequiredService<IBeamShapeFactory>();
 
   public override void OnCommand(CCSPlayerController? executor,
     WrappedInfo info) {
@@ -80,7 +84,8 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
           var displayZones = zoneManager.GetZones(map, type)
            .GetAwaiter()
            .GetResult();
-          foreach (var z in displayZones) z.Draw(plugin, type.GetColor(), 120);
+          foreach (var z in displayZones)
+            z.Draw(plugin, shapeFactory, type.GetColor(), 120);
 
           zoneCount += displayZones.Count;
         }
@@ -180,8 +185,8 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
          .GetResult();
 
         var toRemove = spawns.Where(spawn
-            => doNotTeleport.Any(
-              d => d.IsInsideZone(spawn.CalculateCenterPoint())))
+            => doNotTeleport.Any(d
+              => d.IsInsideZone(spawn.CalculateCenterPoint())))
          .ToList();
 
         info.ReplyToCommand("Removing " + toRemove.Count
@@ -261,7 +266,8 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
          .Select(s => s.AbsOrigin!);
 
         var generated = factory.CreateZone(spawns);
-        generated.Draw(plugin, specifiedType.Value.GetColor(), 120);
+        generated.Draw(plugin, shapeFactory, specifiedType.Value.GetColor(),
+          120);
         info.ReplyToCommand($"Drawing auto-generated {specifiedType} zone");
         return;
     }
@@ -278,7 +284,7 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
       if (executor.PlayerPawn.Value?.AbsOrigin != null) {
         var zone =
           factory.CreateZone([executor.PlayerPawn.Value.AbsOrigin!.Clone()]);
-        zone.Draw(plugin, type.GetColor(), 1f);
+        zone.Draw(plugin, shapeFactory, type.GetColor(), 1f);
         // Server.NextFrameAsync(async () => {
         Task.Run(async () => {
           await zoneManager.PushZone(zone, type);
@@ -294,7 +300,8 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
       return;
     }
 
-    var creator = new PlayerZoneCreator(plugin, executor, factory, type);
+    var creator =
+      new PlayerZoneCreator(plugin, executor, factory, type, shapeFactory);
     creator.BeginCreation();
     creators[executor.SteamID] = creator;
     executor.PrintToChat($"Began creation of a {type.ToString()} zone");

@@ -3,6 +3,7 @@ using System.Drawing;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.Zones;
 using JetBrains.Annotations;
 
@@ -63,8 +64,9 @@ public class MultiZoneWrapper(IEnumerable<IZone>? zones = null)
     minZone.AddPoint(point);
   }
 
-  public void Draw(BasePlugin plugin, Color color, float lifetime,
-    float width = 1) {
-    foreach (var zone in zones) zone.Draw(plugin, color, lifetime, width);
+  public void Draw(BasePlugin plugin, IBeamShapeFactory factory, Color color,
+    float lifetime, float width = 1) {
+    foreach (var zone in zones)
+      zone.Draw(plugin, factory, color, lifetime, width);
   }
 }
