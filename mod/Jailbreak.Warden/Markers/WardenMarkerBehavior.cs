@@ -37,15 +37,6 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale,
   
   private BeamedPolylineShape? placedMarker;
 
-  // cached warden settings
-  private ulong? cachedWardenSteam;
-
-  private MarkerSettings
-    cachedSettings = new(BeamShapeType.CIRCLE, Color.White);
-
-  private bool cacheReady;
-  private bool cacheFetchInFlight;
-
   public void Start(BasePlugin basePlugin) {
     Radius = CV_MIN_RADIUS.Value;
     basePlugin.AddCommandListener("player_ping", CommandListener_PlayerPing);
@@ -59,11 +50,15 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale,
     var w = warden.Warden;
     if (w == null || !w.IsReal()) return HookResult.Handled;
 
-    ensureWardenMarkerCached(w);
-
-    var settings = cacheReady ?
-      cachedSettings :
-      new MarkerSettings(BeamShapeType.CIRCLE, Color.White);
+    var steam = w.SteamID;
+    
+    // Ensure settings are cached
+    var settings = markerSettings.GetCachedSettings(steam);
+    if (settings == null) {
+      // Cache miss - load in background and use defaults for now
+      Task.Run(async () => await markerSettings.EnsureCachedAsync(steam));
+      settings = new MarkerSettings(BeamShapeType.CIRCLE, Color.White);
+    }
 
     var ping = new Vector(ev.X, ev.Y, ev.Z);
     var now  = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -74,14 +69,14 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale,
 
       if (elapsed < CV_RESIZE_TIME.Value) {
         var distance = MarkerPosition.Distance(ping);
-        
+    
         if (!(distance <= CV_MAX_RADIUS.Value * 1.3f))
           return HookResult.Handled;
         distance = Math.Clamp(distance, CV_MIN_RADIUS.Value,
           CV_MAX_RADIUS.Value);
         Radius = distance;
 
-        ensurePlacedMarker(settings, MarkerPosition);
+        ensurePlacedMarker(settings.Value, MarkerPosition);
         placedMarker!.SetRadius(Radius);
         placedMarker.Update();
 
@@ -96,7 +91,7 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale,
     Radius         = CV_MIN_RADIUS.Value;
     placementTime  = now;
 
-    ensurePlacedMarker(settings, ping);
+    ensurePlacedMarker(settings.Value, ping);
     placedMarker!.Move(ping);
     placedMarker.SetRadius(Radius);
     placedMarker.Update();
@@ -104,13 +99,15 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale,
     API.Stats?.PushStat(new ServerStat("JB_MARKER",
       $"{ping.X:F2} {ping.Y:F2} {ping.Z:F2}"));
 
-    locale.MarkerPlaced("marker").ToAllChat();
+    locale.MarkerPlaced().ToAllChat();
     return HookResult.Handled;
   }
 
   private void ensurePlacedMarker(MarkerSettings settings, Vector pos) {
-    // recreate if missing OR warden changed type since last cached setting
-    if (placedMarker == null || settings.Type != cachedSettings.Type) {
+    // recreate if missing OR type changed
+    if (placedMarker == null 
+        || (placedMarker is { } existing 
+            && !isCorrectType(existing, settings.Type))) {
       placedMarker?.Remove();
       placedMarker = factory.CreateShape(pos, settings.Type, Radius);
     }
@@ -118,33 +115,10 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale,
     placedMarker.SetColor(settings.color);
   }
 
-  private void ensureWardenMarkerCached(CCSPlayerController w) {
-    var steam = w.SteamID;
-
-    if (cachedWardenSteam == steam && cacheReady) return;
-
-    if (cachedWardenSteam != steam) {
-      cachedWardenSteam  = steam;
-      cacheReady         = false;
-      cacheFetchInFlight = false;
-    }
-
-    if (cacheFetchInFlight) return;
-    cacheFetchInFlight = true;
-
-    Task.Run(async () => {
-      var settings = await markerSettings.GetForWardenAsync(steam);
-
-      await Server.NextFrameAsync(() => {
-        cacheFetchInFlight = false;
-
-        if (!warden.HasWarden || warden.Warden == null) return;
-        if (warden.Warden.SteamID != steam) return;
-
-        cachedSettings = settings;
-        cacheReady     = true;
-      });
-    });
+  private bool isCorrectType(BeamedPolylineShape shape, BeamShapeType type) {
+    // Check if the shape matches the type - you may need to adjust this
+    // based on your actual implementation
+    return shape.GetType().Name.Contains(type.ToString());
   }
 
   private HookResult CommandListener_PlayerPing(CCSPlayerController? player,

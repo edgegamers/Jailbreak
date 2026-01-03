@@ -36,29 +36,13 @@ public class WardenMarkerSettings(IBeamShapeRegistry registry)
       plugin.RemoveListener<Listeners.OnMapStart>(OnMapStart);
   }
 
-  public async ValueTask<MarkerSettings> GetForWardenAsync(ulong steamId) {
-    if (cache.TryGetValue(steamId, out var cached)) return cached;
+  public MarkerSettings? GetCachedSettings(ulong steamId) {
+    return cache.TryGetValue(steamId, out var cached) ? cached : null;
+  }
 
-    // defaults
-    var type = BeamShapeType.CIRCLE;
-    var color = Color.White;
-
-    if (typeCookie == null || colorCookie == null)
-      return store(steamId, type, color);
-
-    try {
-      var typeStr = await typeCookie.Get(steamId);
-      var colorStr = await colorCookie.Get(steamId);
-
-      if (!string.IsNullOrWhiteSpace(typeStr)) type = parseType(typeStr, type);
-
-      if (!string.IsNullOrWhiteSpace(colorStr))
-        color = parseColor(colorStr, color);
-    } catch {
-      // swallow: cookie service can be flaky on map start, keep defaults
-    }
-
-    return store(steamId, type, color);
+  public async Task EnsureCachedAsync(ulong steamId) {
+    if (cache.ContainsKey(steamId)) return;
+    await populateCache(steamId);
   }
 
   public async Task SetTypeAsync(ulong steamId, BeamShapeType type) {
@@ -67,12 +51,8 @@ public class WardenMarkerSettings(IBeamShapeRegistry registry)
     var value = type.ToFriendlyString();
     await typeCookie.Set(steamId, value);
 
-    // Update cache
-    if (cache.TryGetValue(steamId, out var current)) {
-      cache[steamId] = current with { Type = type };
-    } else {
-      await populateCache(steamId);
-    }
+    // Refresh cache from cookies
+    await populateCache(steamId);
   }
 
   public async Task SetColorAsync(ulong steamId, string colorKey) {
@@ -80,19 +60,18 @@ public class WardenMarkerSettings(IBeamShapeRegistry registry)
 
     await colorCookie.Set(steamId, colorKey);
 
-    // Update cache
-    if (cache.TryGetValue(steamId, out var current)) {
-      var color = parseColor(colorKey, current.color);
-      cache[steamId] = current with { color = color };
-    } else {
-      await populateCache(steamId);
-    }
+    // Refresh cache from cookies
+    await populateCache(steamId);
   }
 
   public void Invalidate(ulong steamId) => cache.TryRemove(steamId, out _);
 
   private async Task populateCache(ulong steamId) {
-    if (typeCookie == null || colorCookie == null) return;
+    if (typeCookie == null || colorCookie == null) {
+      // Store defaults if cookies aren't ready
+      cache[steamId] = new MarkerSettings(BeamShapeType.CIRCLE, Color.White);
+      return;
+    }
 
     try {
       var typeStr = await typeCookie.Get(steamId);
@@ -107,14 +86,9 @@ public class WardenMarkerSettings(IBeamShapeRegistry registry)
 
       cache[steamId] = new MarkerSettings(type, color);
     } catch {
-      // swallow
+      // swallow: store defaults on error
+      cache[steamId] = new MarkerSettings(BeamShapeType.CIRCLE, Color.White);
     }
-  }
-
-  private MarkerSettings store(ulong steamId, BeamShapeType type, Color color) {
-    var s = new MarkerSettings(type, color);
-    cache[steamId] = s;
-    return s;
   }
 
   private BeamShapeType parseType(string value, BeamShapeType fallback) {
