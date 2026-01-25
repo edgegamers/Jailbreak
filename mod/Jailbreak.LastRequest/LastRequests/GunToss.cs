@@ -81,6 +81,9 @@ public class GunToss(BasePlugin plugin, ILastRequestManager manager,
   }
 
   public override void Execute() {
+    Prisoner.RemoveWeapons();
+    Guard.RemoveWeapons();
+
     Prisoner.GiveNamedItem("weapon_knife");
     Guard.GiveNamedItem("weapon_knife");
     Prisoner.GiveNamedItem("weapon_deagle");
