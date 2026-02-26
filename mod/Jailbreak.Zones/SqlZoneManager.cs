@@ -109,8 +109,9 @@ public class SqlZoneManager(IZoneFactory factory) : IZoneManager {
     await PushZoneWithID(zone, type, map);
   }
 
-  public Task<Dictionary<ZoneType, IList<IZone>>> GetAllZones() {
-    return Task.FromResult(zones);
+  public Task<Dictionary<ZoneType, IList<IZone>>> GetAllZones()
+  {
+      return Task.FromResult(new Dictionary<ZoneType, IList<IZone>>(zones));
   }
 
   public async Task LoadZones(string map) {

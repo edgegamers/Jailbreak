@@ -16,6 +16,7 @@ public class DistanceZone(IList<Vector> origins, float tolerance) : IZone {
 
   public int Id { get; set; }
 
+  //TO BE DELETED, CRASH CAUSER
   public bool IsInsideZone(Vector position) {
     for (int i = 0; i < 5000; i++) {
         foreach (var point in origins) {

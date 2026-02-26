@@ -1,4 +1,4 @@
-﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 using Jailbreak.Public.Behaviors;
@@ -25,7 +25,7 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory,
 
   public void Start(BasePlugin basePlugin, bool hotreload) {
     plugin = basePlugin;
-    reload()
+    reload();
     startTimer();
   }
 
@@ -36,7 +36,7 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory,
     timer = plugin.AddTimer(63f, tick, TimerFlags.REPEAT);
   }
 
-  private void reload() {
+  private async void reload() {
     var map = Server.MapName;
     
     Task.Run(async () => {
@@ -46,13 +46,18 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory,
         var restrictedTask = getRestrictedAreasAsync(map);
 
         await Task.WhenAll(cellsTask, manualTask, autoTask, restrictedTask);
+
+        var c = await cellsTask;
+        var m = (await manualTask).ToList();
+        var a = (await autoTask).ToList();
+        var r = (await restrictedTask).ToList();
+
         Server.NextFrame(() => {
-            cells = await cellsTask;
-            manualSpawnPoints = (await manualTask).ToList();
-            autoSpawnPoints = (await autoTask).ToList();
-            restrictedAreas = (await restrictedTask).ToList();
+            cells = c;
+            manualSpawnPoints = m;
+            autoSpawnPoints = a;
+            restrictedAreas = r;
             currentMap = map;
-            
             if (manualSpawnPoints.Count > Server.MaxPlayers) {
                 timer?.Kill();
             } else {
@@ -89,6 +94,7 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory,
 
     float dist;
     
+    //TO BE DELETED, CRASH CAUSER
     for (int i = 0; i < 10; i++) {
         Task.Run(async () => {
             var temp = factory.CreateZone([pawn.AbsOrigin!]);
@@ -107,8 +113,8 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory,
       if (dist <= DistanceZone.WIDTH_MEDIUM_ROOM) return;
     }
 
-    if (maunal != null
-      && maunal.Count >= Server.MaxPlayers)
+    if (manual != null
+      && manual.Count >= Server.MaxPlayers)
       return;
 
     var allSpawnPoints = (manual ?? []).Concat(auto)
@@ -125,7 +131,7 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory,
        .FirstOrDefault();
       if (nearestPoint == null) return;
 
-      var currentScore = zoneScore(maunal);
+      var currentScore = zoneScore(manual);
       var newPoints    = new List<IZone>(allSpawnPoints);
       var zone         = factory.CreateZone([pos]);
       newPoints.Remove(nearestPoint);
@@ -136,18 +142,12 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory,
 
       zone.Id = nearestPoint.Id;
 
-      auto.Remove(nearestPoint);
-      auto.Add(zone);
-      autoSpawnPoints = new List<IZone>(auto); 
+      autoSpawnPoints.Remove(nearestPoint);
+      autoSpawnPoints.Add(zone);
 
       _ = zoneManager.DeleteZone(zone.Id, currentMap!);
       _ = zoneManager.PushZoneWithID(zone, ZoneType.SPAWN_AUTO, currentMap!);
-      return;
     }
-
-    var spawn = factory.CreateZone([pos]);
-    autoSpawnPoints.Add(spawn);
-    _ = zoneManager.PushZone(spawn, ZoneType.SPAWN_AUTO, currentMap!);
   }
 
   private float zoneScore(IList<IZone>? zones) {
@@ -191,15 +191,13 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory,
     return new DistanceZone(origins, DistanceZone.WIDTH_CELL);
   }
 
-  private Task<List<IZone>> getRestrictedAreasAsync(string map) {
+  private async Task<List<IZone>> getRestrictedAreasAsync(string map) {
     List<IZone> result = [];
     foreach (var zone in ZoneTypeExtensions.DoNotTeleports()) {
-      result.AddRange(await zoneManager.GetZones(map, zoneType));
+      result.AddRange(await zoneManager.GetZones(map, zone));
     }
 
-    var armory = zoneManager.GetZones(Server.MapName, ZoneType.ARMORY)
-     .GetAwaiter()
-     .GetResult();
+    var armory = await zoneManager.GetZones(Server.MapName, ZoneType.ARMORY);
     if (armory.Count == 0) {
       var bounds = new DistanceZone(
         Utilities
