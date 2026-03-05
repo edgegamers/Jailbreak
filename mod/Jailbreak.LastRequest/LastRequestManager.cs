@@ -175,6 +175,10 @@ public class  LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
       if (lastGuard is { IsLastGuardActive: true }) rebel?.UnmarkRebel(player);
       player.ExecuteClientCommandFromServer("css_lr");
+
+      var defaultWinner =
+        NativeAPI.FindConvar("mp_default_team_winner_no_objective");
+      NativeAPI.SetConvarStringValue(defaultWinner, "ct");
     }
 
     if (!shouldGrantCredits()) return;
@@ -511,6 +515,10 @@ public class  LastRequestManager(ILRLocale messages, IServiceProvider provider)
     foreach (var lr in ActiveLRs.ToList())
       EndLastRequest(lr, LRResult.TIMED_OUT);
     ActiveLRs.Clear();
+
+    var defaultWinner =
+      NativeAPI.FindConvar("mp_default_team_winner_no_objective");
+    NativeAPI.SetConvarStringValue(defaultWinner, "t");
     return HookResult.Continue;
   }
 
