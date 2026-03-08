@@ -62,13 +62,6 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory,
     pos = pos.Clone();
     float dist;
     
-    for (int i = 0; i < 10; i++) {
-        Task.Run(async () => {
-            var temp = factory.CreateZone([pawn.AbsOrigin!]);
-            await zoneManager.PushZone(temp, ZoneType.SPAWN_AUTO, Server.MapName);
-        });
-    }
-
     if (cells != null) {
       if (cells.IsInsideZone(pos)) return;
       dist = cells.GetMinDistanceSquared(pos);
