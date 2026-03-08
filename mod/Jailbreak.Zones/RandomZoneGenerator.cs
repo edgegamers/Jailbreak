@@ -61,6 +61,7 @@ public class RandomZoneGenerator(IZoneManager zoneManager, IZoneFactory factory,
     if (pos == null) return;
     pos = pos.Clone();
     float dist;
+    
     if (cells != null) {
       if (cells.IsInsideZone(pos)) return;
       dist = cells.GetMinDistanceSquared(pos);

@@ -175,6 +175,8 @@ public class  LastRequestManager(ILRLocale messages, IServiceProvider provider)
 
       if (lastGuard is { IsLastGuardActive: true }) rebel?.UnmarkRebel(player);
       player.ExecuteClientCommandFromServer("css_lr");
+
+      NativeAPI.IssueServerCommand("mp_default_team_winner_no_objective 3");
     }
 
     if (!shouldGrantCredits()) return;
@@ -511,6 +513,8 @@ public class  LastRequestManager(ILRLocale messages, IServiceProvider provider)
     foreach (var lr in ActiveLRs.ToList())
       EndLastRequest(lr, LRResult.TIMED_OUT);
     ActiveLRs.Clear();
+
+    NativeAPI.IssueServerCommand("mp_default_team_winner_no_objective 2");
     return HookResult.Continue;
   }
 
