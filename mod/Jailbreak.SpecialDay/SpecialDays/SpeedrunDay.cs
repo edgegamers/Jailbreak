@@ -6,13 +6,13 @@ using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
+using CS2DrawShared;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.SpecialDay;
+using Jailbreak.Public;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.Draw;
-using Jailbreak.Public.Mod.Draw.Enums;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Mod.Trail;
@@ -81,7 +81,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     "css_jb_speedrun_finish_at",
     "Number of players required to declare a winner", 2,
     customValidators: new RangeValidator<int>(2, 10));
-  
+
 
   private readonly Dictionary<int, ActivePlayerTrail<VectorTrailSegment>>
     activeTrails = new();
@@ -101,7 +101,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
   private LinkedList<(int, float)> finishTimestampList = [];
 
-  private IBeamShapeFactory beamShapeFactory = null!;
   private IGenericCmdLocale generics = null!;
   private int round, playersAliveAtStart;
   private Timer? roundEndTimer;
@@ -110,7 +109,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   private CCSPlayerController? speedrunner;
   private Vector? start;
   private Vector? target;
-  private BeamedPolylineShape? targetCircle;
+  private IDrawHandle? targetCircle;
   private ISpeedDayLocale Msg => (ISpeedDayLocale)Locale;
 
   private bool IsRoundActive
@@ -124,7 +123,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
   public override void Setup() {
     generics = Provider.GetRequiredService<IGenericCmdLocale>();
-    beamShapeFactory = Provider.GetRequiredService<IBeamShapeFactory>();
 
     foreach (var player in Utilities.GetPlayers()
      .Where(p => p is { Team: CsTeam.Terrorist or CsTeam.CounterTerrorist }))
@@ -227,11 +225,9 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       || start.DistanceSquared(speedrunner.PlayerPawn.Value.AbsOrigin) < 100)
       panic("Execute: Start is null or too close to speedrunner");
 
-    target       = target.Clone();
-    targetCircle =
-      beamShapeFactory.CreateShape(target!, BeamShapeType.CIRCLE, 10);
-    targetCircle.SetColor(Color.Green);
-    targetCircle.Draw();
+    target = target.Clone();
+
+    targetCircle = API.Draw?.Circle(target!, 10).Color(Color.Green).Draw();
 
     if (bestTrail is null) {
       generics.Error("Execute: bestTrail is null").ToAllChat();
@@ -397,8 +393,10 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     var minDist = getRequiredDistance();
-    targetCircle?.SetRadius(minDist / 2);
-    targetCircle?.Update();
+    targetCircle?.Cancel();
+    targetCircle = API.Draw?.Circle(target!, minDist / 2)
+     .Color(Color.Green)
+     .Draw();
     var required = MathF.Pow(minDist, 2);
 
     LinkedList<(int, float)> notFinished = [];
@@ -682,7 +680,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         return;
       }
 
-      targetCircle?.Remove();
+      targetCircle?.Cancel();
       targetCircle = null;
 
       var losers = PlayerUtil.GetAlive()
