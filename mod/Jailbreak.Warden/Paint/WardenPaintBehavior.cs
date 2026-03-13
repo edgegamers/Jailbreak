@@ -1,9 +1,9 @@
 ﻿using System.Drawing;
-using System.Numerics;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
+using CS2DrawShared.Timers;
 using CS2TraceRay.Class;
 using CS2TraceRay.Enum;
 using GangsAPI.Data;
@@ -12,7 +12,6 @@ using GangsAPI.Services.Player;
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.Rainbow;
 using Jailbreak.Public.Mod.Warden;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,67 +22,107 @@ namespace Jailbreak.Warden.Paint;
 
 public class WardenPaintBehavior(IWardenService wardenService,
   IServiceProvider provider) : IPluginBehavior {
+ 
   private readonly IRainbowColorizer? colorizer =
     provider.GetService<IRainbowColorizer>();
-
-  private WardenPaintColor?[] colors = new WardenPaintColor?[65];
-  private bool[] fetched = new bool[65];
-  private Vector? lastPosition;
-  private BasePlugin? parent;
-
+ 
+  // per-color cache
+  private WardenPaintColor?[] colors  = new WardenPaintColor?[65];
+  private bool[]              fetched = new bool[65];
+ 
+  // trail state
+  private CCSPlayerController? painter;
+  private ILoopTimer?           trailTimer;
+  private CInfoTarget?          trailAnchor;
+  private int                   lastActiveTrailTick;
+  private bool                  wasHoldingLastTick;
+ 
+  private const int TRAIL_SPLIT_TIMEOUT = 128;
+ 
   public void Start(BasePlugin basePlugin) {
-    parent = basePlugin;
-    basePlugin.RegisterListener<Listeners.OnTick>(paint);
+    painter = wardenService.Warden;
+    basePlugin.RegisterListener<Listeners.OnTick>(OnTick);
   }
-
+ 
   [GameEventHandler]
   public HookResult OnRoundStart(EventRoundStart ev, GameEventInfo info) {
     colors  = new WardenPaintColor?[65];
     fetched = new bool[65];
+    stopTrail();
     return HookResult.Continue;
   }
-
-  private void paint() {
-    if (!wardenService.HasWarden) return;
-
-    var warden = wardenService.Warden;
-    if (warden == null || !warden.IsReal()) return;
-
-    if ((warden.Buttons & PlayerButtons.Use) == 0) return;
-
-    var trace =
-      warden.GetGameTraceByEyePosition(TraceMask.MaskSolid, Contents.TouchAll,
-        warden);
-    if (trace == null) return;
-
-    var position = trace.Value.Position.ToCsVector();
-
-    var start = lastPosition ?? position;
-    start = start.Clone();
-
-    if (lastPosition != null
-      && position.DistanceSquared(lastPosition) < 25 * 25)
+ 
+  private void OnTick() {
+    // keep painter in sync with current warden
+    painter = wardenService.Warden;
+ 
+    if (painter?.PlayerPawn.Value == null) return;
+ 
+    // player released Use — stop the trail
+    if ((painter.Buttons & PlayerButtons.Use) == 0) {
+      stopTrail();
       return;
-
-    lastPosition = position;
-    if (start.DistanceSquared(position) > 150 * 150) start = position;
-
-    if (parent == null)
-      throw new NullReferenceException("Parent plugin is null");
-
-    var color = getColor(warden);
-    var line  = new BeamLine(parent, start.Clone(), position.Clone());
-    line.SetColor(color);
-    line.SetWidth(1.5f);
-    line.Draw(30);
+    }
+ 
+    var now   = Server.TickCount;
+    var trace = painter.GetGameTraceByEyePosition(TraceMask.MaskSolid,
+      Contents.TouchAll, painter);
+    if (trace == null) return;
+ 
+    var pos  = trace.Value.Position.ToCsVector();
+    pos.Z   += 5f;
+ 
+    var isFirstHold  = !wasHoldingLastTick;
+    var playerPaused = lastActiveTrailTick > 0
+                    && now - lastActiveTrailTick > TRAIL_SPLIT_TIMEOUT;
+    var anchorLost   = trailAnchor == null;
+ 
+    if (isFirstHold || playerPaused || anchorLost)
+      startNewTrailSegment(pos);
+ 
+    trailAnchor?.Teleport(pos, QAngle.Zero, Vector.Zero);
+ 
+    wasHoldingLastTick  = true;
+    lastActiveTrailTick = now;
   }
-
+ 
+  private void startNewTrailSegment(Vector pos) {
+    stopTrail();
+ 
+    trailAnchor = Utilities.CreateEntityByName<CInfoTarget>("info_target");
+    if (trailAnchor == null) return;
+ 
+    trailAnchor.Teleport(pos, QAngle.Zero, Vector.Zero);
+    trailAnchor.DispatchSpawn();
+ 
+    if (painter == null) return;
+ 
+    var color = getColor(painter);
+ 
+    trailTimer = API.Draw?.Trail(trailAnchor)
+      .Color(color)
+      .Start();
+  }
+ 
+  private void stopTrail() {
+    trailTimer?.Stop();
+    trailTimer = null;
+ 
+    trailAnchor?.Remove();
+    trailAnchor = null;
+ 
+    wasHoldingLastTick = false;
+  }
+ 
+  // ── Color resolution ──────────────────────────────────────────────────────
+ 
   private Color getColor(CCSPlayerController player) {
     if (player.Pawn.Value == null || player.PlayerPawn.Value == null)
       return Color.White;
+ 
     var pawn = player.Pawn.Value;
     if (pawn == null || !pawn.IsValid) return Color.White;
-
+ 
     var color = colors[player.Index];
     if (color != null) {
       if (color == WardenPaintColor.RAINBOW)
@@ -92,44 +131,43 @@ public class WardenPaintBehavior(IWardenService wardenService,
         return color.Value.PickRandom() ?? Color.White;
       return color.Value.GetColor() ?? Color.White;
     }
-
+ 
     if (fetched[player.Index]) return Color.White;
     fetched[player.Index] = true;
+ 
     var wrapper = new PlayerWrapper(player);
     Task.Run(async () => {
-      color                = await fetchColor(wrapper);
-      colors[player.Index] = color;
+      color                   = await fetchColor(wrapper);
+      colors[player.Index]   = color;
     });
-
+ 
     return Color.White;
   }
-
+ 
   private async Task<WardenPaintColor> fetchColor(PlayerWrapper player) {
     var gangs       = API.Gangs?.Services.GetService<IGangManager>();
     var playerStats = API.Gangs?.Services.GetService<IPlayerStatManager>();
     var players     = API.Gangs?.Services.GetService<IPlayerManager>();
     var gangStats   = API.Gangs?.Services.GetService<IGangStatManager>();
-
-    if (gangs == null || playerStats == null || players == null
-      || gangStats == null)
+ 
+    if (gangs == null || playerStats == null || players == null || gangStats == null)
       return WardenPaintColor.DEFAULT;
-
+ 
     var playerColors = await playerStats.GetForPlayer<WardenPaintColor>(
       player.Steam, WardenPaintColorPerk.WardenPaintColorPerk.STAT_ID);
-
+ 
     var gangPlayer = await players.GetPlayer(player.Steam);
-
     if (gangPlayer?.GangId == null) return WardenPaintColor.DEFAULT;
-
+ 
     var gang = await gangs.GetGang(gangPlayer.GangId.Value);
     if (gang == null) return WardenPaintColor.DEFAULT;
-
+ 
     var available = await gangStats.GetForGang<WardenPaintColor>(gang,
       WardenPaintColorPerk.WardenPaintColorPerk.STAT_ID);
-
+ 
     if (playerColors == WardenPaintColor.RANDOM)
       return playerColors | available;
-
+ 
     return playerColors & available;
   }
 }
