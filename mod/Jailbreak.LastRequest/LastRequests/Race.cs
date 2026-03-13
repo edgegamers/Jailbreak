@@ -2,11 +2,11 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
+using CS2DrawShared;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.LastRequest;
+using Jailbreak.Public;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.Draw;
-using Jailbreak.Public.Mod.Draw.Enums;
 using Jailbreak.Public.Mod.LastRequest;
 using Jailbreak.Public.Mod.LastRequest.Enums;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,11 +20,8 @@ public class Race(BasePlugin plugin, IServiceProvider provider,
   provider.GetRequiredService<ILastRequestManager>(), prisoner, guard) {
   private DateTime raceStart;
   private Timer? raceTimer;
-  private BeamedPolylineShape? start, end;
+  private IDrawHandle? start, end;
   private Vector? startLocation, endLocation;
-
-  private IBeamShapeFactory shapeFactory =
-    provider.GetRequiredService<IBeamShapeFactory>();
 
   public override LRType Type => LRType.RACE;
 
@@ -40,10 +37,7 @@ public class Race(BasePlugin plugin, IServiceProvider provider,
     startLocation = Prisoner.Pawn.Value?.AbsOrigin?.Clone();
 
     if (startLocation == null) return;
-    start = shapeFactory.CreateShape(startLocation, BeamShapeType.CIRCLE, 20,
-      16);
-    start.SetColor(Color.Aqua);
-    start.Draw();
+    start = API.Draw?.Circle(startLocation, 20).Color(Color.Aqua).Draw();
 
     if (Guard.Pawn.Value != null) Guard.Pawn.Value.TakesDamage = false;
   }
@@ -53,10 +47,7 @@ public class Race(BasePlugin plugin, IServiceProvider provider,
     endLocation = Prisoner.Pawn.Value?.AbsOrigin?.Clone();
 
     if (endLocation == null) return;
-    end = shapeFactory.CreateShape(endLocation, BeamShapeType.CIRCLE, 10,
-      32);
-    end.SetColor(Color.Red);
-    end.Draw();
+    end = API.Draw?.Circle(endLocation, 10).Color(Color.Red).Draw();
 
     Prisoner.Pawn.Value?.Teleport(startLocation);
     Guard.Pawn.Value?.Teleport(startLocation);
@@ -86,8 +77,10 @@ public class Race(BasePlugin plugin, IServiceProvider provider,
     var requiredDistance       = getRequiredDistance();
     var requiredDistanceSqured = MathF.Pow(requiredDistance, 2);
 
-    end?.SetRadius(requiredDistance / 2);
-    end?.Update();
+    end?.Cancel();
+    end = API.Draw?.Circle(endLocation!, requiredDistance / 2)
+     .Color(Color.Red)
+     .Draw();
 
     if (endLocation == null) return;
     var guardDist = Guard.Pawn.Value?.AbsOrigin?.Clone()
@@ -125,7 +118,7 @@ public class Race(BasePlugin plugin, IServiceProvider provider,
     }
 
     raceTimer?.Kill();
-    start?.Remove();
-    end?.Remove();
+    start?.Cancel();
+    end?.Cancel();
   }
 }
