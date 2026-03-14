@@ -10,14 +10,13 @@ using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public.Behaviors;
-using Jailbreak.Public.Mod.Draw;
-using Jailbreak.Public.Mod.Draw.Enums;
 using Jailbreak.Public.Mod.Warden;
+using Jailbreak.Public.Mod.Warden.Enums;
 
 namespace Jailbreak.Warden.Commands;
 
 public class MarkerCommandBehavior(IWardenCmdMarkerLocale markerLocale,
-  IGenericCmdLocale generics, IBeamShapeRegistry registry,
+  IGenericCmdLocale generics,
   IWardenMarkerSettings markerSettings) : IPluginBehavior {
   public static readonly FakeConVar<string> CV_MARKER_CUSTOMIZATION_FLAG =
     new("css_marker_customization_flag",
@@ -40,8 +39,8 @@ public class MarkerCommandBehavior(IWardenCmdMarkerLocale markerLocale,
     }
 
     var menu = new CenterHtmlMenu("Marker Type", plugin);
-    foreach (var type in registry.GetAllTypes()) {
-      menu.AddMenuOption(type.ToFriendlyString(),
+    foreach (var type in MarkerShapeTypeExtensions.All()) {
+      menu.AddMenuOption(type.ToDisplayName(),
         (p, _) => handleMarkerTypeSelect(p, type));
     }
 
@@ -49,13 +48,13 @@ public class MarkerCommandBehavior(IWardenCmdMarkerLocale markerLocale,
   }
 
   private void handleMarkerTypeSelect(CCSPlayerController player,
-    BeamShapeType type) {
+    MarkerShapeType type) {
     var steam = player.SteamID;
     Task.Run(async () => {
       await markerSettings.SetTypeAsync(steam, type);
       await Server.NextFrameAsync(() => {
         if (!player.IsValid) return;
-        var value = type.ToFriendlyString();
+        var value = type.ToDisplayName();
         markerLocale.TypeChanged(value).ToChat(player);
       });
     });
@@ -75,8 +74,8 @@ public class MarkerCommandBehavior(IWardenCmdMarkerLocale markerLocale,
     }
 
     var menu = new CenterHtmlMenu("Marker Color", plugin);
-    foreach (var color in registry.GetAllColors()) {
-      menu.AddMenuOption(color.Key,
+    foreach (var color in MarkerColorExtensions.All()) {
+      menu.AddMenuOption(color.ToDisplayName(),
         (p, _) => handleMarkerColorSelect(p, color));
     }
 
@@ -84,13 +83,13 @@ public class MarkerCommandBehavior(IWardenCmdMarkerLocale markerLocale,
   }
 
   private void handleMarkerColorSelect(CCSPlayerController player,
-    KeyValuePair<string, Color> color) {
+    MarkerColor color) {
     var steam = player.SteamID;
     Task.Run(async () => {
-      await markerSettings.SetColorAsync(steam, color.Key);
+      await markerSettings.SetColorAsync(steam, color.ToDisplayName());
       await Server.NextFrameAsync(() => {
         if (!player.IsValid) return;
-        markerLocale.ColorChanged(color.Key).ToChat(player);
+        markerLocale.ColorChanged(color.ToDisplayName()).ToChat(player);
       });
     });
     MenuManager.CloseActiveMenu(player);

@@ -104,8 +104,10 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
     var calculated = calculateHealth();
 
     if (calculated < lastGuard.Health && !CV_ALWAYS_OVERRIDE_CT.Value) {
-      if (guardPlayerPawn.Health > CV_MAX_CT_HEALTH.Value)
+      if (guardPlayerPawn.Health > CV_MAX_CT_HEALTH.Value) {
         lastGuard.SetHealth(CV_MAX_CT_HEALTH.Value);
+        API.Draw?.Beacon(lastGuard).WithOffset(8f).Start();
+      }
     } else { guardPlayerPawn.Health = calculated; }
 
     // foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal()))
@@ -129,7 +131,10 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
      .ToAllCenter()
      .ToAllChat();
 
-    foreach (var player in lastGuardPrisoners) rebel.MarkRebel(player);
+    foreach (var player in lastGuardPrisoners) {
+      API.Draw?.Beacon(player).WithOffset(8f).Start();
+      rebel.MarkRebel(player);
+    }
 
     if (string.IsNullOrEmpty(CV_LG_WEAPON.Value)) return;
 

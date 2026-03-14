@@ -6,18 +6,17 @@ using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
+using CS2DrawShared;
 using Jailbreak.English.SpecialDay;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views;
 using Jailbreak.Formatting.Views.SpecialDay;
+using Jailbreak.Public;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.Draw;
-using Jailbreak.Public.Mod.Draw.Enums;
 using Jailbreak.Public.Mod.SpecialDay;
 using Jailbreak.Public.Mod.SpecialDay.Enums;
 using Jailbreak.Public.Mod.Trail;
 using Jailbreak.Public.Utils;
-using Jailbreak.Trail;
 using Jailbreak.Validator;
 using Microsoft.Extensions.DependencyInjection;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
@@ -81,57 +80,43 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     "css_jb_speedrun_finish_at",
     "Number of players required to declare a winner", 2,
     customValidators: new RangeValidator<int>(2, 10));
-  
 
-  private readonly Dictionary<int, ActivePlayerTrail<VectorTrailSegment>>
-    activeTrails = new();
 
-  /// <summary>
-  ///   Negative values represent players who finished.
-  ///   Positive values represent players who are still alive, and the value
-  ///   being the distance they are from the target.
-  /// </summary>
+  private readonly Dictionary<int, SpeedrunTrail> activeTrails = new();
+  private SpeedrunTrail? bestTrail;
+
   private readonly HashSet<int> finishedPlayers = [];
-
   private readonly Random rng = new();
   private float? bestTime;
   private int? bestTimePlayerSlot;
-
-  private AbstractTrail<BeamTrailSegment>? bestTrail;
-
   private LinkedList<(int, float)> finishTimestampList = [];
-
-  private IBeamShapeFactory beamShapeFactory = null!;
   private IGenericCmdLocale generics = null!;
   private int round, playersAliveAtStart;
   private Timer? roundEndTimer;
-
   private float? roundStartTime;
   private CCSPlayerController? speedrunner;
   private Vector? start;
   private Vector? target;
-  private BeamedPolylineShape? targetCircle;
+  private IDrawHandle? targetCircle;
+
   private ISpeedDayLocale Msg => (ISpeedDayLocale)Locale;
 
   private bool IsRoundActive
     => Provider.GetRequiredService<ISpecialDayManager>().CurrentSD == this;
 
   public override SDType Type => SDType.SPEEDRUN;
-
   public override SpecialDaySettings Settings => new SpeedrunSettings();
-
   public ISDInstanceLocale Locale => new SpeedrunDayLocale();
 
   public override void Setup() {
     generics = Provider.GetRequiredService<IGenericCmdLocale>();
-    beamShapeFactory = Provider.GetRequiredService<IBeamShapeFactory>();
+    API.Draw?.RegisterShape(new SpeedTrailSetup());
 
     foreach (var player in Utilities.GetPlayers()
      .Where(p => p is { Team: CsTeam.Terrorist or CsTeam.CounterTerrorist }))
       player.Respawn();
 
     speedrunner = getRunner();
-
     if (speedrunner == null) {
       speedrunner = PlayerUtil.GetAlive().FirstOrDefault();
       if (speedrunner == null) {
@@ -141,13 +126,13 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     Timers[0.1f] += () => {
-      // Needed since players who respawned are given knife later
       foreach (var player in PlayerUtil.GetAlive()) {
         player.RemoveWeapons();
         if (player.Slot == speedrunner.Slot) continue;
         player.SetColor(Color.FromArgb(100, 255, 255, 255));
       }
     };
+
     Timers[CV_FIRST_ROUND_FREEZE.Value - 4] += () => {
       if (!speedrunner.IsValid || speedrunner.Connected
         != PlayerConnectedState.PlayerConnected)
@@ -161,6 +146,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       speedrunner.SetColor(Color.DodgerBlue);
       Msg.YouAreRunner(CV_INITIAL_SPEEDRUN_TIME.Value).ToChat(speedrunner);
     };
+
     Timers[CV_FIRST_ROUND_FREEZE.Value] += () => {
       if (!speedrunner.IsValid || speedrunner.Connected
         != PlayerConnectedState.PlayerConnected) {
@@ -176,9 +162,9 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         Msg.YouAreRunner(CV_INITIAL_SPEEDRUN_TIME.Value).ToChat(speedrunner);
       }
 
-      start = speedrunner.PlayerPawn.Value!.AbsOrigin!.Clone();
-      speedrunner.UnFreeze();
+      start     = speedrunner.PlayerPawn.Value!.AbsOrigin!.Clone();
       bestTrail = createFirstTrail(speedrunner);
+      speedrunner.UnFreeze();
     };
 
     if (CV_INITIAL_SPEEDRUN_TIME.Value > 30)
@@ -203,14 +189,17 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         if (target != null) return;
         Msg.RuntimeLeft(RoundUtil.GetTimeRemaining()).ToChat(speedrunner);
       };
+
     Timers[CV_INITIAL_SPEEDRUN_TIME.Value + CV_FIRST_ROUND_FREEZE.Value] +=
       Execute;
 
     base.Setup();
   }
 
+  // ── Execute ───────────────────────────────────────────────────────────────
+
   public override void Execute() {
-    if (target != null) return; // We started the round already
+    if (target != null) return;
     if (speedrunner == null) {
       panic("Execute: Speedrunner is null");
       return;
@@ -227,70 +216,73 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       || start.DistanceSquared(speedrunner.PlayerPawn.Value.AbsOrigin) < 100)
       panic("Execute: Start is null or too close to speedrunner");
 
-    target       = target.Clone();
-    targetCircle =
-      beamShapeFactory.CreateShape(target!, BeamShapeType.CIRCLE, 10);
-    targetCircle.SetColor(Color.Green);
-    targetCircle.Draw();
+    target = target.Clone();
 
-    if (bestTrail is null) {
+    targetCircle = API.Draw?.Circle(target!, 10).Color(Color.Green).Draw();
+
+    if (bestTrail == null) {
       generics.Error("Execute: bestTrail is null").ToAllChat();
       return;
     }
 
-    if (bestTrail is ActivePlayerTrail<BeamTrailSegment> active)
-      active.StopTracking();
+    // Freeze the runner's trail at their current position
+    var runnerPos = speedrunner.PlayerPawn.Value?.AbsOrigin ?? target;
+    bestTrail.Freeze(runnerPos);
 
-    var timeSpent = bestTrail.GetEndSegment()!.GetSpawnTime()
-      - bestTrail.GetStartSegment()!.GetSpawnTime();
-
-    bestTime = timeSpent;
-
+    // Use the time the runner spent as the basis for round time
+    // Since we no longer have segment timestamps, use the convar time directly
     var minTime = CV_INITIAL_SPEEDRUN_TIME.Value * 0.5;
-
-    startRound((int)Math.Ceiling(Math.Max(timeSpent * 1.1, minTime)));
+    startRound((int)Math.Ceiling(Math.Max(CV_INITIAL_SPEEDRUN_TIME.Value * 1.1,
+      minTime)));
 
     Plugin.RegisterListener<Listeners.OnTick>(checkFinishers);
   }
 
-  private ActivePlayerTrail<BeamTrailSegment> createFirstTrail(
-    CCSPlayerController player) {
-    var trail = new ActivePulsatingBeamPlayerTrail(Plugin, player, 0f,
-      MAX_POINTS, 0.15f);
+  // ── Trail creation ────────────────────────────────────────────────────────
+
+  private SpeedrunTrail createFirstTrail(CCSPlayerController player) {
+    if (API.Draw == null || player.PlayerPawn.Value == null)
+      return createNullTrail(player);
+
+    var handle = API.Draw.CustomTrail(player.PlayerPawn.Value,
+        new SpeedTrailSetup())
+     .WithInterval(0.15f)
+     .Start();
+
+    var trail = new SpeedrunTrail(Plugin, handle, player, 0.15f);
+    trail.FadeIn(); // first runner's trail is always visible
+
     trail.OnPlayerDidntMove += () => {
       if (trail.Player == null) {
         panic("OnPlayerDidntMove: Player is null");
         return;
       }
 
-      var tps              = 1 / trail.UpdateRate;
+      var tps              = 1f / trail.UpdateRate;
       var didntMoveSeconds = (int)Math.Ceiling(trail.DidntMoveTicks / tps);
       var thresholdTicks   = (int)Math.Ceiling(tps * 3);
+
       if (start == null) {
         panic("start is null");
         return;
       }
 
+      // Player is AFK at the start — reassign to furthest player who moved
       if (start.DistanceSquared(speedrunner?.Pawn.Value?.AbsOrigin!) < 100) {
         if (trail.DidntMoveTicks <= tps * 10) return;
-        // If the player is afk, we need to pick the closet player
-        // that has moved to continue the run
-        var end = trail.GetEndSegment()?.GetEnd() ?? start;
-        if (end == null) {
-          panic("Speedrunner is invalid, and we cannot find the start");
-          return;
-        }
+
+        var end = speedrunner?.PlayerPawn.Value?.AbsOrigin ?? start;
 
         var furthest = PlayerUtil.GetAlive()
          .Where(p => p.Pawn.IsValid && p.Pawn.Value != null)
          .Where(p => p.Pawn.Value!.IsValid && p.Pawn.Value.AbsOrigin != null)
          .Where(p
             => p.Pawn.Value!.AbsOrigin!.DistanceSquared(speedrunner?.Pawn.Value!
-             .AbsOrigin!) > 100) // Ensure they have moved
+             .AbsOrigin!) > 100)
          .MinBy(p => p.Pawn.Value!.AbsOrigin!.DistanceSquared(end));
 
         if (furthest == null) {
-          panic("Speedrunner is invalid, and we cannot find a new one");
+          panic("Speedrunner is AFK and we cannot find a replacement");
           return;
         }
 
@@ -309,20 +301,19 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         return;
       }
 
+      // Player paused mid-run — drain time
       if (trail.DidntMoveTicks < thresholdTicks) return;
       if (trail.DidntMoveTicks == thresholdTicks)
         Msg.StayStillToSpeedup.ToChat(trail.Player);
       if (didntMoveSeconds % 2 == 0) RoundUtil.AddTimeRemaining(-1);
       if (RoundUtil.GetTimeRemaining() <= 0) Execute();
     };
-    trail.OnPlayerInvalid -= trail.Kill;
+
     trail.OnPlayerInvalid += trail.StopTracking;
     trail.OnPlayerInvalid += () => {
-      // If the player left mid-run, we need to pick the nearest player
-      // to continue the run
-      var end = trail.GetEndSegment()?.GetEnd() ?? start;
+      var end = speedrunner?.PlayerPawn.Value?.AbsOrigin ?? start;
       if (end == null) {
-        panic("Speedrunner is invalid, and we cannot find the start");
+        panic("Speedrunner left and we cannot find the start");
         return;
       }
 
@@ -332,7 +323,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
        .MinBy(p => p.Pawn.Value!.AbsOrigin!.DistanceSquared(end));
 
       if (nearest == null) {
-        panic("Speedrunner is invalid, and we cannot find a new one");
+        panic("Speedrunner left and we cannot find a replacement");
         return;
       }
 
@@ -343,15 +334,51 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       Msg.YouAreRunner(RoundUtil.GetTimeRemaining()).ToChat(nearest);
       trail.StartTracking(nearest);
     };
+
     return trail;
   }
 
-  private CCSPlayerController? getRunner() {
-    var runner = PlayerUtil.GetRandomFromTeam(rng.Next(2) == 0 ?
-      CsTeam.Terrorist :
-      CsTeam.CounterTerrorist);
-    runner ??= PlayerUtil.GetAlive().FirstOrDefault();
-    return runner;
+  private SpeedrunTrail createNullTrail(CCSPlayerController player) {
+    return new SpeedrunTrail(Plugin, null!, player);
+  }
+
+  private void resetTrails() {
+    if (API.Draw == null) return;
+
+    // Promote the best finisher's trail to the persistent ghost trail
+    if (activeTrails.Count != 0 && finishedPlayers.Count != 0) {
+      var bestSlot = finishTimestampList.First?.Value.Item1;
+      if (bestSlot != null && bestSlot == bestTimePlayerSlot
+        && activeTrails.TryGetValue(bestSlot.Value, out var best)) {
+        bestTrail?.Remove();
+
+        var bestPlayer = Utilities.GetPlayerFromSlot(bestSlot.Value);
+        var pos = bestPlayer?.PlayerPawn.Value?.AbsOrigin ?? Vector.Zero;
+
+        best.Freeze(pos);
+        best.FadeIn();
+        bestTrail = best;
+        activeTrails.Remove(bestSlot.Value);
+      }
+    }
+
+    // Remove all remaining active trails
+    foreach (var trail in activeTrails.Values) trail.Remove();
+    activeTrails.Clear();
+
+    // Spawn invisible trails on all alive players for the new round
+    foreach (var player in PlayerUtil.GetAlive()) {
+      if (player.PlayerPawn.Value == null) continue;
+
+      var handle = API.Draw.CustomTrail(player.PlayerPawn.Value,
+          new SpeedTrailSetup())
+       .WithInterval(0.15f)
+       .Start();
+
+      // Alpha 0 — invisible until the player finishes
+      activeTrails[player.Slot] =
+        new SpeedrunTrail(Plugin, handle, player, 0.15f);
+    }
   }
 
   private void startRound(int seconds) {
@@ -362,7 +389,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     var alive = PlayerUtil.GetAlive().ToArray();
-    playersAliveAtStart = PlayerUtil.GetAlive().Count();
+    playersAliveAtStart = alive.Length;
     Msg.BeginRound(++round, getEliminations(playersAliveAtStart), seconds)
      .ToAllChat();
 
@@ -389,6 +416,8 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       TimerFlags.STOP_ON_MAPCHANGE);
   }
 
+  // ── Finish detection ──────────────────────────────────────────────────────
+
   private void checkFinishers() {
     if (target == null || roundStartTime == null) return;
     if (!IsRoundActive) {
@@ -397,8 +426,10 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     var minDist = getRequiredDistance();
-    targetCircle?.SetRadius(minDist / 2);
-    targetCircle?.Update();
+    targetCircle?.Cancel();
+    targetCircle = API.Draw?.Circle(target!, minDist / 2)
+     .Color(Color.Green)
+     .Draw();
     var required = MathF.Pow(minDist, 2);
 
     LinkedList<(int, float)> notFinished = [];
@@ -424,123 +455,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
     notFinished =
       new LinkedList<(int, float)>(notFinished.OrderBy(x => x.Item2));
-
     sendDistances(notFinished);
-  }
-
-  private void sendDistances(LinkedList<(int, float)> unfinished) {
-    if (target == null) {
-      panic("sendDistances: Target is null");
-      return;
-    }
-
-    var rules = ServerExtensions.GetGameRules();
-    if (rules != null)
-      rules.GameRestart = rules.RestartRoundTime < Server.CurrentTime;
-
-    var originalCompletions = new LinkedList<(int, float)>(finishTimestampList);
-
-    if (unfinished.Count > 0)
-      foreach (var (slot, dist) in unfinished)
-        finishTimestampList.AddLast((slot, dist));
-
-    const int totalLines = 8;
-    var       pos        = 1;
-    var       current    = finishTimestampList.First;
-
-    string? top = null;
-    while (current != null) {
-      var display = 0;
-      var lines   = "";
-      var player  = Utilities.GetPlayerFromSlot(current.Value.Item1);
-
-      if (player == null || !player.IsValid || player.IsBot) {
-        pos++;
-        current = current.Next;
-        continue;
-      }
-
-      var playerLine = current;
-
-      var d = 0;
-      while (playerLine != null && (display < totalLines / 2
-        || pos - d > finishTimestampList.Count - totalLines
-        && display < totalLines)) {
-        var (slot, dist) = playerLine.Value;
-        playerLine       = playerLine.Previous;
-        var p = Utilities.GetPlayerFromSlot(slot);
-        if (p == null) continue;
-        lines = generateHtmlLine(p, pos - d++, dist) + (d == 1 ? "" : "<br>")
-          + lines;
-        display++;
-      }
-
-      current    = current.Next;
-      playerLine = current;
-
-      d = 0;
-      while (playerLine != null && display < totalLines) {
-        var (slot, dist) = playerLine.Value;
-        playerLine       = playerLine.Next;
-        var p = Utilities.GetPlayerFromSlot(slot);
-        if (p == null) continue;
-        lines += "<br>" + generateHtmlLine(p, pos + ++d, dist);
-        display++;
-      }
-
-      pos++;
-      top ??= lines;
-      player.PrintToCenterHtml(lines);
-    }
-
-    if (top != null)
-      foreach (var player in Utilities.GetPlayers().Where(p => !p.PawnIsAlive))
-        player.PrintToCenterHtml(top);
-
-    finishTimestampList = originalCompletions;
-  }
-
-  private string generateHtmlLine(CCSPlayerController player, int position,
-    float distance) {
-    string color;
-    var    eliminations = getEliminations(playersAliveAtStart);
-    var    suffix       = "";
-
-    var isSafe     = position < eliminations && distance < 0;
-    var isInDanger = position > playersAliveAtStart - eliminations;
-
-    var text = $"{position} {player.PlayerName}";
-
-    if (isSafe) {
-      color  = "00FF00";
-      suffix = "<font color=\"#00FF00\"> | S</font>";
-    } else if (!isInDanger) {
-      var percentDanger = (position - 1 - finishedPlayers.Count)
-        / (float)eliminations;
-      // Gradient from green to yellow
-      percentDanger = Math.Clamp(percentDanger, 0, 1);
-      var green = 255;
-      var red   = (int)(255 * percentDanger);
-      color = $"{red:X2}{green:X2}00";
-    } else {
-      var precentLosing = (position - playersAliveAtStart + eliminations)
-        / (float)eliminations;
-      // Gradient from orange to red, with red being the most losing
-      precentLosing = Math.Clamp(precentLosing, 0, 1);
-      var red   = 255;
-      var green = 255 - (int)(255 * precentLosing);
-      color  = $"{red:X2}{green:X2}00";
-      suffix = "<font color=\"#FF0000\"> | E</font>";
-    }
-
-    if (distance < 0) {
-      var time = roundStartTime == null ?
-        0 :
-        MathF.Abs(distance) - roundStartTime.Value;
-      text += $" - {time:F4}";
-    } else { text += $" - {distance:N0}"; }
-
-    return $"<font color=\"#{color}\">{text}</font>{suffix}";
   }
 
   private void onFinish(CCSPlayerController player) {
@@ -561,11 +476,16 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
     finishTimestampList.AddLast((player.Slot, -Server.CurrentTime));
     finishedPlayers.Add(player.Slot);
+
+    // Freeze and fade in the finisher's trail
+    if (activeTrails.TryGetValue(player.Slot, out var trail)) {
+      var pos = player.PlayerPawn.Value?.AbsOrigin ?? Vector.Zero;
+      trail.Freeze(pos);
+      trail.FadeIn();
+    }
+
     var eliminations = getEliminations(PlayerUtil.GetAlive().Count());
-    activeTrails[player.Slot].StopTracking();
-
-    var taking = playersAliveAtStart - eliminations;
-
+    var taking       = playersAliveAtStart - eliminations;
     if (finishedPlayers.Count >= taking) endRound();
 
     if (!player.IsValid) {
@@ -579,36 +499,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     player.SetColor(Color.FromArgb(alpha, Color.White));
   }
 
-  private void resetTrails() {
-    if (activeTrails.Count != 0 && finishedPlayers.Count != 0) {
-      var best = finishTimestampList.First;
-      if (best == null) return;
-      var slot = best.Value.Item1;
-      if (slot == bestTimePlayerSlot) {
-        var bestPlayer = best.Value.Item1;
-        bestTrail?.Kill();
-        activeTrails[bestPlayer].StopTracking();
-        bestTrail = PulsatingBeamTrail.FromTrail(Plugin,
-          activeTrails[bestPlayer]);
-      }
-    }
-
-    foreach (var trail in activeTrails.Values) trail.Kill();
-
-    activeTrails.Clear();
-
-    foreach (var player in PlayerUtil.GetAlive())
-      activeTrails[player.Slot] =
-        new ActiveInvisiblePlayerTrail(Plugin, player, 0f, MAX_POINTS);
-  }
-
-  // https://www.desmos.com/calculator/e1qwgpmtmz
-  private float getRequiredDistance() {
-    if (roundStartTime == null) return 0;
-    var elapsedSeconds = (float)(Server.CurrentTime - roundStartTime);
-
-    return 10 + elapsedSeconds + MathF.Pow(elapsedSeconds, 3.3f) / 2500;
-  }
+  // ── End round ─────────────────────────────────────────────────────────────
 
   private void endRound() {
     roundEndTimer?.Kill();
@@ -642,32 +533,36 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
     nonCompleters =
       new LinkedList<(int, float)>(nonCompleters.OrderBy(t => t.Item2));
-
     foreach (var nc in nonCompleters) finishTimestampList.AddLast(nc);
 
-    if (aliveCount > 1)
-      if (ctMade != tMade && round == 1) {
-        var random = PlayerUtil.GetRandomFromTeam(tMade ?
-          CsTeam.CounterTerrorist :
-          CsTeam.Terrorist);
+    // Handle impossible location — one team couldn't reach the target
+    if (aliveCount > 1 && ctMade != tMade && round == 1) {
+      var random = PlayerUtil.GetRandomFromTeam(tMade ?
+        CsTeam.CounterTerrorist :
+        CsTeam.Terrorist);
 
-        if (random != null && activeTrails.TryGetValue(random.Slot,
-          out var randomTrail)) {
-          Msg.ImpossibleLocation(
-            ctMade ? CsTeam.Terrorist : CsTeam.CounterTerrorist, random);
+      if (random != null
+        && activeTrails.TryGetValue(random.Slot, out var randomTrail)) {
+        Msg.ImpossibleLocation(
+          ctMade ? CsTeam.Terrorist : CsTeam.CounterTerrorist, random);
 
-          bestTrail?.Kill();
-          randomTrail.StopTracking();
-          bestTrail = PulsatingBeamTrail.FromTrail(Plugin, randomTrail);
-          target    = bestTrail!.GetEndSegment()!.GetEnd();
-        }
+        // Use the random player's frozen trail end as the new target
+        bestTrail?.Remove();
+        var pos = random.PlayerPawn.Value?.AbsOrigin ?? target;
+        randomTrail.Freeze(pos);
+        randomTrail.FadeIn();
+        bestTrail = randomTrail;
+        activeTrails.Remove(random.Slot);
+        target = pos;
 
         toEliminate = 2;
         round--;
       }
+    }
 
     announceTimes();
 
+    // Final round — declare winner
     if (aliveCount <= CV_MAX_PLAYERS_TO_FINISH.Value) {
       if (finishTimestampList.Count == 0) {
         panic("No slowest times found");
@@ -676,13 +571,12 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
       var winner =
         Utilities.GetPlayerFromSlot(finishTimestampList.First!.Value.Item1);
-
       if (winner == null || !winner.IsValid) {
         panic("endRound: Winner is null");
         return;
       }
 
-      targetCircle?.Remove();
+      targetCircle?.Cancel();
       targetCircle = null;
 
       var losers = PlayerUtil.GetAlive()
@@ -725,7 +619,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
 
     if (toEliminate <= 0) {
       Msg.NoneEliminated.ToAllChat();
-      Plugin.AddTimer(3f, () => { startRound(nextRoundTime); },
+      Plugin.AddTimer(3f, () => startRound(nextRoundTime),
         TimerFlags.STOP_ON_MAPCHANGE);
       return;
     }
@@ -768,8 +662,35 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       Msg.PlayerEliminated(player).ToAllChat();
     }
 
-    Plugin.AddTimer(3f, () => { startRound(nextRoundTime); },
+    Plugin.AddTimer(3f, () => startRound(nextRoundTime),
       TimerFlags.STOP_ON_MAPCHANGE);
+  }
+
+
+  override protected HookResult OnEnd(EventRoundEnd @event,
+    GameEventInfo info) {
+    var result = base.OnEnd(@event, info);
+
+    Plugin.RemoveListener<Listeners.OnTick>(checkFinishers);
+    roundEndTimer?.Kill();
+
+    bestTrail?.Remove();
+    bestTrail = null;
+
+    foreach (var trail in activeTrails.Values) trail.Remove();
+    activeTrails.Clear();
+
+    return result;
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  private CCSPlayerController? getRunner() {
+    var runner = PlayerUtil.GetRandomFromTeam(rng.Next(2) == 0 ?
+      CsTeam.Terrorist :
+      CsTeam.CounterTerrorist);
+    runner ??= PlayerUtil.GetAlive().FirstOrDefault();
+    return runner;
   }
 
   private void eliminatePlayer(CCSPlayerController player) {
@@ -784,8 +705,15 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     RoundUtil.SetTimeRemaining(1);
   }
 
-  private int getEliminations(int players) {
-    return players switch {
+  // https://www.desmos.com/calculator/e1qwgpmtmz
+  private float getRequiredDistance() {
+    if (roundStartTime == null) return 0;
+    var elapsedSeconds = (float)(Server.CurrentTime - roundStartTime);
+    return 10 + elapsedSeconds + MathF.Pow(elapsedSeconds, 3.3f) / 2500;
+  }
+
+  private int getEliminations(int players)
+    => players switch {
       <= 4  => 1,
       <= 8  => 3,
       <= 12 => 4,
@@ -795,7 +723,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       <= 64 => 15,
       _     => players / 5
     };
-  }
 
   private void announceTimes() {
     var position = finishedPlayers.Count;
@@ -811,20 +738,119 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     }
   }
 
-  override protected HookResult
-    OnEnd(EventRoundEnd @event, GameEventInfo info) {
-    var result = base.OnEnd(@event, info);
+  private void sendDistances(LinkedList<(int, float)> unfinished) {
+    if (target == null) {
+      panic("sendDistances: Target is null");
+      return;
+    }
 
-    Plugin.RemoveListener<Listeners.OnTick>(checkFinishers);
-    bestTrail?.Kill();
-    roundEndTimer?.Kill();
+    var rules = ServerExtensions.GetGameRules();
+    if (rules != null)
+      rules.GameRestart = rules.RestartRoundTime < Server.CurrentTime;
 
-    foreach (var trail in activeTrails.Values) trail.Kill();
+    var originalCompletions = new LinkedList<(int, float)>(finishTimestampList);
 
-    activeTrails.Clear();
+    if (unfinished.Count > 0)
+      foreach (var (slot, dist) in unfinished)
+        finishTimestampList.AddLast((slot, dist));
 
-    return result;
+    const int totalLines = 8;
+    var       pos        = 1;
+    var       current    = finishTimestampList.First;
+
+    string? top = null;
+    while (current != null) {
+      var display = 0;
+      var lines   = "";
+      var player  = Utilities.GetPlayerFromSlot(current.Value.Item1);
+
+      if (player == null || !player.IsValid || player.IsBot) {
+        pos++;
+        current = current.Next;
+        continue;
+      }
+
+      var playerLine = current;
+      var d          = 0;
+
+      while (playerLine != null && (display < totalLines / 2
+        || pos - d > finishTimestampList.Count - totalLines
+        && display < totalLines)) {
+        var (slot, dist) = playerLine.Value;
+        playerLine       = playerLine.Previous;
+        var p = Utilities.GetPlayerFromSlot(slot);
+        if (p == null) continue;
+        lines = generateHtmlLine(p, pos - d++, dist) + (d == 1 ? "" : "<br>")
+          + lines;
+        display++;
+      }
+
+      current    = current.Next;
+      playerLine = current;
+      d          = 0;
+
+      while (playerLine != null && display < totalLines) {
+        var (slot, dist) = playerLine.Value;
+        playerLine       = playerLine.Next;
+        var p = Utilities.GetPlayerFromSlot(slot);
+        if (p == null) continue;
+        lines += "<br>" + generateHtmlLine(p, pos + ++d, dist);
+        display++;
+      }
+
+      pos++;
+      top ??= lines;
+      player.PrintToCenterHtml(lines);
+    }
+
+    if (top != null)
+      foreach (var player in Utilities.GetPlayers().Where(p => !p.PawnIsAlive))
+        player.PrintToCenterHtml(top);
+
+    finishTimestampList = originalCompletions;
   }
+
+  private string generateHtmlLine(CCSPlayerController player, int position,
+    float distance) {
+    string color;
+    var    eliminations = getEliminations(playersAliveAtStart);
+    var    suffix       = "";
+
+    var isSafe     = position < eliminations && distance < 0;
+    var isInDanger = position > playersAliveAtStart - eliminations;
+    var text       = $"{position} {player.PlayerName}";
+
+    if (isSafe) {
+      color  = "00FF00";
+      suffix = "<font color=\"#00FF00\"> | S</font>";
+    } else if (!isInDanger) {
+      var percentDanger = (position - 1 - finishedPlayers.Count)
+        / (float)eliminations;
+      percentDanger = Math.Clamp(percentDanger, 0, 1);
+      var green = 255;
+      var red   = (int)(255 * percentDanger);
+      color = $"{red:X2}{green:X2}00";
+    } else {
+      var precentLosing = (position - playersAliveAtStart + eliminations)
+        / (float)eliminations;
+      precentLosing = Math.Clamp(precentLosing, 0, 1);
+      var red   = 255;
+      var green = 255 - (int)(255 * precentLosing);
+      color  = $"{red:X2}{green:X2}00";
+      suffix = "<font color=\"#FF0000\"> | E</font>";
+    }
+
+    if (distance < 0) {
+      var time = roundStartTime == null ?
+        0 :
+        MathF.Abs(distance) - roundStartTime.Value;
+      text += $" - {time:F4}";
+    } else { text += $" - {distance:N0}"; }
+
+    return $"<font color=\"#{color}\">{text}</font>{suffix}";
+  }
+
+  // ── Settings ──────────────────────────────────────────────────────────────
 
   private class SpeedrunSettings : SpecialDaySettings {
     public SpeedrunSettings() {
@@ -839,13 +865,22 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     public override Func<int> RoundTime
       => () => CV_INITIAL_SPEEDRUN_TIME.Value + CV_FIRST_ROUND_FREEZE.Value;
 
-    public override ISet<string> AllowedWeapons(CCSPlayerController player) {
-      // Return empty set to allow no weapons
-      return new HashSet<string>();
-    }
+    public override ISet<string> AllowedWeapons(CCSPlayerController player)
+      => new HashSet<string>();
 
-    public override float FreezeTime(CCSPlayerController player) {
-      return CV_FIRST_ROUND_FREEZE.Value;
-    }
+    public override float FreezeTime(CCSPlayerController player)
+      => CV_FIRST_ROUND_FREEZE.Value;
+  }
+}
+
+// ── SpeedTrailSetup ───────────────────────────────────────────────────────
+
+public sealed class SpeedTrailSetup : IShapeSetup {
+  public string EffectKey => "speedrun_trail";
+
+  public void Configure(IParticleConfigurator cp, int particleCount) {
+    cp.SetCp(2, particleCount, 0, 0); // particle count
+    cp.SetCp(3, 1f, 0,
+      0); // alpha — default opaque, overridden to 0 by SpeedrunTrail
   }
 }

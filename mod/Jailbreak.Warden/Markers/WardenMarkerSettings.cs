@@ -2,18 +2,16 @@
 using System.Drawing;
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
-using Jailbreak.Public.Mod.Draw;
-using Jailbreak.Public.Mod.Draw.Enums;
 using Jailbreak.Public.Mod.Warden;
 using MAULActainShared.plugin.models;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Jailbreak.Public.Extensions;
+using Jailbreak.Public.Mod.Warden.Enums;
 
 namespace Jailbreak.Warden.Markers;
 
-public class WardenMarkerSettings(IBeamShapeRegistry registry)
-  : IWardenMarkerSettings, IPluginBehavior {
+public class WardenMarkerSettings : IWardenMarkerSettings, IPluginBehavior {
   private const string TYPE_COOKIE = "jb_marker_type";
   private const string COLOR_COOKIE = "jb_marker_color";
 
@@ -46,10 +44,10 @@ public class WardenMarkerSettings(IBeamShapeRegistry registry)
     await populateCache(steamId);
   }
 
-  public async Task SetTypeAsync(ulong steamId, BeamShapeType type) {
+  public async Task SetTypeAsync(ulong steamId, MarkerShapeType type) {
     if (typeCookie == null) return;
 
-    var value = type.ToFriendlyString();
+    var value = type.ToDisplayName();
     await typeCookie.Set(steamId, value);
 
     // Refresh cache from cookies
@@ -70,7 +68,7 @@ public class WardenMarkerSettings(IBeamShapeRegistry registry)
   private async Task populateCache(ulong steamId) {
     if (typeCookie == null || colorCookie == null) {
       // Store defaults if cookies aren't ready
-      cache[steamId] = new MarkerSettings(BeamShapeType.CIRCLE, Color.White);
+      cache[steamId] = new MarkerSettings(MarkerShapeType.CIRCLE, Color.White);
       return;
     }
 
@@ -78,34 +76,33 @@ public class WardenMarkerSettings(IBeamShapeRegistry registry)
       var typeStr = await typeCookie.Get(steamId);
       var colorStr = await colorCookie.Get(steamId);
 
-      var type = BeamShapeType.CIRCLE;
+      var type  = MarkerShapeType.CIRCLE;
       var color = Color.White;
 
       if (!string.IsNullOrWhiteSpace(typeStr)) type = parseType(typeStr, type);
       if (!string.IsNullOrWhiteSpace(colorStr))
-        color = parseColor(colorStr, color);
+        color = parseColor(colorStr);
 
       cache[steamId] = new MarkerSettings(type, color);
     } catch {
       // swallow: store defaults on error
-      cache[steamId] = new MarkerSettings(BeamShapeType.CIRCLE, Color.White);
+      cache[steamId] = new MarkerSettings(MarkerShapeType.CIRCLE, Color.White);
     }
   }
 
-  private BeamShapeType parseType(string value, BeamShapeType fallback) {
-    foreach (var t in registry.GetAllTypes())
-      if (string.Equals(t.ToFriendlyString(), value,
+  private MarkerShapeType parseType(string value, MarkerShapeType fallback) {
+    foreach (var t in MarkerShapeTypeExtensions.All())
+      if (string.Equals(t.ToDisplayName(), value,
         StringComparison.OrdinalIgnoreCase))
         return t;
 
-    return Enum.TryParse<BeamShapeType>(value, true, out var parsed) ?
+    return Enum.TryParse<MarkerShapeType>(value, true, out var parsed) ?
       parsed :
       fallback;
   }
 
-  private Color parseColor(string key, Color fallback) {
-    var colors = registry.GetAllColors();
-    return colors.TryGetValue(key, out var c) ? c : fallback;
+  private Color parseColor(string key) {
+    return key.ToMarkerColor().ToColor();
   }
 
   private void TryLoadCookies() {

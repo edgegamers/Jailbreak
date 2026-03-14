@@ -94,4 +94,15 @@ public static class VectorExtensions {
     right   = tmpRight;
     up      = tmpUp;
   }
+  
+  public static Vector Normalize(this Vector v) {
+    var len = v.Length();
+    return len < 0.0001f ?
+      new Vector(0, 0, 0) :
+      new Vector(v.X / len, v.Y / len, v.Z / len);
+  }
+  
+  public static float Dot(this Vector a, Vector b) {
+    return a.X * b.X + a.Y * b.Y + a.Z * b.Z;
+  }
 }
