@@ -86,12 +86,12 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
   public static readonly FakeConVar<string> CV_WARDEN_SOUND_PASSED =
     new("css_jb_warden_sound_killed", "Sound to play when the warden passes",
-      "sounds/jb/warden/wardenpassed.vsnd");
+      "jb/warden/wardenpassed.vsnd");
 
   public static readonly FakeConVar<string> CV_WARDEN_SOUND_NEW =
     new("css_jb_warden_sound_killed",
       "Sound to play when the warden is assigned",
-      "sounds/jb/warden/wardennew.vsnd");
+      "jb/warden/wardennew.vsnd");
 
   public static readonly FakeConVar<int> CV_WARDEN_TERRORIST_RATIO =
     new("css_jb_warden_t_ratio", "Ratio of T:CT to use for HP adjustments", 3);
