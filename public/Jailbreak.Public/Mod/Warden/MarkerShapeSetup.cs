@@ -8,16 +8,13 @@ namespace Jailbreak.Public.Mod.Warden;
 /// for each MarkerShapeType. Register once on plugin load, reuse per draw.
 /// </summary>
 public sealed class MarkerShapeSetup(MarkerShapeType type, float radius,
-  int particles) : IShapeSetup {
-  private readonly MarkerShapeType type = type;
-  private readonly int particles = particles;
-
+  float zOffset) : IShapeSetup {
   public string EffectKey => type.ToEffectKey();
 
   public void Configure(IParticleConfigurator cp, int particleCount) {
     var count = calcCount(particleCount);
     cp.SetCp(2, count, count - 1, 0);
-    cp.SetCp(5, radius, radius, 0);
+    cp.SetCp(5, radius, radius, zOffset);
   }
 
   /// <summary>

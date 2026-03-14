@@ -78,21 +78,20 @@ public sealed class Marker(IDrawService draw, Vector origin, CGameTrace? trace,
     // cancel any existing spawn before re-placing
     Cancel();
 
-    var setup = new MarkerShapeSetup(ShapeType, radius, particles);
+    var setup = new MarkerShapeSetup(ShapeType, radius, 4.0f);
     
     var tracePos = new Vector(trace?.EndPos.X, trace?.EndPos.Y,
       trace?.EndPos.Z);
 
     var spawnLocation =
-      new Vector(origin.X, origin.Y, origin.Z + 32); // fallback if trace is bad
+      new Vector(origin.X, origin.Y, origin.Z + 48); // fallback if trace is bad
 
     if (positionsMatch(origin, tracePos)) {
       var rawNormal = trace?.Normal.ToCsVector();
 
       if (rawNormal != null) {
         var normal = rawNormal.Normalize();
-
-        const float maxAllowedSlopeDegrees = 60f;
+        
         const float minNormalZ             = 0.5f;
 
         if (normal.Z >= minNormalZ) {
@@ -103,6 +102,7 @@ public sealed class Marker(IDrawService draw, Vector origin, CGameTrace? trace,
         }
       }
     }
+    
 
     // shape
     var shapeBuilder = draw.Custom(spawnLocation, setup).Particles(particles);
