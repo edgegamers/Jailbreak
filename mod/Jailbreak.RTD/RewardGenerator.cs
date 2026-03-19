@@ -57,11 +57,13 @@ public class RewardGenerator(IC4Service bomb, IWardenSelectionService warden,
       (new HPReward(150), PROB_MEDIUM), (new HPReward(50), PROB_MEDIUM),
       (new ArmorReward(150), PROB_MEDIUM),
       (new GuaranteedWardenReward(warden), PROB_MEDIUM),
-      (new WeaponReward("weapon_g3sg1", CsTeam.CounterTerrorist),
-        PROB_MEDIUM / 2),
+      // todo: fix due to cs2 update 3.18.2026
+      // (new WeaponReward("weapon_g3sg1", CsTeam.CounterTerrorist),
+      //   PROB_MEDIUM / 2),
 
       // Low
-      (new AmmoWeaponReward("weapon_glock", 0, 0), PROB_LOW),
+      // todo: fix due to cs2 update 3.18.2026
+      // (new AmmoWeaponReward("weapon_glock", 0, 0), PROB_LOW),
       (new ChatSpyReward(basePlugin), PROB_LOW * 1.5f),
       (new ColorReward(Color.FromArgb(0, 255, 0), true), PROB_LOW),
       // (new ColorReward(Color.FromArgb(255, 0, 0), true), PROB_LOW),
@@ -71,8 +73,9 @@ public class RewardGenerator(IC4Service bomb, IWardenSelectionService warden,
       (new CannotUseReward(basePlugin, WeaponType.SNIPERS), PROB_LOW),
       (new CannotUseReward(basePlugin, WeaponType.HEAVY), PROB_LOW),
       (new TransparentReward(), PROB_LOW / 2),
-      (new AmmoWeaponReward("weapon_glock", 2, 0), PROB_LOW / 2),
-      (new AmmoWeaponReward("weapon_negev", 0, 6), PROB_LOW / 2),
+      // todo: fix due to cs2 update 3.18.2026
+      // (new AmmoWeaponReward("weapon_glock", 2, 0), PROB_LOW / 2),
+      // (new AmmoWeaponReward("weapon_negev", 0, 6), PROB_LOW / 2),
       (new CreditReward(50, locale), PROB_LOW), (new HPReward(1), PROB_LOW / 2),
 
       // Very low
@@ -87,14 +90,16 @@ public class RewardGenerator(IC4Service bomb, IWardenSelectionService warden,
       (new BombReward(bomb), PROB_VERY_LOW),
       (new CreditReward(-100, locale), PROB_VERY_LOW),
       (new CreditReward(500, locale), PROB_VERY_LOW),
-      (new AmmoWeaponReward("weapon_deagle", 1, 0), PROB_VERY_LOW / 2),
-      (new AmmoWeaponReward("weapon_awp", 1, 0), PROB_VERY_LOW / 4),
+      // todo: fix due to cs2 update 3.18.2026
+      // (new AmmoWeaponReward("weapon_deagle", 1, 0), PROB_VERY_LOW / 2),
+      // (new AmmoWeaponReward("weapon_awp", 1, 0), PROB_VERY_LOW / 4),
 
       // Extremely low
       (new CannotUseReward(basePlugin, WeaponType.KNIVES), PROB_EXTREMELY_LOW),
       (new CannotUseReward(basePlugin, WeaponType.GUNS), PROB_EXTREMELY_LOW),
-      (new AmmoWeaponReward("weapon_awp", 3, 0), PROB_EXTREMELY_LOW),
-      (new WeaponReward("weapon_glock"), PROB_EXTREMELY_LOW),
+      // todo: fix due to cs2 update 3.18.2026
+      // (new AmmoWeaponReward("weapon_awp", 3, 0), PROB_EXTREMELY_LOW),
+      // (new WeaponReward("weapon_glock"), PROB_EXTREMELY_LOW),
       (new CreditReward(1000, locale), PROB_EXTREMELY_LOW),
       (new CreditReward(-5000, locale), PROB_EXTREMELY_LOW / 2),
 
