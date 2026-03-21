@@ -19,5 +19,8 @@ public class DebugRTD(IServiceProvider services, BasePlugin plugin)
       menu.AddMenuOption($"{reward.Item1.Name} - Prob: {reward.Item2}",
         (p, _) => { rewarder.SetReward(p, reward.Item1); });
     }
+
+    if (executor != null)
+      MenuManager.OpenCenterHtmlMenu(plugin, executor, menu);
   }
 }
