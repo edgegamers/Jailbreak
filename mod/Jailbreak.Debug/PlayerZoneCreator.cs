@@ -2,27 +2,24 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Timers;
 using Jailbreak.Debug.Subcommands;
 using Jailbreak.Public.Extensions;
-using Jailbreak.Public.Mod.Draw;
 using Jailbreak.Public.Mod.Zones;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 namespace Jailbreak.Debug;
 
 public class PlayerZoneCreator : BasicZoneCreator, ITypedZoneCreator {
-  private readonly IBeamShapeFactory drawFactory;
   private readonly IZoneFactory factory;
   private readonly CCSPlayerController player;
   private readonly BasePlugin plugin;
   private Timer? timer;
 
   public PlayerZoneCreator(BasePlugin plugin, CCSPlayerController player,
-    IZoneFactory factory, ZoneType type, IBeamShapeFactory drawFactory) {
+    IZoneFactory factory, ZoneType type) {
     if (!player.IsValid)
       throw new ArgumentException("Player must be valid", nameof(player));
     this.player      = player;
     this.plugin      = plugin;
     this.factory     = factory;
-    this.drawFactory = drawFactory;
     Type             = type;
   }
 
@@ -61,6 +58,6 @@ public class PlayerZoneCreator : BasicZoneCreator, ITypedZoneCreator {
 
     AddPoint(pawn.AbsOrigin.Clone());
     var zone = Build(factory);
-    zone.Draw(plugin, drawFactory, Type.GetColor(), 1f);
+    zone.Draw(plugin, Type.GetColor(), 1f);
   }
 }

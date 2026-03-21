@@ -8,7 +8,7 @@ public static class CBaseEntityExtensions {
   public static void SetColor(this CBaseModelEntity? entity, Color color) {
     if (entity == null || !entity.IsValid) return;
 
-    entity.RenderMode = RenderMode_t.kRenderTransColor;
+    entity.RenderMode = RenderMode_t.kRenderTransAlpha;
     entity.Render     = color;
     Utilities.SetStateChanged(entity, "CBaseModelEntity", "m_clrRender");
   }

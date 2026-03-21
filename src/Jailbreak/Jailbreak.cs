@@ -36,9 +36,11 @@ public class Jailbreak : BasePlugin {
   public override void Load(bool hotReload) {
     RegisterListener<Listeners.OnServerPrecacheResources>(manifest => {
       manifest.AddResource("particles/explosions_fx/explosion_c4_500.vpcf");
-      manifest.AddResource("soundevents/soundevents_jb.vsndevts");
-      manifest.AddResource("sounds/explosion.vsnd");
-      manifest.AddResource("sounds/jihad.vsnd");
+      manifest.AddResource("soundevents/jb/soundevents_ct.vsndevts");
+      manifest.AddResource("soundevents/jb/soundevents_jihad.vsndevts");
+      manifest.AddResource("soundevents/jb/soundevents_warden.vsndevts");
+      manifest.AddResource("sounds/jb/jihad/explosion.vsnd");
+      manifest.AddResource("sounds/jb/jihad/jihad.vsnd");
       manifest.AddResource(
         "models/props/de_dust/hr_dust/dust_soccerball/dust_soccer_ball001.vmdl");
     });

@@ -43,10 +43,10 @@ public struct PreWardenStats(int armorValue, int health, int maxHealth,
 }
 
 public class WardenBehavior(ILogger<WardenBehavior> logger,
-  IWardenLocale locale, IWardenMarkerSettings markerSettings, IRichLogService logs,
-  ISpecialTreatmentService specialTreatment, IRebelService rebels,
-  IMuteService mute, ISpecialDayManager specialDays, IServiceProvider provider)
-  : IPluginBehavior, IWardenService {
+  IWardenLocale locale, IWardenMarkerSettings markerSettings,
+  IRichLogService logs, ISpecialTreatmentService specialTreatment,
+  IRebelService rebels, IMuteService mute, ISpecialDayManager specialDays,
+  IServiceProvider provider) : IPluginBehavior, IWardenService {
   public static readonly FakeConVar<int> CV_ARMOR_EQUAL = new("css_jb_hp_equal",
     "Health points for when CTs have equal ratio", 50, ConVarFlags.FCVAR_NONE,
     new RangeValidator<int>(1, 200));
@@ -82,15 +82,16 @@ public class WardenBehavior(ILogger<WardenBehavior> logger,
 
   public static readonly FakeConVar<string> CV_WARDEN_SOUND_KILLED =
     new("css_jb_warden_sound_killed", "Sound to play when the warden is killed",
-      "wardenKilled");
+      "jb/warden/wardenkilled.vsnd");
 
   public static readonly FakeConVar<string> CV_WARDEN_SOUND_PASSED =
     new("css_jb_warden_sound_killed", "Sound to play when the warden passes",
-      "wardenPassed");
+      "jb/warden/wardenpassed.vsnd");
 
   public static readonly FakeConVar<string> CV_WARDEN_SOUND_NEW =
     new("css_jb_warden_sound_killed",
-      "Sound to play when the warden is assigned", "wardenNew");
+      "Sound to play when the warden is assigned",
+      "jb/warden/wardennew.vsnd");
 
   public static readonly FakeConVar<int> CV_WARDEN_TERRORIST_RATIO =
     new("css_jb_warden_t_ratio", "Ratio of T:CT to use for HP adjustments", 3);
