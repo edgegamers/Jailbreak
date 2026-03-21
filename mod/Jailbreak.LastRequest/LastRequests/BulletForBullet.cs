@@ -74,14 +74,14 @@ public class BulletForBullet(BasePlugin plugin, IServiceProvider provider,
       Prisoner.GiveNamedItem(weaponName);
 
       magSize = (magForMag ?
-        Prisoner.GetWeaponBase(weaponName)!.VData?.MaxClip1 :
+        Prisoner.GetWeaponBase(weaponName)?.VData?.MaxClip1 :
         1) ?? 1;
-      Prisoner.GetWeaponBase(weaponName).SetAmmo(0, 0);
-      Guard.GetWeaponBase(weaponName).SetAmmo(0, 0);
+      Prisoner.GetWeaponBase(weaponName)?.SetAmmo(0, 0);
+      Guard.GetWeaponBase(weaponName)?.SetAmmo(0, 0);
       var shooter = new Random().Next(2) == 0 ? Prisoner : Guard;
       whosShot = shooter.Slot;
       msg.PlayerGoesFirst(shooter).ToChat(Prisoner, Guard);
-      shooter.GetWeaponBase(weaponName).SetAmmo(magSize.Value, 0);
+      shooter.GetWeaponBase(weaponName)?.SetAmmo(magSize.Value, 0);
       State = LRState.ACTIVE;
     }, TimerFlags.STOP_ON_MAPCHANGE);
 

@@ -20,9 +20,8 @@ public class LastRequestFactory(ILastRequestManager manager,
       LRType.GUN_TOSS =>
         new GunToss(plugin, manager, services, prisoner, guard),
       LRType.NO_SCOPE => new NoScope(plugin, services, prisoner, guard),
-      // Disabled for now due to crashses
-      // LRType.SHOT_FOR_SHOT => new BulletForBullet(plugin, services, prisoner,
-      //   guard, false),
+      LRType.SHOT_FOR_SHOT => new BulletForBullet(plugin, services, prisoner,
+        guard, false),
       LRType.ROCK_PAPER_SCISSORS => new RockPaperScissors(plugin, services,
         prisoner, guard),
       LRType.COINFLIP => new Coinflip(plugin, services, prisoner, guard),
@@ -40,10 +39,10 @@ public class LastRequestFactory(ILastRequestManager manager,
       LRType.KNIFE_FIGHT         => true,
       LRType.GUN_TOSS            => true,
       LRType.NO_SCOPE            => true,
-      LRType.SHOT_FOR_SHOT       => false, // Disabled for now due to crashses
+      LRType.SHOT_FOR_SHOT       => true,
       LRType.ROCK_PAPER_SCISSORS => true,
       LRType.COINFLIP            => true,
-      LRType.RACE                => true,
+      LRType.RACE                => false,
       LRType.MAG_FOR_MAG         => true,
       _                          => false
     };

@@ -135,11 +135,14 @@ public static class WeaponExtensions {
   public static bool AddBulletsToMagazine(this CBasePlayerWeapon? weapon,
     int bullets) {
     if (weapon == null) return false;
+    weapon.SetReserveAmmoToBullets();
     if (weapon.Clip1 + bullets > weapon.VData!.MaxClip1) {
       var overflowBullets = weapon.Clip1 + bullets - weapon.VData!.MaxClip1;
       weapon.Clip1          =  weapon.VData!.MaxClip1;
       weapon.ReserveAmmo[0] += overflowBullets;
     } else { weapon.Clip1 += bullets; }
+
+    weapon.VData.ReserveAmmoAsClips = false;
 
     Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_iClip1");
     Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_pReserveAmmo");
@@ -149,10 +152,17 @@ public static class WeaponExtensions {
   public static bool SetAmmo(this CBasePlayerWeapon? weapon, int clip,
     int reserve) {
     if (weapon == null) return false;
+    weapon.SetReserveAmmoToBullets();
     weapon.Clip1          = clip;
     weapon.ReserveAmmo[0] = reserve;
     Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_iClip1");
     Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_pReserveAmmo");
+    return true;
+  }
+
+  public static bool SetReserveAmmoToBullets(this CBasePlayerWeapon? weapon) {
+    if (weapon == null || weapon.VData == null) return false;
+    weapon.VData.ReserveAmmoAsClips = false;
     return true;
   }
 }
