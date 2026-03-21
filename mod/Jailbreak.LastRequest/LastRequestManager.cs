@@ -149,7 +149,7 @@ public class  LastRequestManager(ILRLocale messages, IServiceProvider provider)
     var lastGuard = provider.GetService<ILastGuardService>();
     var rebel     = provider.GetService<IRebelService>();
     foreach (var player in players) {
-      player.ExecuteClientCommand("play sounds/lr");
+      player.ExecuteClientCommand("play sounds/jb/ct/lr.vsnd");
       var wrapper = new PlayerWrapper(player);
 
       if (!player.PawnIsAlive) continue;

@@ -32,9 +32,7 @@ public abstract class AbstractZoneRestrictedDay : AbstractSpecialDay {
     base.Setup();
 
     ZoneReminder.ToTeamChat(RestrictedTeam);
-    GetZone()
-     .Draw(Plugin, Provider.GetRequiredService<IBeamShapeFactory>(),
-        Color.Firebrick, 55);
+    GetZone().Draw(Plugin, Color.Firebrick, 55);
 
     foreach (var t in PlayerUtil.FromTeam(RestrictedTeam)) {
       var zoneRestrictor = new ZoneMovementRestrictor(Plugin, t, GetZone(),

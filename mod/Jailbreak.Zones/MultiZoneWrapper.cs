@@ -64,9 +64,9 @@ public class MultiZoneWrapper(IEnumerable<IZone>? zones = null)
     minZone.AddPoint(point);
   }
 
-  public void Draw(BasePlugin plugin, IBeamShapeFactory factory, Color color,
+  public void Draw(BasePlugin plugin, Color color,
     float lifetime, float width = 1) {
     foreach (var zone in zones)
-      zone.Draw(plugin, factory, color, lifetime, width);
+      zone.Draw(plugin, color, lifetime, width);
   }
 }

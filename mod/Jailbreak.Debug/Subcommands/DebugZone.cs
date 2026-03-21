@@ -20,9 +20,6 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
   private readonly IZoneManager zoneManager =
     services.GetRequiredService<IZoneManager>();
 
-  private readonly IBeamShapeFactory shapeFactory =
-    services.GetRequiredService<IBeamShapeFactory>();
-
   public override void OnCommand(CCSPlayerController? executor,
     WrappedInfo info) {
     if (executor == null) return;
@@ -85,7 +82,7 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
            .GetAwaiter()
            .GetResult();
           foreach (var z in displayZones)
-            z.Draw(plugin, shapeFactory, type.GetColor(), 120);
+            z.Draw(plugin, type.GetColor(), 120);
 
           zoneCount += displayZones.Count;
         }
@@ -266,7 +263,7 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
          .Select(s => s.AbsOrigin!);
 
         var generated = factory.CreateZone(spawns);
-        generated.Draw(plugin, shapeFactory, specifiedType.Value.GetColor(),
+        generated.Draw(plugin, specifiedType.Value.GetColor(),
           120);
         info.ReplyToCommand($"Drawing auto-generated {specifiedType} zone");
         return;
@@ -284,7 +281,7 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
       if (executor.PlayerPawn.Value?.AbsOrigin != null) {
         var zone =
           factory.CreateZone([executor.PlayerPawn.Value.AbsOrigin!.Clone()]);
-        zone.Draw(plugin, shapeFactory, type.GetColor(), 1f);
+        zone.Draw(plugin, type.GetColor(), 1f);
         // Server.NextFrameAsync(async () => {
         Task.Run(async () => {
           await zoneManager.PushZone(zone, type);
@@ -301,7 +298,7 @@ public class DebugZone(IServiceProvider services, BasePlugin plugin)
     }
 
     var creator =
-      new PlayerZoneCreator(plugin, executor, factory, type, shapeFactory);
+      new PlayerZoneCreator(plugin, executor, factory, type);
     creator.BeginCreation();
     creators[executor.SteamID] = creator;
     executor.PrintToChat($"Began creation of a {type.ToString()} zone");

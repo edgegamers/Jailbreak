@@ -33,7 +33,7 @@ public class BeamLine(BasePlugin plugin, Vector position, Vector end)
     Remove();
     var newBeam = Utilities.CreateEntityByName<CEnvBeam>("env_beam");
     if (newBeam == null) return;
-    newBeam.RenderMode = RenderMode_t.kRenderTransColor;
+    newBeam.RenderMode = RenderMode_t.kRenderTransAlpha;
     newBeam.Width      = width;
     newBeam.Render     = GetColor();
 

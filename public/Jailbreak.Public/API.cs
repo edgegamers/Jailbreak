@@ -1,4 +1,5 @@
 ﻿using CounterStrikeSharp.API.Core.Capabilities;
+using CS2DrawShared;
 using GangsAPI;
 using MAULActainShared.plugin;
 using MStatsShared;
@@ -26,6 +27,9 @@ public static class API {
   public static PluginCapability<IGangPlugin> GangsCapability { get; } =
     new("gangs:core");
 
+  private static PluginCapability<IDrawService> DrawCapability { get; } =
+    new("cs2draw:service");
+
   public static IMStat? Stats {
     get {
       try { return StatsCapability.Get(); } catch (KeyNotFoundException) {
@@ -45,6 +49,14 @@ public static class API {
   public static IGangPlugin? Gangs {
     get {
       try { return GangsCapability.Get(); } catch (KeyNotFoundException) {
+        return null;
+      }
+    }
+  }
+  
+  public static IDrawService? Draw {
+    get {
+      try { return DrawCapability.Get(); } catch (KeyNotFoundException) {
         return null;
       }
     }
