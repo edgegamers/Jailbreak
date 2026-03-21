@@ -1,8 +1,6 @@
 ﻿using System.Drawing;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
-using Jailbreak.Public.Mod.Draw;
-using Jailbreak.Public.Mod.Draw.Enums;
 
 namespace Jailbreak.Public.Mod.Zones;
 
@@ -69,7 +67,7 @@ public interface IZone {
     return (float)(Math.Abs(area) / 2.0f);
   }
 
-  public void Draw(BasePlugin plugin, IBeamShapeFactory factory, Color color,
+  public void Draw(BasePlugin plugin, Color color,
     float lifetime, float width = 1) {
     // TODO: Add point_worldtext to show the points of the zone
 
@@ -79,18 +77,19 @@ public interface IZone {
       case 0:
         return;
       case 1:
-        var circle = factory.CreateShape(points.First(), BeamShapeType.CIRCLE);
-        circle.SetColor(color);
-        circle.Draw(lifetime);
+        var circle = API.Draw?
+         .Circle(CalculateCenterPoint(), (float)Math.Sqrt(GetArea() / Math.PI))
+         .Particles(24)
+         .Color(color)
+         .WithLifetime(lifetime)
+         .Draw();
         break;
       default:
         for (var i = 0; i < points.Count; i++) {
           var first  = points[i];
           var second = points[(i + 1) % points.Count];
-          var line   = new BeamLine(plugin, first, second);
-          line.SetWidth(width);
-          line.SetColor(color);
-          line.Draw(lifetime);
+          
+          API.Draw?.Beam(first, second).Color(color).WithLifetime(lifetime).Draw();
         }
 
         break;
