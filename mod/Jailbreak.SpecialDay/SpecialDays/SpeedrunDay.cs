@@ -110,6 +110,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
   private Vector? start;
   private Vector? target;
   private IDrawHandle? targetCircle;
+  private float lastDrawnRadius = -1f;
   private ISpeedDayLocale Msg => (ISpeedDayLocale)Locale;
 
   private bool IsRoundActive
@@ -226,8 +227,10 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
       panic("Execute: Start is null or too close to speedrunner");
 
     target = target.Clone();
-
-    targetCircle = API.Draw?.Circle(target!, 10).Color(Color.Green).Draw();
+    targetCircle = API.Draw?.Circle(target!, 10)
+     .Color(Color.Green).WithSegments(24)
+     .Infinite()
+     .Draw();
 
     if (bestTrail is null) {
       generics.Error("Execute: bestTrail is null").ToAllChat();
@@ -393,10 +396,6 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     }
 
     var minDist = getRequiredDistance();
-    targetCircle?.Cancel();
-    targetCircle = API.Draw?.Circle(target!, minDist / 2)
-     .Color(Color.Green)
-     .Draw();
     var required = MathF.Pow(minDist, 2);
 
     LinkedList<(int, float)> notFinished = [];
