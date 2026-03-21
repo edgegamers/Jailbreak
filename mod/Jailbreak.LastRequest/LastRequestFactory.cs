@@ -42,7 +42,7 @@ public class LastRequestFactory(ILastRequestManager manager,
       LRType.SHOT_FOR_SHOT       => true,
       LRType.ROCK_PAPER_SCISSORS => true,
       LRType.COINFLIP            => true,
-      LRType.RACE                => true,
+      LRType.RACE                => false,
       LRType.MAG_FOR_MAG         => true,
       _                          => false
     };
