@@ -29,6 +29,7 @@ public class DebugCommand(IServiceProvider serviceProvider) : IPluginBehavior {
     commands.Add("centerhud", new DebugCenterHud(serviceProvider));
     commands.Add("csay", new DebugCSay(serviceProvider));
     commands.Add("color", new DebugColor(serviceProvider));
+    commands.Add("rtd", new DebugRTD(serviceProvider, plugin));
   }
 
   [RequiresPermissions("@css/root")]
