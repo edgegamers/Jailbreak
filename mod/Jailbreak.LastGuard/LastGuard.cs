@@ -250,6 +250,7 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
   [GameEventHandler]
   public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
     IsLastGuardActive = false;
+    canStart          = false;
     foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal())) {
       API.Draw?.RemoveBeacon(player);
     }
