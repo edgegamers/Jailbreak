@@ -2,7 +2,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Modules.Utils;
 using CS2DrawShared;
-using CS2TraceRay.Struct;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Warden.Enums;
 
@@ -13,7 +12,7 @@ namespace Jailbreak.Public.Mod.Warden;
 /// The beam runs from 10 units above the origin to 130 units above it.
 /// Call Place() to spawn, Cancel() to remove both at once.
 /// </summary>
-public sealed class Marker(IDrawService draw, Vector origin, CGameTrace? trace,
+public sealed class Marker(IDrawService draw, Vector origin, 
   MarkerShapeType shapeType, float radius, int particles = 33) {
   private Vector origin = origin;
   private float radius = radius;
@@ -80,32 +79,8 @@ public sealed class Marker(IDrawService draw, Vector origin, CGameTrace? trace,
 
     var setup = new MarkerShapeSetup(ShapeType, radius, 4.0f);
     
-    var tracePos = new Vector(trace?.EndPos.X, trace?.EndPos.Y,
-      trace?.EndPos.Z);
-
-    var spawnLocation =
-      new Vector(origin.X, origin.Y, origin.Z + 48); // fallback if trace is bad
-
-    if (positionsMatch(origin, tracePos)) {
-      var rawNormal = trace?.Normal.ToCsVector();
-
-      if (rawNormal != null) {
-        var normal = rawNormal.Normalize();
-        
-        const float minNormalZ             = 0.5f;
-
-        if (normal.Z >= minNormalZ) {
-          var zOffset = getMinimumLift(normal, 60);
-          spawnLocation.Z = origin.Z + zOffset + 4;
-        } else {
-          spawnLocation = new Vector(origin.X, origin.Y, origin.Z);
-        }
-      }
-    }
-    
-
     // shape
-    var shapeBuilder = draw.Custom(spawnLocation, setup).Particles(particles);
+    var shapeBuilder = draw.Custom(origin, setup).Particles(particles);
 
     if (color.HasValue) shapeBuilder.Color(color.Value);
     if (infinite)
