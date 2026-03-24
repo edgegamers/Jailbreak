@@ -69,7 +69,7 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale,
       settings = new MarkerSettings(MarkerShapeType.CIRCLE, Color.White);
     }
 
-    var ping = new Vector(ev.X, ev.Y, ev.Z);
+    var ping = new Vector(ev.X, ev.Y, ev.Z + 4);
     var now  = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
     // within resize window — update radius and re-place at same center
