@@ -106,9 +106,10 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
     if (calculated < lastGuard.Health && !CV_ALWAYS_OVERRIDE_CT.Value) {
       if (guardPlayerPawn.Health > CV_MAX_CT_HEALTH.Value) {
         lastGuard.SetHealth(CV_MAX_CT_HEALTH.Value);
-        API.Draw?.Beacon(lastGuard).WithOffset(8f).Start();
       }
     } else { guardPlayerPawn.Health = calculated; }
+
+    API.Draw?.Beacon(lastGuard).WithOffset(8f).Start();
 
     // foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal()))
     //     player.ExecuteClientCommand("play sounds/lastct");
@@ -249,6 +250,11 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
   [GameEventHandler]
   public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info) {
     IsLastGuardActive = false;
+    canStart          = false;
+    foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal())) {
+      API.Draw?.RemoveBeacon(player);
+    }
+
     return HookResult.Continue;
   }
 
@@ -261,6 +267,10 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
             => plr is { PawnIsAlive: true, Team: CsTeam.CounterTerrorist })
         >= CV_MINIMUM_CTS.Value;
     });
+    foreach (var player in Utilities.GetPlayers().Where(p => p.IsReal())) {
+      API.Draw?.RemoveBeacon(player);
+    }
+
     return HookResult.Continue;
   }
 

@@ -5,9 +5,6 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Utils;
-using CS2TraceRay.Class;
-using CS2TraceRay.Enum;
-using CS2TraceRay.Struct;
 using Jailbreak.Formatting.Extensions;
 using Jailbreak.Formatting.Views.Warden;
 using Jailbreak.Public;
@@ -72,10 +69,7 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale,
       settings = new MarkerSettings(MarkerShapeType.CIRCLE, Color.White);
     }
 
-    var ping = new Vector(ev.X, ev.Y, ev.Z);
-    var trace = w.GetGameTraceByEyePosition(TraceMask.MaskShot, Contents.TouchAll,
-      player);
-    if (trace == null) return HookResult.Handled;
+    var ping = new Vector(ev.X, ev.Y, ev.Z + 4);
     var now  = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
     // within resize window — update radius and re-place at same center
@@ -90,7 +84,7 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale,
 
         Radius = Math.Clamp(distance, CV_MIN_RADIUS.Value, CV_MAX_RADIUS.Value);
 
-        ensurePlacedMarker(settings.Value, trace, MarkerPosition);
+        ensurePlacedMarker(settings.Value, MarkerPosition);
         placedMarker!.Resize(Radius);
 
         return HookResult.Handled;
@@ -104,7 +98,7 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale,
     Radius         = CV_MIN_RADIUS.Value;
     placementTime  = now;
 
-    ensurePlacedMarker(settings.Value, trace, ping);
+    ensurePlacedMarker(settings.Value, ping);
     placedMarker!.Move(ping).Resize(Radius);
 
     API.Stats?.PushStat(new ServerStat("JB_MARKER",
@@ -116,12 +110,12 @@ public class WardenMarkerBehavior(IWardenService warden, IWardenLocale locale,
 
   // Recreates the marker only if it doesn't exist or the shape type changed.
   // Otherwise just updates the color.
-  private void ensurePlacedMarker(MarkerSettings settings, CGameTrace? trace, Vector pos) {
+  private void ensurePlacedMarker(MarkerSettings settings, Vector pos) {
     if (API.Draw == null) return;
 
     if (placedMarker == null || placedMarker.ShapeType != settings.Type) {
       placedMarker?.Cancel();
-      placedMarker = new Marker(API.Draw, pos, trace, settings.Type, Radius)
+      placedMarker = new Marker(API.Draw, pos, settings.Type, Radius)
        .Color(settings.color)
        .Infinite();
       placedMarker.Place();
