@@ -86,11 +86,11 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
      .ToList();
 
     IncrementGangsLGStat(lastGuard);
-    SetLastGuardHealth(lastGuard);
+    SetLastGuardHealth(lastGuard, guardPlayerPawn);
     SetLastGuardRoundTime(lastGuardPrisoners);
     MarkLastGuardPrisonersAsRebels(lastGuardPrisoners);
     GiveLastGuardPrisonersWeapons(lastGuardPrisoners);
-    LastGuardNotification(lastGuard, lastGuardPrisoners);
+    LastGuardNotification(lastGuard, guardPlayerPawn, lastGuardPrisoners);
   }
 
   private void IncrementGangsLGStat(CCSPlayerController lastGuard)
@@ -120,7 +120,7 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
       lastGuard.SteamID.ToString()));
   }
 
-  private void SetLastGuardHealth(CCSPlayerController lastGuard)
+  private void SetLastGuardHealth(CCSPlayerController lastGuard, CCSPlayerPawn guardPlayerPawn)
   {
     var calculated = calculateHealth();
 
@@ -160,7 +160,7 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
       player.GiveNamedItem(CV_LG_WEAPON.Value);
   }
 
-  private List<CCSPlayerController> GetAlivePlayersList()
+  private List<PlayerWrapper> GetAlivePlayersList()
   {
     return PlayerUtil.GetAlive()
        .Where(p => p.IsReal() && !p.IsBot)
@@ -168,7 +168,7 @@ public class LastGuard(ILGLocale notifications, ILastRequestManager lrManager,
        .ToList();
   }
 
-  private void LastGuardNotification(CCSPlayerController lastGuard, List<CCSPlayerController> lastGuardPrisoners)
+  private void LastGuardNotification(CCSPlayerController lastGuard, CCSPlayerPawn guardPlayerPawn, List<CCSPlayerController> lastGuardPrisoners)
   {
     var prisonerHp =
   lastGuardPrisoners.Sum(prisoner
