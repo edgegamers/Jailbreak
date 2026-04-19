@@ -144,6 +144,8 @@ public class  LastRequestManager(ILRLocale messages, IServiceProvider provider)
       RoundUtil.SetTimeRemaining(CV_LR_BASE_TIME.Value);
 
     RoundUtil.AddTimeRemaining(CV_LR_GUARD_TIME.Value * cts);
+    
+    API.Draw?.RemoveAllBeacons();
 
     var players   = Utilities.GetPlayers();
     var lastGuard = provider.GetService<ILastGuardService>();
