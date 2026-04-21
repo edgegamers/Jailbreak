@@ -3,6 +3,7 @@ using CS2DrawShared;
 using GangsAPI;
 using MAULActainShared.plugin;
 using MStatsShared;
+using RayTraceAPI;
 
 namespace Jailbreak.Public;
 
@@ -30,6 +31,10 @@ public static class API {
   private static PluginCapability<IDrawService> DrawCapability { get; } =
     new("cs2draw:service");
 
+  internal static PluginCapability<CRayTraceInterface> RayTraceCapability {
+    get;
+  } = new("raytrace:craytraceinterface");
+
   public static IMStat? Stats {
     get {
       try { return StatsCapability.Get(); } catch (KeyNotFoundException) {
@@ -53,10 +58,18 @@ public static class API {
       }
     }
   }
-  
+
   public static IDrawService? Draw {
     get {
       try { return DrawCapability.Get(); } catch (KeyNotFoundException) {
+        return null;
+      }
+    }
+  }
+  
+  public static CRayTraceInterface? RayTrace {
+    get {
+      try { return RayTraceCapability.Get(); } catch (KeyNotFoundException) {
         return null;
       }
     }
