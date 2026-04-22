@@ -4,8 +4,6 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Utils;
 using CS2DrawShared.Timers;
-using CS2TraceRay.Class;
-using CS2TraceRay.Enum;
 using GangsAPI.Data;
 using GangsAPI.Services.Gang;
 using GangsAPI.Services.Player;
@@ -15,6 +13,7 @@ using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rainbow;
 using Jailbreak.Public.Mod.Warden;
 using Microsoft.Extensions.DependencyInjection;
+using RayTraceAPI;
 using WardenPaintColorPerk;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
@@ -36,7 +35,7 @@ public class WardenPaintBehavior(IWardenService wardenService,
   private CInfoTarget?          trailAnchor;
   private int                   lastActiveTrailTick;
   private bool                  wasHoldingLastTick;
- 
+  private static readonly Vector EYE_OFFSET = new(0, 0, 64.09f);
   private const int TRAIL_SPLIT_TIMEOUT = 128;
  
   public void Start(BasePlugin basePlugin) {
@@ -63,13 +62,27 @@ public class WardenPaintBehavior(IWardenService wardenService,
       stopTrail();
       return;
     }
+    
+    var painterPawn = painter.PlayerPawn.Value;
+    if (painterPawn == null) return;
+    if (painterPawn.AbsOrigin == null) return; 
+    var eyeOrigin = painterPawn.AbsOrigin + EYE_OFFSET;
+    var eyeAngle = painterPawn.EyeAngles;
+
+    var options = new TraceOptions {
+      DrawBeam      = 0,
+      InteractsWith = (ulong)InteractionLayers.MASK_BRUSH_ONLY,
+      InteractsExclude = (ulong)InteractionLayers.Player
+        | (ulong)InteractionLayers.NoDraw,
+    };
+
+    if (API.RayTrace!.TraceShape(eyeOrigin, eyeAngle, painterPawn, options,
+      out var result))
+      return;
  
     var now   = Server.TickCount;
-    var trace = painter.GetGameTraceByEyePosition(TraceMask.MaskSolid,
-      Contents.TouchAll, painter);
-    if (trace == null) return;
- 
-    var pos  = trace.Value.Position.ToCsVector();
+    if (!result.DidHit) return;
+    var pos  = result.EndPos.ToCsVector();
     pos.Z   += 5f;
  
     var isFirstHold  = !wasHoldingLastTick;

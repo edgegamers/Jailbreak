@@ -27,11 +27,13 @@
         <Reference Include="MStatsShared">
             <HintPath>..\..\public\Jailbreak.Public\Mixin\MStatsShared.dll</HintPath>
         </Reference>
+        <Reference Include="RayTraceApi">
+          <HintPath>..\..\public\Jailbreak.Public\Mixin\RayTraceApi.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="CS2ScreenMenuAPI" Version="2.6.0" />
-      <PackageReference Include="CS2TraceRay" Version="1.0.9" />
     </ItemGroup>
 
 </Project>
