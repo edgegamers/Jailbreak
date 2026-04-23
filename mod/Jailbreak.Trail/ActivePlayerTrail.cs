@@ -32,7 +32,7 @@ public abstract class ActivePlayerTrail<T> : AbstractTrail<T>
   virtual protected void Tick() {
     if (Player == null) return;
     if (!Player.IsValid
-      || Player.Connected != PlayerConnectedState.PlayerConnected) {
+      || Player.Connected != PlayerConnectedState.Connected) {
       OnPlayerInvalid.Invoke();
       return;
     }

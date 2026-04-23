@@ -149,7 +149,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     };
     Timers[CV_FIRST_ROUND_FREEZE.Value - 4] += () => {
       if (!speedrunner.IsValid || speedrunner.Connected
-        != PlayerConnectedState.PlayerConnected)
+        != PlayerConnectedState.Connected)
         speedrunner = getRunner();
       if (speedrunner == null) {
         panic("Speedrunner is invalid, and we cannot find a new one");
@@ -162,7 +162,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
     };
     Timers[CV_FIRST_ROUND_FREEZE.Value] += () => {
       if (!speedrunner.IsValid || speedrunner.Connected
-        != PlayerConnectedState.PlayerConnected) {
+        != PlayerConnectedState.Connected) {
         speedrunner = getRunner();
         if (speedrunner == null) {
           panic(
@@ -186,7 +186,7 @@ public class SpeedrunDay(BasePlugin plugin, IServiceProvider provider)
         => {
         if (target != null) return;
         if (!speedrunner.IsValid || speedrunner.Connected
-          != PlayerConnectedState.PlayerConnected)
+          != PlayerConnectedState.Connected)
           speedrunner = getRunner();
         if (speedrunner == null) {
           panic(

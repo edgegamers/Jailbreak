@@ -25,7 +25,7 @@ public static class PlayerExtensions {
     if (player == null) return false;
     if (!player.IsValid) return false;
 
-    if (player.Connected != PlayerConnectedState.PlayerConnected) return false;
+    if (player.Connected != PlayerConnectedState.Connected) return false;
 
     if (player.IsHLTV) return false;
 
