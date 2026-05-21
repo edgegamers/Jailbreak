@@ -9,6 +9,9 @@ on:
   schedule:
     - cron: '15 0 * * 3' # Every Wednesday at 00:15 UTC
 
+  # Allows Manual Trigger
+  workflow_dispatch:
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
