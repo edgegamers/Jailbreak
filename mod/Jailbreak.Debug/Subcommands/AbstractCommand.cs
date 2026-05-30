@@ -32,7 +32,7 @@ public abstract class AbstractCommand(IServiceProvider services) {
     var matches = command.GetArgTargetResult(argIndex);
 
     matches.Players = matches.Players.Where(player => player is {
-        IsValid: true, Connected: PlayerConnectedState.PlayerConnected
+        IsValid: true, Connected: PlayerConnectedState.Connected
       })
      .ToList();
     if (predicate != null)
@@ -132,7 +132,7 @@ public static class CommandExtensions {
   public static bool CanTarget(this CCSPlayerController controller,
     CCSPlayerController target) {
     if (!target.IsValid) return false;
-    if (target.Connected != PlayerConnectedState.PlayerConnected) return false;
+    if (target.Connected != PlayerConnectedState.Connected) return false;
     if (target.IsBot || target.IsHLTV) return true;
     return AdminManager.CanPlayerTarget(controller, target);
   }

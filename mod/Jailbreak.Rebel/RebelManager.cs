@@ -36,7 +36,7 @@ public class RebelManager(IRebelLocale notifs, IRichLogService logs,
     basePlugin.AddTimer(1f, () => {
       foreach (var player in GetActiveRebels()) {
         if (!player.IsValid
-          || player.Connected != PlayerConnectedState.PlayerConnected)
+          || player.Connected != PlayerConnectedState.Connected)
           continue;
 
         if (GetRebelTimeLeft(player) <= 0) {
