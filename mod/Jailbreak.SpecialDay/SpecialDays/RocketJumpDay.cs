@@ -74,12 +74,16 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     ConVarFlags.FCVAR_NONE, new RangeValidator<float>(0.001f, 2000f));
 
   private const int GE_FIRE_BULLETS_ID = 452;
+  private const int TOUCH_VTABLE_INDEX = 148;
+  private const float PROJECTILE_SPAWN_OFFSET = 24.0f;
+  private const float PROJECTILE_FAILSAFE_LIFETIME = 10.0f;
 
-  private static readonly VirtualFunctionVoid<CBaseEntity, CBaseEntity> TOUCH =
-    new("CBaseEntity", 148);
+  // Resolve Touch from a live HE projectile so derived overrides are hooked too.
+  private VirtualFunctionVoid<CHEGrenadeProjectile, CBaseEntity>? grenadeTouch;
 
+  private readonly HashSet<nint> rocketProjectiles = [];
   private readonly HashSet<CCSPlayerPawn> jumping = [];
-  private Dictionary<ulong, float> nextNova = new();
+  private readonly Dictionary<ulong, float> nextNova = new();
 
   public override SDType Type => SDType.ROCKETJUMP;
   public override SpecialDaySettings Settings => new RocketJumpSettings();
@@ -91,7 +95,6 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
 
   public override void Setup() {
     Plugin.HookUserMessage(GE_FIRE_BULLETS_ID, fireBulletsUmHook);
-    TOUCH.Hook(CBaseEntity_Touch, HookMode.Pre);
     Plugin.RegisterEventHandler<EventWeaponFire>(onWeaponFire);
     Plugin.RegisterListener<Listeners.OnPlayerTakeDamagePre>(onHurt);
     Plugin.RegisterListener<Listeners.OnTick>(onTick);
@@ -119,13 +122,18 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
 
   override protected HookResult OnEnd(EventRoundEnd ev, GameEventInfo info) {
     Plugin.UnhookUserMessage(GE_FIRE_BULLETS_ID, fireBulletsUmHook);
-    TOUCH.Unhook(CBaseEntity_Touch, HookMode.Pre);
+    grenadeTouch?.Unhook(CBaseEntity_Touch, HookMode.Pre);
+    grenadeTouch = null;
     Plugin.DeregisterEventHandler<EventWeaponFire>(onWeaponFire);
     Plugin.RemoveListener<Listeners.OnPlayerTakeDamagePre>(onHurt);
     Plugin.RemoveListener<Listeners.OnTick>(onTick);
 
-    // Delay to avoid mutation during hook execution
-    Server.NextFrameAsync(() => { jumping.Clear(); });
+    // Delay to avoid mutation during hook execution.
+    Server.NextFrameAsync(() => {
+      jumping.Clear();
+      rocketProjectiles.Clear();
+      nextNova.Clear();
+    });
 
     return base.OnEnd(ev, info);
   }
@@ -148,24 +156,47 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
   /// </summary>
   private HookResult CBaseEntity_Touch(DynamicHook hook) {
     var projectile = hook.GetParam<CHEGrenadeProjectile>(0);
-    if (projectile.DesignerName != "hegrenade_projectile")
+    if (!projectile.IsValid || !rocketProjectiles.Contains(projectile.Handle))
       return HookResult.Continue;
 
-    var owner = projectile.OwnerEntity.Value?.As<CCSPlayerPawn>();
-    if (owner == null || owner.DesignerName != "player")
+    var owner = projectile.Thrower.Value
+      ?? projectile.OwnerEntity.Value?.As<CCSPlayerPawn>();
+    if (owner == null || !owner.IsValid)
+      return HookResult.Continue;
+
+    // Do not detonate against the owner while the projectile is leaving the
+    // player's collision hull.
+    var other = hook.GetParam<CBaseEntity>(1);
+    if (other.IsValid && other.Handle == owner.Handle)
       return HookResult.Continue;
 
     var bulletOrigin = projectile.AbsOrigin;
-    var pawnOrigin   = owner.AbsOrigin;
-    if (bulletOrigin == null || pawnOrigin == null) return HookResult.Continue;
+    if (bulletOrigin == null) return HookResult.Continue;
 
-    var eyeOrigin = owner.GetEyeOrigin();
-    var distance = Vector3.Distance(bulletOrigin.ToVec3(), pawnOrigin.ToVec3());
+    // Touch can fire more than once. Consume this projectile before scheduling
+    // the explosion so the jump and damage only happen once.
+    rocketProjectiles.Remove(projectile.Handle);
 
-    projectile.DetonateTime = 0f;
-    doJump(owner, distance, bulletOrigin.ToVec3(), eyeOrigin);
+    var ownerOrigin = owner.GetEyeOrigin();
+    var impactOrigin = bulletOrigin.ToVec3();
+    var distance = Vector3.Distance(impactOrigin, ownerOrigin);
 
-    return HookResult.Handled;
+    doJump(owner, distance, impactOrigin, ownerOrigin);
+
+    // m_flDetonateTime is an absolute game time. Do not use a fixed 0/9999
+    // value, and do not suppress the original Touch implementation.
+    projectile.DetonateTime = Server.CurrentTime;
+    Utilities.SetStateChanged(projectile, "CBaseGrenade", "m_flDetonateTime");
+
+    // Detonating/removing an entity from inside its Touch hook is risky, so
+    // force the input on the next frame if the timer did not already explode it.
+    Server.NextFrame(() => {
+      if (!projectile.IsValid) return;
+      projectile.DetonateTime = Server.CurrentTime;
+      projectile.AcceptInput("Detonate", owner, owner);
+    });
+
+    return HookResult.Continue;
   }
 
   /// <summary>
@@ -186,17 +217,30 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
 
     nextNova[sid] = now + 0.82f;
 
-    var pawn   = controller.PlayerPawn.Value;
-    var origin = pawn?.AbsOrigin;
-    if (pawn == null || origin == null) return HookResult.Continue;
-    pawn.GetEyeForward(10.0f, out var forwardDir, out var targetPos);
+    var pawn = controller.PlayerPawn.Value;
+    if (pawn == null || !pawn.IsValid || pawn.AbsOrigin == null)
+      return HookResult.Continue;
 
-    var realBulletVelocity = forwardDir * CV_BULLET_SPEED.Value;
-    var addedBulletVelocity = CV_PROJ_INHERIT_PLAYER_VELOCITY.Value ?
-      pawn.AbsVelocity.ToVec3() + realBulletVelocity :
-      realBulletVelocity;
-    shootBullet(controller, targetPos, addedBulletVelocity,
-      new Vector3(origin.X, origin.Y, (float)(origin.Z + 64.09)));
+    // The old GetEyeForward helper used AbsOrigin as pitch/yaw/roll, which made
+    // projectile direction depend on the player's map coordinates.
+    var eyeAngles = pawn.EyeAngles;
+    var angleVector = new Vector3(eyeAngles.X, eyeAngles.Y, eyeAngles.Z);
+    angleVector.AngleVectors(out var forwardDir, out _, out _);
+
+    if (forwardDir.LengthSquared() < 0.0001f)
+      return HookResult.Continue;
+
+    forwardDir = Vector3.Normalize(forwardDir);
+
+    var eyeOrigin = pawn.GetEyeOrigin();
+    var spawnOrigin = eyeOrigin + forwardDir * PROJECTILE_SPAWN_OFFSET;
+    var projectileVelocity = forwardDir * CV_BULLET_SPEED.Value;
+
+    if (CV_PROJ_INHERIT_PLAYER_VELOCITY.Value)
+      projectileVelocity += pawn.AbsVelocity.ToVec3();
+
+    shootBullet(controller, spawnOrigin, projectileVelocity,
+      new QAngle(eyeAngles.X, eyeAngles.Y, eyeAngles.Z));
 
     return HookResult.Continue;
   }
@@ -233,31 +277,53 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
   ///   Spawns and launches a CHEGrenadeProjectile with explosive properties like radius and damage.
   /// </summary>
   private void shootBullet(CCSPlayerController controller, Vector3 origin,
-    Vector3 velocity, Vector3 angle) {
+    Vector3 velocity, QAngle rotation) {
     var pawn = controller.PlayerPawn.Value;
-    if (pawn == null) return;
+    if (pawn == null || !pawn.IsValid) return;
 
     var projectile =
       Utilities
        .CreateEntityByName<CHEGrenadeProjectile>("hegrenade_projectile");
     if (projectile == null) return;
 
-    projectile.OwnerEntity.Raw = pawn.EntityHandle.Raw;
-    projectile.Damage          = CV_PROJ_DAMAGE.Value;
-    projectile.DmgRadius       = CV_PROJ_DAMAGE_RADIUS.Value;
-    projectile.DispatchSpawn();
-    projectile.AcceptInput("InitializeSpawnFromWorld", pawn, pawn);
-    Schema.SetSchemaValue(projectile.Handle, "CBaseGrenade", "m_hThrower",
-      pawn.EntityHandle.Raw);
-    projectile.GravityScale = CV_PROJ_GRAVITY.Value;
-    projectile.DetonateTime = 9999f;
+    ensureTouchHook(projectile);
 
-    // Set transform BY VALUE (no unsafe pointers)
     var pos = new Vector(origin.X, origin.Y, origin.Z);
     var vel = new Vector(velocity.X, velocity.Y, velocity.Z);
-    var ang = new QAngle(angle.X, angle.Y, angle.Z);
 
-    projectile.Teleport(pos, ang, vel);
+    projectile.OwnerEntity.Raw = pawn.EntityHandle.Raw;
+    Schema.SetSchemaValue(projectile.Handle, "CBaseGrenade", "m_hThrower",
+      pawn.EntityHandle.Raw);
+
+    projectile.Damage    = CV_PROJ_DAMAGE.Value;
+    projectile.DmgRadius = CV_PROJ_DAMAGE_RADIUS.Value;
+
+    // Initialize the native grenade state from the same transform used for the
+    // actual launch. The old code initialized at the default origin, then moved it.
+    projectile.InitialPosition.X = pos.X;
+    projectile.InitialPosition.Y = pos.Y;
+    projectile.InitialPosition.Z = pos.Z;
+    projectile.InitialVelocity.X = vel.X;
+    projectile.InitialVelocity.Y = vel.Y;
+    projectile.InitialVelocity.Z = vel.Z;
+    projectile.Teleport(pos, rotation, vel);
+
+    rocketProjectiles.Add(projectile.Handle);
+    projectile.DispatchSpawn();
+    projectile.AcceptInput("InitializeSpawnFromWorld", pawn, pawn);
+
+    projectile.GravityScale = CV_PROJ_GRAVITY.Value;
+    projectile.DetonateTime =
+      Server.CurrentTime + PROJECTILE_FAILSAFE_LIFETIME;
+  }
+
+  private void ensureTouchHook(CHEGrenadeProjectile projectile) {
+    if (grenadeTouch != null) return;
+
+    // Resolve slot 148 from the concrete projectile instance. Hooking the
+    // CBaseEntity symbol alone can miss a derived Touch override.
+    grenadeTouch = new(projectile, TOUCH_VTABLE_INDEX);
+    grenadeTouch.Hook(CBaseEntity_Touch, HookMode.Pre);
   }
 
   /// <summary>
