@@ -73,10 +73,9 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     ConVarFlags.FCVAR_NONE, new RangeValidator<float>(0.001f, 2000f));
 
   private const int GE_FIRE_BULLETS_ID = 452;
-
-  // Thank you https://github.com/ipsvn/cs2-Rocketjump/tree/master
-  private readonly MemoryFunctionVoid<nint, nint> touch =
-    new("55 48 89 E5 41 54 49 89 F4 53 48 8B 87");
+  
+  private readonly MemoryFunctionVoid<nint, nint> touch = new("CBaseEntity",
+    "148");
 
   private readonly HashSet<CCSPlayerPawn> jumping = [];
   private Dictionary<ulong, float> nextNova = new();
@@ -93,7 +92,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     Plugin.HookUserMessage(GE_FIRE_BULLETS_ID, fireBulletsUmHook);
     touch.Hook(CBaseEntity_Touch, HookMode.Pre);
     Plugin.RegisterEventHandler<EventWeaponFire>(onWeaponFire);
-    VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(onHurt, HookMode.Pre);
+    Plugin.RegisterListener<Listeners.OnPlayerTakeDamagePre>(onHurt);
     Plugin.RegisterListener<Listeners.OnTick>(onTick);
 
     Timers[10] += () => Locale.BeginsIn(10).ToAllChat();
@@ -120,7 +119,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     Plugin.UnhookUserMessage(GE_FIRE_BULLETS_ID, fireBulletsUmHook);
     touch.Unhook(CBaseEntity_Touch, HookMode.Pre);
     Plugin.DeregisterEventHandler<EventWeaponFire>(onWeaponFire);
-    VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(onHurt, HookMode.Pre);
+    Plugin.RemoveListener<Listeners.OnPlayerTakeDamagePre>(onHurt);
     Plugin.RemoveListener<Listeners.OnTick>(onTick);
 
     // Delay to avoid mutation during hook execution
@@ -205,8 +204,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
   ///   Nullifies Nova Pellet Damage
   ///   Passes Grenades Per Usual
   /// </summary>
-  private HookResult onHurt(DynamicHook hook) {
-    var info       = hook.GetParam<CTakeDamageInfo>(1);
+  private HookResult onHurt(CCSPlayerPawn player, CTakeDamageInfo info) {
     var attacker   = info.Attacker.Value?.As<CCSPlayerPawn>();
     var weaponName = info.Ability.Value?.As<CCSWeaponBase>().VData?.Name;
 
