@@ -1,12 +1,11 @@
 using System.Numerics;
+using System.Runtime.InteropServices;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
-using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
-using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.UserMessages;
 using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.English.SpecialDay;
@@ -75,8 +74,18 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
 
   private const int GE_FIRE_BULLETS_ID = 452;
   private const int TOUCH_VTABLE_INDEX = 148;
+  private const int HE_GRENADE_ITEM_DEF_INDEX = 44;
   private const float PROJECTILE_SPAWN_OFFSET = 24.0f;
   private const float PROJECTILE_FAILSAFE_LIFETIME = 10.0f;
+
+  // CreateEntityByName does not run the native HE projectile factory logic
+  // that arms the projectile's grenade-think/detonation state. These signatures
+  // are from a CounterStrikeSharp implementation updated July 30, 2026.
+  private static readonly MemoryFunctionWithReturn<
+    nint, nint, nint, nint, nint, int, CHEGrenadeProjectile> HE_GRENADE_CREATE =
+      new(RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+        ? "55 4C 89 C1 48 89 E5 41 57 49 89 FF 41 56 49 89 D6 48 89 F2 48 89 FE 41 55"
+        : "48 89 ? 24 ? 48 89 ? 24 ? 48 89 ? 24 ? 57 48 83 EC ? 48 8B ? 24 ? 49 8B F8 4C 8B C2 0F 29 ? 24 ? 48 8B D1 48 8B D9 48 8D 0D ? ? ? ? 4C 8B CD E8 ? ? ? ? F3 0F 10 0D ? ? ? ? 48 8B C8 48 8B F0 E8 ? ? ? ? 48 8B D7 48 8B CE");
 
   // Resolve Touch from a live HE projectile so derived overrides are hooked too.
   private VirtualFunctionVoid<CHEGrenadeProjectile, CBaseEntity>? grenadeTouch;
@@ -183,17 +192,19 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
 
     doJump(owner, distance, impactOrigin, ownerOrigin);
 
-    // m_flDetonateTime is an absolute game time. Do not use a fixed 0/9999
-    // value, and do not suppress the original Touch implementation.
-    projectile.DetonateTime = Server.CurrentTime;
-    Utilities.SetStateChanged(projectile, "CBaseGrenade", "m_flDetonateTime");
+    // Native-created HE grenades have their detonation think armed. Current
+    // CounterStrikeSharp examples force an immediate HE explosion with zero,
+    // rather than Server.CurrentTime or an entity input.
+    projectile.TicksAtZeroVelocity = 100;
+    projectile.DetonateTime = 0f;
 
-    // Detonating/removing an entity from inside its Touch hook is risky, so
-    // force the input on the next frame if the timer did not already explode it.
+    // Repeat on the next frame in case the impact happened between grenade
+    // think intervals. Do not call the "Detonate" input: it is not required
+    // by recent HE examples and is not reliable for this projectile class.
     Server.NextFrame(() => {
       if (!projectile.IsValid) return;
-      projectile.DetonateTime = Server.CurrentTime;
-      projectile.AcceptInput("Detonate", owner, owner);
+      projectile.TicksAtZeroVelocity = 100;
+      projectile.DetonateTime = 0f;
     });
 
     return HookResult.Continue;
@@ -281,25 +292,31 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     var pawn = controller.PlayerPawn.Value;
     if (pawn == null || !pawn.IsValid) return;
 
-    var projectile =
-      Utilities
-       .CreateEntityByName<CHEGrenadeProjectile>("hegrenade_projectile");
-    if (projectile == null) return;
-
-    ensureTouchHook(projectile);
-
     var pos = new Vector(origin.X, origin.Y, origin.Z);
     var vel = new Vector(velocity.X, velocity.Y, velocity.Z);
 
-    projectile.OwnerEntity.Raw = pawn.EntityHandle.Raw;
-    Schema.SetSchemaValue(projectile.Handle, "CBaseGrenade", "m_hThrower",
-      pawn.EntityHandle.Raw);
+    // Use the native factory. CreateEntityByName makes a projectile that can
+    // move and collide, but its HE detonation think may never be armed.
+    var projectile = HE_GRENADE_CREATE.Invoke(
+      pos.Handle,
+      rotation.Handle,
+      vel.Handle,
+      vel.Handle,
+      pawn.Handle,
+      HE_GRENADE_ITEM_DEF_INDEX);
+
+    if (projectile == null || !projectile.IsValid) return;
+
+    ensureTouchHook(projectile);
+
+    projectile.TeamNum             = pawn.TeamNum;
+    projectile.Thrower.Raw         = pawn.EntityHandle.Raw;
+    projectile.OriginalThrower.Raw = pawn.EntityHandle.Raw;
+    projectile.OwnerEntity.Raw     = pawn.EntityHandle.Raw;
 
     projectile.Damage    = CV_PROJ_DAMAGE.Value;
     projectile.DmgRadius = CV_PROJ_DAMAGE_RADIUS.Value;
 
-    // Initialize the native grenade state from the same transform used for the
-    // actual launch. The old code initialized at the default origin, then moved it.
     projectile.InitialPosition.X = pos.X;
     projectile.InitialPosition.Y = pos.Y;
     projectile.InitialPosition.Z = pos.Z;
@@ -308,13 +325,11 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     projectile.InitialVelocity.Z = vel.Z;
     projectile.Teleport(pos, rotation, vel);
 
-    rocketProjectiles.Add(projectile.Handle);
-    projectile.DispatchSpawn();
-    projectile.AcceptInput("InitializeSpawnFromWorld", pawn, pawn);
-
     projectile.GravityScale = CV_PROJ_GRAVITY.Value;
     projectile.DetonateTime =
       Server.CurrentTime + PROJECTILE_FAILSAFE_LIFETIME;
+
+    rocketProjectiles.Add(projectile.Handle);
   }
 
   private void ensureTouchHook(CHEGrenadeProjectile projectile) {
