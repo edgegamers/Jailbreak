@@ -19,6 +19,7 @@ using Jailbreak.Public.Utils;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
 namespace Jailbreak.SpecialDay.SpecialDays;
+
 public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
   : AbstractSpecialDay(plugin, provider), ISpecialDayMessageProvider {
   public static readonly FakeConVar<float> CV_BULLET_SPEED = new(
@@ -73,9 +74,9 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     ConVarFlags.FCVAR_NONE, new RangeValidator<float>(0.001f, 2000f));
 
   private const int GE_FIRE_BULLETS_ID = 452;
-  
-  private readonly MemoryFunctionVoid<nint, nint> touch = new("CBaseEntity",
-    "148");
+
+  private static readonly VirtualFunctionVoid<CBaseEntity, CBaseEntity> TOUCH =
+    new("CBaseEntity", 148);
 
   private readonly HashSet<CCSPlayerPawn> jumping = [];
   private Dictionary<ulong, float> nextNova = new();
@@ -90,7 +91,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
 
   public override void Setup() {
     Plugin.HookUserMessage(GE_FIRE_BULLETS_ID, fireBulletsUmHook);
-    touch.Hook(CBaseEntity_Touch, HookMode.Pre);
+    TOUCH.Hook(CBaseEntity_Touch, HookMode.Pre);
     Plugin.RegisterEventHandler<EventWeaponFire>(onWeaponFire);
     Plugin.RegisterListener<Listeners.OnPlayerTakeDamagePre>(onHurt);
     Plugin.RegisterListener<Listeners.OnTick>(onTick);
@@ -112,19 +113,20 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
       player.GiveNamedItem("weapon_knife");
       player.GiveNamedItem("weapon_nova");
     }
+
     base.Execute();
   }
 
   override protected HookResult OnEnd(EventRoundEnd ev, GameEventInfo info) {
     Plugin.UnhookUserMessage(GE_FIRE_BULLETS_ID, fireBulletsUmHook);
-    touch.Unhook(CBaseEntity_Touch, HookMode.Pre);
+    TOUCH.Unhook(CBaseEntity_Touch, HookMode.Pre);
     Plugin.DeregisterEventHandler<EventWeaponFire>(onWeaponFire);
     Plugin.RemoveListener<Listeners.OnPlayerTakeDamagePre>(onHurt);
     Plugin.RemoveListener<Listeners.OnTick>(onTick);
 
     // Delay to avoid mutation during hook execution
     Server.NextFrameAsync(() => { jumping.Clear(); });
-    
+
     return base.OnEnd(ev, info);
   }
 
@@ -158,8 +160,8 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     if (bulletOrigin == null || pawnOrigin == null) return HookResult.Continue;
 
     var eyeOrigin = owner.GetEyeOrigin();
-    var distance  = Vector3.Distance(bulletOrigin.ToVec3(), pawnOrigin.ToVec3());
-    
+    var distance = Vector3.Distance(bulletOrigin.ToVec3(), pawnOrigin.ToVec3());
+
     projectile.DetonateTime = 0f;
     doJump(owner, distance, bulletOrigin.ToVec3(), eyeOrigin);
 
@@ -180,7 +182,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     var now = Server.CurrentTime;
 
     if (nextNova.TryGetValue(sid, out var next) && now < next)
-      return HookResult.Continue; 
+      return HookResult.Continue;
 
     nextNova[sid] = now + 0.82f;
 
@@ -313,7 +315,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
       ConVarValues["ff_damage_reduction_grenade_self"] = 0f;
       ConVarValues["sv_falldamage_scale"]              = 0f;
     }
-    
+
     public override float FreezeTime(CCSPlayerController player) { return 1; }
   }
 }
