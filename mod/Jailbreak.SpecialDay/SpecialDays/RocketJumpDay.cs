@@ -4,6 +4,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Cvars.Validators;
+using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.UserMessages;
@@ -75,7 +76,8 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
   private const int GE_FIRE_BULLETS_ID = 452;
   private const int TOUCH_VTABLE_INDEX = 148;
   private const int HE_GRENADE_ITEM_DEF_INDEX = 44;
-  private const float PROJECTILE_SPAWN_OFFSET = 24.0f;
+  // The original decoy projectile spawned 10 units in front of the player's eyes.
+  private const float PROJECTILE_SPAWN_OFFSET = 10.0f;
   private const float PROJECTILE_FAILSAFE_LIFETIME = 10.0f;
 
   // CreateEntityByName does not run the native HE projectile factory logic
@@ -198,13 +200,22 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     projectile.TicksAtZeroVelocity = 100;
     projectile.DetonateTime = 0f;
 
-    // Repeat on the next frame in case the impact happened between grenade
-    // think intervals. Do not call the "Detonate" input: it is not required
-    // by recent HE examples and is not reliable for this projectile class.
+    // The fuse is evaluated by the grenade's think function. Schedule that
+    // think for the very next server tick instead of waiting for its existing
+    // ~0.3 second think interval.
+    projectile.NextThinkTick = Server.TickCount + 1;
+    Utilities.SetStateChanged(
+      projectile, "CBaseEntity", "m_nNextThinkTick");
+
+    // Keep a one-frame fallback in case Touch ran while the entity think list
+    // was already being processed for this tick.
     Server.NextFrame(() => {
       if (!projectile.IsValid) return;
       projectile.TicksAtZeroVelocity = 100;
       projectile.DetonateTime = 0f;
+      projectile.NextThinkTick = Server.TickCount + 1;
+      Utilities.SetStateChanged(
+        projectile, "CBaseEntity", "m_nNextThinkTick");
     });
 
     return HookResult.Continue;
@@ -305,7 +316,7 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
       pawn.Handle,
       HE_GRENADE_ITEM_DEF_INDEX);
 
-    if (projectile == null || !projectile.IsValid) return;
+    if (!projectile.IsValid) return;
 
     ensureTouchHook(projectile);
 
@@ -323,9 +334,15 @@ public class RocketJumpDay(BasePlugin plugin, IServiceProvider provider)
     projectile.InitialVelocity.X = vel.X;
     projectile.InitialVelocity.Y = vel.Y;
     projectile.InitialVelocity.Z = vel.Z;
-    projectile.Teleport(pos, rotation, vel);
 
+    // Match the original decoy carrier's flight physics as closely as an HE
+    // projectile allows: VPhysics, debris collision, near-zero gravity.
+    projectile.Collision.SolidType = SolidType_t.SOLID_VPHYSICS;
+    projectile.Collision.CollisionGroup =
+      (byte)CollisionGroup.COLLISION_GROUP_DEBRIS;
     projectile.GravityScale = CV_PROJ_GRAVITY.Value;
+
+    projectile.Teleport(pos, rotation, vel);
     projectile.DetonateTime =
       Server.CurrentTime + PROJECTILE_FAILSAFE_LIFETIME;
 
