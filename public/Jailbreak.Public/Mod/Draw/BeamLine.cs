@@ -33,6 +33,13 @@ public class BeamLine(BasePlugin plugin, Vector position, Vector end)
     Remove();
     var newBeam = Utilities.CreateEntityByName<CEnvBeam>("env_beam");
     if (newBeam == null) return;
+    // Force a pure two-point (world-space) beam. With no explicit BeamType the
+    // engine treats a code-spawned env_beam as entity-anchored and walks
+    // m_pSceneNode->m_pParent->m_pOwner to resolve a scene owner that never
+    // exists here, hanging the server's main thread in an infinite loop
+    // (Valve csgo-osx-linux #4530 "CEnvBeam infinite loop" -> watchdog kill).
+    // BEAM_POINTS draws origin->EndPos and skips that scene-owner resolution.
+    newBeam.BeamType   = BeamType_t.BEAM_POINTS;
     newBeam.RenderMode = RenderMode_t.kRenderTransAlpha;
     newBeam.Width      = width;
     newBeam.Render     = GetColor();
@@ -43,6 +50,7 @@ public class BeamLine(BasePlugin plugin, Vector position, Vector end)
     newBeam.EndPos.Z = End.Z;
     beam             = newBeam;
 
+    Utilities.SetStateChanged(newBeam, "CBeam", "m_nBeamType");
     Utilities.SetStateChanged(newBeam, "CBeam", "m_vecEndPos");
   }
 
