@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="CounterStrikeSharp.API" Version="1.0.369" />
+        <PackageReference Include="CounterStrikeSharp.API" Version="1.0.376" />
         <PackageReference Include="CS2DrawShared" Version="1.5.0" />
         <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
         <PackageReference Include="System.Text.Json" Version="10.0.8" />
@@ -21,9 +21,6 @@
         </Reference>
         <Reference Include="MStatsShared.dll">
             <HintPath>./Mixin/MStatsShared.dll</HintPath>
-        </Reference>
-        <Reference Include="RayTraceApi.dll">
-            <HintPath>./Mixin/RayTraceApi.dll</HintPath>
         </Reference>
     </ItemGroup>
 

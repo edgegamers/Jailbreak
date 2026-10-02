@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.RTD;
 using Jailbreak.Validator;
+using Trace = System.Diagnostics.Trace;
 
 namespace Jailbreak.RTD.Rewards;
 

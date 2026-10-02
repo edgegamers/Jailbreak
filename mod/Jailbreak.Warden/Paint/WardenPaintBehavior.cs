@@ -9,13 +9,10 @@ using GangsAPI.Services.Gang;
 using GangsAPI.Services.Player;
 using Jailbreak.Public;
 using Jailbreak.Public.Behaviors;
-using Jailbreak.Public.Extensions;
 using Jailbreak.Public.Mod.Rainbow;
 using Jailbreak.Public.Mod.Warden;
 using Microsoft.Extensions.DependencyInjection;
-using RayTraceAPI;
 using WardenPaintColorPerk;
-using TraceOptions = RayTraceAPI.TraceOptions;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
 namespace Jailbreak.Warden.Paint;
@@ -77,19 +74,20 @@ public class WardenPaintBehavior(IWardenService wardenService,
       eyePosition.Y + forward.Y * 8192, eyePosition.Z + forward.Z * 8192);
 
     var options = new TraceOptions {
-      DrawBeam      = 0,
-      InteractsWith = (ulong)InteractionLayers.MASK_BRUSH_ONLY,
-      InteractsExclude =
-        (ulong)(InteractionLayers.Player | InteractionLayers.NoDraw),
+      InteractsAs      = Contents.Player,
+      InteractsWith    = Contents.Solid,
+      InteractsExclude = Contents.Player | Contents.NoDraw
     };
 
     var now = Server.TickCount;
-    if (!API.RayTrace!.TraceEndShape(eyePosition, endOrigin, painterPawn,
-      options, out var result)) { return; }
 
-    if (!result.DidHit) { return; }
+    var result =
+      Trace.TraceEndShape(eyePosition, endOrigin, painterPawn, options);
 
-    var pos = result.EndPos.ToCsVector();
+
+    if (!result.DidHit()) { return; }
+
+    var pos = result.EndPos;
     pos.Z += 5f;
 
     var isFirstHold = !wasHoldingLastTick;
